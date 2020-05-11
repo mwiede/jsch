@@ -1,0 +1,97 @@
+<project name="Jsch" default="dist" basedir=".">
+    <description>
+JSch is a pure Java implementation of SSH2. JSch allows you to connect to an
+sshd server and use port forwarding, X11 forwarding, file transfer, etc., and
+you can integrate its functionality into your own Java programs
+    </description>
+  <!-- set global properties for this build -->
+  <property name="version" value="0.1.55"/>
+  <property name="src" location="src/main/java/"/>
+  <property name="exasrc" location="examples"/>
+  <property name="build" location="build"/>
+  <property name="exabuild" location="examples"/>
+  <property name="dist"  location="dist"/>
+  <property name="javadoc" location="javadoc"/>
+  <property name="javac.debug" value="true"/>
+  <path id="lib.path.ref">
+    <fileset dir="lib" includes="*.jar"/>
+  </path>
+  <path id="project.cp">
+    <pathelement location="${build}"/>
+  </path>
+  <target name="init">
+    <!-- Create the time stamp -->
+    <tstamp/>
+    <!-- Create the build directory structure used by compile -->
+    <mkdir dir="${build}"/>
+  </target>
+
+  <target name="compile" depends="init"
+        description="compile the source " >
+    <!-- Compile the java code from ${src} into ${build} -->
+    <available property="jzlib.available"
+               classname="com.jcraft.jzlib.ZStream">
+      <classpath refid="lib.path.ref"/>
+    </available>
+    <javac srcdir="${src}"
+           destdir="${build}"
+           target="1.4"
+           source="1.4"
+           debug="${javac.debug}">
+      <classpath refid="lib.path.ref"/>
+      <exclude name="com/jcraft/jsch/jcraft/Compression.java"
+               unless="jzlib.available"/>
+    </javac>
+  </target>
+  <target name="dist" depends="compile"
+        description="generate the distribution" >
+    <!-- Create the distribution directory -->
+    <mkdir dir="${dist}/lib"/>
+
+    <!-- Put everything in ${build} into the MyProject-${version}.jar file -->
+    <jar jarfile="${dist}/lib/jsch-${version}.jar" basedir="${build}">
+      <!--
+      <manifest>
+        <attribute name="Bundle-ClassPath" value="."/>
+        <attribute name="Bundle-Vendor" value="JCraft, Inc."/>
+        <attribute name="Bundle-Name" value="com.jcraft.jsch"/>
+        <attribute name="Bundle-ManifestVersion" value="2"/>
+        <attribute name="Bundle-SymbolicName" value="com.jcraft.jsch"/>
+        <attribute name="Bundle-Version" value="${version}"/>
+        <attribute name="Export-Package" value='com.jcraft.jsch;version="${version}",com.jcraft.jsch.jce;version="${version}";x-internal:=true,com.jcraft.jsch.jcraft;version="${version}";x-internal:=true,com.jcraft.jsch.jgss;version="${version}";x-internal:=true'/>
+        <attribute name="Import-Package" value="javax.crypto,javax.crypto.spec,javax.crypto.interfaces,org.ietf.jgss,com.jcraft.jzlib"/>
+      </manifest>
+      -->
+    </jar>
+  </target>
+
+  <target name="examples"
+  	description="compiles the examples"
+	depends="compile">
+	
+    <path id="compile.classpath">
+      <pathelement location="${build}" /> 
+    </path>
+
+    <javac srcdir="${exasrc}" destdir="${exabuild}">
+          <classpath refid="compile.classpath"/>
+    </javac>
+    
+  </target>
+	
+  <target name="clean"
+        description="clean up" >
+    <!-- Delete the ${build} and ${dist} directory trees -->
+    <delete dir="${build}"/>
+    <delete dir="${dist}"/>
+    <delete dir="${javadoc}"/>
+  </target>
+
+  <target name="javadoc">
+  	<javadoc sourcepath="${src}"
+		destdir="${javadoc}"
+	>
+		<packageset dir="${src}"/>
+	</javadoc>
+  </target>
+</project>
