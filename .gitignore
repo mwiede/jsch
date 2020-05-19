@@ -1,0 +1,12 @@
+# Mac files #
+.DS_Store
+
+# IDE files #
+.idea/
+*.iml
+*.geany
+
+# Compiled files #
+out/
+target/
+*.class

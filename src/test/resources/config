@@ -1,0 +1,5 @@
+# some comment
+Host host2
+    HostName host2.somewhere.edu
+    User foobar
+    IdentityFile ~/.ssh/old_keys/host2_key

@@ -29,8 +29,12 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 package com.jcraft.jsch;
 
-import java.net.*;
-import java.io.*;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.InetAddress;
+import java.net.ServerSocket;
+import java.net.Socket;
+import java.net.UnknownHostException;
 
 class PortWatcher implements Runnable{
   private static java.util.Vector pool=new java.util.Vector();
@@ -47,6 +51,7 @@ class PortWatcher implements Runnable{
     }
   }
 
+
   Session session;
   int lport;
   int rport;
@@ -55,6 +60,34 @@ class PortWatcher implements Runnable{
   Runnable thread;
   ServerSocket ss;
   int connectTimeout=0;
+  private String socketPath;
+
+  PortWatcher(Session session, String address, int lport, String socketPath, ServerSocketFactory ssf) throws JSchException {
+    this.session=session;
+    this.lport=lport;
+    this.socketPath = socketPath;
+    bindLocalPort(address, lport, ssf);
+  }
+
+  private void bindLocalPort(String address, int lport, ServerSocketFactory ssf) throws JSchException {
+    try{
+      boundaddress= InetAddress.getByName(address);
+      ss=(ssf==null) ?
+              new ServerSocket(lport, 0, boundaddress) :
+              ssf.createServerSocket(lport, 0, boundaddress);
+    }
+    catch(Exception e){
+      String message="PortForwardingL: local port "+address+":"+lport+" cannot be bound.";
+      if(e instanceof Throwable)
+        throw new JSchException(message, e);
+      throw new JSchException(message);
+    }
+    if(lport==0){
+      int assigned=ss.getLocalPort();
+      if(assigned!=-1)
+        this.lport=assigned;
+    }
+  }
 
   static String[] getPortForwarding(Session session){
     java.util.Vector foo=new java.util.Vector();
@@ -137,32 +170,25 @@ class PortWatcher implements Runnable{
       }
     }
   }
-  PortWatcher(Session session, 
-	      String address, int lport, 
+  PortWatcher(Session session,
+	      String address, int lport,
 	      String host, int rport,
               ServerSocketFactory factory) throws JSchException{
     this.session=session;
     this.lport=lport;
     this.host=host;
     this.rport=rport;
-    try{
-      boundaddress=InetAddress.getByName(address);
-      ss=(factory==null) ? 
-        new ServerSocket(lport, 0, boundaddress) :
-        factory.createServerSocket(lport, 0, boundaddress);
+    bindLocalPort(address, lport, factory);
+  }
+
+  public static PortWatcher addSocket(Session session, String bindAddress, int lport, String socketPath, ServerSocketFactory ssf) throws JSchException {
+    String address = normalize(bindAddress);
+    if(getPort(session, address, lport)!=null){
+      throw new JSchException("PortForwardingL: local port "+ address+":"+lport+" is already registered.");
     }
-    catch(Exception e){ 
-      //System.err.println(e);
-      String message="PortForwardingL: local port "+address+":"+lport+" cannot be bound.";
-      if(e instanceof Throwable)
-        throw new JSchException(message, (Throwable)e);
-      throw new JSchException(message);
-    }
-    if(lport==0){
-      int assigned=ss.getLocalPort();
-      if(assigned!=-1)
-        this.lport=assigned;
-    }
+    PortWatcher pw=new PortWatcher(session, address, lport, socketPath, ssf);
+    pool.addElement(pw);
+    return pw;
   }
 
   public void run(){
@@ -173,18 +199,30 @@ class PortWatcher implements Runnable{
 	socket.setTcpNoDelay(true);
         InputStream in=socket.getInputStream();
         OutputStream out=socket.getOutputStream();
-        ChannelDirectTCPIP channel=new ChannelDirectTCPIP();
-        channel.init();
-        channel.setInputStream(in);
-        channel.setOutputStream(out);
-	session.addChannel(channel);
-	((ChannelDirectTCPIP)channel).setHost(host);
-	((ChannelDirectTCPIP)channel).setPort(rport);
-	((ChannelDirectTCPIP)channel).setOrgIPAddress(socket.getInetAddress().getHostAddress());
-	((ChannelDirectTCPIP)channel).setOrgPort(socket.getPort());
-        channel.connect(connectTimeout);
-	if(channel.exitstatus!=-1){
-	}
+        if(socketPath!=null && socketPath.length()>0){
+          ChannelDirectStreamLocal channel = new ChannelDirectStreamLocal();
+          channel.init();
+          channel.setInputStream(in);
+          channel.setOutputStream(out);
+          session.addChannel(channel);
+          channel.setSocketPath(socketPath);
+          channel.setOrgIPAddress(socket.getInetAddress().getHostAddress());
+          channel.setOrgPort(socket.getPort());
+          channel.connect(connectTimeout);
+        } else {
+          ChannelDirectTCPIP channel = new ChannelDirectTCPIP();
+          channel.init();
+          channel.setInputStream(in);
+          channel.setOutputStream(out);
+          session.addChannel(channel);
+          ((ChannelDirectTCPIP) channel).setHost(host);
+          ((ChannelDirectTCPIP) channel).setPort(rport);
+          ((ChannelDirectTCPIP) channel).setOrgIPAddress(socket.getInetAddress().getHostAddress());
+          ((ChannelDirectTCPIP) channel).setOrgPort(socket.getPort());
+          channel.connect(connectTimeout);
+          if (channel.exitstatus != -1) {
+          }
+        }
       }
     }
     catch(Exception e){
@@ -195,7 +233,7 @@ class PortWatcher implements Runnable{
 
   void delete(){
     thread=null;
-    try{ 
+    try{
       if(ss!=null)ss.close();
       ss=null;
     }
