@@ -2,7 +2,7 @@
 
 See original [README](README)
 
-[![GitHub release](https://img.shields.io/github/release/mwiede/jsch.svg)](https://github.com/mwiede/jsch/releases/latest)
+[![GitHub release](https://img.shields.io/github/v/tag/mwiede/jsch.svg)](https://github.com/mwiede/jsch/releases/latest)
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.github.mwiede/jsch/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.github.mwiede/jsch)
 
 Changes:
