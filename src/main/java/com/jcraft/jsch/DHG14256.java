@@ -29,7 +29,7 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 package com.jcraft.jsch;
 
-public class DHG14 extends DHG14N{
+public class DHG14256 extends DHG14N{
 
-  String sha_name(){ return "sha-1"; }
+  String sha_name(){ return "sha-256"; }
 }
