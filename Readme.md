@@ -6,7 +6,8 @@ See original [README](README)
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.github.mwiede/jsch/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.github.mwiede/jsch)
 
 Changes:
-* support for direct-streamlocal@openssh.com
+* 0.1.57 support for rsa-sha2-256 and rsa-sha2-512.
+* 0.1.56 support for direct-streamlocal@openssh.com
 
 Example: (see [SocketForwardingL.java](examples/SocketForwardingL.java))
 ```java
