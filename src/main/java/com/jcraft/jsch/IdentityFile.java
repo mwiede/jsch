@@ -81,6 +81,16 @@ class IdentityFile implements Identity{
   }
 
   /**
+   * Signs on data with this identity, and returns the result.
+   * @param data data to be signed
+   * @param alg signature algorithm to use
+   * @return the signature
+   */
+  public byte[] getSignature(byte[] data, String alg){
+    return kpair.getSignature(data, alg);
+  }
+
+  /**
    * @deprecated This method should not be invoked.
    * @see #setPassphrase(byte[] passphrase)
    */

@@ -210,8 +210,16 @@ public class KeyPairPKCS8 extends KeyPair {
     return kpair.getSignature(data);
   }
 
+  public byte[] getSignature(byte[] data, String alg){
+    return kpair.getSignature(data, alg);
+  }
+
   public Signature getVerifier(){
     return kpair.getVerifier();
+  }
+
+  public Signature getVerifier(String alg){
+    return kpair.getVerifier(alg);
   }
 
   public byte[] forSSHAgent() throws JSchException {

@@ -2726,6 +2726,7 @@ break;
     checkConfig(config, "StrictHostKeyChecking");
     checkConfig(config, "HashKnownHosts");
     checkConfig(config, "PreferredAuthentications");
+    checkConfig(config, "PubkeyAcceptedKeyTypes");
     checkConfig(config, "MaxAuthTries");
     checkConfig(config, "ClearAllForwardings");
 
