@@ -317,8 +317,12 @@ public class KeyPairRSA extends KeyPair{
   }
 
   public byte[] getSignature(byte[] data){
+    return getSignature(data, "ssh-rsa");
+  }
+
+  public byte[] getSignature(byte[] data, String alg){
     try{      
-      Class c=Class.forName((String)jsch.getConfig("signature.rsa"));
+      Class c=Class.forName(jsch.getConfig(alg));
       SignatureRSA rsa=(SignatureRSA)(c.newInstance());
       rsa.init();
       rsa.setPrvKey(prv_array, n_array);
@@ -326,7 +330,7 @@ public class KeyPairRSA extends KeyPair{
       rsa.update(data);
       byte[] sig = rsa.sign();
       byte[][] tmp = new byte[2][];
-      tmp[0] = sshrsa;
+      tmp[0] = Util.str2byte(alg);
       tmp[1] = sig;
       return Buffer.fromBytes(tmp).buffer;
     }
@@ -336,8 +340,12 @@ public class KeyPairRSA extends KeyPair{
   }
 
   public Signature getVerifier(){
+    return getVerifier("ssh-rsa");
+  }
+
+  public Signature getVerifier(String alg){
     try{      
-      Class c=Class.forName((String)jsch.getConfig("signature.rsa"));
+      Class c=Class.forName(jsch.getConfig(alg));
       SignatureRSA rsa=(SignatureRSA)(c.newInstance());
       rsa.init();
 

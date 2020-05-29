@@ -213,8 +213,10 @@ public abstract class KeyExchange{
       n=tmp;
 	
       SignatureRSA sig=null;
+      Buffer buf=new Buffer(sig_of_H);
+      String foo=Util.byte2str(buf.getString());
       try{
-        Class c=Class.forName(session.getConfig("signature.rsa"));
+        Class c=Class.forName(session.getConfig(foo));
         sig=(SignatureRSA)(c.newInstance());
         sig.init();
       }

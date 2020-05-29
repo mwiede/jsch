@@ -53,6 +53,14 @@ public interface Identity{
   public byte[] getSignature(byte[] data);
 
   /**
+   * Signs on data with this identity, and returns the result.
+   * @param data data to be signed
+   * @param alg signature algorithm to use
+   * @return the signature
+   */
+  public byte[] getSignature(byte[] data, String alg);
+
+  /**
    * @deprecated The decryption should be done automatically in #setPassphase(byte[] passphrase)
    * @see #setPassphrase(byte[] passphrase)
    */
