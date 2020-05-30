@@ -2173,7 +2173,7 @@ break;
   private GlobalRequestReply grr=new GlobalRequestReply();
   private int _setPortForwardingR(String bind_address, int rport) throws JSchException{
     synchronized(grr){
-    Buffer buf=new Buffer(100); // ??
+    Buffer buf=new Buffer(200); // ??
     Packet packet=new Packet(buf);
 
     String address_to_bind=ChannelForwardedTCPIP.normalize(bind_address);

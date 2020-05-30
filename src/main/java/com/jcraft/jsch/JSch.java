@@ -43,8 +43,8 @@ public class JSch{
     config.put("cipher.c2s",
                "aes128-ctr,aes128-cbc,3des-ctr,3des-cbc,blowfish-cbc,aes192-ctr,aes192-cbc,aes256-ctr,aes256-cbc");
 
-    config.put("mac.s2c", "hmac-md5,hmac-sha1,hmac-sha2-256,hmac-sha1-96,hmac-md5-96");
-    config.put("mac.c2s", "hmac-md5,hmac-sha1,hmac-sha2-256,hmac-sha1-96,hmac-md5-96");
+    config.put("mac.s2c", "hmac-md5,hmac-sha1,hmac-sha2-256,hmac-sha2-512,hmac-sha1-96,hmac-md5-96");
+    config.put("mac.c2s", "hmac-md5,hmac-sha1,hmac-sha2-256,hmac-sha2-512,hmac-sha1-96,hmac-md5-96");
     config.put("compression.s2c", "none");
     config.put("compression.c2s", "none");
 
@@ -78,9 +78,7 @@ public class JSch{
     config.put("hmac-sha1",     "com.jcraft.jsch.jce.HMACSHA1");
     config.put("hmac-sha1-96",  "com.jcraft.jsch.jce.HMACSHA196");
     config.put("hmac-sha2-256",  "com.jcraft.jsch.jce.HMACSHA256");
-    // The "hmac-sha2-512" will require the key-length 2048 for DH,
-    // but Sun's JCE has not allowed to use such a long key.
-    //config.put("hmac-sha2-512",  "com.jcraft.jsch.jce.HMACSHA512");
+    config.put("hmac-sha2-512",  "com.jcraft.jsch.jce.HMACSHA512");
     config.put("hmac-md5",      "com.jcraft.jsch.jce.HMACMD5");
     config.put("hmac-md5-96",   "com.jcraft.jsch.jce.HMACMD596");
     config.put("sha-1",         "com.jcraft.jsch.jce.SHA1");
