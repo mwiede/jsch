@@ -36,4 +36,5 @@ public interface MAC{
   void update(byte[] foo, int start, int len);
   void update(int foo);
   void doFinal(byte[] buf, int offset);
+  boolean isEtM();
 }

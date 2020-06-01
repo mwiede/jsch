@@ -37,6 +37,7 @@ abstract class HMAC implements MAC {
   protected String name;
   protected int bsize;
   protected String algorithm;
+  protected boolean etm;
   private Mac mac;
 
   public int getBlockSize() {
@@ -78,5 +79,9 @@ abstract class HMAC implements MAC {
 
   public String getName(){
     return name;
+  }
+
+  public boolean isEtM(){
+    return etm;
   }
 }

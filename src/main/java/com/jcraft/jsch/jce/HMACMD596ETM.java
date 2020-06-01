@@ -1,6 +1,6 @@
 /* -*-mode:java; c-basic-offset:2; indent-tabs-mode:nil -*- */
 /*
-Copyright (c) 2006-2018 ymnk, JCraft,Inc. All rights reserved.
+Copyright (c) 2002-2018 ymnk, JCraft,Inc. All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions are met:
@@ -27,29 +27,11 @@ NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-package com.jcraft.jsch.jcraft;
+package com.jcraft.jsch.jce;
 
-import com.jcraft.jsch.MAC;
-import java.security.*;
-
-public class HMACMD5 extends HMAC implements MAC{
-  private static final String name="hmac-md5";
-
-  public HMACMD5(){
-    super();
-    MessageDigest md=null;
-    try{ md=MessageDigest.getInstance("MD5"); }
-    catch(Exception e){
-      System.err.println(e);
-    }
-    setH(md);
-  }
-
-  public String getName(){
-    return name;
-  }
-
-  public boolean isEtM(){
-    return false;
+public class HMACMD596ETM extends HMACMD596 {
+  public HMACMD596ETM(){
+    name="hmac-md5-96-etm@openssh.com";
+    etm=true;
   }
 }
