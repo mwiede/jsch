@@ -36,7 +36,7 @@ public class JSch{
 
   static java.util.Hashtable config=new java.util.Hashtable();
   static{
-    config.put("kex", "ecdh-sha2-nistp256,ecdh-sha2-nistp384,ecdh-sha2-nistp521,diffie-hellman-group18-sha512,diffie-hellman-group16-sha512,diffie-hellman-group14-sha256,diffie-hellman-group14-sha1,diffie-hellman-group-exchange-sha256,diffie-hellman-group-exchange-sha1,diffie-hellman-group1-sha1");
+    config.put("kex", "curve25519-sha256,curve25519-sha256@libssh.org,ecdh-sha2-nistp256,ecdh-sha2-nistp384,ecdh-sha2-nistp521,diffie-hellman-group18-sha512,diffie-hellman-group16-sha512,diffie-hellman-group14-sha256,diffie-hellman-group14-sha1,diffie-hellman-group-exchange-sha256,diffie-hellman-group-exchange-sha1,diffie-hellman-group1-sha1");
     config.put("server_host_key", "rsa-sha2-256,rsa-sha2-512,ssh-rsa,ssh-dss,ecdsa-sha2-nistp256,ecdsa-sha2-nistp384,ecdsa-sha2-nistp521");
     config.put("cipher.s2c", 
                "aes128-gcm@openssh.com,aes128-ctr,aes128-cbc,3des-ctr,3des-cbc,blowfish-cbc,aes192-ctr,aes192-cbc,aes256-gcm@openssh.com,aes256-ctr,aes256-cbc");
@@ -77,6 +77,10 @@ public class JSch{
     config.put("ecdh-sha2-nistp521", "com.jcraft.jsch.DHEC521");
 
     config.put("ecdh-sha2-nistp", "com.jcraft.jsch.jce.ECDHN");
+
+    config.put("curve25519-sha256",            "com.jcraft.jsch.DH25519");
+    config.put("curve25519-sha256@libssh.org", "com.jcraft.jsch.DH25519");
+    config.put("xdh", "com.jcraft.jsch.jce.XDH");
 
     config.put("dh",            "com.jcraft.jsch.jce.DH");
     config.put("3des-cbc",      "com.jcraft.jsch.jce.TripleDESCBC");
@@ -143,7 +147,7 @@ public class JSch{
     config.put("PubkeyAcceptedKeyTypes", "rsa-sha2-256,rsa-sha2-512,ssh-rsa,ssh-dss,ecdsa-sha2-nistp256,ecdsa-sha2-nistp384,ecdsa-sha2-nistp521");
 
     config.put("CheckCiphers", "aes256-gcm@openssh.com,aes128-gcm@openssh.com,aes256-ctr,aes192-ctr,aes128-ctr,aes256-cbc,aes192-cbc,aes128-cbc,3des-ctr,arcfour,arcfour128,arcfour256");
-    config.put("CheckKexes", "diffie-hellman-group14-sha1,diffie-hellman-group14-sha256,diffie-hellman-group16-sha512,diffie-hellman-group18-sha512,ecdh-sha2-nistp256,ecdh-sha2-nistp384,ecdh-sha2-nistp521");
+    config.put("CheckKexes", "curve25519-sha256,curve25519-sha256@libssh.org,diffie-hellman-group14-sha1,diffie-hellman-group14-sha256,diffie-hellman-group16-sha512,diffie-hellman-group18-sha512,ecdh-sha2-nistp256,ecdh-sha2-nistp384,ecdh-sha2-nistp521");
     config.put("CheckSignatures", "ecdsa-sha2-nistp256,ecdsa-sha2-nistp384,ecdsa-sha2-nistp521");
 
     config.put("MaxAuthTries", "6");
