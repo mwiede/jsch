@@ -39,6 +39,7 @@ public class ARCFOUR implements Cipher{
   private javax.crypto.Cipher cipher;    
   public int getIVSize(){return ivsize;} 
   public int getBlockSize(){return bsize;}
+  public int getTagSize(){return 0;}
   public void init(int mode, byte[] key, byte[] iv) throws Exception{
     String pad="NoPadding";      
     byte[] tmp;
@@ -66,5 +67,10 @@ public class ARCFOUR implements Cipher{
   public void update(byte[] foo, int s1, int len, byte[] bar, int s2) throws Exception{
     cipher.update(foo, s1, len, bar, s2);
   }
+  public void updateAAD(byte[] foo, int s1, int len) throws Exception{
+  }
+  public void doFinal(byte[] foo, int s1, int len, byte[] bar, int s2) throws Exception{
+  }
   public boolean isCBC(){return false; }
+  public boolean isAEAD(){return false; }
 }

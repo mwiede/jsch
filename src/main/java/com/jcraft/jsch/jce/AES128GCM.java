@@ -1,6 +1,6 @@
 /* -*-mode:java; c-basic-offset:2; indent-tabs-mode:nil -*- */
 /*
-Copyright (c) 2002-2018 ymnk, JCraft,Inc. All rights reserved.
+Copyright (c) 2008-2018 ymnk, JCraft,Inc. All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions are met:
@@ -27,18 +27,10 @@ NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-package com.jcraft.jsch;
+package com.jcraft.jsch.jce;
 
-public interface Cipher{
-  static int ENCRYPT_MODE=0;
-  static int DECRYPT_MODE=1;
-  int getIVSize(); 
-  int getBlockSize(); 
-  int getTagSize(); 
-  void init(int mode, byte[] key, byte[] iv) throws Exception; 
-  void update(byte[] foo, int s1, int len, byte[] bar, int s2) throws Exception;
-  void updateAAD(byte[] foo, int s1, int len) throws Exception;
-  void doFinal(byte[] foo, int s1, int len, byte[] bar, int s2) throws Exception;
-  boolean isCBC();
-  boolean isAEAD();
+public class AES128GCM extends AESGCM{
+  //Actually the key size, not block size
+  private static final int bsize=16;
+  public int getBlockSize(){return bsize;}
 }

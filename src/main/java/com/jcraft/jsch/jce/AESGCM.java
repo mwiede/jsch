@@ -30,53 +30,45 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 package com.jcraft.jsch.jce;
 
 import com.jcraft.jsch.Cipher;
-import javax.crypto.*;
+import java.nio.ByteBuffer;
 import javax.crypto.spec.*;
 
-public class TripleDESCTR implements Cipher{
-  private static final int ivsize=8;
-  private static final int bsize=24;
-  private javax.crypto.Cipher cipher;    
-  public int getIVSize(){return ivsize;} 
-  public int getBlockSize(){return bsize;}
-  public int getTagSize(){return 0;}
+public abstract class AESGCM implements Cipher{
+  //Actually the block size, not IV size
+  private static final int ivsize=16;
+  private static final int tagsize=16;
+  private javax.crypto.Cipher cipher;
+  private SecretKeySpec keyspec;
+  private int mode;
+  private ByteBuffer iv;
+  public int getIVSize(){return ivsize;}
+  public int getTagSize(){return tagsize;}
   public void init(int mode, byte[] key, byte[] iv) throws Exception{
-    String pad="NoPadding";      
-    //if(padding) pad="PKCS5Padding";
     byte[] tmp;
-    if(iv.length>ivsize){
-      tmp=new byte[ivsize];
+    if(iv.length>12){
+      tmp=new byte[12];
       System.arraycopy(iv, 0, tmp, 0, tmp.length);
       iv=tmp;
     }
+    int bsize=getBlockSize();
     if(key.length>bsize){
       tmp=new byte[bsize];
       System.arraycopy(key, 0, tmp, 0, tmp.length);
       key=tmp;
     }
-
+    this.mode=((mode==ENCRYPT_MODE)?
+                javax.crypto.Cipher.ENCRYPT_MODE:
+                javax.crypto.Cipher.DECRYPT_MODE);
+    this.iv=ByteBuffer.wrap(iv);
     try{
-      cipher=javax.crypto.Cipher.getInstance("DESede/CTR/"+pad);
-/*
-      // The following code does not work on IBM's JDK 1.4.1
-      SecretKeySpec skeySpec = new SecretKeySpec(key, "DESede");
-      cipher.init((mode==ENCRYPT_MODE?
-		   javax.crypto.Cipher.ENCRYPT_MODE:
-		   javax.crypto.Cipher.DECRYPT_MODE),
-		  skeySpec, new IvParameterSpec(iv));
-*/
-      DESedeKeySpec keyspec=new DESedeKeySpec(key);
-      SecretKeyFactory keyfactory=SecretKeyFactory.getInstance("DESede");
-      SecretKey _key=keyfactory.generateSecret(keyspec);
-      synchronized(javax.crypto.Cipher.class){
-        cipher.init((mode==ENCRYPT_MODE?
-                     javax.crypto.Cipher.ENCRYPT_MODE:
-                     javax.crypto.Cipher.DECRYPT_MODE),
-                    _key, new IvParameterSpec(iv));
-      }
+      keyspec=new SecretKeySpec(key, "AES");
+      cipher=javax.crypto.Cipher.getInstance("AES/GCM/NoPadding");
+      cipher.init(this.mode, keyspec, new GCMParameterSpec(tagsize*8,iv));
     }
     catch(Exception e){
       cipher=null;
+      keyspec=null;
+      this.iv=null;
       throw e;
     }
   }
@@ -84,9 +76,13 @@ public class TripleDESCTR implements Cipher{
     cipher.update(foo, s1, len, bar, s2);
   }
   public void updateAAD(byte[] foo, int s1, int len) throws Exception{
+    cipher.updateAAD(foo, s1, len);
   }
   public void doFinal(byte[] foo, int s1, int len, byte[] bar, int s2) throws Exception{
+    cipher.doFinal(foo, s1, len, bar, s2);
+    iv.putLong(4, iv.getLong(4)+1);
+    cipher.init(mode, keyspec, new GCMParameterSpec(tagsize*8,iv.array()));
   }
   public boolean isCBC(){return false; }
-  public boolean isAEAD(){return false; }
+  public boolean isAEAD(){return true; }
 }

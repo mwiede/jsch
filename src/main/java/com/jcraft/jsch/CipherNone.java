@@ -38,5 +38,11 @@ public class CipherNone implements Cipher{
   }
   public void update(byte[] foo, int s1, int len, byte[] bar, int s2) throws Exception{
   }
+  public void updateAAD(byte[] foo, int s1, int len) throws Exception{
+  }
+  public void doFinal(byte[] foo, int s1, int len, byte[] bar, int s2) throws Exception{
+  }
   public boolean isCBC(){return false; }
+  public boolean isAEAD(){return false; }
+  public int getTagSize(){return 0;}
 }

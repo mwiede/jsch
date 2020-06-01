@@ -89,7 +89,7 @@ public abstract class KeyExchange{
     return key_alg_name;
   }
 
-  protected static String[] guess(byte[]I_S, byte[]I_C){
+  protected static String[] guess(Session session, byte[]I_S, byte[]I_C) throws Exception{
     String[] guess=new String[PROPOSAL_MAX];
     Buffer sb=new Buffer(I_S); sb.setOffSet(17);
     Buffer cb=new Buffer(I_C); cb.setOffSet(17);
@@ -141,17 +141,35 @@ public abstract class KeyExchange{
       }
     }
 
+    Class _s2cclazz=Class.forName(session.getConfig(guess[PROPOSAL_ENC_ALGS_STOC]));
+    Cipher _s2ccipher=(Cipher)(_s2cclazz.newInstance());
+    boolean _s2cAEAD=_s2ccipher.isAEAD();
+    if(_s2cAEAD){
+      guess[PROPOSAL_MAC_ALGS_STOC]=null;
+    }
+
+    Class _c2sclazz=Class.forName(session.getConfig(guess[PROPOSAL_ENC_ALGS_CTOS]));
+    Cipher _c2scipher=(Cipher)(_c2sclazz.newInstance());
+    boolean _c2sAEAD=_c2scipher.isAEAD();
+    if(_c2sAEAD){
+      guess[PROPOSAL_MAC_ALGS_CTOS]=null;
+    }
+
     if(JSch.getLogger().isEnabled(Logger.INFO)){
       JSch.getLogger().log(Logger.INFO, 
+                           "kex: algorithm: "+guess[PROPOSAL_KEX_ALGS]);
+      JSch.getLogger().log(Logger.INFO, 
+                           "kex: host key algorithm: "+guess[PROPOSAL_SERVER_HOST_KEY_ALGS]);
+      JSch.getLogger().log(Logger.INFO, 
                            "kex: server->client"+
-                           " "+guess[PROPOSAL_ENC_ALGS_STOC]+
-                           " "+guess[PROPOSAL_MAC_ALGS_STOC]+
-                           " "+guess[PROPOSAL_COMP_ALGS_STOC]);
+                           " cipher: "+guess[PROPOSAL_ENC_ALGS_STOC]+
+                           " MAC: "+(_s2cAEAD?("<implicit>"):(guess[PROPOSAL_MAC_ALGS_STOC]))+
+                           " compression: "+guess[PROPOSAL_COMP_ALGS_STOC]);
       JSch.getLogger().log(Logger.INFO, 
                            "kex: client->server"+
-                           " "+guess[PROPOSAL_ENC_ALGS_CTOS]+
-                           " "+guess[PROPOSAL_MAC_ALGS_CTOS]+
-                           " "+guess[PROPOSAL_COMP_ALGS_CTOS]);
+                           " cipher: "+guess[PROPOSAL_ENC_ALGS_CTOS]+
+                           " MAC: "+(_c2sAEAD?("<implicit>"):(guess[PROPOSAL_MAC_ALGS_CTOS]))+
+                           " compression: "+guess[PROPOSAL_COMP_ALGS_CTOS]);
     }
 
     return guess;

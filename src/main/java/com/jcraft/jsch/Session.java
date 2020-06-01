@@ -588,7 +588,7 @@ public class Session implements Runnable{
      send_kexinit();
    }
 
-    guess=KeyExchange.guess(I_S, I_C);
+    guess=KeyExchange.guess(this, I_S, I_C);
     if(guess==null){
       throw new JSchException("Algorithm negotiation fail");
     }
@@ -896,15 +896,22 @@ key_type+" key fingerprint is "+key_fprint+".\n"+
       //bsize=c2scipher.getIVSize();
       bsize=c2scipher_size;
     }
-    boolean isEtM=(c2scipher!=null && c2smac!=null && c2smac.isEtM());
-    packet.padding(bsize, !isEtM);
+    boolean isAEAD=(c2scipher!=null && c2scipher.isAEAD());
+    boolean isEtM=(!isAEAD && c2scipher!=null && c2smac!=null && c2smac.isEtM());
+    packet.padding(bsize, !(isAEAD || isEtM));
 
-    if(isEtM){
-      byte[] buf=packet.buffer.buffer;
+    byte[] buf=packet.buffer.buffer;
+    if(isAEAD){
+      c2scipher.updateAAD(buf, 0, 4);
+      c2scipher.doFinal(buf, 4, packet.buffer.index-4, buf, 4);
+      packet.buffer.skip(c2scipher.getTagSize());
+    }
+    else if(isEtM){
       c2scipher.update(buf, 4, packet.buffer.index-4, buf, 4);
       c2smac.update(seqo);
       c2smac.update(packet.buffer.buffer, 0, packet.buffer.index);
       c2smac.doFinal(packet.buffer.buffer, packet.buffer.index);
+      packet.buffer.skip(c2smac.getBlockSize());
     }
     else{
       if(c2smac!=null){
@@ -913,12 +920,11 @@ key_type+" key fingerprint is "+key_fprint+".\n"+
         c2smac.doFinal(packet.buffer.buffer, packet.buffer.index);
       }
       if(c2scipher!=null){
-        byte[] buf=packet.buffer.buffer;
         c2scipher.update(buf, 0, packet.buffer.index, buf, 0);
       }
-    }
-    if(c2smac!=null){
-      packet.buffer.skip(c2smac.getBlockSize());
+      if(c2smac!=null){
+        packet.buffer.skip(c2smac.getBlockSize());
+      }
     }
   }
 
@@ -929,10 +935,11 @@ key_type+" key fingerprint is "+key_fprint+".\n"+
   private int c2scipher_size=8;
   public Buffer read(Buffer buf) throws Exception{
     int j=0;
-    boolean isEtM=(s2ccipher!=null && s2cmac!=null && s2cmac.isEtM());
+    boolean isAEAD=(s2ccipher!=null && s2ccipher.isAEAD());
+    boolean isEtM=(!isAEAD && s2ccipher!=null && s2cmac!=null && s2cmac.isEtM());
     while(true){
       buf.reset();
-      if (isEtM){
+      if(isAEAD || isEtM){
         io.getByte(buf.buffer, buf.index, 4);
         buf.index+=4;
         j=((buf.buffer[0]<<24)&0xff000000)|
@@ -949,6 +956,10 @@ key_type+" key fingerprint is "+key_fprint+".\n"+
           buf.buffer=foo;
         }
 
+        if(isAEAD){
+          j+=s2ccipher.getTagSize();
+        }
+
         if((j%s2ccipher_size)!=0){
           String message="Bad packet length "+j;
           if(JSch.getLogger().isEnabled(Logger.FATAL)){
@@ -959,17 +970,22 @@ key_type+" key fingerprint is "+key_fprint+".\n"+
 
         io.getByte(buf.buffer, buf.index, j); buf.index+=(j);
 
-        s2cmac.update(seqi);
-        s2cmac.update(buf.buffer, 0, buf.index);
-
-        s2cmac.doFinal(s2cmac_result1, 0);
-        io.getByte(s2cmac_result2, 0, s2cmac_result2.length);
-        if(!java.util.Arrays.equals(s2cmac_result1, s2cmac_result2)){
-          start_discard(buf, s2ccipher, s2cmac, j, PACKET_MAX_SIZE-j);
-          continue;
+        if(isAEAD){
+          s2ccipher.updateAAD(buf.buffer, 0, 4);
+          s2ccipher.doFinal(buf.buffer, 4, j, buf.buffer, 4);
         }
+        else{
+          s2cmac.update(seqi);
+          s2cmac.update(buf.buffer, 0, buf.index);
+          s2cmac.doFinal(s2cmac_result1, 0);
 
-        s2ccipher.update(buf.buffer, 4, j, buf.buffer, 4);
+          io.getByte(s2cmac_result2, 0, s2cmac_result2.length);
+          if(!java.util.Arrays.equals(s2cmac_result1, s2cmac_result2)){
+            start_discard(buf, s2ccipher, s2cmac, j, PACKET_MAX_SIZE-j);
+            continue;
+          }
+          s2ccipher.update(buf.buffer, 4, j, buf.buffer, 4);
+        }
       }
       else{
         io.getByte(buf.buffer, buf.index, s2ccipher_size);
@@ -1013,8 +1029,8 @@ key_type+" key fingerprint is "+key_fprint+".\n"+
         if(s2cmac!=null){
           s2cmac.update(seqi);
           s2cmac.update(buf.buffer, 0, buf.index);
-
           s2cmac.doFinal(s2cmac_result1, 0);
+
           io.getByte(s2cmac_result2, 0, s2cmac_result2.length);
           if(!java.util.Arrays.equals(s2cmac_result1, s2cmac_result2)){
             if(need > PACKET_MAX_SIZE){
@@ -1219,14 +1235,16 @@ key_type+" key fingerprint is "+key_fprint+".\n"+
       s2ccipher.init(Cipher.DECRYPT_MODE, Es2c, IVs2c);
       s2ccipher_size=s2ccipher.getIVSize();
 
-      method=guess[KeyExchange.PROPOSAL_MAC_ALGS_STOC];
-      c=Class.forName(getConfig(method));
-      s2cmac=(MAC)(c.newInstance());
-      MACs2c = expandKey(buf, K, H, MACs2c, hash, s2cmac.getBlockSize());
-      s2cmac.init(MACs2c);
-      //mac_buf=new byte[s2cmac.getBlockSize()];
-      s2cmac_result1=new byte[s2cmac.getBlockSize()];
-      s2cmac_result2=new byte[s2cmac.getBlockSize()];
+      if(!s2ccipher.isAEAD()){
+        method=guess[KeyExchange.PROPOSAL_MAC_ALGS_STOC];
+        c=Class.forName(getConfig(method));
+        s2cmac=(MAC)(c.newInstance());
+        MACs2c = expandKey(buf, K, H, MACs2c, hash, s2cmac.getBlockSize());
+        s2cmac.init(MACs2c);
+        //mac_buf=new byte[s2cmac.getBlockSize()];
+        s2cmac_result1=new byte[s2cmac.getBlockSize()];
+        s2cmac_result2=new byte[s2cmac.getBlockSize()];
+      }
 
       method=guess[KeyExchange.PROPOSAL_ENC_ALGS_CTOS];
       c=Class.forName(getConfig(method));
@@ -1246,11 +1264,13 @@ key_type+" key fingerprint is "+key_fprint+".\n"+
       c2scipher.init(Cipher.ENCRYPT_MODE, Ec2s, IVc2s);
       c2scipher_size=c2scipher.getIVSize();
 
-      method=guess[KeyExchange.PROPOSAL_MAC_ALGS_CTOS];
-      c=Class.forName(getConfig(method));
-      c2smac=(MAC)(c.newInstance());
-      MACc2s = expandKey(buf, K, H, MACc2s, hash, c2smac.getBlockSize());
-      c2smac.init(MACc2s);
+      if(!c2scipher.isAEAD()){
+        method=guess[KeyExchange.PROPOSAL_MAC_ALGS_CTOS];
+        c=Class.forName(getConfig(method));
+        c2smac=(MAC)(c.newInstance());
+        MACc2s = expandKey(buf, K, H, MACc2s, hash, c2smac.getBlockSize());
+        c2smac.init(MACc2s);
+      }
 
       method=guess[KeyExchange.PROPOSAL_COMP_ALGS_CTOS];
       initDeflater(method);
