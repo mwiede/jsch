@@ -677,7 +677,7 @@ public abstract class Channel implements Runnable{
   public int getId(){ return id; }
 
   protected void sendOpenConfirmation() throws Exception{
-    Buffer buf=new Buffer(100);
+    Buffer buf=new Buffer(200);
     Packet packet=new Packet(buf);
     packet.reset();
     buf.putByte((byte)SSH_MSG_CHANNEL_OPEN_CONFIRMATION);
@@ -690,7 +690,7 @@ public abstract class Channel implements Runnable{
 
   protected void sendOpenFailure(int reasoncode){
     try{
-      Buffer buf=new Buffer(100);
+      Buffer buf=new Buffer(200);
       Packet packet=new Packet(buf);
       packet.reset();
       buf.putByte((byte)SSH_MSG_CHANNEL_OPEN_FAILURE);
@@ -705,7 +705,7 @@ public abstract class Channel implements Runnable{
   }
 
   protected Packet genChannelOpenPacket(){
-    Buffer buf=new Buffer(100);
+    Buffer buf=new Buffer(200);
     Packet packet=new Packet(buf);
     // byte   SSH_MSG_CHANNEL_OPEN(90)
     // string channel type         //
