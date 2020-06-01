@@ -623,13 +623,23 @@ public class Session implements Runnable{
 
     String cipherc2s=getConfig("cipher.c2s");
     String ciphers2c=getConfig("cipher.s2c");
-
     String[] not_available_ciphers=checkCiphers(getConfig("CheckCiphers"));
     if(not_available_ciphers!=null && not_available_ciphers.length>0){
       cipherc2s=Util.diffString(cipherc2s, not_available_ciphers);
       ciphers2c=Util.diffString(ciphers2c, not_available_ciphers);
       if(cipherc2s==null || ciphers2c==null){
         throw new JSchException("There are not any available ciphers.");
+      }
+    }
+
+    String macc2s=getConfig("mac.c2s");
+    String macs2c=getConfig("mac.s2c");
+    String[] not_available_macs=checkMacs(getConfig("CheckMacs"));
+    if(not_available_macs!=null && not_available_macs.length>0){
+      macc2s=Util.diffString(macc2s, not_available_macs);
+      macs2c=Util.diffString(macs2c, not_available_macs);
+      if(macc2s==null || macs2c==null){
+        throw new JSchException("There are not any available macs.");
       }
     }
 
@@ -2585,6 +2595,55 @@ break;
       _c.init(Cipher.ENCRYPT_MODE,
               new byte[_c.getBlockSize()],
               new byte[_c.getIVSize()]);
+      return true;
+    }
+    catch(Exception e){
+      return false;
+    }
+  }
+
+  private String[] checkMacs(String macs){
+    if(macs==null || macs.length()==0)
+      return null;
+
+    if(JSch.getLogger().isEnabled(Logger.INFO)){
+      JSch.getLogger().log(Logger.INFO,
+                           "CheckMacs: "+macs);
+    }
+
+    String macc2s=getConfig("mac.c2s");
+    String macs2c=getConfig("mac.s2c");
+
+    Vector result=new Vector();
+    String[] _macs=Util.split(macs, ",");
+    for(int i=0; i<_macs.length; i++){
+      String mac=_macs[i];
+      if(macs2c.indexOf(mac) == -1 && macc2s.indexOf(mac) == -1)
+        continue;
+      if(!checkMac(getConfig(mac))){
+        result.addElement(mac);
+      }
+    }
+    if(result.size()==0)
+      return null;
+    String[] foo=new String[result.size()];
+    System.arraycopy(result.toArray(), 0, foo, 0, result.size());
+
+    if(JSch.getLogger().isEnabled(Logger.INFO)){
+      for(int i=0; i<foo.length; i++){
+        JSch.getLogger().log(Logger.INFO,
+                             foo[i]+" is not available.");
+      }
+    }
+
+    return foo;
+  }
+
+  static boolean checkMac(String mac){
+    try{
+      Class c=Class.forName(mac);
+      MAC _c=(MAC)(c.newInstance());
+      _c.init(new byte[_c.getBlockSize()]);
       return true;
     }
     catch(Exception e){
