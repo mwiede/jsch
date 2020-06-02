@@ -1,0 +1,15 @@
+<configuration>
+  <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+    <filter class="ch.qos.logback.classic.filter.LevelFilter">
+      <level>ALL</level>
+      <onMatch>DENY</onMatch>
+      <onMismatch>DENY</onMismatch>
+    </filter>
+    <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+      <pattern>%msg%n</pattern>
+    </encoder>
+  </appender>
+  <root level="ALL">
+    <appender-ref ref="CONSOLE"/>
+  </root>
+</configuration>
