@@ -195,14 +195,4 @@ public abstract class DHXEC extends KeyExchange{
   }
 
   public int getState(){return state; }
-
-  private static byte[] encodeQ(byte[] in){
-    int len=in.length;
-    byte[] out=new byte[len];
-    for(int i=0; i<len; i++){
-      out[i]=in[len-i-1];
-      if(i==0) out[i]&=(byte)0x7f;
-    }
-    return out;
-  }
 }

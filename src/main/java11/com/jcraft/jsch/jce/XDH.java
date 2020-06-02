@@ -80,28 +80,16 @@ public class XDH implements com.jcraft.jsch.XDH {
   //   This is done to preserve compatibility with point formats that
   //   reserve the sign bit for use in other protocols and to increase
   //   resistance to implementation fingerprinting.
-  // RFC 8731,
-  // 3.1. Shared Secret Encoding
-  //   When performing the X25519 or X448 operations, the integer values
-  //   there will be encoded into byte strings by doing a fixed-length
-  //   unsigned little-endian conversion, per [RFC7748].  It is only later
-  //   when these byte strings are then passed to the ECDH function in SSH
-  //   that the bytes are reinterpreted as a fixed-length unsigned big-
-  //   endian integer value K, and then later that K value is encoded as a
-  //   variable-length signed "mpint" before being fed to the hash algorithm
-  //   used for key generation.  The mpint K is then fed along with other
-  //   data to the key exchange method's hash function to generate
-  //   encryption keys.
   private static byte[] rotate(byte[] in, boolean clearHigh){
-    int len=in.length;
+    int len = in.length;
     byte[] out = new byte[len];
 
-    for(int i=0; i<len; i++){
-      out[i]=in[len-i-1];
+    for(int i = 0; i < len; i++){
+      out[i] = in[len - i - 1];
     }
 
     if(clearHigh){
-      out[0]&=(byte)0x7f;
+      out[0] &= (byte)0x7f;
     }
 
     return out;
