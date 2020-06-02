@@ -34,7 +34,11 @@ public interface Cipher{
   static int DECRYPT_MODE=1;
   int getIVSize(); 
   int getBlockSize(); 
+  int getTagSize(); 
   void init(int mode, byte[] key, byte[] iv) throws Exception; 
   void update(byte[] foo, int s1, int len, byte[] bar, int s2) throws Exception;
+  void updateAAD(byte[] foo, int s1, int len) throws Exception;
+  void doFinal(byte[] foo, int s1, int len, byte[] bar, int s2) throws Exception;
   boolean isCBC();
+  boolean isAEAD();
 }

@@ -1,0 +1,20 @@
+FROM alpine:3.12
+RUN apk update && \
+    apk upgrade && \
+    apk add openssh && \
+    rm /var/cache/apk/* && \
+    mkdir /root/.ssh && \
+    chmod 700 /root/.ssh
+COPY ssh_host_rsa_key /etc/ssh/
+COPY ssh_host_rsa_key.pub /etc/ssh/
+COPY ssh_host_ecdsa256_key /etc/ssh/
+COPY ssh_host_ecdsa256_key.pub /etc/ssh/
+COPY ssh_host_ecdsa384_key /etc/ssh/
+COPY ssh_host_ecdsa384_key.pub /etc/ssh/
+COPY ssh_host_ecdsa521_key /etc/ssh/
+COPY ssh_host_ecdsa521_key.pub /etc/ssh/
+COPY sshd_config /etc/ssh/
+COPY authorized_keys /root/.ssh/
+RUN chmod 600 /etc/ssh/ssh_*_key /root/.ssh/authorized_keys
+RUN passwd -u root
+ENTRYPOINT ["/usr/sbin/sshd", "-D", "-e"]

@@ -42,13 +42,19 @@ public class Packet{
   public void reset(){
     buffer.index=5;
   }
-  void padding(int bsize){
+  void padding(int bsize, boolean includePktLen){
     int len=buffer.index;
+    if(!includePktLen){
+      len-=4;
+    }
     int pad=(-len)&(bsize-1);
     if(pad<bsize){
       pad+=bsize;
     }
-    len=len+pad-4;
+    len+=pad;
+    if(includePktLen){
+      len-=4;
+    }
     ba4[0]=(byte)(len>>>24);
     ba4[1]=(byte)(len>>>16);
     ba4[2]=(byte)(len>>>8);

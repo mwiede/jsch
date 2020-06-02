@@ -48,4 +48,8 @@ public class HMACMD5 extends HMAC implements MAC{
   public String getName(){
     return name;
   }
+
+  public boolean isEtM(){
+    return false;
+  }
 }

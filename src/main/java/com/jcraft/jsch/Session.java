@@ -588,7 +588,7 @@ public class Session implements Runnable{
      send_kexinit();
    }
 
-    guess=KeyExchange.guess(I_S, I_C);
+    guess=KeyExchange.guess(this, I_S, I_C);
     if(guess==null){
       throw new JSchException("Algorithm negotiation fail");
     }
@@ -623,13 +623,23 @@ public class Session implements Runnable{
 
     String cipherc2s=getConfig("cipher.c2s");
     String ciphers2c=getConfig("cipher.s2c");
-
     String[] not_available_ciphers=checkCiphers(getConfig("CheckCiphers"));
     if(not_available_ciphers!=null && not_available_ciphers.length>0){
       cipherc2s=Util.diffString(cipherc2s, not_available_ciphers);
       ciphers2c=Util.diffString(ciphers2c, not_available_ciphers);
       if(cipherc2s==null || ciphers2c==null){
         throw new JSchException("There are not any available ciphers.");
+      }
+    }
+
+    String macc2s=getConfig("mac.c2s");
+    String macs2c=getConfig("mac.s2c");
+    String[] not_available_macs=checkMacs(getConfig("CheckMacs"));
+    if(not_available_macs!=null && not_available_macs.length>0){
+      macc2s=Util.diffString(macc2s, not_available_macs);
+      macs2c=Util.diffString(macs2c, not_available_macs);
+      if(macc2s==null || macs2c==null){
+        throw new JSchException("There are not any available macs.");
       }
     }
 
@@ -891,29 +901,40 @@ key_type+" key fingerprint is "+key_fprint+".\n"+
                                              5, compress_len);
       packet.buffer.index=compress_len[0];
     }
+    int bsize=8;
     if(c2scipher!=null){
-      //packet.padding(c2scipher.getIVSize());
-      packet.padding(c2scipher_size);
-      int pad=packet.buffer.buffer[4];
-      synchronized(random){
-	random.fill(packet.buffer.buffer, packet.buffer.index-pad, pad);
-      }
+      //bsize=c2scipher.getIVSize();
+      bsize=c2scipher_size;
     }
-    else{
-      packet.padding(8);
-    }
+    boolean isAEAD=(c2scipher!=null && c2scipher.isAEAD());
+    boolean isEtM=(!isAEAD && c2scipher!=null && c2smac!=null && c2smac.isEtM());
+    packet.padding(bsize, !(isAEAD || isEtM));
 
-    if(c2smac!=null){
+    byte[] buf=packet.buffer.buffer;
+    if(isAEAD){
+      c2scipher.updateAAD(buf, 0, 4);
+      c2scipher.doFinal(buf, 4, packet.buffer.index-4, buf, 4);
+      packet.buffer.skip(c2scipher.getTagSize());
+    }
+    else if(isEtM){
+      c2scipher.update(buf, 4, packet.buffer.index-4, buf, 4);
       c2smac.update(seqo);
       c2smac.update(packet.buffer.buffer, 0, packet.buffer.index);
       c2smac.doFinal(packet.buffer.buffer, packet.buffer.index);
-    }
-    if(c2scipher!=null){
-      byte[] buf=packet.buffer.buffer;
-      c2scipher.update(buf, 0, packet.buffer.index, buf, 0);
-    }
-    if(c2smac!=null){
       packet.buffer.skip(c2smac.getBlockSize());
+    }
+    else{
+      if(c2smac!=null){
+        c2smac.update(seqo);
+        c2smac.update(packet.buffer.buffer, 0, packet.buffer.index);
+        c2smac.doFinal(packet.buffer.buffer, packet.buffer.index);
+      }
+      if(c2scipher!=null){
+        c2scipher.update(buf, 0, packet.buffer.index, buf, 0);
+      }
+      if(c2smac!=null){
+        packet.buffer.skip(c2smac.getBlockSize());
+      }
     }
   }
 
@@ -924,59 +945,111 @@ key_type+" key fingerprint is "+key_fprint+".\n"+
   private int c2scipher_size=8;
   public Buffer read(Buffer buf) throws Exception{
     int j=0;
+    boolean isAEAD=(s2ccipher!=null && s2ccipher.isAEAD());
+    boolean isEtM=(!isAEAD && s2ccipher!=null && s2cmac!=null && s2cmac.isEtM());
     while(true){
       buf.reset();
-      io.getByte(buf.buffer, buf.index, s2ccipher_size);
-      buf.index+=s2ccipher_size;
-      if(s2ccipher!=null){
-        s2ccipher.update(buf.buffer, 0, s2ccipher_size, buf.buffer, 0);
-      }
-      j=((buf.buffer[0]<<24)&0xff000000)|
-        ((buf.buffer[1]<<16)&0x00ff0000)|
-        ((buf.buffer[2]<< 8)&0x0000ff00)|
-        ((buf.buffer[3]    )&0x000000ff);
-      // RFC 4253 6.1. Maximum Packet Length
-      if(j<5 || j>PACKET_MAX_SIZE){
-        start_discard(buf, s2ccipher, s2cmac, j, PACKET_MAX_SIZE);
-      }
-      int need = j+4-s2ccipher_size;
-      //if(need<0){
-      //  throw new IOException("invalid data");
-      //}
-      if((buf.index+need)>buf.buffer.length){
-        byte[] foo=new byte[buf.index+need];
-        System.arraycopy(buf.buffer, 0, foo, 0, buf.index);
-        buf.buffer=foo;
-      }
-
-      if((need%s2ccipher_size)!=0){
-        String message="Bad packet length "+need;
-        if(JSch.getLogger().isEnabled(Logger.FATAL)){
-          JSch.getLogger().log(Logger.FATAL, message);
+      if(isAEAD || isEtM){
+        io.getByte(buf.buffer, buf.index, 4);
+        buf.index+=4;
+        j=((buf.buffer[0]<<24)&0xff000000)|
+          ((buf.buffer[1]<<16)&0x00ff0000)|
+          ((buf.buffer[2]<< 8)&0x0000ff00)|
+          ((buf.buffer[3]    )&0x000000ff);
+        // RFC 4253 6.1. Maximum Packet Length
+        if(j<5 || j>PACKET_MAX_SIZE){
+          start_discard(buf, s2ccipher, s2cmac, j, PACKET_MAX_SIZE);
         }
-        start_discard(buf, s2ccipher, s2cmac, j, PACKET_MAX_SIZE-s2ccipher_size);
-      }
+        if((buf.index+j)>buf.buffer.length){
+          byte[] foo=new byte[buf.index+j];
+          System.arraycopy(buf.buffer, 0, foo, 0, buf.index);
+          buf.buffer=foo;
+        }
 
-      if(need>0){
-	io.getByte(buf.buffer, buf.index, need); buf.index+=(need);
-	if(s2ccipher!=null){
-	  s2ccipher.update(buf.buffer, s2ccipher_size, need, buf.buffer, s2ccipher_size);
-	}
-      }
+        if(isAEAD){
+          j+=s2ccipher.getTagSize();
+        }
 
-      if(s2cmac!=null){
-	s2cmac.update(seqi);
-	s2cmac.update(buf.buffer, 0, buf.index);
-
-        s2cmac.doFinal(s2cmac_result1, 0);
-	io.getByte(s2cmac_result2, 0, s2cmac_result2.length);
-        if(!java.util.Arrays.equals(s2cmac_result1, s2cmac_result2)){
-          if(need > PACKET_MAX_SIZE){
-            throw new IOException("MAC Error");
+        if((j%s2ccipher_size)!=0){
+          String message="Bad packet length "+j;
+          if(JSch.getLogger().isEnabled(Logger.FATAL)){
+            JSch.getLogger().log(Logger.FATAL, message);
           }
-          start_discard(buf, s2ccipher, s2cmac, j, PACKET_MAX_SIZE-need);
-          continue;
-	}
+          start_discard(buf, s2ccipher, s2cmac, j, PACKET_MAX_SIZE-4);
+        }
+
+        io.getByte(buf.buffer, buf.index, j); buf.index+=(j);
+
+        if(isAEAD){
+          s2ccipher.updateAAD(buf.buffer, 0, 4);
+          s2ccipher.doFinal(buf.buffer, 4, j, buf.buffer, 4);
+        }
+        else{
+          s2cmac.update(seqi);
+          s2cmac.update(buf.buffer, 0, buf.index);
+          s2cmac.doFinal(s2cmac_result1, 0);
+
+          io.getByte(s2cmac_result2, 0, s2cmac_result2.length);
+          if(!java.util.Arrays.equals(s2cmac_result1, s2cmac_result2)){
+            start_discard(buf, s2ccipher, s2cmac, j, PACKET_MAX_SIZE-j);
+            continue;
+          }
+          s2ccipher.update(buf.buffer, 4, j, buf.buffer, 4);
+        }
+      }
+      else{
+        io.getByte(buf.buffer, buf.index, s2ccipher_size);
+        buf.index+=s2ccipher_size;
+        if(s2ccipher!=null){
+          s2ccipher.update(buf.buffer, 0, s2ccipher_size, buf.buffer, 0);
+        }
+        j=((buf.buffer[0]<<24)&0xff000000)|
+          ((buf.buffer[1]<<16)&0x00ff0000)|
+          ((buf.buffer[2]<< 8)&0x0000ff00)|
+          ((buf.buffer[3]    )&0x000000ff);
+        // RFC 4253 6.1. Maximum Packet Length
+        if(j<5 || j>PACKET_MAX_SIZE){
+          start_discard(buf, s2ccipher, s2cmac, j, PACKET_MAX_SIZE);
+        }
+        int need = j+4-s2ccipher_size;
+        //if(need<0){
+        //  throw new IOException("invalid data");
+        //}
+        if((buf.index+need)>buf.buffer.length){
+          byte[] foo=new byte[buf.index+need];
+          System.arraycopy(buf.buffer, 0, foo, 0, buf.index);
+          buf.buffer=foo;
+        }
+
+        if((need%s2ccipher_size)!=0){
+          String message="Bad packet length "+need;
+          if(JSch.getLogger().isEnabled(Logger.FATAL)){
+            JSch.getLogger().log(Logger.FATAL, message);
+          }
+          start_discard(buf, s2ccipher, s2cmac, j, PACKET_MAX_SIZE-s2ccipher_size);
+        }
+
+        if(need>0){
+          io.getByte(buf.buffer, buf.index, need); buf.index+=(need);
+          if(s2ccipher!=null){
+            s2ccipher.update(buf.buffer, s2ccipher_size, need, buf.buffer, s2ccipher_size);
+          }
+        }
+
+        if(s2cmac!=null){
+          s2cmac.update(seqi);
+          s2cmac.update(buf.buffer, 0, buf.index);
+          s2cmac.doFinal(s2cmac_result1, 0);
+
+          io.getByte(s2cmac_result2, 0, s2cmac_result2.length);
+          if(!java.util.Arrays.equals(s2cmac_result1, s2cmac_result2)){
+            if(need > PACKET_MAX_SIZE){
+              throw new IOException("MAC Error");
+            }
+            start_discard(buf, s2ccipher, s2cmac, j, PACKET_MAX_SIZE-need);
+            continue;
+          }
+        }
       }
 
       seqi++;
@@ -1172,14 +1245,16 @@ key_type+" key fingerprint is "+key_fprint+".\n"+
       s2ccipher.init(Cipher.DECRYPT_MODE, Es2c, IVs2c);
       s2ccipher_size=s2ccipher.getIVSize();
 
-      method=guess[KeyExchange.PROPOSAL_MAC_ALGS_STOC];
-      c=Class.forName(getConfig(method));
-      s2cmac=(MAC)(c.newInstance());
-      MACs2c = expandKey(buf, K, H, MACs2c, hash, s2cmac.getBlockSize());
-      s2cmac.init(MACs2c);
-      //mac_buf=new byte[s2cmac.getBlockSize()];
-      s2cmac_result1=new byte[s2cmac.getBlockSize()];
-      s2cmac_result2=new byte[s2cmac.getBlockSize()];
+      if(!s2ccipher.isAEAD()){
+        method=guess[KeyExchange.PROPOSAL_MAC_ALGS_STOC];
+        c=Class.forName(getConfig(method));
+        s2cmac=(MAC)(c.newInstance());
+        MACs2c = expandKey(buf, K, H, MACs2c, hash, s2cmac.getBlockSize());
+        s2cmac.init(MACs2c);
+        //mac_buf=new byte[s2cmac.getBlockSize()];
+        s2cmac_result1=new byte[s2cmac.getBlockSize()];
+        s2cmac_result2=new byte[s2cmac.getBlockSize()];
+      }
 
       method=guess[KeyExchange.PROPOSAL_ENC_ALGS_CTOS];
       c=Class.forName(getConfig(method));
@@ -1199,11 +1274,13 @@ key_type+" key fingerprint is "+key_fprint+".\n"+
       c2scipher.init(Cipher.ENCRYPT_MODE, Ec2s, IVc2s);
       c2scipher_size=c2scipher.getIVSize();
 
-      method=guess[KeyExchange.PROPOSAL_MAC_ALGS_CTOS];
-      c=Class.forName(getConfig(method));
-      c2smac=(MAC)(c.newInstance());
-      MACc2s = expandKey(buf, K, H, MACc2s, hash, c2smac.getBlockSize());
-      c2smac.init(MACc2s);
+      if(!c2scipher.isAEAD()){
+        method=guess[KeyExchange.PROPOSAL_MAC_ALGS_CTOS];
+        c=Class.forName(getConfig(method));
+        c2smac=(MAC)(c.newInstance());
+        MACc2s = expandKey(buf, K, H, MACc2s, hash, c2smac.getBlockSize());
+        c2smac.init(MACc2s);
+      }
 
       method=guess[KeyExchange.PROPOSAL_COMP_ALGS_CTOS];
       initDeflater(method);
@@ -2173,7 +2250,7 @@ break;
   private GlobalRequestReply grr=new GlobalRequestReply();
   private int _setPortForwardingR(String bind_address, int rport) throws JSchException{
     synchronized(grr){
-    Buffer buf=new Buffer(100); // ??
+    Buffer buf=new Buffer(200); // ??
     Packet packet=new Packet(buf);
 
     String address_to_bind=ChannelForwardedTCPIP.normalize(bind_address);
@@ -2518,6 +2595,55 @@ break;
       _c.init(Cipher.ENCRYPT_MODE,
               new byte[_c.getBlockSize()],
               new byte[_c.getIVSize()]);
+      return true;
+    }
+    catch(Exception e){
+      return false;
+    }
+  }
+
+  private String[] checkMacs(String macs){
+    if(macs==null || macs.length()==0)
+      return null;
+
+    if(JSch.getLogger().isEnabled(Logger.INFO)){
+      JSch.getLogger().log(Logger.INFO,
+                           "CheckMacs: "+macs);
+    }
+
+    String macc2s=getConfig("mac.c2s");
+    String macs2c=getConfig("mac.s2c");
+
+    Vector result=new Vector();
+    String[] _macs=Util.split(macs, ",");
+    for(int i=0; i<_macs.length; i++){
+      String mac=_macs[i];
+      if(macs2c.indexOf(mac) == -1 && macc2s.indexOf(mac) == -1)
+        continue;
+      if(!checkMac(getConfig(mac))){
+        result.addElement(mac);
+      }
+    }
+    if(result.size()==0)
+      return null;
+    String[] foo=new String[result.size()];
+    System.arraycopy(result.toArray(), 0, foo, 0, result.size());
+
+    if(JSch.getLogger().isEnabled(Logger.INFO)){
+      for(int i=0; i<foo.length; i++){
+        JSch.getLogger().log(Logger.INFO,
+                             foo[i]+" is not available.");
+      }
+    }
+
+    return foo;
+  }
+
+  static boolean checkMac(String mac){
+    try{
+      Class c=Class.forName(mac);
+      MAC _c=(MAC)(c.newInstance());
+      _c.init(new byte[_c.getBlockSize()]);
       return true;
     }
     catch(Exception e){

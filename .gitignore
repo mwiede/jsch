@@ -5,6 +5,7 @@
 .idea/
 *.iml
 *.geany
+nb-configuration.xml
 
 # Compiled files #
 out/

@@ -269,7 +269,7 @@ public class ChannelForwardedTCPIP extends Channel{
       }
     }
 
-    Buffer buf=new Buffer(100); // ??
+    Buffer buf=new Buffer(200); // ??
     Packet packet=new Packet(buf);
 
     try{
