@@ -37,7 +37,7 @@ public class DHGEX extends KeyExchange{
   private static final int SSH_MSG_KEX_DH_GEX_REQUEST=             34;
 
   static int min=1024;
-  static int preferred=1024;
+  int preferred=1024;
   int max=1024;
 
   private int state;
@@ -82,7 +82,9 @@ public class DHGEX extends KeyExchange{
       Class c=Class.forName(session.getConfig("dh"));
       // Since JDK8, SunJCE has lifted the keysize restrictions
       // from 1024 to 2048 for DH.
-      preferred = max = check2048(c, max); 
+      // JDK-8072452 increases DH max to 8192
+      max=check8192(c, max);
+      if(max>=2048) preferred=2048;
       dh=(com.jcraft.jsch.DH)(c.newInstance());
       dh.init();
     }
@@ -241,5 +243,20 @@ public class DHGEX extends KeyExchange{
     }
     catch(Exception e){ }
     return _max;
+  }
+
+  protected int check8192(Class c, int _max) throws Exception {
+    DH dh=(com.jcraft.jsch.DH)(c.newInstance());
+    dh.init();
+    dh.setP(DHG18.p);
+    dh.setG(DHG18.g);
+    try {
+      dh.getE();
+      _max=8192;
+      return _max;
+    }
+    catch(Exception e){
+      return check2048(c, _max);
+    }
   }
 }
