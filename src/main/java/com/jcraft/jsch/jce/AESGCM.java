@@ -44,6 +44,7 @@ public abstract class AESGCM implements Cipher{
   public int getIVSize(){return ivsize;}
   public int getTagSize(){return tagsize;}
   public void init(int mode, byte[] key, byte[] iv) throws Exception{
+    String pad="NoPadding";      
     byte[] tmp;
     if(iv.length>12){
       tmp=new byte[12];
@@ -62,8 +63,10 @@ public abstract class AESGCM implements Cipher{
     this.iv=ByteBuffer.wrap(iv);
     try{
       keyspec=new SecretKeySpec(key, "AES");
-      cipher=javax.crypto.Cipher.getInstance("AES/GCM/NoPadding");
-      cipher.init(this.mode, keyspec, new GCMParameterSpec(tagsize*8,iv));
+      cipher=javax.crypto.Cipher.getInstance("AES/GCM/"+pad);
+      synchronized(javax.crypto.Cipher.class){
+        cipher.init(this.mode, keyspec, new GCMParameterSpec(tagsize*8,iv));
+      }
     }
     catch(Exception e){
       cipher=null;
