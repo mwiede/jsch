@@ -59,6 +59,8 @@ public class AlgorithmsIT {
                   .withFileFromClasspath("ssh_host_ecdsa521_key", "docker/ssh_host_ecdsa521_key")
                   .withFileFromClasspath(
                       "ssh_host_ecdsa521_key.pub", "docker/ssh_host_ecdsa521_key.pub")
+                  .withFileFromClasspath("ssh_host_dsa_key", "docker/ssh_host_dsa_key")
+                  .withFileFromClasspath("ssh_host_dsa_key.pub", "docker/ssh_host_dsa_key.pub")
                   .withFileFromClasspath("sshd_config", "docker/sshd_config")
                   .withFileFromClasspath("authorized_keys", "docker/authorized_keys")
                   .withFileFromClasspath("Dockerfile", "docker/Dockerfile"))
@@ -188,6 +190,18 @@ public class AlgorithmsIT {
     checkLogs(expected);
   }
 
+  @Test
+  public void testDSA() throws Exception {
+    JSch ssh = createDSAIdentity();
+    Session session = createSession(ssh);
+    session.setConfig("PubkeyAcceptedKeyTypes", "ssh-dss");
+    session.setConfig("server_host_key", "ssh-dss");
+    doSftp(session);
+
+    String expected = "kex: host key algorithm: ssh-dss.*";
+    checkLogs(expected);
+  }
+
   @ParameterizedTest
   @ValueSource(
       strings = {
@@ -270,6 +284,12 @@ public class AlgorithmsIT {
     JSch ssh = new JSch();
     ssh.addIdentity(
         getResourceFile("docker/id_ecdsa521"), getResourceFile("docker/id_ecdsa521.pub"), null);
+    return ssh;
+  }
+
+  private JSch createDSAIdentity() throws Exception {
+    JSch ssh = new JSch();
+    ssh.addIdentity(getResourceFile("docker/id_dsa"), getResourceFile("docker/id_dsa.pub"), null);
     return ssh;
   }
 
