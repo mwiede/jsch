@@ -48,4 +48,5 @@ public class MD5 implements HASH{
   public byte[] digest() throws Exception{
     return md.digest();
   }
+  public String name(){return "MD5";}
 }

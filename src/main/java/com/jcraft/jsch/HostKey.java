@@ -101,16 +101,17 @@ public class HostKey{
     return UNKNOWN;
   }
   public String getKey(){
-    return Util.byte2str(Util.toBase64(key, 0, key.length));
+    return Util.byte2str(Util.toBase64(key, 0, key.length, true));
   }
   public String getFingerPrint(JSch jsch){
     HASH hash=null;
     try{
-      Class c=Class.forName(jsch.getConfig("md5"));
+      String _c=jsch.getConfig("FingerprintHash").toLowerCase();
+      Class c=Class.forName(jsch.getConfig(_c));
       hash=(HASH)(c.newInstance());
     }
     catch(Exception e){ System.err.println("getFingerPrint: "+e); }
-    return Util.getFingerPrint(hash, key);
+    return Util.getFingerPrint(hash, key, false, true);
   }
   public String getComment(){ return comment; }
   public String getMarker(){ return marker; }

@@ -48,6 +48,7 @@ import java.util.Vector;
  *   <li>Port</li>
  *   <li>PreferredAuthentications</li>
  *   <li>PubkeyAcceptedKeyTypes</li>
+ *   <li>FingerprintHash</li>
  *   <li>IdentityFile</li>
  *   <li>NumberOfPasswordPrompts</li>
  *   <li>ConnectTimeout</li>

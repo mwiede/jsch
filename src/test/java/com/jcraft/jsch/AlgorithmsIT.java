@@ -11,6 +11,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Arrays;
 import java.util.Optional;
 import java.util.Random;
 import org.apache.commons.codec.digest.DigestUtils;
@@ -262,6 +263,41 @@ public class AlgorithmsIT {
     String expectedC2S = String.format("kex: client->server .* MAC: %s.*", mac);
     checkLogs(expectedS2C);
     checkLogs(expectedC2S);
+  }
+
+  @ParameterizedTest
+  @ValueSource(
+      strings = {
+        "SHA512:EyyvMhUehzuELz3ySpqMw2UggtNqVmWnTSrQy2x4FLT7aF1lmqKC30oF+VUOLhvTmFHYaDLLN9UnpuGphIltKQ",
+        "SHA384:CMxHNJ/xzOfsmNqw4g6Be+ltVZX3ixtplON7nOspNlji0iMnWzM7X4SelzcpP7Ap",
+        "SHA256:iqNO6JDjrpga8TvgBKGReaKEnGoF/1csoxWp/DV5xJ0",
+        "SHA1:FO2EB514+YMk4jTFmNGOwscY2Pk",
+        "MD5:3b:50:5b:c5:53:66:8c:2c:98:9b:ee:3f:19:0a:ff:29"
+      })
+  public void testFingerprintHashes(String fingerprint) throws Exception {
+    String[] split = fingerprint.split(":");
+    String hash = split[0];
+    MockUserInfo userInfo = new MockUserInfo();
+    JSch ssh = createRSAIdentity();
+    Session session = createSession(ssh);
+    session.setConfig("PubkeyAcceptedKeyTypes", "ssh-rsa");
+    session.setConfig("server_host_key", "ssh-rsa");
+    session.setConfig("StrictHostKeyChecking", "ask");
+    session.setConfig("FingerprintHash", hash);
+    session.setUserInfo(userInfo);
+    try {
+      doSftp(session);
+    } catch (JSchException expected) {
+    }
+
+    String expected = String.format("RSA key fingerprint is %s.", fingerprint);
+    Optional<String> actual =
+        userInfo.getMessages().stream()
+            .map(msg -> msg.split("\n"))
+            .flatMap(Arrays::stream)
+            .filter(msg -> msg.equals(expected))
+            .findFirst();
+    assertTrue(actual.isPresent());
   }
 
   private JSch createRSAIdentity() throws Exception {

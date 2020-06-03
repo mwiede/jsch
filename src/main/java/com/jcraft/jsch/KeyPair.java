@@ -127,7 +127,7 @@ public abstract class KeyPair{
     if(encoded!=plain)
       Util.bzero(plain);
     byte[] iv=_iv[0];
-    byte[] prv=Util.toBase64(encoded, 0, encoded.length);
+    byte[] prv=Util.toBase64(encoded, 0, encoded.length, true);
 
     try{
       out.write(getBegin()); out.write(cr);
@@ -183,7 +183,7 @@ public abstract class KeyPair{
    */
   public void writePublicKey(java.io.OutputStream out, String comment){
     byte[] pubblob=getPublicKeyBlob();
-    byte[] pub=Util.toBase64(pubblob, 0, pubblob.length);
+    byte[] pub=Util.toBase64(pubblob, 0, pubblob.length, true);
     try{
       out.write(getKeyTypeName()); out.write(space);
       out.write(pub, 0, pub.length); out.write(space);
@@ -214,7 +214,7 @@ public abstract class KeyPair{
    */
   public void writeSECSHPublicKey(java.io.OutputStream out, String comment){
     byte[] pubblob=getPublicKeyBlob();
-    byte[] pub=Util.toBase64(pubblob, 0, pubblob.length);
+    byte[] pub=Util.toBase64(pubblob, 0, pubblob.length, true);
     try{
       out.write(Util.str2byte("---- BEGIN SSH2 PUBLIC KEY ----")); out.write(cr);
       out.write(Util.str2byte("Comment: \""+comment+"\"")); out.write(cr);
@@ -273,7 +273,7 @@ public abstract class KeyPair{
     if(hash==null) hash=genHash();
     byte[] kblob=getPublicKeyBlob();
     if(kblob==null) return null;
-    return Util.getFingerPrint(hash, kblob);
+    return Util.getFingerPrint(hash, kblob, false, true);
   }
 
   private byte[] encrypt(byte[] plain, byte[][] _iv, byte[] passphrase){

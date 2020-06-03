@@ -581,8 +581,8 @@ loop:
       }
       catch(Exception e){
       }
-      host=HASH_MAGIC+Util.byte2str(Util.toBase64(salt, 0, salt.length))+
-        HASH_DELIM+Util.byte2str(Util.toBase64(hash, 0, hash.length));
+      host=HASH_MAGIC+Util.byte2str(Util.toBase64(salt, 0, salt.length, true))+
+        HASH_DELIM+Util.byte2str(Util.toBase64(hash, 0, hash.length, true));
       hashed=true;
     }
   }

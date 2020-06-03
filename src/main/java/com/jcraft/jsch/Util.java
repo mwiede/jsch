@@ -63,7 +63,7 @@ class Util{
       throw new JSchException("fromBase64: invalid base64 data", e);
     }
   }
-  static byte[] toBase64(byte[] buf, int start, int length){
+  static byte[] toBase64(byte[] buf, int start, int length, boolean include_pad){
 
     byte[] tmp=new byte[length*2];
     int i,j,k;
@@ -87,8 +87,10 @@ class Util{
       tmp[i++]=b64[k];
       k=((buf[j]&0x03)<<4)&0x3f;
       tmp[i++]=b64[k];
-      tmp[i++]=(byte)'=';
-      tmp[i++]=(byte)'=';
+      if(include_pad){
+        tmp[i++]=(byte)'=';
+        tmp[i++]=(byte)'=';
+      }
     }
     else if(foo==2){
       k=(buf[j]>>>2)&0x3f;
@@ -97,7 +99,9 @@ class Util{
       tmp[i++]=b64[k];
       k=((buf[j+1]&0x0f)<<2)&0x3f;
       tmp[i++]=b64[k];
-      tmp[i++]=(byte)'=';
+      if(include_pad){
+        tmp[i++]=(byte)'=';
+      }
     }
     byte[] bar=new byte[i];
     System.arraycopy(tmp, 0, bar, 0, i);
@@ -309,19 +313,29 @@ class Util{
   private static String[] chars={
     "0","1","2","3","4","5","6","7","8","9", "a","b","c","d","e","f"
   };
-  static String getFingerPrint(HASH hash, byte[] data){
+  static String getFingerPrint(HASH hash, byte[] data, boolean include_prefix, boolean force_hex){
     try{
       hash.init();
       hash.update(data, 0, data.length);
       byte[] foo=hash.digest();
       StringBuffer sb=new StringBuffer();
-      int bar;
-      for(int i=0; i<foo.length;i++){
-        bar=foo[i]&0xff;
-        sb.append(chars[(bar>>>4)&0xf]);
-        sb.append(chars[(bar)&0xf]);
-        if(i+1<foo.length)
-          sb.append(":");
+      if(include_prefix){
+        sb.append(hash.name());
+        sb.append(":");
+      }
+      if(force_hex || hash.name().equals("MD5")){
+        int bar;
+        for(int i=0; i<foo.length;i++){
+          bar=foo[i]&0xff;
+          sb.append(chars[(bar>>>4)&0xf]);
+          sb.append(chars[(bar)&0xf]);
+          if(i+1<foo.length)
+            sb.append(":");
+        }
+      }
+      else{
+        byte[] b64str=toBase64(foo, 0, foo.length, false);
+        sb.append(byte2str(b64str, 0, b64str.length));
       }
       return sb.toString();
     }

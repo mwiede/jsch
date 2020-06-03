@@ -99,6 +99,10 @@ public class JSch{
     config.put("sha-384",         "com.jcraft.jsch.jce.SHA384");
     config.put("sha-512",         "com.jcraft.jsch.jce.SHA512");
     config.put("md5",           "com.jcraft.jsch.jce.MD5");
+    config.put("sha1",          "com.jcraft.jsch.jce.SHA1");
+    config.put("sha256",        "com.jcraft.jsch.jce.SHA256");
+    config.put("sha384",        "com.jcraft.jsch.jce.SHA384");
+    config.put("sha512",        "com.jcraft.jsch.jce.SHA512");
     config.put("signature.dss", "com.jcraft.jsch.jce.SignatureDSA");
     config.put("ssh-rsa",       "com.jcraft.jsch.jce.SignatureRSA");
     config.put("rsa-sha2-256",  "com.jcraft.jsch.jce.SignatureRSASHA256");
@@ -147,6 +151,7 @@ public class JSch{
     config.put("CheckMacs", "hmac-sha2-256-etm@openssh.com,hmac-sha2-512-etm@openssh.com,,hmac-sha2-256,hmac-sha2-512");
     config.put("CheckKexes", "curve25519-sha256,curve25519-sha256@libssh.org,diffie-hellman-group14-sha1,diffie-hellman-group14-sha256,diffie-hellman-group16-sha512,diffie-hellman-group18-sha512,ecdh-sha2-nistp256,ecdh-sha2-nistp384,ecdh-sha2-nistp521");
     config.put("CheckSignatures", "rsa-sha2-256,rsa-sha2-512,ecdsa-sha2-nistp256,ecdsa-sha2-nistp384,ecdsa-sha2-nistp521");
+    config.put("FingerprintHash", "sha256");
 
     config.put("MaxAuthTries", "6");
     config.put("ClearAllForwardings", "no");

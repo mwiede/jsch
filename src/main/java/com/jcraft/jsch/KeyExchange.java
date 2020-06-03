@@ -178,11 +178,12 @@ public abstract class KeyExchange{
   public String getFingerPrint(){
     HASH hash=null;
     try{
-      Class c=Class.forName(session.getConfig("md5"));
+      String _c=session.getConfig("FingerprintHash").toLowerCase();
+      Class c=Class.forName(session.getConfig(_c));
       hash=(HASH)(c.newInstance());
     }
     catch(Exception e){ System.err.println("getFingerPrint: "+e); }
-    return Util.getFingerPrint(hash, getHostKey());
+    return Util.getFingerPrint(hash, getHostKey(), true, false);
   }
   byte[] getK(){ return K; }
   byte[] getH(){ return H; }

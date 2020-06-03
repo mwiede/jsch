@@ -829,7 +829,7 @@ key_type+" key fingerprint is "+key_fprint+".\n"+
     if(i==HostKeyRepository.OK){
       HostKey[] keys =
         hkr.getHostKey(chost, kex.getKeyAlgorithName());
-      String _key= Util.byte2str(Util.toBase64(K_S, 0, K_S.length));
+      String _key= Util.byte2str(Util.toBase64(K_S, 0, K_S.length, true));
       for(int j=0; j< keys.length; j++){
         if(keys[i].getKey().equals(_key) &&
            keys[j].getMarker().equals("@revoked")){
@@ -2853,6 +2853,7 @@ break;
     checkConfig(config, "HashKnownHosts");
     checkConfig(config, "PreferredAuthentications");
     checkConfig(config, "PubkeyAcceptedKeyTypes");
+    checkConfig(config, "FingerprintHash");
     checkConfig(config, "MaxAuthTries");
     checkConfig(config, "ClearAllForwardings");
 
