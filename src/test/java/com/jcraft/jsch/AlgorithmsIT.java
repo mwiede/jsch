@@ -265,6 +265,22 @@ public class AlgorithmsIT {
     checkLogs(expectedC2S);
   }
 
+  // Note: OpenSSH does not support zlib
+  @ParameterizedTest
+  @ValueSource(strings = {"zlib@openssh.com", "none"})
+  public void testCompressions(String compression) throws Exception {
+    JSch ssh = createRSAIdentity();
+    Session session = createSession(ssh);
+    session.setConfig("compression.s2c", compression);
+    session.setConfig("compression.c2s", compression);
+    doSftp(session);
+
+    String expectedS2C = String.format("kex: server->client .* compression: %s.*", compression);
+    String expectedC2S = String.format("kex: client->server .* compression: %s.*", compression);
+    checkLogs(expectedS2C);
+    checkLogs(expectedC2S);
+  }
+
   @ParameterizedTest
   @ValueSource(
       strings = {
