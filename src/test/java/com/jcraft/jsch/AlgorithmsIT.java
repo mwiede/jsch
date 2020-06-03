@@ -213,7 +213,11 @@ public class AlgorithmsIT {
         "aes256-cbc",
         "aes192-cbc",
         "aes128-cbc",
-        "3des-cbc"
+        "3des-cbc",
+        "blowfish-cbc",
+        "arcfour",
+        "arcfour256",
+        "arcfour128"
       })
   public void testCiphers(String cipher) throws Exception {
     JSch ssh = createRSAIdentity();
