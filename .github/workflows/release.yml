@@ -30,7 +30,7 @@ jobs:
     - name: Release
       uses: qcastel/github-actions-maven-release@master
       with:
-        release-branch-name: "master"
+        release-branch-name: "trigger"
 
         gpg-enabled: "true"
         gpg-key-id: ${{ secrets.GPG_ID }}
