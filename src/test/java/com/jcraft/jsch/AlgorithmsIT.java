@@ -11,6 +11,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Arrays;
 import java.util.Optional;
 import java.util.Random;
 import org.apache.commons.codec.digest.DigestUtils;
@@ -59,6 +60,8 @@ public class AlgorithmsIT {
                   .withFileFromClasspath("ssh_host_ecdsa521_key", "docker/ssh_host_ecdsa521_key")
                   .withFileFromClasspath(
                       "ssh_host_ecdsa521_key.pub", "docker/ssh_host_ecdsa521_key.pub")
+                  .withFileFromClasspath("ssh_host_dsa_key", "docker/ssh_host_dsa_key")
+                  .withFileFromClasspath("ssh_host_dsa_key.pub", "docker/ssh_host_dsa_key.pub")
                   .withFileFromClasspath("sshd_config", "docker/sshd_config")
                   .withFileFromClasspath("authorized_keys", "docker/authorized_keys")
                   .withFileFromClasspath("Dockerfile", "docker/Dockerfile"))
@@ -188,6 +191,18 @@ public class AlgorithmsIT {
     checkLogs(expected);
   }
 
+  @Test
+  public void testDSA() throws Exception {
+    JSch ssh = createDSAIdentity();
+    Session session = createSession(ssh);
+    session.setConfig("PubkeyAcceptedKeyTypes", "ssh-dss");
+    session.setConfig("server_host_key", "ssh-dss");
+    doSftp(session);
+
+    String expected = "kex: host key algorithm: ssh-dss.*";
+    checkLogs(expected);
+  }
+
   @ParameterizedTest
   @ValueSource(
       strings = {
@@ -199,7 +214,11 @@ public class AlgorithmsIT {
         "aes256-cbc",
         "aes192-cbc",
         "aes128-cbc",
-        "3des-cbc"
+        "3des-cbc",
+        "blowfish-cbc",
+        "arcfour",
+        "arcfour256",
+        "arcfour128"
       })
   public void testCiphers(String cipher) throws Exception {
     JSch ssh = createRSAIdentity();
@@ -246,6 +265,57 @@ public class AlgorithmsIT {
     checkLogs(expectedC2S);
   }
 
+  // Note: OpenSSH does not support zlib
+  @ParameterizedTest
+  @ValueSource(strings = {"zlib@openssh.com", "none"})
+  public void testCompressions(String compression) throws Exception {
+    JSch ssh = createRSAIdentity();
+    Session session = createSession(ssh);
+    session.setConfig("compression.s2c", compression);
+    session.setConfig("compression.c2s", compression);
+    doSftp(session);
+
+    String expectedS2C = String.format("kex: server->client .* compression: %s.*", compression);
+    String expectedC2S = String.format("kex: client->server .* compression: %s.*", compression);
+    checkLogs(expectedS2C);
+    checkLogs(expectedC2S);
+  }
+
+  @ParameterizedTest
+  @ValueSource(
+      strings = {
+        "SHA512:EyyvMhUehzuELz3ySpqMw2UggtNqVmWnTSrQy2x4FLT7aF1lmqKC30oF+VUOLhvTmFHYaDLLN9UnpuGphIltKQ",
+        "SHA384:CMxHNJ/xzOfsmNqw4g6Be+ltVZX3ixtplON7nOspNlji0iMnWzM7X4SelzcpP7Ap",
+        "SHA256:iqNO6JDjrpga8TvgBKGReaKEnGoF/1csoxWp/DV5xJ0",
+        "SHA1:FO2EB514+YMk4jTFmNGOwscY2Pk",
+        "MD5:3b:50:5b:c5:53:66:8c:2c:98:9b:ee:3f:19:0a:ff:29"
+      })
+  public void testFingerprintHashes(String fingerprint) throws Exception {
+    String[] split = fingerprint.split(":");
+    String hash = split[0];
+    MockUserInfo userInfo = new MockUserInfo();
+    JSch ssh = createRSAIdentity();
+    Session session = createSession(ssh);
+    session.setConfig("PubkeyAcceptedKeyTypes", "ssh-rsa");
+    session.setConfig("server_host_key", "ssh-rsa");
+    session.setConfig("StrictHostKeyChecking", "ask");
+    session.setConfig("FingerprintHash", hash);
+    session.setUserInfo(userInfo);
+    try {
+      doSftp(session);
+    } catch (JSchException expected) {
+    }
+
+    String expected = String.format("RSA key fingerprint is %s.", fingerprint);
+    Optional<String> actual =
+        userInfo.getMessages().stream()
+            .map(msg -> msg.split("\n"))
+            .flatMap(Arrays::stream)
+            .filter(msg -> msg.equals(expected))
+            .findFirst();
+    assertTrue(actual.isPresent());
+  }
+
   private JSch createRSAIdentity() throws Exception {
     JSch ssh = new JSch();
     ssh.addIdentity(getResourceFile("docker/id_rsa"), getResourceFile("docker/id_rsa.pub"), null);
@@ -270,6 +340,12 @@ public class AlgorithmsIT {
     JSch ssh = new JSch();
     ssh.addIdentity(
         getResourceFile("docker/id_ecdsa521"), getResourceFile("docker/id_ecdsa521.pub"), null);
+    return ssh;
+  }
+
+  private JSch createDSAIdentity() throws Exception {
+    JSch ssh = new JSch();
+    ssh.addIdentity(getResourceFile("docker/id_dsa"), getResourceFile("docker/id_dsa.pub"), null);
     return ssh;
   }
 

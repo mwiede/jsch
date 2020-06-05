@@ -829,7 +829,7 @@ key_type+" key fingerprint is "+key_fprint+".\n"+
     if(i==HostKeyRepository.OK){
       HostKey[] keys =
         hkr.getHostKey(chost, kex.getKeyAlgorithName());
-      String _key= Util.byte2str(Util.toBase64(K_S, 0, K_S.length));
+      String _key= Util.byte2str(Util.toBase64(K_S, 0, K_S.length, true));
       for(int j=0; j< keys.length; j++){
         if(keys[i].getKey().equals(_key) &&
            keys[j].getMarker().equals("@revoked")){
@@ -960,14 +960,13 @@ key_type+" key fingerprint is "+key_fprint+".\n"+
         if(j<5 || j>PACKET_MAX_SIZE){
           start_discard(buf, s2ccipher, s2cmac, j, PACKET_MAX_SIZE);
         }
+        if(isAEAD){
+          j+=s2ccipher.getTagSize();
+        }
         if((buf.index+j)>buf.buffer.length){
           byte[] foo=new byte[buf.index+j];
           System.arraycopy(buf.buffer, 0, foo, 0, buf.index);
           buf.buffer=foo;
-        }
-
-        if(isAEAD){
-          j+=s2ccipher.getTagSize();
         }
 
         if((j%s2ccipher_size)!=0){
@@ -990,7 +989,7 @@ key_type+" key fingerprint is "+key_fprint+".\n"+
           s2cmac.doFinal(s2cmac_result1, 0);
 
           io.getByte(s2cmac_result2, 0, s2cmac_result2.length);
-          if(!java.util.Arrays.equals(s2cmac_result1, s2cmac_result2)){
+          if(!Util.arraysequals(s2cmac_result1, s2cmac_result2)){
             start_discard(buf, s2ccipher, s2cmac, j, PACKET_MAX_SIZE-j);
             continue;
           }
@@ -1042,7 +1041,7 @@ key_type+" key fingerprint is "+key_fprint+".\n"+
           s2cmac.doFinal(s2cmac_result1, 0);
 
           io.getByte(s2cmac_result2, 0, s2cmac_result2.length);
-          if(!java.util.Arrays.equals(s2cmac_result1, s2cmac_result2)){
+          if(!Util.arraysequals(s2cmac_result1, s2cmac_result2)){
             if(need > PACKET_MAX_SIZE){
               throw new IOException("MAC Error");
             }
@@ -2853,6 +2852,7 @@ break;
     checkConfig(config, "HashKnownHosts");
     checkConfig(config, "PreferredAuthentications");
     checkConfig(config, "PubkeyAcceptedKeyTypes");
+    checkConfig(config, "FingerprintHash");
     checkConfig(config, "MaxAuthTries");
     checkConfig(config, "ClearAllForwardings");
 

@@ -46,4 +46,5 @@ public class SHA384 implements com.jcraft.jsch.HASH {
   public byte[] digest() throws Exception {
     return md.digest();
   }
+  public String name(){return "SHA384";}
 }
