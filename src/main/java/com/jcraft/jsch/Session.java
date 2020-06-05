@@ -960,14 +960,13 @@ key_type+" key fingerprint is "+key_fprint+".\n"+
         if(j<5 || j>PACKET_MAX_SIZE){
           start_discard(buf, s2ccipher, s2cmac, j, PACKET_MAX_SIZE);
         }
+        if(isAEAD){
+          j+=s2ccipher.getTagSize();
+        }
         if((buf.index+j)>buf.buffer.length){
           byte[] foo=new byte[buf.index+j];
           System.arraycopy(buf.buffer, 0, foo, 0, buf.index);
           buf.buffer=foo;
-        }
-
-        if(isAEAD){
-          j+=s2ccipher.getTagSize();
         }
 
         if((j%s2ccipher_size)!=0){
