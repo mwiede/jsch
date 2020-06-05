@@ -537,4 +537,13 @@ class Util{
         fis.close();
     }
   }
+
+  static boolean arraysequals(byte[] a, byte[] b){
+    if(a.length!=b.length) return false;
+    int res=0;
+    for(int i=0; i<a.length; i++){
+      res|=a[i]^b[i];
+    }
+    return res==0;
+  }
 }

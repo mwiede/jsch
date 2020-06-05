@@ -989,7 +989,7 @@ key_type+" key fingerprint is "+key_fprint+".\n"+
           s2cmac.doFinal(s2cmac_result1, 0);
 
           io.getByte(s2cmac_result2, 0, s2cmac_result2.length);
-          if(!java.util.Arrays.equals(s2cmac_result1, s2cmac_result2)){
+          if(!Util.arraysequals(s2cmac_result1, s2cmac_result2)){
             start_discard(buf, s2ccipher, s2cmac, j, PACKET_MAX_SIZE-j);
             continue;
           }
@@ -1041,7 +1041,7 @@ key_type+" key fingerprint is "+key_fprint+".\n"+
           s2cmac.doFinal(s2cmac_result1, 0);
 
           io.getByte(s2cmac_result2, 0, s2cmac_result2.length);
-          if(!java.util.Arrays.equals(s2cmac_result1, s2cmac_result2)){
+          if(!Util.arraysequals(s2cmac_result1, s2cmac_result2)){
             if(need > PACKET_MAX_SIZE){
               throw new IOException("MAC Error");
             }
