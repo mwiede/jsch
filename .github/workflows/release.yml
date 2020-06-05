@@ -41,6 +41,7 @@ jobs:
         maven-repo-server-password: ${{ secrets.MVN_REPO_PRIVATE_REPO_PASSWORD }}
 
         #maven-args: "-Dmaven.javadoc.skip=true -DskipTests -DskipITs -Ddockerfile.skip -DdockerCompose.skip"
+        maven-args: "-Dgpg.passphrase="
 
         git-release-bot-name: "release-bot"
         git-release-bot-email: "mwiede@gmx.de"
