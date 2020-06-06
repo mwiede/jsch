@@ -14,7 +14,7 @@
     <scm>
       <connection>scm:git:ssh://git@github.com:mwiede/jsch.git</connection>
       <developerConnection>scm:git:git@github.com:mwiede/jsch.git</developerConnection>
-      <tag>HEAD</tag>
+      <tag>trigger</tag>
     </scm>
     <developers>
         <developer>
