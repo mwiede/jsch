@@ -34,7 +34,7 @@ jobs:
         gpg-key-id: ${{ secrets.GPG_ID }}
         gpg-key: ${{ secrets.GPG_KEY }}
 
-        maven-repo-server-id: 'ossrh'
+        maven-repo-server-id: ${{ secrets.MVN_REPO_ID }}
         maven-repo-server-username: ${{ secrets.MVN_REPO_PRIVATE_REPO_USER }}
         maven-repo-server-password: ${{ secrets.MVN_REPO_PRIVATE_REPO_PASSWORD }}
 
