@@ -13,7 +13,7 @@
     </organization>
     <scm>
       <connection>scm:git:https://github.com/mwiede/jsch.git</connection>
-      <developerConnection>scm:git:git@github.com:mwiede/jsch.git</developerConnection>
+      <developerConnection>scm:git:https://github.com/mwiede/jsch.git</developerConnection>
       <tag>HEAD</tag>
     </scm>
     <developers>
