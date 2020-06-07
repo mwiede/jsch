@@ -44,4 +44,4 @@ jobs:
         git-release-bot-name: "release-bot"
         git-release-bot-email: "mwiede@gmx.de"
 
-        access-token: ${{ secrets.GITHUB_TOKEN }}
+        access-token: ${{ secrets.ACCESS_TOKEN }}
