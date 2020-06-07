@@ -12,7 +12,7 @@
         <url>http://www.jcraft.com/</url>
     </organization>
     <scm>
-      <connection>scm:git:ssh://git@github.com:mwiede/jsch.git</connection>
+      <connection>scm:git:git@github.com:mwiede/jsch.git</connection>
       <developerConnection>scm:git:git@github.com:mwiede/jsch.git</developerConnection>
       <tag>HEAD</tag>
     </scm>
