@@ -183,6 +183,14 @@
                     </archive>
                 </configuration>
             </plugin>
+            <!-- https://stackoverflow.com/questions/58836862/jdk-11-and-javadoc-->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <configuration>
+                    <detectJavaApiLink>false</detectJavaApiLink>
+                </configuration>
+            </plugin>
         </plugins>
         <extensions>
             <extension>
