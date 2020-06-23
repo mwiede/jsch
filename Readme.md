@@ -9,6 +9,7 @@ See original [README](README)
 
 
 Changes:
+* 0.1.59 fixing issue from https://sourceforge.net/p/jsch/mailman/message/36872566/
 * 0.1.58 support for more algorithms contributed by [@norrisjeremy](https://github.com/norrisjeremy) see [#4](https://github.com/mwiede/jsch/pull/4)
 * 0.1.57 support for rsa-sha2-256 and rsa-sha2-512.
 * 0.1.56 support for direct-streamlocal@openssh.com
