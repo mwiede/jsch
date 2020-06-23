@@ -26,7 +26,7 @@ jobs:
 
     # Runs a set of commands using the runners shell
     - name: Release
-      uses: qcastel/github-actions-maven-release@master
+      uses: qcastel/github-actions-maven-release@v1.9.0
       with:
         release-branch-name: "release"
 
