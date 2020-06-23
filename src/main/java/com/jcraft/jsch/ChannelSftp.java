@@ -224,7 +224,7 @@ public class ChannelSftp extends ChannelSession{
 
       PipedOutputStream pos=new PipedOutputStream();
       io.setOutputStream(pos);
-      PipedInputStream pis=new MyPipedInputStream(pos, rmpsize);
+      PipedInputStream pis=new MyPipedInputStream(pos, rq.size()*rmpsize);
       io.setInputStream(pis);
 
       io_in=io.in;
