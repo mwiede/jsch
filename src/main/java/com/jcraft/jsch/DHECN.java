@@ -96,8 +96,7 @@ public abstract class DHECN extends KeyExchange{
     session.write(packet);
 
     if(JSch.getLogger().isEnabled(Logger.INFO)){
-      JSch.getLogger().log(Logger.INFO, 
-                           "SSH_MSG_KEX_ECDH_INIT sent");
+            JSch.getLogger().log( Logger.INFO, "SSH_MSG_KEX_ECDH_INIT sent with EC nistp" + key_size );
       JSch.getLogger().log(Logger.INFO, 
                            "expecting SSH_MSG_KEX_ECDH_REPLY");
     }
@@ -109,6 +108,7 @@ public abstract class DHECN extends KeyExchange{
     int i,j;
     switch(state){
     case SSH_MSG_KEX_ECDH_REPLY:
+                JSch.getLogger().log( Logger.INFO, "Received SSH_MSG_KEX_ECDH_REPLY" );
       // The server responds with:
       // byte     SSH_MSG_KEX_ECDH_REPLY
       // string   K_S, server's public host key

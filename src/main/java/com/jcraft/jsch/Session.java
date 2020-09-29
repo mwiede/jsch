@@ -1090,7 +1090,7 @@ key_type+" key fingerprint is "+key_fprint+".\n"+
 	int reason_id=buf.getInt();
         if(JSch.getLogger().isEnabled(Logger.INFO)){
           JSch.getLogger().log(Logger.INFO,
-                               "Received SSH_MSG_UNIMPLEMENTED for "+reason_id);
+                        "Received SSH_MSG_UNIMPLEMENTED to message sequence number " + reason_id );
         }
       }
       else if(type==SSH_MSG_DEBUG){
