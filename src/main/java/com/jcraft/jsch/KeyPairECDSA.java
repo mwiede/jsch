@@ -29,6 +29,8 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 package com.jcraft.jsch;
 
+import java.util.Arrays;
+
 public class KeyPairECDSA extends KeyPair{
 
   private static byte[][] oids = {
@@ -84,7 +86,7 @@ public class KeyPairECDSA extends KeyPair{
     this.s_array = s_array;
     this.prv_array = prv_array;
     if(prv_array!=null)
-      key_size = prv_array.length>=64 ? 521 : 
+      key_size = prv_array.length>=64 ? 521 :
                   (prv_array.length>=48 ? 384 : 256);
   }
 
@@ -108,7 +110,7 @@ public class KeyPairECDSA extends KeyPair{
     }
   }
 
-  private static final byte[] begin = 
+  private static final byte[] begin =
     Util.str2byte("-----BEGIN EC PRIVATE KEY-----");
   private static final byte[] end =
     Util.str2byte("-----END EC PRIVATE KEY-----");
@@ -130,7 +132,7 @@ public class KeyPairECDSA extends KeyPair{
     int bar = ((point.length+1)&0x80)==0 ? 3 : 4;
     byte[] foo = new byte[point.length+bar];
     System.arraycopy(point, 0, foo, bar, point.length);
-    foo[0]=0x03;                     // BITSTRING 
+    foo[0]=0x03;                     // BITSTRING
     if(bar==3){
       foo[1]=(byte)(point.length+1);
     }
@@ -188,6 +190,42 @@ public class KeyPairECDSA extends KeyPair{
         return true;
         */
 	return false;
+      }
+
+      // OPENSSH Key v1 Format
+      if (vendor == VENDOR_OPENSSH_V1) {
+
+        final Buffer prvKeyBuffer = new Buffer(plain);
+        int checkInt1 = prvKeyBuffer.getInt(); // uint32 checkint1
+        int checkInt2 = prvKeyBuffer.getInt(); // uint32 checkint2
+        if (checkInt1 != checkInt2) {
+          throw new JSchException("check failed");
+        }
+
+        String keyType = Util.byte2str(prvKeyBuffer.getString()); // string keytype
+
+        name = prvKeyBuffer.getString();
+        if(!Arrays.asList(names).contains(new String(name))){
+          throw new IllegalArgumentException("unknown curve name "+new String(name));
+        }
+
+        final int keyLen = prvKeyBuffer.getInt();
+        final int x04 = prvKeyBuffer.getByte(); // in case of x04 it is uncompressed https://tools.ietf.org/html/rfc5480#page-7
+        final byte[] x = new byte[(keyLen - 1) / 2];
+        final byte[] y = new byte[(keyLen - 1) / 2];
+        prvKeyBuffer.getByte(x);
+        prvKeyBuffer.getByte(y);
+
+
+        prv_array=prvKeyBuffer.getString();
+        publicKeyComment=Util.byte2str(prvKeyBuffer.getString());
+        r_array = x;
+        s_array = y;
+        key_size = x.length>=64 ? 521 :
+                (x.length>=48 ? 384 : 256);
+
+        return true;
+
       }
 
       int index=0;
@@ -260,7 +298,7 @@ public class KeyPairECDSA extends KeyPair{
       s_array = tmp[1];
 
       if(prv_array!=null)
-        key_size = prv_array.length>=64 ? 521 : 
+        key_size = prv_array.length>=64 ? 521 :
                     (prv_array.length>=48 ? 384 : 256);
     }
     catch(Exception e){
@@ -337,7 +375,7 @@ public class KeyPairECDSA extends KeyPair{
         byte[][] tmp = fromPoint(buf.getString());
         r_array = tmp[0];
         s_array = tmp[1];
-      } 
+      }
       ecdsa.setPubKey(r_array, s_array);
       return ecdsa;
     }

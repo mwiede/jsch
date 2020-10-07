@@ -29,10 +29,10 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 package com.jcraft.jsch;
 
-import java.io.FileOutputStream;
-import java.io.FileInputStream;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.Arrays;
 
 public abstract class KeyPair{
   public static final int ERROR=0;
@@ -41,13 +41,17 @@ public abstract class KeyPair{
   public static final int ECDSA=3;
   public static final int UNKNOWN=4;
 
+  // at the moment of loading the key, it is not clear which type it is, because it still needs to be decrypted
+  private static final int DEFERRED = 5;
   static final int VENDOR_OPENSSH=0;
   static final int VENDOR_FSECURE=1;
   static final int VENDOR_PUTTY=2;
   static final int VENDOR_PKCS8=3;
+  static final int VENDOR_OPENSSH_V1 = 4;
 
   int vendor=VENDOR_OPENSSH;
 
+  private static final byte[] AUTH_MAGIC = "openssh-key-v1\0".getBytes();
   private static final byte[] cr=Util.str2byte("\n");
 
   public static KeyPair genKeyPair(JSch jsch, int type) throws JSchException{
@@ -88,11 +92,14 @@ public abstract class KeyPair{
   protected String publicKeyComment = "no comment";
 
   JSch jsch=null;
-  private Cipher cipher;
+  protected Cipher cipher;
   private HASH hash;
   private Random random;
 
   private byte[] passphrase;
+
+  protected String kdfName;
+  protected byte[] kdfOptions;
 
   public KeyPair(JSch jsch){
     this.jsch=jsch;
@@ -579,6 +586,8 @@ public abstract class KeyPair{
     int vendor=VENDOR_OPENSSH;
     String publicKeyComment = "";
     Cipher cipher=null;
+    String kdfName = null;
+    byte[] kdfOptions = null;
 
     // prvkey from "ssh-add" command on the remote.
     if(pubkey==null &&
@@ -661,8 +670,11 @@ public abstract class KeyPair{
 	    type=UNKNOWN;
 	    vendor=VENDOR_PKCS8;
             i+=5;
-	  }
-	  else{
+
+      } else if (isOpenSSHPrivateKey(buf, i, len)) {
+          type = UNKNOWN;
+          vendor = VENDOR_OPENSSH_V1;
+      } else {
 	    throw new JSchException("invalid privatekey: "+prvkey);
 	  }
           i+=3;
@@ -819,7 +831,43 @@ public abstract class KeyPair{
 	   _buf.getByte(foo);
 	   data=foo;
 	}
+    }
+    // OPENSSH V1 PRIVATE KEY
+    else if (data != null &&
+          Util.array_equals(AUTH_MAGIC, Arrays.copyOfRange(data, 0, AUTH_MAGIC.length))) {
+
+      vendor = VENDOR_OPENSSH_V1;
+      Buffer buffer = new Buffer(data);
+      byte[] magic = new byte[AUTH_MAGIC.length];
+      buffer.getByte(magic);
+
+      String cipherName = Util.byte2str(buffer.getString());
+      kdfName = Util.byte2str(buffer.getString()); // string kdfname
+      kdfOptions = buffer.getString(); // string kdfoptions
+
+      int nrKeys = buffer.getInt(); // int number of keys N; Should be 1
+      if (nrKeys != 1) {
+          throw new IOException("We don't support having more than 1 key in the file (yet).");
       }
+
+      pubkey = buffer.getString();
+
+      if ("none".equals(cipherName)) {
+          encrypted = false;
+          data = buffer.getString();
+          type = readOpenSSHKeyv1(data);
+      } else if (Session.checkCipher(jsch.getConfig(cipherName))) {
+          encrypted = true;
+          Class c = Class.forName(jsch.getConfig(cipherName));
+          cipher = (Cipher) c.getDeclaredConstructor().newInstance();
+          data = buffer.getString();
+          // HMMM. Wir können hier nicht decrypten, weil wir das Passwort noch nicht haben
+          // aber wir können auch nicht den type bestimmen, weil es encrypted ist....
+          type = DEFERRED;
+      } else {
+          throw new JSchException("cipher" + cipherName + " is not available");
+      }
+    }
 
       if(pubkey!=null){
 	try{
@@ -923,36 +971,82 @@ public abstract class KeyPair{
       throw new JSchException(e.toString());
     }
 
-    KeyPair kpair=null;
-    if(type==DSA){ kpair=new KeyPairDSA(jsch); }
-    else if(type==RSA){ kpair=new KeyPairRSA(jsch); }
-    else if(type==ECDSA){ kpair=new KeyPairECDSA(jsch, pubkey); }
-    else if(vendor==VENDOR_PKCS8){ kpair = new KeyPairPKCS8(jsch); }
-
-    if(kpair!=null){
-      kpair.encrypted=encrypted;
-      kpair.publickeyblob=publickeyblob;
-      kpair.vendor=vendor;
-      kpair.publicKeyComment=publicKeyComment;
-      kpair.cipher=cipher;
-
-      if(encrypted){
-        kpair.encrypted=true;
-	kpair.iv=iv;
-	kpair.data=data;
-      }
-      else{
-	if(kpair.parse(data)){
-          kpair.encrypted=false;
-	  return kpair;
-	}
-	else{
-	  throw new JSchException("invalid privatekey: "+prvkey);
-	}
-      }
+        return getKeyPair(jsch, prvkey, pubkey, iv, encrypted, data, publickeyblob, type, vendor, publicKeyComment, cipher, kdfName, kdfOptions);
     }
 
-    return kpair;
+    static KeyPair getKeyPair(JSch jsch, byte[] prvkey, byte[] pubkey, byte[] iv, boolean encrypted, byte[] data, byte[] publickeyblob, int type, int vendor, String publicKeyComment, Cipher cipher, String kdfName, byte[] kdfOptions) throws JSchException {
+      KeyPair kpair=null;
+      if(type==DSA){ kpair=new KeyPairDSA(jsch); }
+      else if(type==RSA){ kpair=new KeyPairRSA(jsch); }
+      else if(type==ECDSA){ kpair=new KeyPairECDSA(jsch, pubkey); }
+      else if(vendor==VENDOR_PKCS8){ kpair = new KeyPairPKCS8(jsch); }
+      else if (type == DEFERRED) { kpair = new KeyPairDeferred(jsch); }
+
+      if(kpair!=null){
+        kpair.encrypted=encrypted;
+        kpair.publickeyblob=publickeyblob;
+        kpair.vendor=vendor;
+        kpair.publicKeyComment=publicKeyComment;
+        kpair.cipher=cipher;
+        kpair.kdfName = kdfName;
+        kpair.kdfOptions = kdfOptions;
+
+        if(encrypted){
+          kpair.encrypted=true;
+          kpair.iv=iv;
+          kpair.data=data;
+        }
+        else{
+          if(kpair.parse(data)){
+              kpair.encrypted=false;
+              return kpair;
+          }
+          else{
+            throw new JSchException("invalid privatekey: "+prvkey);
+          }
+        }
+      }
+
+      return kpair;
+  }
+
+  /**
+   * reads openssh key v1 format and returns key type.
+   *
+   * @param data
+   * @return key type 1=DSA, 2=RSA, 3=ECDSA, 4=UNKNOWN
+   * @throws IOException
+   * @throws JSchException
+   */
+  static int readOpenSSHKeyv1(byte[] data) throws IOException, JSchException {
+
+      if (data.length % 8 != 0) {
+          throw new IOException("The private key section must be a multiple of the block size (8)");
+      }
+
+      final Buffer prvKEyBuffer = new Buffer(data);
+      int checkInt1 = prvKEyBuffer.getInt(); // uint32 checkint1
+      int checkInt2 = prvKEyBuffer.getInt(); // uint32 checkint2
+      if (checkInt1 != checkInt2) {
+          throw new JSchException("openssh v1 key check failed. Wrong passphrase?");
+      }
+
+      // The private key section contains both the public key and the private key
+      String keyType = Util.byte2str(prvKEyBuffer.getString()); // string keytype
+
+      if (keyType.equalsIgnoreCase("ssh-rsa")) {
+          return RSA;
+      } else if (keyType.startsWith("ssh-dss")) {
+          return DSA;
+      } else if (keyType.startsWith("ecdsa-sha2")) {
+          return ECDSA;
+      } else throw new JSchException("keytype " + keyType + " not supported as part of openssh v1 format");
+
+  }
+
+  private static boolean isOpenSSHPrivateKey(byte[] buf, int i, int len) {
+      String ident = "OPENSSH PRIVATE KEY-----";
+      return i + ident.length() < len && ident.equals(new String(Arrays.copyOfRange(buf, i, i + ident.length())));
   }
 
   static private byte a2b(byte c){

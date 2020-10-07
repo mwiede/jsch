@@ -93,7 +93,13 @@ class UserAuthPublicKey extends UserAuth{
             }
           }
         }
-        if(ipkmethoda==null) continue;
+        if(ipkmethoda==null) {
+          if(JSch.getLogger().isEnabled(Logger.DEBUG)){
+            JSch.getLogger().log(Logger.DEBUG,
+                    ipkmethod+" cannot be used as public key type for identity "+identity.getName());
+          }
+          continue;
+        }
 
         byte[] pubkeyblob=identity.getPublicKeyBlob();
         String[] pkmethodsuccess=null;
@@ -279,7 +285,7 @@ class UserAuthPublicKey extends UserAuth{
               continue loop2;
             }
             else if(command==SSH_MSG_USERAUTH_FAILURE){
-              buf.getInt(); buf.getByte(); buf.getByte(); 
+              buf.getInt(); buf.getByte(); buf.getByte();
               byte[] foo=buf.getString();
               int partial_success=buf.getByte();
             //System.err.println(new String(foo)+
