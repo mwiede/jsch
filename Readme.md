@@ -7,8 +7,14 @@ See original [README](README)
 ![Java CI with Maven](https://github.com/mwiede/jsch/workflows/Java%20CI%20with%20Maven/badge.svg)
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=mwiede_jsch&metric=alert_status)](https://sonarcloud.io/dashboard?id=mwiede_jsch)
 
+## Why should you use this library?
 
-Changes:
+As I explained in a [blog post](http://www.matez.de/index.php/2020/06/22/the-future-of-jsch-without-ssh-rsa/) the main points are:
+* OpenSSH will disable ssh-rsa in the future per default and you need a library which supports rsa-sha2-256 and rsa-sha2-512
+* drop in replacement: just change dependency coordinates and you are good to go
+* no active maintenance of jsch at sourceforge
+
+## Changes since fork:
 * 0.1.59 fixing issue from https://sourceforge.net/p/jsch/mailman/message/36872566/
 * 0.1.58 support for more algorithms contributed by [@norrisjeremy](https://github.com/norrisjeremy) see [#4](https://github.com/mwiede/jsch/pull/4)
 * 0.1.57 support for rsa-sha2-256 and rsa-sha2-512.
