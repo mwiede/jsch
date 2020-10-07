@@ -23,7 +23,7 @@ jobs:
       with:
         java-version: 11
     - name: Build with Maven
-      run: mvn -B verify -DskipITs=false --file pom.xml
+      run: mvn -B -P coverage verify -DskipITs=false --file pom.xml
     - name: Sonar Analysis
       run: mvn -B sonar:sonar -Dsonar.projectKey=mwiede_jsch -Dsonar.organization=mwiede -Dsonar.host.url=https://sonarcloud.io
       env:
