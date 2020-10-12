@@ -565,7 +565,7 @@ public class Session implements Runnable{
       //e.printStackTrace();
       if(e instanceof RuntimeException) throw (RuntimeException)e;
       if(e instanceof JSchException) throw (JSchException)e;
-      throw new JSchException("Session.connect: "+e);
+      throw new JSchException("Session.connect: "+e, e);
     }
     finally{
       Util.bzero(this.password);
