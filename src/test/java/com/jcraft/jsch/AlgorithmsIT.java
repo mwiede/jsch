@@ -22,6 +22,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledForJreRange;
 import org.junit.jupiter.api.io.TempDir;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.GenericContainer;
@@ -204,27 +205,42 @@ public class AlgorithmsIT {
   }
 
   @ParameterizedTest
-  @ValueSource(
-      strings = {
-        "aes256-gcm@openssh.com",
-        "aes128-gcm@openssh.com",
-        "aes256-ctr",
-        "aes192-ctr",
-        "aes128-ctr",
-        "aes256-cbc",
-        "aes192-cbc",
-        "aes128-cbc",
-        "3des-cbc",
-        "blowfish-cbc",
-        "arcfour",
-        "arcfour256",
-        "arcfour128"
+  @CsvSource(
+      value = {
+        "aes256-gcm@openssh.com,none",
+        "aes256-gcm@openssh.com,zlib@openssh.com",
+        "aes128-gcm@openssh.com,none",
+        "aes128-gcm@openssh.com,zlib@openssh.com",
+        "aes256-ctr,none",
+        "aes256-ctr,zlib@openssh.com",
+        "aes192-ctr,none",
+        "aes192-ctr,zlib@openssh.com",
+        "aes128-ctr,none",
+        "aes128-ctr,zlib@openssh.com",
+        "aes256-cbc,none",
+        "aes256-cbc,zlib@openssh.com",
+        "aes192-cbc,none",
+        "aes192-cbc,zlib@openssh.com",
+        "aes128-cbc,none",
+        "aes128-cbc,zlib@openssh.com",
+        "3des-cbc,none",
+        "3des-cbc,zlib@openssh.com",
+        "blowfish-cbc,none",
+        "blowfish-cbc,zlib@openssh.com",
+        "arcfour,none",
+        "arcfour,zlib@openssh.com",
+        "arcfour256,none",
+        "arcfour256,zlib@openssh.com",
+        "arcfour128,none",
+        "arcfour128,zlib@openssh.com"
       })
-  public void testCiphers(String cipher) throws Exception {
+  public void testCiphers(String cipher, String compression) throws Exception {
     JSch ssh = createRSAIdentity();
     Session session = createSession(ssh);
     session.setConfig("cipher.s2c", cipher);
     session.setConfig("cipher.c2s", cipher);
+    session.setConfig("compression.s2c", compression);
+    session.setConfig("compression.c2s", compression);
     doSftp(session);
 
     String expectedS2C = String.format("kex: server->client cipher: %s.*", cipher);
@@ -234,26 +250,40 @@ public class AlgorithmsIT {
   }
 
   @ParameterizedTest
-  @ValueSource(
-      strings = {
-        "hmac-sha2-512-etm@openssh.com",
-        "hmac-sha2-256-etm@openssh.com",
-        "hmac-sha1-etm@openssh.com",
-        "hmac-sha1-96-etm@openssh.com",
-        "hmac-md5-etm@openssh.com",
-        "hmac-md5-96-etm@openssh.com",
-        "hmac-sha2-512",
-        "hmac-sha2-256",
-        "hmac-sha1",
-        "hmac-sha1-96",
-        "hmac-md5",
-        "hmac-md5-96"
+  @CsvSource(
+      value = {
+        "hmac-sha2-512-etm@openssh.com,none",
+        "hmac-sha2-512-etm@openssh.com,zlib@openssh.com",
+        "hmac-sha2-256-etm@openssh.com,none",
+        "hmac-sha2-256-etm@openssh.com,zlib@openssh.com",
+        "hmac-sha1-etm@openssh.com,none",
+        "hmac-sha1-etm@openssh.com,zlib@openssh.com",
+        "hmac-sha1-96-etm@openssh.com,none",
+        "hmac-sha1-96-etm@openssh.com,zlib@openssh.com",
+        "hmac-md5-etm@openssh.com,none",
+        "hmac-md5-etm@openssh.com,zlib@openssh.com",
+        "hmac-md5-96-etm@openssh.com,none",
+        "hmac-md5-96-etm@openssh.com,zlib@openssh.com",
+        "hmac-sha2-512,none",
+        "hmac-sha2-512,zlib@openssh.com",
+        "hmac-sha2-256,none",
+        "hmac-sha2-256,zlib@openssh.com",
+        "hmac-sha1,none",
+        "hmac-sha1,zlib@openssh.com",
+        "hmac-sha1-96,none",
+        "hmac-sha1-96,zlib@openssh.com",
+        "hmac-md5,none",
+        "hmac-md5,zlib@openssh.com",
+        "hmac-md5-96,none",
+        "hmac-md5-96,zlib@openssh.com"
       })
-  public void testMACs(String mac) throws Exception {
+  public void testMACs(String mac, String compression) throws Exception {
     JSch ssh = createRSAIdentity();
     Session session = createSession(ssh);
     session.setConfig("mac.s2c", mac);
     session.setConfig("mac.c2s", mac);
+    session.setConfig("compression.s2c", compression);
+    session.setConfig("compression.c2s", compression);
     // Make sure a non-AEAD cipher is used
     session.setConfig("cipher.s2c", "aes128-ctr");
     session.setConfig("cipher.c2s", "aes128-ctr");

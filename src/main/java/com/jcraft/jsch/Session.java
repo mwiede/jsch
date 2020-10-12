@@ -982,6 +982,8 @@ key_type+" key fingerprint is "+key_fprint+".\n"+
         if(isAEAD){
           s2ccipher.updateAAD(buf.buffer, 0, 4);
           s2ccipher.doFinal(buf.buffer, 4, j, buf.buffer, 4);
+          // don't include AEAD tag size in buf so that decompression works below
+          buf.index -= s2ccipher.getTagSize();
         }
         else{
           s2cmac.update(seqi);
