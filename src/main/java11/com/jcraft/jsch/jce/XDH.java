@@ -30,24 +30,25 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 package com.jcraft.jsch.jce;
 
 import java.math.BigInteger;
+import java.util.Arrays;
 import java.security.*;
 import javax.crypto.*;
 import java.security.spec.*;
 import java.security.interfaces.*;
  
 public class XDH implements com.jcraft.jsch.XDH {
-  String name;
   byte[] Q_array;
   XECPublicKey publicKey;
+  int keylen;
 
   private KeyAgreement myKeyAgree;
-  public void init(String name) throws Exception{
-    this.name = name;
+  public void init(String name, int keylen) throws Exception{
+    this.keylen = keylen;
     myKeyAgree = KeyAgreement.getInstance("XDH");
     KeyPairGenXEC kpair = new KeyPairGenXEC();
     kpair.init(name);
     publicKey = kpair.getPublicKey();
-    Q_array = rotate(publicKey.getU().toByteArray(), false);
+    Q_array = rotate(publicKey.getU().toByteArray());
     myKeyAgree.init(kpair.getPrivateKey());
   }
 
@@ -57,7 +58,7 @@ public class XDH implements com.jcraft.jsch.XDH {
 
   public byte[] getSecret(byte[] Q) throws Exception{
     KeyFactory kf = KeyFactory.getInstance("XDH");
-    BigInteger u = new BigInteger(rotate(Q, name.equals("X25519")));
+    BigInteger u = new BigInteger(rotate(Q));
     XECPublicKeySpec spec = new XECPublicKeySpec(publicKey.getParams(), u);
     PublicKey theirPublicKey = kf.generatePublic(spec);
     myKeyAgree.doPhase(theirPublicKey, true);
@@ -65,8 +66,17 @@ public class XDH implements com.jcraft.jsch.XDH {
   }
 
   // https://cr.yp.to/ecdh.html#validate
+  // RFC 8731,
+  // 3. Key Exchange Methods
+  //   Clients and servers MUST
+  //   also abort if the length of the received public keys are not the
+  //   expected lengths.  An abort for these purposes is defined as a
+  //   disconnect (SSH_MSG_DISCONNECT) of the session and SHOULD use the
+  //   SSH_DISCONNECT_KEY_EXCHANGE_FAILED reason for the message
+  //   [IANA-REASON].  No further validation is required beyond what is
+  //   described in [RFC7748].
   public boolean validate(byte[] u) throws Exception{
-    return true;
+    return u.length == keylen;
   }
 
   // RFC 7748,
@@ -80,7 +90,7 @@ public class XDH implements com.jcraft.jsch.XDH {
   //   This is done to preserve compatibility with point formats that
   //   reserve the sign bit for use in other protocols and to increase
   //   resistance to implementation fingerprinting.
-  private static byte[] rotate(byte[] in, boolean clearHigh){
+  private byte[] rotate(byte[] in){
     int len = in.length;
     byte[] out = new byte[len];
 
@@ -88,10 +98,6 @@ public class XDH implements com.jcraft.jsch.XDH {
       out[i] = in[len - i - 1];
     }
 
-    if(clearHigh){
-      out[0] &= (byte)0x7f;
-    }
-
-    return out;
+    return Arrays.copyOf(out, keylen);
   }
 }
