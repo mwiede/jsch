@@ -1,5 +1,6 @@
 package com.jcraft.jsch;
 
+import static java.util.stream.Collectors.toList;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.condition.JRE.JAVA_11;
@@ -12,6 +13,7 @@ import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 import java.util.Random;
 import org.apache.commons.codec.digest.DigestUtils;
@@ -113,7 +115,7 @@ public class AlgorithmsIT {
     JSch ssh = createRSAIdentity();
     Session session = createSession(ssh);
     session.setConfig("kex", kex);
-    doSftp(session);
+    doSftp(session, true);
 
     String expected = String.format("kex: algorithm: %s.*", kex);
     checkLogs(expected);
@@ -137,7 +139,7 @@ public class AlgorithmsIT {
     JSch ssh = createRSAIdentity();
     Session session = createSession(ssh);
     session.setConfig("kex", kex);
-    doSftp(session);
+    doSftp(session, true);
 
     String expected = String.format("kex: algorithm: %s.*", kex);
     checkLogs(expected);
@@ -149,7 +151,7 @@ public class AlgorithmsIT {
     Session session = createSession(ssh);
     session.setConfig("PubkeyAcceptedKeyTypes", "ecdsa-sha2-nistp521");
     session.setConfig("server_host_key", "ecdsa-sha2-nistp521");
-    doSftp(session);
+    doSftp(session, true);
 
     String expected = "kex: host key algorithm: ecdsa-sha2-nistp521.*";
     checkLogs(expected);
@@ -161,7 +163,7 @@ public class AlgorithmsIT {
     Session session = createSession(ssh);
     session.setConfig("PubkeyAcceptedKeyTypes", "ecdsa-sha2-nistp384");
     session.setConfig("server_host_key", "ecdsa-sha2-nistp384");
-    doSftp(session);
+    doSftp(session, true);
 
     String expected = "kex: host key algorithm: ecdsa-sha2-nistp384.*";
     checkLogs(expected);
@@ -173,7 +175,7 @@ public class AlgorithmsIT {
     Session session = createSession(ssh);
     session.setConfig("PubkeyAcceptedKeyTypes", "ecdsa-sha2-nistp256");
     session.setConfig("server_host_key", "ecdsa-sha2-nistp256");
-    doSftp(session);
+    doSftp(session, true);
 
     String expected = "kex: host key algorithm: ecdsa-sha2-nistp256.*";
     checkLogs(expected);
@@ -186,7 +188,7 @@ public class AlgorithmsIT {
     Session session = createSession(ssh);
     session.setConfig("PubkeyAcceptedKeyTypes", keyType);
     session.setConfig("server_host_key", keyType);
-    doSftp(session);
+    doSftp(session, true);
 
     String expected = String.format("kex: host key algorithm: %s.*", keyType);
     checkLogs(expected);
@@ -198,7 +200,7 @@ public class AlgorithmsIT {
     Session session = createSession(ssh);
     session.setConfig("PubkeyAcceptedKeyTypes", "ssh-dss");
     session.setConfig("server_host_key", "ssh-dss");
-    doSftp(session);
+    doSftp(session, true);
 
     String expected = "kex: host key algorithm: ssh-dss.*";
     checkLogs(expected);
@@ -241,7 +243,7 @@ public class AlgorithmsIT {
     session.setConfig("cipher.c2s", cipher);
     session.setConfig("compression.s2c", compression);
     session.setConfig("compression.c2s", compression);
-    doSftp(session);
+    doSftp(session, true);
 
     String expectedS2C = String.format("kex: server->client cipher: %s.*", cipher);
     String expectedC2S = String.format("kex: client->server cipher: %s.*", cipher);
@@ -287,7 +289,7 @@ public class AlgorithmsIT {
     // Make sure a non-AEAD cipher is used
     session.setConfig("cipher.s2c", "aes128-ctr");
     session.setConfig("cipher.c2s", "aes128-ctr");
-    doSftp(session);
+    doSftp(session, true);
 
     String expectedS2C = String.format("kex: server->client .* MAC: %s.*", mac);
     String expectedC2S = String.format("kex: client->server .* MAC: %s.*", mac);
@@ -303,7 +305,7 @@ public class AlgorithmsIT {
     Session session = createSession(ssh);
     session.setConfig("compression.s2c", compression);
     session.setConfig("compression.c2s", compression);
-    doSftp(session);
+    doSftp(session, true);
 
     String expectedS2C = String.format("kex: server->client .* compression: %s.*", compression);
     String expectedC2S = String.format("kex: client->server .* compression: %s.*", compression);
@@ -332,17 +334,23 @@ public class AlgorithmsIT {
     session.setConfig("FingerprintHash", hash);
     session.setUserInfo(userInfo);
     try {
-      doSftp(session);
+      doSftp(session, false);
     } catch (JSchException expected) {
     }
 
     String expected = String.format("RSA key fingerprint is %s.", fingerprint);
-    Optional<String> actual =
+    List<String> msgs =
         userInfo.getMessages().stream()
             .map(msg -> msg.split("\n"))
             .flatMap(Arrays::stream)
-            .filter(msg -> msg.equals(expected))
-            .findFirst();
+            .collect(toList());
+    Optional<String> actual = msgs.stream().filter(msg -> msg.equals(expected)).findFirst();
+
+    if (!actual.isPresent()) {
+      msgs.forEach(System.out::println);
+      printInfo();
+    }
+
     assertTrue(actual.isPresent());
   }
 
@@ -386,20 +394,37 @@ public class AlgorithmsIT {
     return session;
   }
 
-  private void doSftp(Session session) throws Exception {
-    session.setTimeout(timeout);
-    session.connect();
-    ChannelSftp sftp = (ChannelSftp) session.openChannel("sftp");
-    sftp.connect(timeout);
-    sftp.put(in.toString(), "/root/test");
-    sftp.get("/root/test", out.toString());
-    sftp.disconnect();
-    session.disconnect();
-    jschAppender.stop();
-    sshdAppender.stop();
+  private void doSftp(Session session, boolean debugException) throws Exception {
+    try {
+      session.setTimeout(timeout);
+      session.connect();
+      ChannelSftp sftp = (ChannelSftp) session.openChannel("sftp");
+      sftp.connect(timeout);
+      sftp.put(in.toString(), "/root/test");
+      sftp.get("/root/test", out.toString());
+      sftp.disconnect();
+      session.disconnect();
+      jschAppender.stop();
+      sshdAppender.stop();
+    } catch (Exception e) {
+      if (debugException) {
+        printInfo();
+      }
+      throw e;
+    }
 
     assertEquals(1024L * 100L, Files.size(out));
     assertEquals(hash, sha256sum.digestAsHex(out));
+  }
+
+  private static void printInfo() {
+    jschAppender.stop();
+    sshdAppender.stop();
+    jschAppender.list.stream().map(ILoggingEvent::getFormattedMessage).forEach(System.out::println);
+    sshdAppender.list.stream().map(ILoggingEvent::getFormattedMessage).forEach(System.out::println);
+    System.out.println("");
+    System.out.println("");
+    System.out.println("");
   }
 
   private static void checkLogs(String expected) {
