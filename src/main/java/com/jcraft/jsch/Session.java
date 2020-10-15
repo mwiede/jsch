@@ -614,6 +614,10 @@ public class Session implements Runnable{
 
   private volatile boolean in_kex=false;
   private volatile boolean in_prompt=false;
+  private volatile String[] not_available_shks=null;
+  public String[] getUnavailableSignatures() {
+    return not_available_shks;
+  }
   public void rekey() throws Exception {
     send_kexinit();
   }
@@ -655,6 +659,8 @@ public class Session implements Runnable{
     String server_host_key = getConfig("server_host_key");
     String[] not_available_shks =
       checkSignatures(getConfig("CheckSignatures"));
+    // Cache for UserAuthPublicKey
+    this.not_available_shks = not_available_shks;
     if(not_available_shks!=null && not_available_shks.length>0){
       server_host_key=Util.diffString(server_host_key, not_available_shks);
       if(server_host_key==null){

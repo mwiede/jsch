@@ -2,12 +2,14 @@ package com.jcraft.jsch;
 
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
 import java.io.File;
 import java.net.URISyntaxException;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.stream.Stream;
 
@@ -15,6 +17,8 @@ import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class KeyPairTest {
+
+    @TempDir public Path tmpDir;
 
     @BeforeAll
     static void init() {
@@ -70,7 +74,7 @@ class KeyPairTest {
         final JSch jSch = new JSch();
         assertDoesNotThrow(() -> {
             KeyPair kpair = KeyPair.genKeyPair(jSch, KeyPair.RSA, 1024);
-            kpair.writePrivateKey("my-private-key");
+            kpair.writePrivateKey(tmpDir.resolve("my-private-key").toString());
         });
     }
 
@@ -79,7 +83,7 @@ class KeyPairTest {
         final JSch jSch = new JSch();
         assertDoesNotThrow(() -> {
             KeyPair kpair = KeyPair.genKeyPair(jSch, KeyPair.RSA, 1024);
-            kpair.writePrivateKey("my-private-key-encrypted", "my-password".getBytes());
+            kpair.writePrivateKey(tmpDir.resolve("my-private-key-encrypted").toString(), "my-password".getBytes());
         });
     }
 

@@ -4,6 +4,7 @@ import static java.util.stream.Collectors.toList;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.condition.JRE.JAVA_11;
+import static org.junit.jupiter.api.condition.JRE.JAVA_15;
 
 import ch.qos.logback.classic.Logger;
 import ch.qos.logback.classic.spi.ILoggingEvent;
@@ -63,6 +64,9 @@ public class AlgorithmsIT {
                   .withFileFromClasspath("ssh_host_ecdsa521_key", "docker/ssh_host_ecdsa521_key")
                   .withFileFromClasspath(
                       "ssh_host_ecdsa521_key.pub", "docker/ssh_host_ecdsa521_key.pub")
+                  .withFileFromClasspath("ssh_host_ed25519_key", "docker/ssh_host_ed25519_key")
+                  .withFileFromClasspath(
+                      "ssh_host_ed25519_key.pub", "docker/ssh_host_ed25519_key.pub")
                   .withFileFromClasspath("ssh_host_dsa_key", "docker/ssh_host_dsa_key")
                   .withFileFromClasspath("ssh_host_dsa_key.pub", "docker/ssh_host_dsa_key.pub")
                   .withFileFromClasspath("sshd_config", "docker/sshd_config")
@@ -142,6 +146,19 @@ public class AlgorithmsIT {
     doSftp(session, true);
 
     String expected = String.format("kex: algorithm: %s.*", kex);
+    checkLogs(expected);
+  }
+
+  @Test
+  @EnabledForJreRange(min = JAVA_15)
+  public void testEd25519() throws Exception {
+    JSch ssh = createEd25519Identity();
+    Session session = createSession(ssh);
+    session.setConfig("PubkeyAcceptedKeyTypes", "ssh-ed25519");
+    session.setConfig("server_host_key", "ssh-ed25519");
+    doSftp(session, true);
+
+    String expected = "kex: host key algorithm: ssh-ed25519.*";
     checkLogs(expected);
   }
 
@@ -384,6 +401,12 @@ public class AlgorithmsIT {
   private JSch createDSAIdentity() throws Exception {
     JSch ssh = new JSch();
     ssh.addIdentity(getResourceFile("docker/id_dsa"), getResourceFile("docker/id_dsa.pub"), null);
+    return ssh;
+  }
+
+  private JSch createEd25519Identity() throws Exception {
+    JSch ssh = new JSch();
+    ssh.addIdentity(getResourceFile("docker/id_ed25519"), getResourceFile("docker/id_ed25519.pub"), null);
     return ssh;
   }
 
