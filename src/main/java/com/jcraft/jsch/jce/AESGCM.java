@@ -41,6 +41,7 @@ public abstract class AESGCM implements Cipher{
   private SecretKeySpec keyspec;
   private int mode;
   private ByteBuffer iv;
+  private long initcounter;
   public int getIVSize(){return ivsize;}
   public int getTagSize(){return tagsize;}
   public void init(int mode, byte[] key, byte[] iv) throws Exception{
@@ -61,6 +62,7 @@ public abstract class AESGCM implements Cipher{
                 javax.crypto.Cipher.ENCRYPT_MODE:
                 javax.crypto.Cipher.DECRYPT_MODE);
     this.iv=ByteBuffer.wrap(iv);
+    this.initcounter=this.iv.getLong(4);
     try{
       keyspec=new SecretKeySpec(key, "AES");
       cipher=javax.crypto.Cipher.getInstance("AES/GCM/"+pad);
@@ -83,7 +85,11 @@ public abstract class AESGCM implements Cipher{
   }
   public void doFinal(byte[] foo, int s1, int len, byte[] bar, int s2) throws Exception{
     cipher.doFinal(foo, s1, len, bar, s2);
-    iv.putLong(4, iv.getLong(4)+1);
+    long newcounter=iv.getLong(4)+1;
+    if (newcounter == initcounter) {
+      throw new IllegalStateException("GCM IV would be reused");
+    }
+    iv.putLong(4, newcounter);
     cipher.init(mode, keyspec, new GCMParameterSpec(tagsize*8,iv.array()));
   }
   public boolean isCBC(){return false; }

@@ -55,6 +55,7 @@ public abstract class DHXEC extends KeyExchange{
 
   protected String sha_name;
   protected String curve_name;
+  protected int key_len;
 
   public void init(Session session,
 		   byte[] V_S, byte[] V_C, byte[] I_S, byte[] I_C) throws Exception{
@@ -82,7 +83,7 @@ public abstract class DHXEC extends KeyExchange{
     try{
       Class c=Class.forName(session.getConfig("xdh"));
       xdh=(XDH)(c.newInstance());
-      xdh.init(curve_name);
+      xdh.init(curve_name, key_len);
 
       Q_C = xdh.getQ();
       buf.putString(Q_C);
@@ -121,8 +122,8 @@ public abstract class DHXEC extends KeyExchange{
       j=_buf.getInt();
       j=_buf.getByte();
       j=_buf.getByte();
-      if(j!=31){
-	System.err.println("type: must be 31 "+j);
+      if(j!=SSH_MSG_KEX_ECDH_REPLY){
+	System.err.println("type: must be SSH_MSG_KEX_ECDH_REPLY "+j);
 	return false;
       }
 
@@ -167,6 +168,11 @@ public abstract class DHXEC extends KeyExchange{
       //   key and the local private key scalar.  The 32 or 56 bytes of X are
       //   converted into K by interpreting the octets as an unsigned fixed-
       //   length integer encoded in network byte order.
+      //
+      //   The mpint K is then encoded using the process described in Section 5
+      //   of [RFC4251], and the resulting bytes are fed as described in
+      //   [RFC4253] to the key exchange method's hash function to generate
+      //   encryption keys.
       buf.reset();
       buf.putString(V_C); buf.putString(V_S);
       buf.putString(I_C); buf.putString(I_S);

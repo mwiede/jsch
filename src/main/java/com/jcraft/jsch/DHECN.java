@@ -117,8 +117,8 @@ public abstract class DHECN extends KeyExchange{
       j=_buf.getInt();
       j=_buf.getByte();
       j=_buf.getByte();
-      if(j!=31){
-	System.err.println("type: must be 31 "+j);
+      if(j!=SSH_MSG_KEX_ECDH_REPLY){
+	System.err.println("type: must be SSH_MSG_KEX_ECDH_REPLY "+j);
 	return false;
       }
 

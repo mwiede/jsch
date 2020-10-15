@@ -248,7 +248,7 @@ public abstract class KeyExchange{
 
       if(JSch.getLogger().isEnabled(Logger.INFO)){
         JSch.getLogger().log(Logger.INFO, 
-                             "ssh_rsa_verify: signature "+result);
+                             "ssh_rsa_verify: "+foo+" signature "+result);
       }
     }
     else if(alg.equals("ssh-dss")){
@@ -335,6 +335,11 @@ public abstract class KeyExchange{
       sig.update(H);
 
       result=sig.verify(sig_of_H);
+
+      if(JSch.getLogger().isEnabled(Logger.INFO)){
+        JSch.getLogger().log(Logger.INFO, 
+                             "ssh_ecdsa_verify: "+alg+" signature "+result);
+      }
     }
     else{
       System.err.println("unknown alg");
