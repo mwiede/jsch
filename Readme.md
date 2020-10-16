@@ -15,9 +15,12 @@ As I explained in a [blog post](http://www.matez.de/index.php/2020/06/22/the-fut
 * no active maintenance of jsch at sourceforge
 
 ## Changes since fork:
+* 0.1.60 
+  * support for openssh-v1-private-key format [opensshFormat.md](opensshFormat.md).
+  * Fix bug with AEAD ciphers when compression is used. [#15](https://github.com/mwiede/jsch/pull/15)
 * 0.1.59 fixing issue from https://sourceforge.net/p/jsch/mailman/message/36872566/
 * 0.1.58 support for more algorithms contributed by [@norrisjeremy](https://github.com/norrisjeremy) see [#4](https://github.com/mwiede/jsch/pull/4)
-* 0.1.57 support for rsa-sha2-256 and rsa-sha2-512.
+* 0.1.57 support for rsa-sha2-256 and rsa-sha2-512. [#1](https://github.com/mwiede/jsch/pull/1)
 * 0.1.56 support for direct-streamlocal@openssh.com
 
 Example: (see [SocketForwardingL.java](examples/SocketForwardingL.java))
