@@ -314,7 +314,6 @@ public class AlgorithmsIT {
     checkLogs(expectedC2S);
   }
 
-  // Note: OpenSSH does not support zlib
   @ParameterizedTest
   @ValueSource(strings = {"zlib@openssh.com", "none"})
   public void testCompressions(String compression) throws Exception {
@@ -406,7 +405,8 @@ public class AlgorithmsIT {
 
   private JSch createEd25519Identity() throws Exception {
     JSch ssh = new JSch();
-    ssh.addIdentity(getResourceFile("docker/id_ed25519"), getResourceFile("docker/id_ed25519.pub"), null);
+    ssh.addIdentity(
+        getResourceFile("docker/id_ed25519"), getResourceFile("docker/id_ed25519.pub"), null);
     return ssh;
   }
 
@@ -469,7 +469,7 @@ public class AlgorithmsIT {
     return this.getClass().getClassLoader().getResource(fileName).getPath();
   }
 
-  private static ListAppender<ILoggingEvent> getListAppender(Class clazz) {
+  private static ListAppender<ILoggingEvent> getListAppender(Class<?> clazz) {
     Logger logger = (Logger) LoggerFactory.getLogger(clazz);
     ListAppender<ILoggingEvent> listAppender = new ListAppender<>();
     logger.addAppender(listAppender);

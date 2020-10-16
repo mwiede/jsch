@@ -343,7 +343,8 @@ public abstract class KeyExchange{
                              "ssh_ecdsa_verify: "+alg+" signature "+result);
       }
     }
-    else if(alg.equals("ssh-ed25519")) {
+    else if(alg.equals("ssh-ed25519") ||
+            alg.equals("ssh-ed448")) {
       byte[] tmp;
 
       // RFC 8709,
