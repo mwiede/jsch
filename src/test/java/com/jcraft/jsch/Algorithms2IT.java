@@ -21,6 +21,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledForJreRange;
 import org.junit.jupiter.api.io.TempDir;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.output.Slf4jLogConsumer;
@@ -31,7 +33,8 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 @Testcontainers
 public class Algorithms2IT {
 
-  private static final int timeout = 1000;
+  // Python can be slow, so use larger timeout.
+  private static final int timeout = 2000;
   private static final DigestUtils sha256sum = new DigestUtils(DigestUtils.getSha256Digest());
   private static final ListAppender<ILoggingEvent> jschAppender = getListAppender(JSch.class);
   private static final ListAppender<ILoggingEvent> sshdAppender =
@@ -110,13 +113,25 @@ public class Algorithms2IT {
 
   @Test
   @EnabledForJreRange(min = JAVA_11)
-  public void testKEXs() throws Exception {
+  public void testJava11KEXs() throws Exception {
     JSch ssh = createRSAIdentity();
     Session session = createSession(ssh);
     session.setConfig("kex", "curve448-sha512");
     doSftp(session, true);
 
     String expected = "kex: algorithm: curve448-sha512.*";
+    checkLogs(expected);
+  }
+
+  @ParameterizedTest
+  @ValueSource(strings = {"diffie-hellman-group17-sha512", "diffie-hellman-group15-sha512"})
+  public void testKEXs(String kex) throws Exception {
+    JSch ssh = createRSAIdentity();
+    Session session = createSession(ssh);
+    session.setConfig("kex", kex);
+    doSftp(session, true);
+
+    String expected = String.format("kex: algorithm: %s.*", kex);
     checkLogs(expected);
   }
 

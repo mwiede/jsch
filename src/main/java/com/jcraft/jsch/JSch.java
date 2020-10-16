@@ -61,8 +61,12 @@ public class JSch{
                                             // On JDK8, 2048bits will be used.
     config.put("diffie-hellman-group14-sha256", 
                "com.jcraft.jsch.DHG14256");
+    config.put("diffie-hellman-group15-sha512", 
+               "com.jcraft.jsch.DHG15");
     config.put("diffie-hellman-group16-sha512", 
                "com.jcraft.jsch.DHG16");
+    config.put("diffie-hellman-group17-sha512", 
+               "com.jcraft.jsch.DHG17");
     config.put("diffie-hellman-group18-sha512", 
                "com.jcraft.jsch.DHG18");
     config.put("ecdsa-sha2-nistp256", "com.jcraft.jsch.jce.SignatureECDSA256");
@@ -154,7 +158,7 @@ public class JSch{
 
     config.put("CheckCiphers", "aes256-gcm@openssh.com,aes128-gcm@openssh.com,aes256-ctr,aes192-ctr,aes128-ctr,aes256-cbc,aes192-cbc,aes128-cbc,3des-ctr,arcfour,arcfour128,arcfour256");
     config.put("CheckMacs", "hmac-sha2-256-etm@openssh.com,hmac-sha2-512-etm@openssh.com,hmac-sha2-256,hmac-sha2-512");
-    config.put("CheckKexes", "curve25519-sha256,curve25519-sha256@libssh.org,curve448-sha512,diffie-hellman-group14-sha1,diffie-hellman-group14-sha256,diffie-hellman-group16-sha512,diffie-hellman-group18-sha512,ecdh-sha2-nistp256,ecdh-sha2-nistp384,ecdh-sha2-nistp521");
+    config.put("CheckKexes", "curve25519-sha256,curve25519-sha256@libssh.org,curve448-sha512,diffie-hellman-group14-sha1,diffie-hellman-group14-sha256,diffie-hellman-group15-sha512,diffie-hellman-group16-sha512,diffie-hellman-group17-sha512,diffie-hellman-group18-sha512,ecdh-sha2-nistp256,ecdh-sha2-nistp384,ecdh-sha2-nistp521");
     config.put("CheckSignatures", "rsa-sha2-256,rsa-sha2-512,ecdsa-sha2-nistp256,ecdsa-sha2-nistp384,ecdsa-sha2-nistp521,ssh-ed25519,ssh-ed448");
     config.put("FingerprintHash", "sha256");
 
