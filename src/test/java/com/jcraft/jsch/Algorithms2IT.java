@@ -78,7 +78,7 @@ public class Algorithms2IT {
   @BeforeEach
   public void beforeEach() throws IOException {
     if (sshdLogConsumer == null) {
-      sshdLogConsumer = new Slf4jLogConsumer(LoggerFactory.getLogger(AlgorithmsIT.class));
+      sshdLogConsumer = new Slf4jLogConsumer(LoggerFactory.getLogger(Algorithms2IT.class));
       sshd.followOutput(sshdLogConsumer);
     }
 
