@@ -30,71 +30,100 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 package com.jcraft.jsch.jce;
 
 import com.jcraft.jsch.Cipher;
+import org.openjax.security.nacl.Poly1305;
 import java.nio.ByteBuffer;
+import java.util.Arrays;
+import javax.crypto.AEADBadTagException;
 import javax.crypto.spec.*;
 
-public abstract class AESGCM implements Cipher{
+public class ChaCha20Poly1305 implements Cipher{
   //Actually the block size, not IV size
-  private static final int ivsize=16;
+  private static final int ivsize=8;
+  //Actually the key size, not block size
+  private static final int bsize=64;
   private static final int tagsize=16;
-  private javax.crypto.Cipher cipher;
-  private SecretKeySpec keyspec;
+  private javax.crypto.Cipher header_cipher;
+  private javax.crypto.Cipher main_cipher;
+  private SecretKeySpec K_1_spec;
+  private SecretKeySpec K_2_spec;
   private int mode;
-  private ByteBuffer iv;
-  private long initcounter;
+  private Poly1305 poly1305;
   public int getIVSize(){return ivsize;}
+  public int getBlockSize(){return bsize;}
   public int getTagSize(){return tagsize;}
   public void init(int mode, byte[] key, byte[] iv) throws Exception{
-    String pad="NoPadding";      
     byte[] tmp;
-    if(iv.length>12){
-      tmp=new byte[12];
-      System.arraycopy(iv, 0, tmp, 0, tmp.length);
-      iv=tmp;
-    }
-    int bsize=getBlockSize();
     if(key.length>bsize){
       tmp=new byte[bsize];
       System.arraycopy(key, 0, tmp, 0, tmp.length);
       key=tmp;
     }
+    byte[] K_1=new byte[bsize/2];
+    byte[] K_2=new byte[bsize/2];
+    System.arraycopy(key, bsize/2, K_1, 0, bsize/2);
+    System.arraycopy(key, 0, K_2, 0, bsize/2);
     this.mode=((mode==ENCRYPT_MODE)?
                 javax.crypto.Cipher.ENCRYPT_MODE:
                 javax.crypto.Cipher.DECRYPT_MODE);
-    this.iv=ByteBuffer.wrap(iv);
-    this.initcounter=this.iv.getLong(4);
     try{
-      keyspec=new SecretKeySpec(key, "AES");
-      cipher=javax.crypto.Cipher.getInstance("AES/GCM/"+pad);
-      synchronized(javax.crypto.Cipher.class){
-        cipher.init(this.mode, keyspec, new GCMParameterSpec(tagsize*8,iv));
-      }
+      K_1_spec=new SecretKeySpec(K_1, "ChaCha20");
+      K_2_spec=new SecretKeySpec(K_2, "ChaCha20");
+      header_cipher=javax.crypto.Cipher.getInstance("ChaCha20");
+      main_cipher=javax.crypto.Cipher.getInstance("ChaCha20");
     }
     catch(Exception e){
-      cipher=null;
-      keyspec=null;
-      this.iv=null;
+      header_cipher=null;
+      main_cipher=null;
+      K_1_spec=null;
+      K_2_spec=null;
       throw e;
     }
   }
   public void update(int foo) throws Exception{
+    ByteBuffer nonce=ByteBuffer.allocate(12);
+    nonce.putLong(4, foo);
+    header_cipher.init(this.mode, K_1_spec, new ChaCha20ParameterSpec(nonce.array(), 0));
+    main_cipher.init(this.mode, K_2_spec, new ChaCha20ParameterSpec(nonce.array(), 0));
+    // Trying to reinit the cipher again with same nonce results in InvalidKeyException
+    // So just read entire first 64-byte block, which should increment global counter from 0->1
+    byte[] poly_key = new byte[32];
+    byte[] discard = new byte[32];
+    main_cipher.update(poly_key, 0, 32, poly_key, 0);
+    main_cipher.update(discard, 0, 32, discard, 0);
+    poly1305 = new Poly1305(poly_key);
   }
   public void update(byte[] foo, int s1, int len, byte[] bar, int s2) throws Exception{
-    cipher.update(foo, s1, len, bar, s2);
+    header_cipher.update(foo, s1, len, bar, s2);
   }
   public void updateAAD(byte[] foo, int s1, int len) throws Exception{
-    cipher.updateAAD(foo, s1, len);
   }
   public void doFinal(byte[] foo, int s1, int len, byte[] bar, int s2) throws Exception{
-    cipher.doFinal(foo, s1, len, bar, s2);
-    long newcounter=iv.getLong(4)+1;
-    if (newcounter == initcounter) {
-      throw new IllegalStateException("GCM IV would be reused");
+    if(this.mode==javax.crypto.Cipher.DECRYPT_MODE){
+      byte[] actual_tag = new byte[tagsize];
+      System.arraycopy(foo, len, actual_tag, 0, tagsize);
+      byte[] expected_tag = new byte[tagsize];
+      poly1305.update(foo, s1, len).finish(expected_tag, 0);
+      if(!arraysequals(actual_tag, expected_tag)){
+        throw new AEADBadTagException("Tag mismatch");
+      }
     }
-    iv.putLong(4, newcounter);
-    cipher.init(mode, keyspec, new GCMParameterSpec(tagsize*8,iv.array()));
+
+    main_cipher.update(foo, s1+4, len-4, bar, s2+4);
+
+    if(this.mode==javax.crypto.Cipher.ENCRYPT_MODE){
+      poly1305.update(bar, s2, len).finish(bar, len);
+    }
   }
   public boolean isCBC(){return false; }
   public boolean isAEAD(){return true; }
-  public boolean isChaCha20(){return false; }
+  public boolean isChaCha20(){return true; }
+
+  private static boolean arraysequals(byte[] a, byte[] b){
+    if(a.length!=b.length) return false;
+    int res=0;
+    for(int i=0; i<a.length; i++){
+      res|=a[i]^b[i];
+    }
+    return res==0;
+  }
 }

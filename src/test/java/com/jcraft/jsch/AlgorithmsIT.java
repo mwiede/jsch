@@ -226,6 +226,46 @@ public class AlgorithmsIT {
   @ParameterizedTest
   @CsvSource(
       value = {
+        "chacha20-poly1305@openssh.com,none",
+        "chacha20-poly1305@openssh.com,zlib@openssh.com"
+      })
+  @EnabledForJreRange(min = JAVA_11)
+  public void testJava11Ciphers(String cipher, String compression) throws Exception {
+    JSch ssh = createRSAIdentity();
+    Session session = createSession(ssh);
+    session.setConfig("cipher.s2c", cipher);
+    session.setConfig("cipher.c2s", cipher);
+    session.setConfig("compression.s2c", compression);
+    session.setConfig("compression.c2s", compression);
+    try {
+      doSftp(session, true);
+    } catch (Exception e) {
+      jschAppender.stop();
+      sshdAppender.stop();
+      jschAppender.list.stream()
+          .map(ILoggingEvent::getFormattedMessage)
+          .forEach(System.out::println);
+      sshdAppender.list.stream()
+          .map(ILoggingEvent::getFormattedMessage)
+          .forEach(System.out::println);
+      e.printStackTrace();
+      if (e.getCause() != null) {
+        e.getCause().printStackTrace();
+      }
+      throw e;
+    }
+
+    String expectedS2C =
+        String.format("kex: server->client cipher: %s.*", "chacha20-poly1305@openssh.com");
+    String expectedC2S =
+        String.format("kex: client->server cipher: %s.*", "chacha20-poly1305@openssh.com");
+    checkLogs(expectedS2C);
+    checkLogs(expectedC2S);
+  }
+
+  @ParameterizedTest
+  @CsvSource(
+      value = {
         "aes256-gcm@openssh.com,none",
         "aes256-gcm@openssh.com,zlib@openssh.com",
         "aes128-gcm@openssh.com,none",
