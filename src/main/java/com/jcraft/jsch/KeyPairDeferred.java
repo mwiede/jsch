@@ -1,6 +1,6 @@
 package com.jcraft.jsch;
 
-import org.mindrot.jbcrypt.BCrypt;
+import com.jcraft.jsch.jbcrypt.BCrypt;
 
 import java.util.Arrays;
 

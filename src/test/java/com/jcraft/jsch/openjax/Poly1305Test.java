@@ -1,4 +1,4 @@
-package org.openjax.security.nacl;
+package com.jcraft.jsch.openjax;
 
 import static org.apache.commons.codec.binary.Hex.decodeHex;
 import static org.apache.commons.codec.binary.Hex.encodeHexString;

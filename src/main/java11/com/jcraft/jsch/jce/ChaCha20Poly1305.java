@@ -30,7 +30,7 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 package com.jcraft.jsch.jce;
 
 import com.jcraft.jsch.Cipher;
-import org.openjax.security.nacl.Poly1305;
+import com.jcraft.jsch.openjax.Poly1305;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
 import javax.crypto.AEADBadTagException;
