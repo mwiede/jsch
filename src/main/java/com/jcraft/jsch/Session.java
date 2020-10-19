@@ -614,6 +614,10 @@ public class Session implements Runnable{
 
   private volatile boolean in_kex=false;
   private volatile boolean in_prompt=false;
+  private volatile String[] not_available_shks=null;
+  public String[] getUnavailableSignatures() {
+    return not_available_shks;
+  }
   public void rekey() throws Exception {
     send_kexinit();
   }
@@ -655,6 +659,8 @@ public class Session implements Runnable{
     String server_host_key = getConfig("server_host_key");
     String[] not_available_shks =
       checkSignatures(getConfig("CheckSignatures"));
+    // Cache for UserAuthPublicKey
+    this.not_available_shks = not_available_shks;
     if(not_available_shks!=null && not_available_shks.length>0){
       server_host_key=Util.diffString(server_host_key, not_available_shks);
       if(server_host_key==null){
@@ -906,12 +912,22 @@ key_type+" key fingerprint is "+key_fprint+".\n"+
       //bsize=c2scipher.getIVSize();
       bsize=c2scipher_size;
     }
+    boolean isChaCha20=(c2scipher!=null && c2scipher.isChaCha20());
     boolean isAEAD=(c2scipher!=null && c2scipher.isAEAD());
-    boolean isEtM=(!isAEAD && c2scipher!=null && c2smac!=null && c2smac.isEtM());
-    packet.padding(bsize, !(isAEAD || isEtM));
+    boolean isEtM=(!isChaCha20 && !isAEAD && c2scipher!=null && c2smac!=null && c2smac.isEtM());
+    packet.padding(bsize, !(isChaCha20 || isAEAD || isEtM));
 
     byte[] buf=packet.buffer.buffer;
-    if(isAEAD){
+    if(isChaCha20){
+      // init cipher with seq number
+      c2scipher.update(seqo);
+      //encrypt packet length field
+      c2scipher.update(buf, 0, 4, buf, 0);
+      //encrypt rest of packet & add tag
+      c2scipher.doFinal(buf, 0, packet.buffer.index, buf, 0);
+      packet.buffer.skip(c2scipher.getTagSize());
+    }
+    else if(isAEAD){
       c2scipher.updateAAD(buf, 0, 4);
       c2scipher.doFinal(buf, 4, packet.buffer.index-4, buf, 4);
       packet.buffer.skip(c2scipher.getTagSize());
@@ -945,11 +961,57 @@ key_type+" key fingerprint is "+key_fprint+".\n"+
   private int c2scipher_size=8;
   public Buffer read(Buffer buf) throws Exception{
     int j=0;
+    boolean isChaCha20=(s2ccipher!=null && s2ccipher.isChaCha20());
     boolean isAEAD=(s2ccipher!=null && s2ccipher.isAEAD());
-    boolean isEtM=(!isAEAD && s2ccipher!=null && s2cmac!=null && s2cmac.isEtM());
+    boolean isEtM=(!isChaCha20 && !isAEAD && s2ccipher!=null && s2cmac!=null && s2cmac.isEtM());
     while(true){
       buf.reset();
-      if(isAEAD || isEtM){
+      if(isChaCha20){
+        //read encrypted packet length field
+        io.getByte(buf.buffer, buf.index, 4);
+        buf.index+=4;
+        // init cipher with seq number
+        s2ccipher.update(seqi);
+        //decrypt packet length field
+        byte[] tmp=new byte[4];
+        s2ccipher.update(buf.buffer, 0, 4, tmp, 0);
+        j=((tmp[0]<<24)&0xff000000)|
+          ((tmp[1]<<16)&0x00ff0000)|
+          ((tmp[2]<< 8)&0x0000ff00)|
+          ((tmp[3]    )&0x000000ff);
+        // RFC 4253 6.1. Maximum Packet Length
+        if(j<5 || j>PACKET_MAX_SIZE){
+          start_discard(buf, s2ccipher, s2cmac, j, PACKET_MAX_SIZE);
+        }
+        j+=s2ccipher.getTagSize();
+        if((buf.index+j)>buf.buffer.length){
+          byte[] foo=new byte[buf.index+j];
+          System.arraycopy(buf.buffer, 0, foo, 0, buf.index);
+          buf.buffer=foo;
+        }
+
+        if((j%s2ccipher_size)!=0){
+          String message="Bad packet length "+j;
+          if(JSch.getLogger().isEnabled(Logger.FATAL)){
+            JSch.getLogger().log(Logger.FATAL, message);
+          }
+          start_discard(buf, s2ccipher, s2cmac, j, PACKET_MAX_SIZE-4);
+        }
+
+        io.getByte(buf.buffer, buf.index, j);
+        // subtract tag size now that whole packet has been fetched
+        j -= s2ccipher.getTagSize(); buf.index+=(j);
+        try {
+          s2ccipher.doFinal(buf.buffer, 0, j+4, buf.buffer, 0);
+        }
+        catch(javax.crypto.AEADBadTagException e){
+          start_discard(buf, s2ccipher, s2cmac, j, PACKET_MAX_SIZE-j, e);
+          continue;
+        }
+        // overwrite encrypted packet length field with decrypted version
+        System.arraycopy(tmp, 0, buf.buffer, 0, 4);
+      }
+      else if(isAEAD || isEtM){
         io.getByte(buf.buffer, buf.index, 4);
         buf.index+=4;
         j=((buf.buffer[0]<<24)&0xff000000)|
@@ -980,8 +1042,14 @@ key_type+" key fingerprint is "+key_fprint+".\n"+
         io.getByte(buf.buffer, buf.index, j); buf.index+=(j);
 
         if(isAEAD){
-          s2ccipher.updateAAD(buf.buffer, 0, 4);
-          s2ccipher.doFinal(buf.buffer, 4, j, buf.buffer, 4);
+          try {
+            s2ccipher.updateAAD(buf.buffer, 0, 4);
+            s2ccipher.doFinal(buf.buffer, 4, j, buf.buffer, 4);
+          }
+          catch(javax.crypto.AEADBadTagException e){
+            start_discard(buf, s2ccipher, s2cmac, j, PACKET_MAX_SIZE-j, e);
+            continue;
+          }
           // don't include AEAD tag size in buf so that decompression works below
           buf.index -= s2ccipher.getTagSize();
         }
@@ -1137,10 +1205,19 @@ key_type+" key fingerprint is "+key_fprint+".\n"+
   }
 
   private void start_discard(Buffer buf, Cipher cipher, MAC mac,
+
                              int packet_length, int discard) throws JSchException, IOException{
+    start_discard(buf, cipher, mac, packet_length, discard, null);
+  }
+
+  private void start_discard(Buffer buf, Cipher cipher, MAC mac,
+                             int packet_length, int discard, Throwable t) throws JSchException, IOException{
     MAC discard_mac = null;
 
     if(!cipher.isCBC()){
+      if(t!=null){
+        throw new JSchException("Packet corrupt", t);
+      }
       throw new JSchException("Packet corrupt");
     }
 
@@ -1164,6 +1241,9 @@ key_type+" key fingerprint is "+key_fprint+".\n"+
       discard_mac.doFinal(buf.buffer, 0);
     }
 
+    if(t!=null){
+      throw new JSchException("Packet corrupt", t);
+    }
     throw new JSchException("Packet corrupt");
   }
 

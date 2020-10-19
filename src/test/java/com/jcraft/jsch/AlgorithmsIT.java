@@ -4,6 +4,7 @@ import static java.util.stream.Collectors.toList;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.condition.JRE.JAVA_11;
+import static org.junit.jupiter.api.condition.JRE.JAVA_15;
 
 import ch.qos.logback.classic.Logger;
 import ch.qos.logback.classic.spi.ILoggingEvent;
@@ -63,6 +64,9 @@ public class AlgorithmsIT {
                   .withFileFromClasspath("ssh_host_ecdsa521_key", "docker/ssh_host_ecdsa521_key")
                   .withFileFromClasspath(
                       "ssh_host_ecdsa521_key.pub", "docker/ssh_host_ecdsa521_key.pub")
+                  .withFileFromClasspath("ssh_host_ed25519_key", "docker/ssh_host_ed25519_key")
+                  .withFileFromClasspath(
+                      "ssh_host_ed25519_key.pub", "docker/ssh_host_ed25519_key.pub")
                   .withFileFromClasspath("ssh_host_dsa_key", "docker/ssh_host_dsa_key")
                   .withFileFromClasspath("ssh_host_dsa_key.pub", "docker/ssh_host_dsa_key.pub")
                   .withFileFromClasspath("sshd_config", "docker/sshd_config")
@@ -146,6 +150,19 @@ public class AlgorithmsIT {
   }
 
   @Test
+  @EnabledForJreRange(min = JAVA_15)
+  public void testEd25519() throws Exception {
+    JSch ssh = createEd25519Identity();
+    Session session = createSession(ssh);
+    session.setConfig("PubkeyAcceptedKeyTypes", "ssh-ed25519");
+    session.setConfig("server_host_key", "ssh-ed25519");
+    doSftp(session, true);
+
+    String expected = "kex: host key algorithm: ssh-ed25519.*";
+    checkLogs(expected);
+  }
+
+  @Test
   public void testECDSA521() throws Exception {
     JSch ssh = createECDSA521Identity();
     Session session = createSession(ssh);
@@ -204,6 +221,28 @@ public class AlgorithmsIT {
 
     String expected = "kex: host key algorithm: ssh-dss.*";
     checkLogs(expected);
+  }
+
+  @ParameterizedTest
+  @CsvSource(
+      value = {
+        "chacha20-poly1305@openssh.com,none",
+        "chacha20-poly1305@openssh.com,zlib@openssh.com"
+      })
+  @EnabledForJreRange(min = JAVA_11)
+  public void testJava11Ciphers(String cipher, String compression) throws Exception {
+    JSch ssh = createRSAIdentity();
+    Session session = createSession(ssh);
+    session.setConfig("cipher.s2c", cipher);
+    session.setConfig("cipher.c2s", cipher);
+    session.setConfig("compression.s2c", compression);
+    session.setConfig("compression.c2s", compression);
+    doSftp(session, true);
+
+    String expectedS2C = String.format("kex: server->client cipher: %s.*", cipher);
+    String expectedC2S = String.format("kex: client->server cipher: %s.*", cipher);
+    checkLogs(expectedS2C);
+    checkLogs(expectedC2S);
   }
 
   @ParameterizedTest
@@ -297,7 +336,6 @@ public class AlgorithmsIT {
     checkLogs(expectedC2S);
   }
 
-  // Note: OpenSSH does not support zlib
   @ParameterizedTest
   @ValueSource(strings = {"zlib@openssh.com", "none"})
   public void testCompressions(String compression) throws Exception {
@@ -387,6 +425,13 @@ public class AlgorithmsIT {
     return ssh;
   }
 
+  private JSch createEd25519Identity() throws Exception {
+    JSch ssh = new JSch();
+    ssh.addIdentity(
+        getResourceFile("docker/id_ed25519"), getResourceFile("docker/id_ed25519.pub"), null);
+    return ssh;
+  }
+
   private Session createSession(JSch ssh) throws Exception {
     Session session = ssh.getSession("root", sshd.getHost(), sshd.getFirstMappedPort());
     session.setConfig("StrictHostKeyChecking", "no");
@@ -446,7 +491,7 @@ public class AlgorithmsIT {
     return this.getClass().getClassLoader().getResource(fileName).getPath();
   }
 
-  private static ListAppender<ILoggingEvent> getListAppender(Class clazz) {
+  private static ListAppender<ILoggingEvent> getListAppender(Class<?> clazz) {
     Logger logger = (Logger) LoggerFactory.getLogger(clazz);
     ListAppender<ILoggingEvent> listAppender = new ListAppender<>();
     logger.addAppender(listAppender);

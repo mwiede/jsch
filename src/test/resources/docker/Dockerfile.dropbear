@@ -1,0 +1,12 @@
+FROM alpine:3.12
+RUN apk update && \
+    apk upgrade && \
+    apk add dropbear openssh && \
+    rm /var/cache/apk/* && \
+    mkdir /etc/dropbear && \
+    mkdir /root/.ssh && \
+    chmod 700 /root/.ssh
+COPY authorized_keys /root/.ssh/
+RUN chmod 600 /root/.ssh/authorized_keys
+RUN passwd -u root
+ENTRYPOINT ["/usr/sbin/dropbear", "-F", "-R", "-s", "-E"]

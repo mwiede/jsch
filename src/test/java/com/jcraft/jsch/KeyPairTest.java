@@ -2,12 +2,14 @@ package com.jcraft.jsch;
 
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
 import java.io.File;
 import java.net.URISyntaxException;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.stream.Stream;
 
@@ -15,6 +17,8 @@ import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class KeyPairTest {
+
+    @TempDir public Path tmpDir;
 
     @BeforeAll
     static void init() {
@@ -36,10 +40,9 @@ class KeyPairTest {
                 // encrypted dsa
                 Arguments.of("encrypted_openssh_private_key_dsa", "secret123", "ssh-dss"),
                 // ecdsa EC private key format
-                Arguments.of("docker/id_ecdsa256", null, null),
-                Arguments.of("docker/id_ecdsa384", null, null),
+                Arguments.of("docker/id_ecdsa256", null, null), //
+                Arguments.of("docker/id_ecdsa384", null, null), //
                 Arguments.of("docker/id_ecdsa521", null, null),
-                // ecdsa openssh format
                 Arguments.of("docker/ssh_host_ecdsa256_key", null, null),
                 Arguments.of("docker/ssh_host_ecdsa384_key", null, null),
                 Arguments.of("docker/ssh_host_ecdsa521_key", null, null),
@@ -56,13 +59,12 @@ class KeyPairTest {
         final String prvkey = Paths.get(ClassLoader.getSystemResource(path).toURI()).toFile().getAbsolutePath();
         assertTrue(new File(prvkey).exists());
         assertDoesNotThrow(() -> {
-                    if (null != password) {
-                        jSch.addIdentity(prvkey, password);
-                    } else {
-                        jSch.addIdentity(prvkey);
-                    }
-                }
-        );
+            if (null != password) {
+                jSch.addIdentity(prvkey, password);
+            } else {
+                jSch.addIdentity(prvkey);
+            }
+        });
     }
 
     @Test
@@ -70,7 +72,7 @@ class KeyPairTest {
         final JSch jSch = new JSch();
         assertDoesNotThrow(() -> {
             KeyPair kpair = KeyPair.genKeyPair(jSch, KeyPair.RSA, 1024);
-            kpair.writePrivateKey("my-private-key");
+            kpair.writePrivateKey(tmpDir.resolve("my-private-key").toString());
         });
     }
 
@@ -79,39 +81,8 @@ class KeyPairTest {
         final JSch jSch = new JSch();
         assertDoesNotThrow(() -> {
             KeyPair kpair = KeyPair.genKeyPair(jSch, KeyPair.RSA, 1024);
-            kpair.writePrivateKey("my-private-key-encrypted", "my-password".getBytes());
+            kpair.writePrivateKey(tmpDir.resolve("my-private-key-encrypted").toString(), "my-password".getBytes());
         });
     }
 
-    private static class MyUserInfo implements UserInfo {
-        @Override
-        public String getPassphrase() {
-            return null;
-        }
-
-        @Override
-        public String getPassword() {
-            return null;
-        }
-
-        @Override
-        public boolean promptPassword(String message) {
-            return false;
-        }
-
-        @Override
-        public boolean promptPassphrase(String message) {
-            return false;
-        }
-
-        @Override
-        public boolean promptYesNo(String message) {
-            return false;
-        }
-
-        @Override
-        public void showMessage(String message) {
-
-        }
-    }
 }

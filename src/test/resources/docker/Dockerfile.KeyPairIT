@@ -1,0 +1,14 @@
+FROM alpine:3.7
+RUN apk update && \
+    apk upgrade && \
+    apk add openssh && \
+    rm /var/cache/apk/* && \
+    mkdir /root/.ssh && \
+    chmod 700 /root/.ssh && \
+    ssh-keygen -A
+COPY sshd_config /etc/ssh/
+COPY authorized_keys /root/.ssh/
+RUN chmod 600 /etc/ssh/ssh_*_key /root/.ssh/authorized_keys
+RUN passwd -u root
+EXPOSE 22
+ENTRYPOINT ["/usr/sbin/sshd", "-D", "-e"]
