@@ -216,21 +216,6 @@ public class JSch{
   static Logger logger=DEVNULL;
 
   public JSch(){
-    /*
-    // The JCE of Sun's Java5 on Mac OS X has the resource leak bug
-    // in calculating HMAC, so we need to use our own implementations.
-    try{
-      String osname=(String)(System.getProperties().get("os.name"));
-      if(osname!=null && osname.equals("Mac OS X")){
-        config.put("hmac-sha1",     "com.jcraft.jsch.jcraft.HMACSHA1"); 
-        config.put("hmac-md5",      "com.jcraft.jsch.jcraft.HMACMD5"); 
-        config.put("hmac-md5-96",   "com.jcraft.jsch.jcraft.HMACMD596"); 
-        config.put("hmac-sha1-96",  "com.jcraft.jsch.jcraft.HMACSHA196"); 
-      }
-    }
-    catch(Exception e){
-    }
-    */
   }
 
   /**
