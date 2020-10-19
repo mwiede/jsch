@@ -35,6 +35,8 @@ import java.io.IOException;
 import java.util.Arrays;
 
 public abstract class KeyPair{
+  
+  public static final int DEFERRED = -1;
   public static final int ERROR=0;
   public static final int DSA=1;
   public static final int RSA=2;
@@ -42,9 +44,7 @@ public abstract class KeyPair{
   public static final int UNKNOWN=4;
   public static final int ED25519=5;
   public static final int ED448=6;
-
-  // at the moment of loading the key, it is not clear which type it is, because it still needs to be decrypted
-  private static final int DEFERRED = 5;
+ 
   static final int VENDOR_OPENSSH=0;
   static final int VENDOR_FSECURE=1;
   static final int VENDOR_PUTTY=2;
@@ -871,8 +871,7 @@ public abstract class KeyPair{
           Class c = Class.forName(jsch.getConfig(cipherName));
           cipher = (Cipher) c.getDeclaredConstructor().newInstance();
           data = buffer.getString();
-          // HMMM. Wir können hier nicht decrypten, weil wir das Passwort noch nicht haben
-          // aber wir können auch nicht den type bestimmen, weil es encrypted ist....
+          // the type can only be determined after encryption, so we take this intermediate here:
           type = DEFERRED;
       } else {
           throw new JSchException("cipher" + cipherName + " is not available");

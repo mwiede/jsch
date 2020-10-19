@@ -29,7 +29,6 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 package com.jcraft.jsch;
 
-import java.math.BigInteger;
 import java.util.Arrays;
 
 public abstract class KeyPairEdDSA extends KeyPair{

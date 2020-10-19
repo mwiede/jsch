@@ -19,8 +19,8 @@ public class KeyPairIT {
     @Container
     public GenericContainer sshd = new GenericContainer(
             new ImageFromDockerfile().withFileFromClasspath("sshd_config", "docker/sshd_config")
-                    .withFileFromClasspath("authorized_keys", "docker/authorized_keys-KeyPairIT")
-                    .withFileFromClasspath("Dockerfile", "docker/Dockerfile-KeyPairIT")).withExposedPorts(22);
+                    .withFileFromClasspath("authorized_keys", "docker/authorized_keys.KeyPairIT")
+                    .withFileFromClasspath("Dockerfile", "docker/Dockerfile.KeyPairIT")).withExposedPorts(22);
 
     @BeforeAll
     public static void beforeAll() {

@@ -6,6 +6,7 @@ import java.util.Arrays;
 
 /**
  * A {@link KeyPair} which can only reveal its type and content after it was decrypted using KeyPairDeferred{@link #decrypt(byte[])}.
+ * This is needed for openssh-v1-private-key format.
  */
 public class KeyPairDeferred extends KeyPair {
 
