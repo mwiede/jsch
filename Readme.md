@@ -12,7 +12,7 @@ See original [README](README)
 As I explained in a [blog post](http://www.matez.de/index.php/2020/06/22/the-future-of-jsch-without-ssh-rsa/) the main points are:
 * OpenSSH will disable ssh-rsa in the future per default and you need a library which supports rsa-sha2-256 and rsa-sha2-512
 * drop in replacement: just change dependency coordinates and you are good to go
-* no active maintenance of jsch at sourceforge
+* no active maintenance of [JSch at SourceForge](https://sourceforge.net/projects/jsch/)
 * stay in sync with JDK features so there is no need for additional dependencies
 
 ## Changes since fork:
