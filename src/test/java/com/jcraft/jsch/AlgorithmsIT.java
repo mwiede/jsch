@@ -237,28 +237,10 @@ public class AlgorithmsIT {
     session.setConfig("cipher.c2s", cipher);
     session.setConfig("compression.s2c", compression);
     session.setConfig("compression.c2s", compression);
-    try {
-      doSftp(session, true);
-    } catch (Exception e) {
-      jschAppender.stop();
-      sshdAppender.stop();
-      jschAppender.list.stream()
-          .map(ILoggingEvent::getFormattedMessage)
-          .forEach(System.out::println);
-      sshdAppender.list.stream()
-          .map(ILoggingEvent::getFormattedMessage)
-          .forEach(System.out::println);
-      e.printStackTrace();
-      if (e.getCause() != null) {
-        e.getCause().printStackTrace();
-      }
-      throw e;
-    }
+    doSftp(session, true);
 
-    String expectedS2C =
-        String.format("kex: server->client cipher: %s.*", "chacha20-poly1305@openssh.com");
-    String expectedC2S =
-        String.format("kex: client->server cipher: %s.*", "chacha20-poly1305@openssh.com");
+    String expectedS2C = String.format("kex: server->client cipher: %s.*", cipher);
+    String expectedC2S = String.format("kex: client->server cipher: %s.*", cipher);
     checkLogs(expectedS2C);
     checkLogs(expectedC2S);
   }
