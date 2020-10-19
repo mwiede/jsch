@@ -1,4 +1,4 @@
-# fork of jsch-1.55
+# fork of JSch-0.1.55
 
 See original [README](README)
 
