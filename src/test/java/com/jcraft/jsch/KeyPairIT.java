@@ -39,7 +39,7 @@ public class KeyPairIT {
             session.setConfig("PubkeyAcceptedKeyTypes", keyType);
         }
         try {
-            session.connect(1000);
+            session.connect(2000);
             assertTrue(session.isConnected());
         } finally {
             session.disconnect();
