@@ -6,6 +6,10 @@
 *.iml
 *.geany
 nb-configuration.xml
+.classpath
+.project
+.vscode/
+.settings/
 
 # Compiled files #
 out/
