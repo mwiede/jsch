@@ -36,6 +36,8 @@ public class CipherNone implements Cipher{
   public int getBlockSize(){return bsize;}
   public void init(int mode, byte[] key, byte[] iv) throws Exception{
   }
+  public void update(int foo) throws Exception{
+  }
   public void update(byte[] foo, int s1, int len, byte[] bar, int s2) throws Exception{
   }
   public void updateAAD(byte[] foo, int s1, int len) throws Exception{
@@ -44,5 +46,6 @@ public class CipherNone implements Cipher{
   }
   public boolean isCBC(){return false; }
   public boolean isAEAD(){return false; }
+  public boolean isChaCha20(){return false; }
   public int getTagSize(){return 0;}
 }

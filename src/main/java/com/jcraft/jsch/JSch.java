@@ -37,9 +37,9 @@ public class JSch{
   static java.util.Hashtable config=new java.util.Hashtable();
   static{
     config.put("kex", "curve25519-sha256,curve25519-sha256@libssh.org,ecdh-sha2-nistp256,ecdh-sha2-nistp384,ecdh-sha2-nistp521,diffie-hellman-group-exchange-sha256,diffie-hellman-group16-sha512,diffie-hellman-group18-sha512,diffie-hellman-group14-sha256");
-    config.put("server_host_key", "ecdsa-sha2-nistp256,ecdsa-sha2-nistp384,ecdsa-sha2-nistp521,rsa-sha2-512,rsa-sha2-256,rsa-sha2-512,ssh-rsa");
-    config.put("cipher.s2c", "aes128-ctr,aes192-ctr,aes256-ctr,aes128-gcm@openssh.com,aes256-gcm@openssh.com");
-    config.put("cipher.c2s", "aes128-ctr,aes192-ctr,aes256-ctr,aes128-gcm@openssh.com,aes256-gcm@openssh.com");
+    config.put("server_host_key", "ecdsa-sha2-nistp256,ecdsa-sha2-nistp384,ecdsa-sha2-nistp521,ssh-ed25519,rsa-sha2-512,rsa-sha2-256,rsa-sha2-512,ssh-rsa");
+    config.put("cipher.s2c", "aes128-ctr,aes192-ctr,aes256-ctr,aes128-gcm@openssh.com,aes256-gcm@openssh.com,chacha20-poly1305@openssh.com");
+    config.put("cipher.c2s", "aes128-ctr,aes192-ctr,aes256-ctr,aes128-gcm@openssh.com,aes256-gcm@openssh.com,chacha20-poly1305@openssh.com");
     config.put("mac.s2c", "hmac-sha2-256-etm@openssh.com,hmac-sha2-512-etm@openssh.com,hmac-sha1-etm@openssh.com,hmac-sha2-256,hmac-sha2-512,hmac-sha1");
     config.put("mac.c2s", "hmac-sha2-256-etm@openssh.com,hmac-sha2-512-etm@openssh.com,hmac-sha1-etm@openssh.com,hmac-sha2-256,hmac-sha2-512,hmac-sha1");
     config.put("compression.s2c", "none");
@@ -61,8 +61,12 @@ public class JSch{
                                             // On JDK8, 2048bits will be used.
     config.put("diffie-hellman-group14-sha256", 
                "com.jcraft.jsch.DHG14256");
+    config.put("diffie-hellman-group15-sha512", 
+               "com.jcraft.jsch.DHG15");
     config.put("diffie-hellman-group16-sha512", 
                "com.jcraft.jsch.DHG16");
+    config.put("diffie-hellman-group17-sha512", 
+               "com.jcraft.jsch.DHG17");
     config.put("diffie-hellman-group18-sha512", 
                "com.jcraft.jsch.DHG18");
     config.put("ecdsa-sha2-nistp256", "com.jcraft.jsch.jce.SignatureECDSA256");
@@ -75,8 +79,12 @@ public class JSch{
 
     config.put("ecdh-sha2-nistp", "com.jcraft.jsch.jce.ECDHN");
 
+    config.put("ssh-ed25519", "com.jcraft.jsch.jce.SignatureEd25519");
+    config.put("ssh-ed448",   "com.jcraft.jsch.jce.SignatureEd448");
+
     config.put("curve25519-sha256",            "com.jcraft.jsch.DH25519");
     config.put("curve25519-sha256@libssh.org", "com.jcraft.jsch.DH25519");
+    config.put("curve448-sha512",              "com.jcraft.jsch.DH448");
     config.put("xdh", "com.jcraft.jsch.jce.XDH");
 
     config.put("dh",            "com.jcraft.jsch.jce.DH");
@@ -110,10 +118,12 @@ public class JSch{
     config.put("keypairgen.dsa",   "com.jcraft.jsch.jce.KeyPairGenDSA");
     config.put("keypairgen.rsa",   "com.jcraft.jsch.jce.KeyPairGenRSA");
     config.put("keypairgen.ecdsa", "com.jcraft.jsch.jce.KeyPairGenECDSA");
+    config.put("keypairgen.eddsa", "com.jcraft.jsch.jce.KeyPairGenEdDSA");
     config.put("random",        "com.jcraft.jsch.jce.Random");
 
     config.put("none",           "com.jcraft.jsch.CipherNone");
 
+    config.put("chacha20-poly1305@openssh.com",    "com.jcraft.jsch.jce.ChaCha20Poly1305");
     config.put("aes128-gcm@openssh.com",    "com.jcraft.jsch.jce.AES128GCM");
     config.put("aes256-gcm@openssh.com",    "com.jcraft.jsch.jce.AES256GCM");
 
@@ -145,12 +155,12 @@ public class JSch{
     config.put("HashKnownHosts",  "no");
 
     config.put("PreferredAuthentications", "gssapi-with-mic,publickey,keyboard-interactive,password");
-    config.put("PubkeyAcceptedKeyTypes", "ecdsa-sha2-nistp256,ecdsa-sha2-nistp384,ecdsa-sha2-nistp521,rsa-sha2-512,rsa-sha2-256,rsa-sha2-512,ssh-rsa");
+    config.put("PubkeyAcceptedKeyTypes", "ecdsa-sha2-nistp256,ecdsa-sha2-nistp384,ecdsa-sha2-nistp521,ssh-ed25519,rsa-sha2-512,rsa-sha2-256,rsa-sha2-512,ssh-rsa");
 
-    config.put("CheckCiphers", "aes256-gcm@openssh.com,aes128-gcm@openssh.com,aes256-ctr,aes192-ctr,aes128-ctr,aes256-cbc,aes192-cbc,aes128-cbc,3des-ctr,arcfour,arcfour128,arcfour256");
+    config.put("CheckCiphers", "chacha20-poly1305@openssh.com,aes256-gcm@openssh.com,aes128-gcm@openssh.com,aes256-ctr,aes192-ctr,aes128-ctr,aes256-cbc,aes192-cbc,aes128-cbc,3des-ctr,arcfour,arcfour128,arcfour256");
     config.put("CheckMacs", "hmac-sha2-256-etm@openssh.com,hmac-sha2-512-etm@openssh.com,hmac-sha2-256,hmac-sha2-512");
-    config.put("CheckKexes", "curve25519-sha256,curve25519-sha256@libssh.org,diffie-hellman-group14-sha1,diffie-hellman-group14-sha256,diffie-hellman-group16-sha512,diffie-hellman-group18-sha512,ecdh-sha2-nistp256,ecdh-sha2-nistp384,ecdh-sha2-nistp521");
-    config.put("CheckSignatures", "rsa-sha2-256,rsa-sha2-512,ecdsa-sha2-nistp256,ecdsa-sha2-nistp384,ecdsa-sha2-nistp521");
+    config.put("CheckKexes", "curve25519-sha256,curve25519-sha256@libssh.org,curve448-sha512,diffie-hellman-group14-sha1,diffie-hellman-group14-sha256,diffie-hellman-group15-sha512,diffie-hellman-group16-sha512,diffie-hellman-group17-sha512,diffie-hellman-group18-sha512,ecdh-sha2-nistp256,ecdh-sha2-nistp384,ecdh-sha2-nistp521");
+    config.put("CheckSignatures", "rsa-sha2-256,rsa-sha2-512,ecdsa-sha2-nistp256,ecdsa-sha2-nistp384,ecdsa-sha2-nistp521,ssh-ed25519,ssh-ed448");
     config.put("FingerprintHash", "sha256");
 
     config.put("MaxAuthTries", "6");

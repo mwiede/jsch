@@ -94,7 +94,7 @@
                         <configuration>
                             <rules>
                                 <requireJavaVersion>
-                                    <version>11</version>
+                                    <version>15</version>
                                 </requireJavaVersion>
                             </rules>
                         </configuration>
@@ -120,6 +120,19 @@
                             </compileSourceRoots>
                             <outputDirectory>${project.build.directory}/classes-java11</outputDirectory>
                             <release>11</release>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>default-compile-15</id>
+                        <goals>
+                            <goal>compile</goal>
+                        </goals>
+                        <configuration>
+                            <compileSourceRoots>
+                                <compileSourceRoot>${project.basedir}/src/main/java15</compileSourceRoot>
+                            </compileSourceRoots>
+                            <outputDirectory>${project.build.directory}/classes-java15</outputDirectory>
+                            <release>15</release>
                         </configuration>
                     </execution>
                 </executions>
@@ -167,6 +180,24 @@
                             <resources>
                                 <resource>
                                     <directory>${project.build.directory}/classes-java11</directory>
+                                </resource>
+                            </resources>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>copy-resources-15</id>
+                        <phase>prepare-package</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                            <nonFilteredFileExtensions>
+                                <nonFilteredFileExtension>class</nonFilteredFileExtension>
+                            </nonFilteredFileExtensions>
+                            <outputDirectory>${project.build.outputDirectory}/META-INF/versions/15</outputDirectory>
+                            <resources>
+                                <resource>
+                                    <directory>${project.build.directory}/classes-java15</directory>
                                 </resource>
                             </resources>
                         </configuration>

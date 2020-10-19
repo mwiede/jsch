@@ -40,6 +40,8 @@ public abstract class KeyPair{
   public static final int RSA=2;
   public static final int ECDSA=3;
   public static final int UNKNOWN=4;
+  public static final int ED25519=5;
+  public static final int ED448=6;
 
   // at the moment of loading the key, it is not clear which type it is, because it still needs to be decrypted
   private static final int DEFERRED = 5;
@@ -62,6 +64,8 @@ public abstract class KeyPair{
     if(type==DSA){ kpair=new KeyPairDSA(jsch); }
     else if(type==RSA){ kpair=new KeyPairRSA(jsch); }
     else if(type==ECDSA){ kpair=new KeyPairECDSA(jsch); }
+    else if(type==ED25519){ kpair=new KeyPairEd25519(jsch); }
+    else if(type==ED448){ kpair=new KeyPairEd448(jsch); }
     if(kpair!=null){
       kpair.generate(key_size);
     }
@@ -613,6 +617,12 @@ public abstract class KeyPair{
               _type.equals("ecdsa-sha2-nistp521")){
         kpair=KeyPairECDSA.fromSSHAgent(jsch, buf);
       }
+      else if(_type.equals("ssh-ed25519")){
+        kpair=KeyPairEd25519.fromSSHAgent(jsch, buf);
+      }
+      else if(_type.equals("ssh-ed448")){
+        kpair=KeyPairEd448.fromSSHAgent(jsch, buf);
+      }
       else{
         throw new JSchException("privatekey: invalid key "+new String(prvkey, 4, 7));
       }
@@ -921,6 +931,8 @@ public abstract class KeyPair{
                  buf.length>7){
 		if(buf[4]=='d'){ type=DSA; }
 		else if(buf[4]=='r'){ type=RSA; }
+		else if(buf[4]=='e' && buf[6]=='2'){ type=ED25519; }
+		else if(buf[4]=='e' && buf[6]=='4'){ type=ED448; }
               }
 	      i=0;
 	      while(i<len){ if(buf[i]==' ')break; i++;} i++;
@@ -979,6 +991,8 @@ public abstract class KeyPair{
       if(type==DSA){ kpair=new KeyPairDSA(jsch); }
       else if(type==RSA){ kpair=new KeyPairRSA(jsch); }
       else if(type==ECDSA){ kpair=new KeyPairECDSA(jsch, pubkey); }
+      else if(type==ED25519){ kpair=new KeyPairEd25519(jsch, pubkey, prvkey); }
+      else if(type==ED448){ kpair=new KeyPairEd448(jsch, pubkey, prvkey); }
       else if(vendor==VENDOR_PKCS8){ kpair = new KeyPairPKCS8(jsch); }
       else if (type == DEFERRED) { kpair = new KeyPairDeferred(jsch); }
 
@@ -1014,7 +1028,7 @@ public abstract class KeyPair{
    * reads openssh key v1 format and returns key type.
    *
    * @param data
-   * @return key type 1=DSA, 2=RSA, 3=ECDSA, 4=UNKNOWN
+   * @return key type 1=DSA, 2=RSA, 3=ECDSA, 4=UNKNOWN, 5=ED25519, 6=ED448
    * @throws IOException
    * @throws JSchException
    */
@@ -1040,6 +1054,10 @@ public abstract class KeyPair{
           return DSA;
       } else if (keyType.startsWith("ecdsa-sha2")) {
           return ECDSA;
+      } else if (keyType.startsWith("ssh-ed25519")) {
+          return ED25519;
+      } else if (keyType.startsWith("ssh-ed448")) {
+          return ED448;
       } else throw new JSchException("keytype " + keyType + " not supported as part of openssh v1 format");
 
   }

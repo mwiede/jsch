@@ -57,9 +57,14 @@ public class XDH implements com.jcraft.jsch.XDH {
   }
 
   public byte[] getSecret(byte[] Q) throws Exception{
+    // The u coordinate in BigInteger format needs to be a positive value.
+    // So zero extend the little-endian input before rotating into big-endian.
+    // This should ensure that we end up with a positive BigInteger value.
+    Q = rotate(Q);
+    byte[] u = new byte[keylen + 1];
+    System.arraycopy(Q, 0, u, 1, keylen);
+    XECPublicKeySpec spec = new XECPublicKeySpec(publicKey.getParams(), new BigInteger(u));
     KeyFactory kf = KeyFactory.getInstance("XDH");
-    BigInteger u = new BigInteger(rotate(Q));
-    XECPublicKeySpec spec = new XECPublicKeySpec(publicKey.getParams(), u);
     PublicKey theirPublicKey = kf.generatePublic(spec);
     myKeyAgree.doPhase(theirPublicKey, true);
     return myKeyAgree.generateSecret();

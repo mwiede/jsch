@@ -68,6 +68,8 @@ public class AES128CBC implements Cipher{
       throw e;
     }
   }
+  public void update(int foo) throws Exception{
+  }
   public void update(byte[] foo, int s1, int len, byte[] bar, int s2) throws Exception{
     cipher.update(foo, s1, len, bar, s2);
   }
@@ -77,4 +79,5 @@ public class AES128CBC implements Cipher{
   }
   public boolean isCBC(){return true; }
   public boolean isAEAD(){return false; }
+  public boolean isChaCha20(){return false; }
 }
