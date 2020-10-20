@@ -359,9 +359,7 @@ class Util{
       }
       catch(Exception e){
         String message=e.toString();
-        if(e instanceof Throwable)
-          throw new JSchException(message, (Throwable)e);
-        throw new JSchException(message);
+        throw new JSchException(message, e);
       }
     }
     final String _host=host;

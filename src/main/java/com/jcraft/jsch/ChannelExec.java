@@ -45,9 +45,7 @@ public class ChannelExec extends ChannelSession{
     }
     catch(Exception e){
       if(e instanceof JSchException) throw (JSchException)e;
-      if(e instanceof Throwable)
-        throw new JSchException("ChannelExec", (Throwable)e);
-      throw new JSchException("ChannelExec");
+      throw new JSchException("ChannelExec", e);
     }
 
     if(io.in!=null){

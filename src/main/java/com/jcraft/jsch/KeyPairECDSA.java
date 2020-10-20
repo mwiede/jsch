@@ -105,9 +105,7 @@ public class KeyPairECDSA extends KeyPair{
       keypairgen=null;
     }
     catch(Exception e){
-      if(e instanceof Throwable)
-        throw new JSchException(e.toString(), (Throwable)e);
-      throw new JSchException(e.toString());
+      throw new JSchException(e.toString(), e);
     }
   }
 

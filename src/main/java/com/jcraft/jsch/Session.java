@@ -2454,9 +2454,7 @@ break;
     }
     catch(Exception e){
       grr.setThread(null);
-      if(e instanceof Throwable)
-        throw new JSchException(e.toString(), (Throwable)e);
-      throw new JSchException(e.toString());
+      throw new JSchException(e.toString(), e);
     }
 
     int count = 0;
@@ -2630,9 +2628,7 @@ break;
       this.timeout=timeout;
     }
     catch(Exception e){
-      if(e instanceof Throwable)
-        throw new JSchException(e.toString(), (Throwable)e);
-      throw new JSchException(e.toString());
+      throw new JSchException(e.toString(), e);
     }
   }
   public String getServerVersion(){

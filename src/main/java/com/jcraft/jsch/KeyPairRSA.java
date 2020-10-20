@@ -82,9 +82,7 @@ public class KeyPairRSA extends KeyPair{
     }
     catch(Exception e){
       //System.err.println("KeyPairRSA: "+e);
-      if(e instanceof Throwable)
-        throw new JSchException(e.toString(), (Throwable)e);
-      throw new JSchException(e.toString());
+      throw new JSchException(e.toString(), e);
     }
   }
 

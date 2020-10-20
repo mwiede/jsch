@@ -85,9 +85,7 @@ public abstract class DHECN extends KeyExchange{
       buf.putString(Q_C);
     }
     catch(Exception e){
-      if(e instanceof Throwable)
-        throw new JSchException(e.toString(), (Throwable)e);
-      throw new JSchException(e.toString());
+      throw new JSchException(e.toString(), e);
     }
 
     if(V_S==null){  // This is a really ugly hack for Session.checkKexes ;-(

@@ -155,9 +155,7 @@ public class ProxyHTTP implements Proxy{
       catch(Exception eee){
       }
       String message="ProxyHTTP: "+e.toString();
-      if(e instanceof Throwable)
-        throw new JSchException(message, (Throwable)e);
-      throw new JSchException(message);
+      throw new JSchException(message, e);
     }
   }
   @Override

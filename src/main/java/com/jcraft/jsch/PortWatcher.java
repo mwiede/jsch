@@ -78,9 +78,7 @@ class PortWatcher implements Runnable{
     }
     catch(Exception e){
       String message="PortForwardingL: local port "+address+":"+lport+" cannot be bound.";
-      if(e instanceof Throwable)
-        throw new JSchException(message, e);
-      throw new JSchException(message);
+      throw new JSchException(message, e);
     }
     if(lport==0){
       int assigned=ss.getLocalPort();

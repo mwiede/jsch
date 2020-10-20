@@ -58,9 +58,7 @@ public class ChannelSubsystem extends ChannelSession{
     }
     catch(Exception e){
       if(e instanceof JSchException){ throw (JSchException)e; }
-      if(e instanceof Throwable)
-        throw new JSchException("ChannelSubsystem", (Throwable)e);
-      throw new JSchException("ChannelSubsystem");
+      throw new JSchException("ChannelSubsystem", e);
     }
     if(io.in!=null){
       thread=new Thread(this);
