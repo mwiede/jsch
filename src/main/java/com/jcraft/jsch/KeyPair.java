@@ -53,7 +53,7 @@ public abstract class KeyPair{
 
   int vendor=VENDOR_OPENSSH;
 
-  private static final byte[] AUTH_MAGIC = "openssh-key-v1\0".getBytes();
+  private static final byte[] AUTH_MAGIC = Util.str2byte("openssh-key-v1\0");
   private static final byte[] cr=Util.str2byte("\n");
 
   public static KeyPair genKeyPair(JSch jsch, int type) throws JSchException{
@@ -603,7 +603,7 @@ public abstract class KeyPair{
 
       Buffer buf=new Buffer(prvkey);
       buf.skip(prvkey.length);  // for using Buffer#available()
-      String _type = new String(buf.getString()); // ssh-rsa or ssh-dss
+      String _type = Util.byte2str(buf.getString()); // ssh-rsa or ssh-dss
       buf.rewind();
 
       KeyPair kpair=null;
@@ -625,7 +625,7 @@ public abstract class KeyPair{
         kpair=KeyPairEd448.fromSSHAgent(jsch, buf);
       }
       else{
-        throw new JSchException("privatekey: invalid key "+new String(prvkey, 4, 7));
+        throw new JSchException("privatekey: invalid key "+Util.byte2str(prvkey, 4, 7));
       }
       return kpair;
     }
@@ -821,7 +821,7 @@ public abstract class KeyPair{
 	_buf.getInt();  // 0x3f6ff9be
 	_buf.getInt();
 	byte[]_type=_buf.getString();
-	//System.err.println("type: "+new String(_type)); 
+	//System.err.println("type: "+Util.byte2str(_type)); 
 	String _cipher=Util.byte2str(_buf.getString());
 	//System.err.println("cipher: "+_cipher); 
 	if(_cipher.equals("3des-cbc")){
@@ -946,7 +946,7 @@ public abstract class KeyPair{
                 while(i<len){ if(buf[i]=='\n')break; i++;}
                 if(i>0 && buf[i-1]==0x0d) i--;
                 if(start<i){
-                  publicKeyComment = new String(buf, start, i-start);
+                  publicKeyComment = Util.byte2str(buf, start, i-start);
                 }
               } 
 	    }
@@ -966,7 +966,7 @@ public abstract class KeyPair{
                 while(i<len){ if(buf[i]=='\n')break; i++;}
                 if(i>0 && buf[i-1]==0x0d) i--;
                 if(start<i){
-                  publicKeyComment = new String(buf, start, i-start);
+                  publicKeyComment = Util.byte2str(buf, start, i-start);
                 }
               } 
             }
@@ -1062,7 +1062,7 @@ public abstract class KeyPair{
 
   private static boolean isOpenSSHPrivateKey(byte[] buf, int i, int len) {
       String ident = "OPENSSH PRIVATE KEY-----";
-      return i + ident.length() < len && ident.equals(new String(Arrays.copyOfRange(buf, i, i + ident.length())));
+      return i + ident.length() < len && ident.equals(Util.byte2str(Arrays.copyOfRange(buf, i, i + ident.length())));
   }
 
   static private byte a2b(byte c){
@@ -1247,7 +1247,7 @@ public abstract class KeyPair{
         break;
       }
       if(buf[i] == ':'){
-        key = new String(buf, index, i - index);
+        key = Util.byte2str(buf, index, i - index);
         i++;
         if(i < buf.length && buf[i] == ' '){
           i++;
@@ -1262,7 +1262,7 @@ public abstract class KeyPair{
 
     for(int i = index; i < buf.length; i++){
       if(buf[i] == 0x0d){
-        value = new String(buf, index, i - index);
+        value = Util.byte2str(buf, index, i - index);
         i++;
         if(i < buf.length && buf[i] == 0x0a){
           i++;

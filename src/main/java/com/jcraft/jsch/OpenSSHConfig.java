@@ -32,9 +32,11 @@ package com.jcraft.jsch;
 import java.io.InputStream;
 import java.io.Reader;
 import java.io.StringReader;
-import java.io.FileReader;
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.Hashtable;
 import java.util.Vector;
 
@@ -79,12 +81,10 @@ public class OpenSSHConfig implements ConfigRepository {
    * @return an instanceof OpenSSHConfig
    */
   public static OpenSSHConfig parse(String conf) throws IOException {
-    Reader r = new StringReader(conf);
-    try {
-      return new OpenSSHConfig(r);
-    }
-    finally {
-      r.close();
+    try(Reader r = new StringReader(conf)) {
+      try(BufferedReader br = new BufferedReader(r)) {
+        return new OpenSSHConfig(br);
+      }
     }
   }
 
@@ -95,25 +95,19 @@ public class OpenSSHConfig implements ConfigRepository {
    * @return an instanceof OpenSSHConfig
    */
   public static OpenSSHConfig parseFile(String file) throws IOException {
-    Reader r = new FileReader(Util.checkTilde(file));
-    try {
-      return new OpenSSHConfig(r);
-    }
-    finally {
-      r.close();
+    try(BufferedReader br = Files.newBufferedReader(Paths.get(Util.checkTilde(file)), StandardCharsets.UTF_8)) {
+      return new OpenSSHConfig(br);
     }
   }
 
-  OpenSSHConfig(Reader r) throws IOException {
-    _parse(r);
+  OpenSSHConfig(BufferedReader br) throws IOException {
+    _parse(br);
   }
 
   private final Hashtable<String, Vector<String[]>> config = new Hashtable<>();
   private final Vector<String> hosts = new Vector<>();
 
-  private void _parse(Reader r) throws IOException {
-    BufferedReader br = new BufferedReader(r);
-
+  private void _parse(BufferedReader br) throws IOException {
     String host = "";
     Vector<String[]> kv = new Vector<>();
     String l = null;

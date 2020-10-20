@@ -115,7 +115,7 @@ System.err.println("");
     byte[] tmp;
     Buffer buf=new Buffer(sig);
 
-    if(new String(buf.getString()).equals("ssh-dss")){
+    if(new String(buf.getString(), "UTF-8").equals("ssh-dss")){
       j=buf.getInt();
       i=buf.getOffSet();
       tmp=new byte[j];

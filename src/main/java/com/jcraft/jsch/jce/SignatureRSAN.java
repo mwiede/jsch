@@ -82,7 +82,7 @@ public abstract class SignatureRSAN implements com.jcraft.jsch.SignatureRSA{
     byte[] tmp;
     Buffer buf=new Buffer(sig);
 
-    String foo=new String(buf.getString());
+    String foo=new String(buf.getString(), "UTF-8");
     if(foo.equals("ssh-rsa") || foo.equals("rsa-sha2-256") || foo.equals("rsa-sha2-512")){
       if(!foo.equals(getName())) return false;
       j=buf.getInt();

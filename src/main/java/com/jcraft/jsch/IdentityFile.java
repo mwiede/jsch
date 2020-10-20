@@ -110,12 +110,7 @@ class IdentityFile implements Identity{
   @Override
   public String getAlgName(){
     byte[] name = kpair.getKeyTypeName();
-    try {
-      return new String(name, "UTF-8");
-    }
-    catch (UnsupportedEncodingException e){
-      return new String(name);
-    }
+    return Util.byte2str(name);
   }
 
   /**

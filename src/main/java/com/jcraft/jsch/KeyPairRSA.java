@@ -404,7 +404,7 @@ public class KeyPairRSA extends KeyPair{
     kpair.c_array = tmp[4];     // iqmp
     kpair.p_array = tmp[5];
     kpair.q_array = tmp[6];
-    kpair.publicKeyComment = new String(tmp[7]);
+    kpair.publicKeyComment = Util.byte2str(tmp[7]);
     kpair.vendor=VENDOR_OPENSSH;
     return kpair;
   }

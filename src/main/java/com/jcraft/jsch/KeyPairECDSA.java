@@ -208,8 +208,8 @@ public class KeyPairECDSA extends KeyPair{
         String keyType = Util.byte2str(prvKeyBuffer.getString()); // string keytype
 
         name = prvKeyBuffer.getString();
-        if(!Arrays.asList(names).contains(new String(name))){
-          throw new IllegalArgumentException("unknown curve name "+new String(name));
+        if(!Arrays.asList(names).contains(Util.byte2str(name))){
+          throw new IllegalArgumentException("unknown curve name "+Util.byte2str(name));
         }
 
         final int keyLen = prvKeyBuffer.getInt();
@@ -321,7 +321,7 @@ public class KeyPairECDSA extends KeyPair{
     if(r_array==null) return null;
 
     byte[][] tmp = new byte[3][];
-    tmp[0] = Util.str2byte("ecdsa-sha2-"+new String(name));
+    tmp[0] = Util.str2byte("ecdsa-sha2-"+Util.byte2str(name));
     tmp[1] = name;
     tmp[2] = new byte[1+r_array.length+s_array.length];
     tmp[2][0] = 4;   // POINT_CONVERSION_UNCOMPRESSED
@@ -333,7 +333,7 @@ public class KeyPairECDSA extends KeyPair{
 
   @Override
   byte[] getKeyTypeName(){
-    return Util.str2byte("ecdsa-sha2-"+new String(name));
+    return Util.str2byte("ecdsa-sha2-"+Util.byte2str(name));
   }
   @Override
   public int getKeyType(){
@@ -347,7 +347,7 @@ public class KeyPairECDSA extends KeyPair{
   @Override
   public byte[] getSignature(byte[] data){
     try{
-      Class<?> c=Class.forName(JSch.getConfig("ecdsa-sha2-"+new String(name)));
+      Class<?> c=Class.forName(JSch.getConfig("ecdsa-sha2-"+Util.byte2str(name)));
       SignatureECDSA ecdsa=(SignatureECDSA)(c.getDeclaredConstructor().newInstance());
       ecdsa.init();
       ecdsa.setPrvKey(prv_array);
@@ -356,7 +356,7 @@ public class KeyPairECDSA extends KeyPair{
       byte[] sig = ecdsa.sign();
 
       byte[][] tmp = new byte[2][];
-      tmp[0] = Util.str2byte("ecdsa-sha2-"+new String(name));
+      tmp[0] = Util.str2byte("ecdsa-sha2-"+Util.byte2str(name));
       tmp[1] = sig;
       return Buffer.fromBytes(tmp).buffer;
     }
@@ -374,7 +374,7 @@ public class KeyPairECDSA extends KeyPair{
   @Override
   public Signature getVerifier(){
     try{
-      Class<?> c=Class.forName(JSch.getConfig("ecdsa-sha2-"+new String(name)));
+      Class<?> c=Class.forName(JSch.getConfig("ecdsa-sha2-"+Util.byte2str(name)));
       final SignatureECDSA ecdsa=(SignatureECDSA)(c.getDeclaredConstructor().newInstance());
       ecdsa.init();
 
@@ -414,7 +414,7 @@ public class KeyPairECDSA extends KeyPair{
                                           name,
                                           r_array, s_array,
                                           prv_array);
-    kpair.publicKeyComment = new String(tmp[4]);
+    kpair.publicKeyComment = Util.byte2str(tmp[4]);
     kpair.vendor=VENDOR_OPENSSH;
     return kpair;
   }
@@ -425,7 +425,7 @@ public class KeyPairECDSA extends KeyPair{
       throw new JSchException("key is encrypted.");
     }
     Buffer buf = new Buffer();
-    buf.putString(Util.str2byte("ecdsa-sha2-"+new String(name)));
+    buf.putString(Util.str2byte("ecdsa-sha2-"+Util.byte2str(name)));
     buf.putString(name);
     buf.putString(toPoint(r_array, s_array));
     buf.putString(prv_array);

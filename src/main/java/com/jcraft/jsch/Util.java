@@ -414,7 +414,7 @@ class Util{
       return null;
     try{ return str.getBytes(encoding); }
     catch(java.io.UnsupportedEncodingException e){
-      return str.getBytes();
+      throw new IllegalArgumentException(e);
     }
   }
 
@@ -429,7 +429,7 @@ class Util{
   static String byte2str(byte[] str, int s, int l, String encoding){
     try{ return new String(str, s, l, encoding); }
     catch(java.io.UnsupportedEncodingException e){
-      return new String(str, s, l);
+      throw new IllegalArgumentException(e);
     }
   }
 

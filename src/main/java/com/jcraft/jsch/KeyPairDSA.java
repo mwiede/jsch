@@ -345,7 +345,7 @@ public class KeyPairDSA extends KeyPair{
     KeyPairDSA kpair = new KeyPairDSA(jsch,
                                       P_array, Q_array, G_array,
                                       pub_array, prv_array);
-    kpair.publicKeyComment = new String(tmp[6]);
+    kpair.publicKeyComment = Util.byte2str(tmp[6]);
     kpair.vendor=VENDOR_OPENSSH;
     return kpair;
   }
