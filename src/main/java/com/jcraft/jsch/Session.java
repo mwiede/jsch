@@ -2606,7 +2606,7 @@ break;
       foo=config.get(key);
       if(foo instanceof String) return (String)foo;
     }
-    foo=jsch.getConfig(key);
+    foo=JSch.getConfig(key);
     if(foo instanceof String) return (String)foo;
     return null;
   }
@@ -2888,7 +2888,7 @@ break;
     String[] _sigs=Util.split(sigs, ",");
     for(int i=0; i<_sigs.length; i++){
       try{
-        Class<?> c=Class.forName(jsch.getConfig(_sigs[i]));
+        Class<?> c=Class.forName(JSch.getConfig(_sigs[i]));
         final Signature sig=(Signature)(c.newInstance());
         sig.init();
       }

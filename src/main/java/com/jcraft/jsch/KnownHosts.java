@@ -486,7 +486,7 @@ loop:
   private MAC getHMACSHA1(){
     if(hmacsha1==null){
       try{
-        Class<?> c=Class.forName(jsch.getConfig("hmac-sha1"));
+        Class<?> c=Class.forName(JSch.getConfig("hmac-sha1"));
         hmacsha1=(MAC)(c.newInstance());
       }
       catch(Exception e){ 
