@@ -626,21 +626,21 @@ public abstract class Channel implements Runnable{
 */
 
   static class PassiveInputStream extends MyPipedInputStream{
-    PipedOutputStream out;
+    PipedOutputStream os;
     PassiveInputStream(PipedOutputStream out, int size) throws IOException{
       super(out, size);
-      this.out=out;
+      this.os=out;
     }
     PassiveInputStream(PipedOutputStream out) throws IOException{
       super(out);
-      this.out=out;
+      this.os=out;
     }
     @Override
     public void close() throws IOException{
-      if(out!=null){
-        this.out.close();
+      if(this.os!=null){
+        this.os.close();
       }
-      out=null;
+      this.os=null;
     }
   }
   static class PassiveOutputStream extends PipedOutputStream{

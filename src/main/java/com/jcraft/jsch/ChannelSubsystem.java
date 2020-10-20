@@ -30,14 +30,8 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 package com.jcraft.jsch;
 
 public class ChannelSubsystem extends ChannelSession{
-  boolean xforwading=false;
-  boolean pty=false;
   boolean want_reply=true;
   String subsystem="";
-  @Override
-  public void setXForwarding(boolean foo){ xforwading=foo; }
-  @Override
-  public void setPty(boolean foo){ pty=foo; }
   public void setWantReply(boolean foo){ want_reply=foo; }
   public void setSubsystem(String foo){ subsystem=foo; }
   @Override
