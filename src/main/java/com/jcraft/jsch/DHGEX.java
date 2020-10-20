@@ -68,7 +68,7 @@ public class DHGEX extends KeyExchange{
 
     try{
       Class<?> c=Class.forName(session.getConfig(hash));
-      sha=(HASH)(c.newInstance());
+      sha=(HASH)(c.getDeclaredConstructor().newInstance());
       sha.init();
     }
     catch(Exception e){
@@ -85,7 +85,7 @@ public class DHGEX extends KeyExchange{
       // JDK-8072452 increases DH max to 8192
       max=check8192(c, max);
       if(max>=2048) preferred=2048;
-      dh=(com.jcraft.jsch.DH)(c.newInstance());
+      dh=(com.jcraft.jsch.DH)(c.getDeclaredConstructor().newInstance());
       dh.init();
     }
     catch(Exception e){
@@ -229,7 +229,7 @@ public class DHGEX extends KeyExchange{
   public int getState(){return state; }
 
   protected int check2048(Class<?> c, int _max) throws Exception {
-    DH dh=(com.jcraft.jsch.DH)(c.newInstance());
+    DH dh=(com.jcraft.jsch.DH)(c.getDeclaredConstructor().newInstance());
     dh.init();
     byte[] foo = new byte[257];
     foo[1]=(byte)0xdd;
@@ -246,7 +246,7 @@ public class DHGEX extends KeyExchange{
   }
 
   protected int check8192(Class<?> c, int _max) throws Exception {
-    DH dh=(com.jcraft.jsch.DH)(c.newInstance());
+    DH dh=(com.jcraft.jsch.DH)(c.getDeclaredConstructor().newInstance());
     dh.init();
     dh.setP(DHG18.p);
     dh.setG(DHG18.g);

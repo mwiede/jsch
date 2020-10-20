@@ -115,7 +115,7 @@ public class UserAuthGSSAPIWithMIC extends UserAuth {
     GSSContext context=null;
     try{
       Class<?> c=Class.forName(session.getConfig(method));
-      context=(GSSContext)(c.newInstance());
+      context=(GSSContext)(c.getDeclaredConstructor().newInstance());
     }
     catch(Exception e){ 
       return false;

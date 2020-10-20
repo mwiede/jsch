@@ -62,7 +62,7 @@ public abstract class DHECN extends KeyExchange{
 
     try{
       Class<?> c=Class.forName(session.getConfig(sha_name));
-      sha=(HASH)(c.newInstance());
+      sha=(HASH)(c.getDeclaredConstructor().newInstance());
       sha.init();
     }
     catch(Exception e){
@@ -77,7 +77,7 @@ public abstract class DHECN extends KeyExchange{
 
     try{
       Class<?> c=Class.forName(session.getConfig("ecdh-sha2-nistp"));
-      ecdh=(ECDH)(c.newInstance());
+      ecdh=(ECDH)(c.getDeclaredConstructor().newInstance());
       ecdh.init(key_size);
 
       Q_C = ecdh.getQ();
