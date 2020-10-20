@@ -271,6 +271,32 @@
                 </plugins>
             </build>
         </profile>
+        <profile>
+            <id>errorprone</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-compiler-plugin</artifactId>
+                        <configuration>
+                            <fork>true</fork>
+                            <compilerArgs combine.self="override">
+                                <arg>-Xlint:all</arg>
+                                <arg>-XDcompilePolicy=simple</arg>
+                                <arg>-Xplugin:ErrorProne</arg>
+                            </compilerArgs>
+                            <annotationProcessorPaths>
+                                <path>
+                                    <groupId>com.google.errorprone</groupId>
+                                    <artifactId>error_prone_core</artifactId>
+                                    <version>2.4.0</version>
+                                </path>
+                            </annotationProcessorPaths>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
     </profiles>
     <parent>
         <groupId>org.sonatype.oss</groupId>
