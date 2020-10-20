@@ -1189,6 +1189,7 @@ public class ChannelSftp extends ChannelSession{
 
   private class RequestQueue {
     class OutOfOrderException extends Exception {
+      private static final long serialVersionUID=-1L;
       long offset;
       OutOfOrderException(long offset){
         this.offset=offset;

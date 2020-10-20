@@ -1288,6 +1288,7 @@ public abstract class KeyPair{
   }
 
   class ASN1Exception extends Exception {
+    private static final long serialVersionUID=-1L;
   }
 
   class ASN1 {
