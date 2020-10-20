@@ -109,7 +109,7 @@ public class KeyPairPKCS8 extends KeyPair {
     */
 
     try{
-      Vector values = new Vector();
+      Vector<byte[]> values = new Vector<>();
 
       ASN1[] contents = null;
       ASN1 asn1 = new ASN1(plain);
@@ -163,10 +163,10 @@ public class KeyPairPKCS8 extends KeyPair {
           values.addElement(asn1.getContent());
         }
 
-        byte[] P_array = (byte[])values.elementAt(0);
-        byte[] Q_array = (byte[])values.elementAt(1);
-        byte[] G_array = (byte[])values.elementAt(2);
-        byte[] prv_array = (byte[])values.elementAt(3);
+        byte[] P_array = values.elementAt(0);
+        byte[] Q_array = values.elementAt(1);
+        byte[] G_array = values.elementAt(2);
+        byte[] prv_array = values.elementAt(3);
         // Y = g^X mode p
         byte[] pub_array =
           (new BigInteger(G_array)).
@@ -308,7 +308,7 @@ or
 
       byte[] key=null;
       try{
-        Class c=Class.forName((String)jsch.getConfig("pbkdf"));
+        Class<?> c=Class.forName(jsch.getConfig("pbkdf"));
         PBKDF tmp=(PBKDF)(c.newInstance());
         key = tmp.getKey(_passphrase, salt, iterations, cipher.getBlockSize());
       }
@@ -351,7 +351,7 @@ or
       else if(Util.array_equals(id, aes256cbc)){
         name="aes256-cbc";
       }
-      Class c=Class.forName((String)jsch.getConfig(name));
+      Class<?> c=Class.forName(jsch.getConfig(name));
       cipher=(Cipher)(c.newInstance());
     }
     catch(Exception e){

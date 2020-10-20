@@ -46,8 +46,8 @@ public class Algorithms3IT {
   private Slf4jLogConsumer sshdLogConsumer;
 
   @Container
-  public GenericContainer sshd =
-      new GenericContainer(
+  public GenericContainer<?> sshd =
+      new GenericContainer<>(
               new ImageFromDockerfile()
                   .withFileFromClasspath("dropbear_rsa_host_key", "docker/dropbear_rsa_host_key")
                   .withFileFromClasspath("authorized_keys", "docker/authorized_keys")

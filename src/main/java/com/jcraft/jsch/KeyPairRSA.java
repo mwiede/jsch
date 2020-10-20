@@ -64,7 +64,7 @@ public class KeyPairRSA extends KeyPair{
   void generate(int key_size) throws JSchException{
     this.key_size=key_size;
     try{
-      Class c=Class.forName(jsch.getConfig("keypairgen.rsa"));
+      Class<?> c=Class.forName(jsch.getConfig("keypairgen.rsa"));
       KeyPairGenRSA keypairgen=(KeyPairGenRSA)(c.newInstance());
       keypairgen.init(key_size);
       pub_array=keypairgen.getE();
@@ -340,7 +340,7 @@ public class KeyPairRSA extends KeyPair{
 
   public byte[] getSignature(byte[] data, String alg){
     try{
-      Class c=Class.forName(jsch.getConfig(alg));
+      Class<?> c=Class.forName(jsch.getConfig(alg));
       SignatureRSA rsa=(SignatureRSA)(c.newInstance());
       rsa.init();
       rsa.setPrvKey(prv_array, n_array);
@@ -363,7 +363,7 @@ public class KeyPairRSA extends KeyPair{
 
   public Signature getVerifier(String alg){
     try{
-      Class c=Class.forName(jsch.getConfig(alg));
+      Class<?> c=Class.forName(jsch.getConfig(alg));
       SignatureRSA rsa=(SignatureRSA)(c.newInstance());
       rsa.init();
 

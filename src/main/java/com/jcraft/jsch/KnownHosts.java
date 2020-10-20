@@ -37,7 +37,7 @@ class KnownHosts implements HostKeyRepository{
 
   private JSch jsch=null;
   private String known_hosts=null;
-  private java.util.Vector pool=null;
+  private java.util.Vector<HostKey> pool=null;
 
   private MAC hmacsha1=null;
 
@@ -45,7 +45,7 @@ class KnownHosts implements HostKeyRepository{
     super();
     this.jsch=jsch;
     this.hmacsha1 = getHMACSHA1();
-    pool=new java.util.Vector();
+    pool=new java.util.Vector<>();
   }
 
   void setKnownHosts(String filename) throws JSchException{
@@ -262,7 +262,7 @@ loop:
 
     synchronized(pool){
       for(int i=0; i<pool.size(); i++){
-        HostKey _hk=(HostKey)(pool.elementAt(i));
+        HostKey _hk=pool.elementAt(i);
         if(_hk.isMatched(host) && _hk.type==hk.type){
           if(Util.array_equals(_hk.key, key)){
             return OK;
@@ -292,7 +292,7 @@ loop:
     HostKey hk=null;
     synchronized(pool){
       for(int i=0; i<pool.size(); i++){
-        hk=(HostKey)(pool.elementAt(i));
+        hk=pool.elementAt(i);
         if(hk.isMatched(host) && hk.type==type){
 /*
 	  if(Util.array_equals(hk.key, key)){ return; }
@@ -355,9 +355,9 @@ loop:
   }
   public HostKey[] getHostKey(String host, String type){
     synchronized(pool){
-      java.util.ArrayList v = new java.util.ArrayList();
+      java.util.List<HostKey> v = new java.util.ArrayList<>();
       for(int i=0; i<pool.size(); i++){
-	HostKey hk=(HostKey)pool.elementAt(i);
+	HostKey hk=pool.elementAt(i);
 	if(hk.type==HostKey.UNKNOWN) continue;
 	if(host==null || 
 	   (hk.isMatched(host) && 
@@ -367,7 +367,7 @@ loop:
       }
       HostKey[] foo = new HostKey[v.size()];
       for(int i=0; i<v.size(); i++){
-        foo[i] = (HostKey)v.get(i);
+        foo[i] = v.get(i);
       }
       if(host != null && host.startsWith("[") && host.indexOf("]:")>1){
         HostKey[] tmp =
@@ -389,7 +389,7 @@ loop:
     boolean sync=false;
     synchronized(pool){
     for(int i=0; i<pool.size(); i++){
-      HostKey hk=(HostKey)(pool.elementAt(i));
+      HostKey hk=pool.elementAt(i);
       if(host==null ||
 	 (hk.isMatched(host) && 
 	  (type==null || (hk.getType().equals(type) &&
@@ -430,7 +430,7 @@ loop:
       HostKey hk;
       synchronized(pool){
       for(int i=0; i<pool.size(); i++){
-        hk=(HostKey)(pool.elementAt(i));
+        hk=pool.elementAt(i);
         //hk.dump(out);
 	String marker=hk.getMarker();
 	String host=hk.getHost();
@@ -486,7 +486,7 @@ loop:
   private MAC getHMACSHA1(){
     if(hmacsha1==null){
       try{
-        Class c=Class.forName(jsch.getConfig("hmac-sha1"));
+        Class<?> c=Class.forName(jsch.getConfig("hmac-sha1"));
         hmacsha1=(MAC)(c.newInstance());
       }
       catch(Exception e){ 

@@ -399,7 +399,7 @@ public abstract class KeyPair{
   private Random genRandom(){
     if(random==null){
       try{
-	Class c=Class.forName(jsch.getConfig("random"));
+	Class<?> c=Class.forName(jsch.getConfig("random"));
         random=(Random)(c.newInstance());
       }
       catch(Exception e){ System.err.println("connect: random "+e); }
@@ -409,7 +409,7 @@ public abstract class KeyPair{
 
   private HASH genHash(){
     try{
-      Class c=Class.forName(jsch.getConfig("md5"));
+      Class<?> c=Class.forName(jsch.getConfig("md5"));
       hash=(HASH)(c.newInstance());
       hash.init();
     }
@@ -419,8 +419,7 @@ public abstract class KeyPair{
   }
   private Cipher genCipher(){
     try{
-      Class c;
-      c=Class.forName(jsch.getConfig("3des-cbc"));
+      Class<?> c=Class.forName(jsch.getConfig("3des-cbc"));
       cipher=(Cipher)(c.newInstance());
     }
     catch(Exception e){
@@ -466,7 +465,7 @@ public abstract class KeyPair{
 	System.arraycopy(hn, 0, key, 0, key.length); 
       }
       else if(vendor==VENDOR_PUTTY){
-        Class c=Class.forName((String)jsch.getConfig("sha-1"));
+        Class<?> c=Class.forName(jsch.getConfig("sha-1"));
         HASH sha1=(HASH)(c.newInstance());
         tmp = new byte[4];
         key = new byte[20*2];
@@ -693,8 +692,8 @@ public abstract class KeyPair{
         if(buf[i]=='A'&& i+7<len && buf[i+1]=='E'&& buf[i+2]=='S'&& buf[i+3]=='-' && 
            buf[i+4]=='2'&& buf[i+5]=='5'&& buf[i+6]=='6'&& buf[i+7]=='-'){
           i+=8;
-          if(Session.checkCipher((String)jsch.getConfig("aes256-cbc"))){
-            Class c=Class.forName((String)jsch.getConfig("aes256-cbc"));
+          if(Session.checkCipher(jsch.getConfig("aes256-cbc"))){
+            Class<?> c=Class.forName(jsch.getConfig("aes256-cbc"));
             cipher=(Cipher)(c.newInstance());
             // key=new byte[cipher.getBlockSize()];
             iv=new byte[cipher.getIVSize()];
@@ -707,8 +706,8 @@ public abstract class KeyPair{
         if(buf[i]=='A'&& i+7<len && buf[i+1]=='E'&& buf[i+2]=='S'&& buf[i+3]=='-' && 
            buf[i+4]=='1'&& buf[i+5]=='9'&& buf[i+6]=='2'&& buf[i+7]=='-'){
           i+=8;
-          if(Session.checkCipher((String)jsch.getConfig("aes192-cbc"))){
-            Class c=Class.forName((String)jsch.getConfig("aes192-cbc"));
+          if(Session.checkCipher(jsch.getConfig("aes192-cbc"))){
+            Class<?> c=Class.forName(jsch.getConfig("aes192-cbc"));
             cipher=(Cipher)(c.newInstance());
             // key=new byte[cipher.getBlockSize()];
             iv=new byte[cipher.getIVSize()];
@@ -721,8 +720,8 @@ public abstract class KeyPair{
         if(buf[i]=='A'&& i+7<len && buf[i+1]=='E'&& buf[i+2]=='S'&& buf[i+3]=='-' && 
            buf[i+4]=='1'&& buf[i+5]=='2'&& buf[i+6]=='8'&& buf[i+7]=='-'){
           i+=8;
-          if(Session.checkCipher((String)jsch.getConfig("aes128-cbc"))){
-            Class c=Class.forName((String)jsch.getConfig("aes128-cbc"));
+          if(Session.checkCipher(jsch.getConfig("aes128-cbc"))){
+            Class<?> c=Class.forName(jsch.getConfig("aes128-cbc"));
             cipher=(Cipher)(c.newInstance());
             // key=new byte[cipher.getBlockSize()];
             iv=new byte[cipher.getIVSize()];
@@ -868,7 +867,7 @@ public abstract class KeyPair{
           type = readOpenSSHKeyv1(data);
       } else if (Session.checkCipher(jsch.getConfig(cipherName))) {
           encrypted = true;
-          Class c = Class.forName(jsch.getConfig(cipherName));
+          Class<?> c = Class.forName(jsch.getConfig(cipherName));
           cipher = (Cipher) c.getDeclaredConstructor().newInstance();
           data = buffer.getString();
           // the type can only be determined after encryption, so we take this intermediate here:
@@ -1104,19 +1103,19 @@ public abstract class KeyPair{
     int lines = 0;
 
     Buffer buffer = new Buffer(buf);
-    java.util.Hashtable v = new java.util.Hashtable();
+    java.util.Hashtable<String, String> v = new java.util.Hashtable<>();
 
     while(true){
       if(!parseHeader(buffer, v))
         break;
     } 
 
-    String typ = (String)v.get("PuTTY-User-Key-File-2");
+    String typ = v.get("PuTTY-User-Key-File-2");
     if(typ == null){
       return null;
     }
 
-    lines = Integer.parseInt((String)v.get("Public-Lines"));
+    lines = Integer.parseInt(v.get("Public-Lines"));
     pubkey = parseLines(buffer, lines); 
 
     while(true){
@@ -1124,7 +1123,7 @@ public abstract class KeyPair{
         break;
     } 
     
-    lines = Integer.parseInt((String)v.get("Private-Lines"));
+    lines = Integer.parseInt(v.get("Private-Lines"));
     prvkey = parseLines(buffer, lines); 
 
     while(true){
@@ -1178,11 +1177,11 @@ public abstract class KeyPair{
 
     kpair.encrypted = !v.get("Encryption").equals("none");
     kpair.vendor = VENDOR_PUTTY;
-    kpair.publicKeyComment = (String)v.get("Comment");
+    kpair.publicKeyComment = v.get("Comment");
     if(kpair.encrypted){
-      if(Session.checkCipher((String)jsch.getConfig("aes256-cbc"))){
+      if(Session.checkCipher(jsch.getConfig("aes256-cbc"))){
         try {
-          Class c=Class.forName((String)jsch.getConfig("aes256-cbc"));
+          Class<?> c=Class.forName(jsch.getConfig("aes256-cbc"));
           kpair.cipher=(Cipher)(c.newInstance());
           kpair.iv=new byte[kpair.cipher.getIVSize()];
         }
@@ -1236,7 +1235,7 @@ public abstract class KeyPair{
     return data;
   }
 
-  private static boolean parseHeader(Buffer buffer, java.util.Hashtable v){
+  private static boolean parseHeader(Buffer buffer, java.util.Hashtable<String, String> v){
     byte[] buf = buffer.buffer;
     int index = buffer.index;
     String key = null;
@@ -1346,7 +1345,7 @@ public abstract class KeyPair{
         return new ASN1[0];
       }
       int index=indexp[0];
-      java.util.Vector values = new java.util.Vector();
+      java.util.Vector<ASN1> values = new java.util.Vector<>();
       while(length>0) {
         index++; length--;
         int tmp=index;
@@ -1360,7 +1359,7 @@ public abstract class KeyPair{
       }
       ASN1[] result = new ASN1[values.size()];
       for(int  i = 0; i <values.size(); i++) {
-        result[i]=(ASN1)values.elementAt(i);
+        result[i]=values.elementAt(i);
       }
       return result;
     }

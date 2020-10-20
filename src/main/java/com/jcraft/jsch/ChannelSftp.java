@@ -146,7 +146,7 @@ public class ChannelSftp extends ChannelSession{
   private int server_version=3;
   private String version=String.valueOf(client_version);
 
-  private java.util.Hashtable extensions=null;
+  private java.util.Hashtable<String, String> extensions=null;
   private InputStream io_in=null;
 
   private boolean extension_posix_rename = false;
@@ -268,7 +268,7 @@ public class ChannelSftp extends ChannelSession{
       type=header.type;             // 2 -> SSH_FXP_VERSION
       server_version=header.rid;
       //System.err.println("SFTP protocol server-version="+server_version);
-      extensions=new java.util.Hashtable();
+      extensions=new java.util.Hashtable<>();
       if(length>0){
         // extension data
         fill(buf, length);
@@ -391,7 +391,7 @@ public class ChannelSftp extends ChannelSession{
       src=localAbsolutePath(src);
       dst=remoteAbsolutePath(dst);
 
-      Vector v=glob_remote(dst);
+      Vector<String> v=glob_remote(dst);
       int vsize=v.size();
       if(vsize!=1){
         if(vsize==0){
@@ -403,7 +403,7 @@ public class ChannelSftp extends ChannelSession{
         throw new SftpException(SSH_FX_FAILURE, v.toString());
       }
       else{
-        dst=(String)(v.elementAt(0));
+        dst=v.elementAt(0);
       }
 
       boolean isRemoteDir=isRemoteDir(dst);
@@ -424,7 +424,7 @@ public class ChannelSftp extends ChannelSession{
       }
 
       for(int j=0; j<vsize; j++){
-	String _src=(String)(v.elementAt(j));
+	String _src=v.elementAt(j);
 	String _dst=null;
 	if(isRemoteDir){
 	  int i=_src.lastIndexOf(file_separatorc);
@@ -516,7 +516,7 @@ public class ChannelSftp extends ChannelSession{
 
       dst=remoteAbsolutePath(dst);
 
-      Vector v=glob_remote(dst);
+      Vector<String> v=glob_remote(dst);
       int vsize=v.size();
       if(vsize!=1){
         if(vsize==0){
@@ -528,7 +528,7 @@ public class ChannelSftp extends ChannelSession{
         throw new SftpException(SSH_FX_FAILURE, v.toString());
       }
       else{
-        dst=(String)(v.elementAt(0));
+        dst=v.elementAt(0);
       }
 
       if(monitor!=null){
@@ -903,7 +903,7 @@ public class ChannelSftp extends ChannelSession{
       src=remoteAbsolutePath(src);
       dst=localAbsolutePath(dst);
 
-      Vector v=glob_remote(src);
+      Vector<String> v=glob_remote(src);
       int vsize=v.size();
       if(vsize==0){
         throw new SftpException(SSH_FX_NO_SUCH_FILE, "No such file");
@@ -924,7 +924,7 @@ public class ChannelSftp extends ChannelSession{
       }
 
       for(int j=0; j<vsize; j++){
-	String _src=(String)(v.elementAt(j));
+	String _src=v.elementAt(j);
 	SftpATTRS attr=_stat(_src);
         if(attr.isDir()){
           throw new SftpException(SSH_FX_FAILURE, 
@@ -1542,8 +1542,8 @@ public class ChannelSftp extends ChannelSession{
      }
    }
 
-   public java.util.Vector ls(String path) throws SftpException{
-     final java.util.Vector v = new Vector();
+   public java.util.Vector<LsEntry> ls(String path) throws SftpException{
+     final java.util.Vector<LsEntry> v = new Vector<>();
      LsEntrySelector selector = new LsEntrySelector(){
        public int select(LsEntry entry){
          v.addElement(entry);
@@ -1571,7 +1571,7 @@ public class ChannelSftp extends ChannelSession{
 
        path=remoteAbsolutePath(path);
        byte[] pattern=null;
-       java.util.Vector v=new java.util.Vector();
+       java.util.Vector<LsEntry> v=new java.util.Vector<>();
 
        int foo=path.lastIndexOf('/');
        String dir=path.substring(0, ((foo==0)?1:foo));
@@ -1917,13 +1917,13 @@ public class ChannelSftp extends ChannelSession{
 
        oldpath=isUnique(oldpath);
 
-       Vector v=glob_remote(newpath);
+       Vector<String> v=glob_remote(newpath);
        int vsize=v.size();
        if(vsize>=2){
          throw new SftpException(SSH_FX_FAILURE, v.toString());
        }
        if(vsize==1){
-         newpath=(String)(v.elementAt(0));
+         newpath=v.elementAt(0);
        }
        else{  // vsize==0
          if(isPattern(newpath))
@@ -1962,13 +1962,13 @@ public class ChannelSftp extends ChannelSession{
 
       path=remoteAbsolutePath(path);
 
-      Vector v=glob_remote(path);
+      Vector<String> v=glob_remote(path);
       int vsize=v.size();
 
       Header header=new Header();
 
       for(int j=0; j<vsize; j++){
-	path=(String)(v.elementAt(j));
+	path=v.elementAt(j);
         sendREMOVE(Util.str2byte(path, fEncoding));
 
         header=header(buf, header);
@@ -2021,10 +2021,10 @@ public class ChannelSftp extends ChannelSession{
 
       path=remoteAbsolutePath(path);
 
-      Vector v=glob_remote(path);
+      Vector<String> v=glob_remote(path);
       int vsize=v.size();
       for(int j=0; j<vsize; j++){
-	path=(String)(v.elementAt(j));
+	path=v.elementAt(j);
 
         SftpATTRS attr=_stat(path);
 
@@ -2047,10 +2047,10 @@ public class ChannelSftp extends ChannelSession{
 
       path=remoteAbsolutePath(path);
 
-      Vector v=glob_remote(path);
+      Vector<String> v=glob_remote(path);
       int vsize=v.size();
       for(int j=0; j<vsize; j++){
-	path=(String)(v.elementAt(j));
+	path=v.elementAt(j);
 
         SftpATTRS attr=_stat(path);
 
@@ -2073,10 +2073,10 @@ public class ChannelSftp extends ChannelSession{
 
       path=remoteAbsolutePath(path);
 
-      Vector v=glob_remote(path);
+      Vector<String> v=glob_remote(path);
       int vsize=v.size();
       for(int j=0; j<vsize; j++){
-	path=(String)(v.elementAt(j));
+	path=v.elementAt(j);
 
 	SftpATTRS attr=_stat(path);
 
@@ -2099,10 +2099,10 @@ public class ChannelSftp extends ChannelSession{
 
       path=remoteAbsolutePath(path);
 
-      Vector v=glob_remote(path);
+      Vector<String> v=glob_remote(path);
       int vsize=v.size();
       for(int j=0; j<vsize; j++){
-	path=(String)(v.elementAt(j));
+	path=v.elementAt(j);
 
         SftpATTRS attr=_stat(path);
 
@@ -2125,13 +2125,13 @@ public class ChannelSftp extends ChannelSession{
 
       path=remoteAbsolutePath(path);
 
-      Vector v=glob_remote(path);
+      Vector<String> v=glob_remote(path);
       int vsize=v.size();
 
       Header header=new Header();
 
       for(int j=0; j<vsize; j++){
-	path=(String)(v.elementAt(j));
+	path=v.elementAt(j);
 	sendRMDIR(Util.str2byte(path, fEncoding));
 
         header=header(buf, header);
@@ -2385,10 +2385,10 @@ public class ChannelSftp extends ChannelSession{
 
       path=remoteAbsolutePath(path);
 
-      Vector v=glob_remote(path);
+      Vector<String> v=glob_remote(path);
       int vsize=v.size();
       for(int j=0; j<vsize; j++){
-	path=(String)(v.elementAt(j));
+	path=v.elementAt(j);
 	_setStat(path, attr);
       }
     }
@@ -2675,8 +2675,8 @@ public class ChannelSftp extends ChannelSession{
     putHEAD(buf, type, length);
   }
 
-  private Vector glob_remote(String _path) throws Exception{
-    Vector v=new Vector();
+  private Vector<String> glob_remote(String _path) throws Exception{
+    Vector<String> v=new Vector<>();
     int i=0;
 
     int foo=_path.lastIndexOf('/');
@@ -2805,9 +2805,9 @@ public class ChannelSftp extends ChannelSession{
     return false;
   }
 
-  private Vector glob_local(String _path) throws Exception{
+  private Vector<String> glob_local(String _path) throws Exception{
 //System.err.println("glob_local: "+_path);
-    Vector v=new Vector();
+    Vector<String> v=new Vector<>();
     byte[] path=Util.str2byte(_path, UTF8);
     int i=path.length-1;
     while(i>=0){
@@ -2960,11 +2960,11 @@ public class ChannelSftp extends ChannelSession{
    * @return the returned string is unquoted.
    */
   private String isUnique(String path) throws SftpException, Exception{
-    Vector v=glob_remote(path);
+    Vector<String> v=glob_remote(path);
     if(v.size()!=1){
       throw new SftpException(SSH_FX_FAILURE, path+" is not unique: "+v.toString());
     }
-    return (String)(v.elementAt(0));
+    return v.elementAt(0);
   }
 
   public int getServerVersion() throws SftpException{
@@ -2991,7 +2991,7 @@ public class ChannelSftp extends ChannelSession{
   public String getExtension(String key){
     if(extensions==null)
       return null;
-    return (String)extensions.get(key);
+    return extensions.get(key);
   }
 
   public String realpath(String path) throws SftpException{
@@ -3007,7 +3007,7 @@ public class ChannelSftp extends ChannelSession{
     }
   }
 
-  public class LsEntry implements Comparable{
+  public class LsEntry implements Comparable<LsEntry>{
     private  String filename;
     private  String longname;
     private  SftpATTRS attrs;
@@ -3023,11 +3023,8 @@ public class ChannelSftp extends ChannelSession{
     public SftpATTRS getAttrs(){return attrs;};
     void setAttrs(SftpATTRS attrs) {this.attrs = attrs;};
     public String toString(){ return longname; }
-    public int compareTo(Object o) throws ClassCastException{
-      if(o instanceof LsEntry){
-        return filename.compareTo(((LsEntry)o).getFilename());
-      }
-      throw new ClassCastException("a decendent of LsEntry must be given.");
+    public int compareTo(LsEntry o){
+      return filename.compareTo(o.getFilename());
     }
   }
 

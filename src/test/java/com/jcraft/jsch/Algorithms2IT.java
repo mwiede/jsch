@@ -50,8 +50,8 @@ public class Algorithms2IT {
   private Slf4jLogConsumer sshdLogConsumer;
 
   @Container
-  public GenericContainer sshd =
-      new GenericContainer(
+  public GenericContainer<?> sshd =
+      new GenericContainer<>(
               new ImageFromDockerfile()
                   .withFileFromClasspath("asyncsshd.py", "docker/asyncsshd.py")
                   .withFileFromClasspath("ssh_host_ed448_key", "docker/ssh_host_ed448_key")

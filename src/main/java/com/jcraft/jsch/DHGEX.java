@@ -67,7 +67,7 @@ public class DHGEX extends KeyExchange{
     this.I_C=I_C;      
 
     try{
-      Class c=Class.forName(session.getConfig(hash));
+      Class<?> c=Class.forName(session.getConfig(hash));
       sha=(HASH)(c.newInstance());
       sha.init();
     }
@@ -79,7 +79,7 @@ public class DHGEX extends KeyExchange{
     packet=new Packet(buf);
 
     try{
-      Class c=Class.forName(session.getConfig("dh"));
+      Class<?> c=Class.forName(session.getConfig("dh"));
       // Since JDK8, SunJCE has lifted the keysize restrictions
       // from 1024 to 2048 for DH.
       // JDK-8072452 increases DH max to 8192
@@ -228,7 +228,7 @@ public class DHGEX extends KeyExchange{
 
   public int getState(){return state; }
 
-  protected int check2048(Class c, int _max) throws Exception {
+  protected int check2048(Class<?> c, int _max) throws Exception {
     DH dh=(com.jcraft.jsch.DH)(c.newInstance());
     dh.init();
     byte[] foo = new byte[257];
@@ -245,7 +245,7 @@ public class DHGEX extends KeyExchange{
     return _max;
   }
 
-  protected int check8192(Class c, int _max) throws Exception {
+  protected int check8192(Class<?> c, int _max) throws Exception {
     DH dh=(com.jcraft.jsch.DH)(c.newInstance());
     dh.init();
     dh.setP(DHG18.p);

@@ -35,7 +35,7 @@ import java.util.Vector;
 
 public class ChannelForwardedTCPIP extends Channel{
 
-  private static Vector pool = new Vector();
+  private static Vector<Config> pool = new Vector<>();
 
   static private final int LOCAL_WINDOW_SIZE_MAX=0x20000;
 //static private final int LOCAL_WINDOW_SIZE_MAX=0x100000;
@@ -60,7 +60,7 @@ public class ChannelForwardedTCPIP extends Channel{
     try{ 
       if(config instanceof ConfigDaemon){
         ConfigDaemon _config = (ConfigDaemon)config;
-        Class c=Class.forName(_config.target);
+        Class<?> c=Class.forName(_config.target);
         daemon=(ForwardedTCPIPDaemon)c.newInstance();
 
         PipedOutputStream out=new PipedOutputStream();
@@ -167,7 +167,7 @@ public class ChannelForwardedTCPIP extends Channel{
   private static Config getPort(Session session, String address_to_bind, int rport){
     synchronized(pool){
       for(int i=0; i<pool.size(); i++){
-        Config bar = (Config)(pool.elementAt(i));
+        Config bar = pool.elementAt(i);
         if(bar.session != session) continue;
         if(bar.rport != rport) {
           if(bar.rport != 0 || bar.allocated_rport != rport)
@@ -182,10 +182,10 @@ public class ChannelForwardedTCPIP extends Channel{
   }
 
   static String[] getPortForwarding(Session session){
-    Vector foo = new Vector();
+    Vector<String> foo = new Vector<>();
     synchronized(pool){
       for(int i=0; i<pool.size(); i++){
-        Config config = (Config)(pool.elementAt(i));
+        Config config = pool.elementAt(i);
         if(config instanceof ConfigDaemon)
           foo.addElement(config.allocated_rport+":"+config.target+":");
         else
@@ -194,7 +194,7 @@ public class ChannelForwardedTCPIP extends Channel{
     }
     String[] bar=new String[foo.size()];
     for(int i=0; i<foo.size(); i++){
-      bar[i]=(String)(foo.elementAt(i));
+      bar[i]=foo.elementAt(i);
     }
     return bar;
   }
@@ -296,7 +296,7 @@ public class ChannelForwardedTCPIP extends Channel{
     synchronized(pool){
       rport=new int[pool.size()];
       for(int i=0; i<pool.size(); i++){
-        Config config = (Config)(pool.elementAt(i));
+        Config config = pool.elementAt(i);
         if(config.session == session) {
           rport[count++]=config.rport; // ((Integer)bar[1]).intValue();
         }

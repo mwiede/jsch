@@ -66,7 +66,7 @@ public abstract class DHXEC extends KeyExchange{
     this.I_C=I_C;      
 
     try{
-      Class c=Class.forName(session.getConfig(sha_name));
+      Class<?> c=Class.forName(session.getConfig(sha_name));
       sha=(HASH)(c.newInstance());
       sha.init();
     }
@@ -81,7 +81,7 @@ public abstract class DHXEC extends KeyExchange{
     buf.putByte((byte)SSH_MSG_KEX_ECDH_INIT);
 
     try{
-      Class c=Class.forName(session.getConfig("xdh"));
+      Class<?> c=Class.forName(session.getConfig("xdh"));
       xdh=(XDH)(c.newInstance());
       xdh.init(curve_name, key_len);
 

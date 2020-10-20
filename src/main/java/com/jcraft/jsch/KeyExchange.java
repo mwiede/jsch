@@ -143,14 +143,14 @@ public abstract class KeyExchange{
       }
     }
 
-    Class _s2cclazz=Class.forName(session.getConfig(guess[PROPOSAL_ENC_ALGS_STOC]));
+    Class<?> _s2cclazz=Class.forName(session.getConfig(guess[PROPOSAL_ENC_ALGS_STOC]));
     Cipher _s2ccipher=(Cipher)(_s2cclazz.newInstance());
     boolean _s2cAEAD=_s2ccipher.isAEAD();
     if(_s2cAEAD){
       guess[PROPOSAL_MAC_ALGS_STOC]=null;
     }
 
-    Class _c2sclazz=Class.forName(session.getConfig(guess[PROPOSAL_ENC_ALGS_CTOS]));
+    Class<?> _c2sclazz=Class.forName(session.getConfig(guess[PROPOSAL_ENC_ALGS_CTOS]));
     Cipher _c2scipher=(Cipher)(_c2sclazz.newInstance());
     boolean _c2sAEAD=_c2scipher.isAEAD();
     if(_c2sAEAD){
@@ -181,7 +181,7 @@ public abstract class KeyExchange{
     HASH hash=null;
     try{
       String _c=session.getConfig("FingerprintHash").toLowerCase();
-      Class c=Class.forName(session.getConfig(_c));
+      Class<?> c=Class.forName(session.getConfig(_c));
       hash=(HASH)(c.newInstance());
     }
     catch(Exception e){ System.err.println("getFingerPrint: "+e); }
@@ -237,7 +237,7 @@ public abstract class KeyExchange{
       Buffer buf=new Buffer(sig_of_H);
       String foo=Util.byte2str(buf.getString());
       try{
-        Class c=Class.forName(session.getConfig(foo));
+        Class<?> c=Class.forName(session.getConfig(foo));
         sig=(SignatureRSA)(c.newInstance());
         sig.init();
       }
@@ -282,7 +282,7 @@ public abstract class KeyExchange{
 
       SignatureDSA sig=null;
       try{
-        Class c=Class.forName(session.getConfig("signature.dss"));
+        Class<?> c=Class.forName(session.getConfig("signature.dss"));
         sig=(SignatureDSA)(c.newInstance());
         sig.init();
       }
@@ -324,7 +324,7 @@ public abstract class KeyExchange{
 
       SignatureECDSA sig=null;
       try{
-        Class c=Class.forName(session.getConfig(alg));
+        Class<?> c=Class.forName(session.getConfig(alg));
         sig=(SignatureECDSA)(c.newInstance());
         sig.init();
       }
@@ -357,7 +357,7 @@ public abstract class KeyExchange{
 
       SignatureEdDSA sig=null;
       try{
-        Class c=Class.forName(session.getConfig(alg));
+        Class<?> c=Class.forName(session.getConfig(alg));
         sig=(SignatureEdDSA)(c.newInstance());
         sig.init();
       }

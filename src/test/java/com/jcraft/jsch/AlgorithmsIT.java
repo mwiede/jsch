@@ -53,8 +53,8 @@ public class AlgorithmsIT {
   private Slf4jLogConsumer sshdLogConsumer;
 
   @Container
-  public GenericContainer sshd =
-      new GenericContainer(
+  public GenericContainer<?> sshd =
+      new GenericContainer<>(
               new ImageFromDockerfile()
                   .withFileFromClasspath("ssh_host_rsa_key", "docker/ssh_host_rsa_key")
                   .withFileFromClasspath("ssh_host_rsa_key.pub", "docker/ssh_host_rsa_key.pub")

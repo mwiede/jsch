@@ -34,7 +34,7 @@ import java.util.Vector;
 
 public class JSch{
 
-  static java.util.Hashtable config=new java.util.Hashtable();
+  static java.util.Hashtable<String, String> config=new java.util.Hashtable<>();
   static{
     config.put("kex", "curve25519-sha256,curve25519-sha256@libssh.org,ecdh-sha2-nistp256,ecdh-sha2-nistp384,ecdh-sha2-nistp521,diffie-hellman-group-exchange-sha256,diffie-hellman-group16-sha512,diffie-hellman-group18-sha512,diffie-hellman-group14-sha256");
     config.put("server_host_key", "ecdsa-sha2-nistp256,ecdsa-sha2-nistp384,ecdsa-sha2-nistp521,ssh-ed25519,rsa-sha2-512,rsa-sha2-256,ssh-rsa");
@@ -168,7 +168,7 @@ public class JSch{
     config.put("ClearAllForwardings", "no");
   }
 
-  private java.util.Vector sessionPool = new java.util.Vector();
+  private java.util.Vector<Session> sessionPool = new java.util.Vector<>();
 
   private IdentityRepository defaultIdentityRepository =
     new LocalIdentityRepository(this);
@@ -501,9 +501,9 @@ public class JSch{
    * @deprecated use #removeIdentity(Identity identity)
    */
   public void removeIdentity(String name) throws JSchException{
-    Vector identities = identityRepository.getIdentities();
+    Vector<Identity> identities = identityRepository.getIdentities();
     for(int i=0; i<identities.size(); i++){
-      Identity identity=(Identity)(identities.elementAt(i));
+      Identity identity=identities.elementAt(i);
       if(!identity.getName().equals(name))
         continue;
       if(identityRepository instanceof LocalIdentityRepository){
@@ -532,11 +532,11 @@ public class JSch{
    *
    * @throws JSchException if identityReposory has problems.
    */
-  public Vector getIdentityNames() throws JSchException{
-    Vector foo=new Vector();
-    Vector identities = identityRepository.getIdentities();
+  public Vector<String> getIdentityNames() throws JSchException{
+    Vector<String> foo=new Vector<>();
+    Vector<Identity> identities = identityRepository.getIdentities();
     for(int i=0; i<identities.size(); i++){
-      Identity identity=(Identity)(identities.elementAt(i));
+      Identity identity=identities.elementAt(i);
       foo.addElement(identity.getName());
     }
     return foo;
@@ -559,7 +559,7 @@ public class JSch{
    */
   public static String getConfig(String key){ 
     synchronized(config){
-      return (String)(config.get(key));
+      return config.get(key);
     } 
   }
 
@@ -568,11 +568,11 @@ public class JSch{
    *
    * @param newconf configurations
    */
-  public static void setConfig(java.util.Hashtable newconf){
+  public static void setConfig(java.util.Hashtable<String, String> newconf){
     synchronized(config){
-      for(java.util.Enumeration e=newconf.keys() ; e.hasMoreElements() ;) {
-	String key=(String)(e.nextElement());
-	config.put(key, (String)(newconf.get(key)));
+      for(java.util.Enumeration<String> e=newconf.keys() ; e.hasMoreElements() ;) {
+	String key=e.nextElement();
+	config.put(key, newconf.get(key));
       }
     }
   }

@@ -108,14 +108,14 @@ public class OpenSSHConfig implements ConfigRepository {
     _parse(r);
   }
 
-  private final Hashtable config = new Hashtable();
-  private final Vector hosts = new Vector();
+  private final Hashtable<String, Vector<String[]>> config = new Hashtable<>();
+  private final Vector<String> hosts = new Vector<>();
 
   private void _parse(Reader r) throws IOException {
     BufferedReader br = new BufferedReader(r);
 
     String host = "";
-    Vector/*<String[]>*/ kv = new Vector();
+    Vector<String[]> kv = new Vector<>();
     String l = null;
 
     while((l = br.readLine()) != null){
@@ -134,7 +134,7 @@ public class OpenSSHConfig implements ConfigRepository {
         config.put(host, kv);
         hosts.addElement(host);
         host = key_value[1];
-        kv = new Vector();
+        kv = new Vector<>();
       }
       else {
         kv.addElement(key_value);
@@ -148,7 +148,7 @@ public class OpenSSHConfig implements ConfigRepository {
     return new MyConfig(host);
   }
 
-  private static final Hashtable keymap = new Hashtable();
+  private static final Hashtable<String, String> keymap = new Hashtable<>();
   static {
     keymap.put("kex", "KexAlgorithms");
     keymap.put("server_host_key", "HostKeyAlgorithms");
@@ -165,7 +165,7 @@ public class OpenSSHConfig implements ConfigRepository {
   class MyConfig implements Config {
 
     private String host;
-    private Vector _configs = new Vector();
+    private Vector<Vector<String[]>> _configs = new Vector<>();
 
     MyConfig(String host){
       this.host = host;
@@ -175,7 +175,7 @@ public class OpenSSHConfig implements ConfigRepository {
       byte[] _host = Util.str2byte(host);
       if(hosts.size() > 1){
         for(int i = 1; i < hosts.size(); i++){
-          String patterns[] = ((String)hosts.elementAt(i)).split("[ \t]");
+          String patterns[] = hosts.elementAt(i).split("[ \t]");
           for(int j = 0; j < patterns.length; j++){
             boolean negate = false;
             String foo = patterns[j].trim();
@@ -185,11 +185,11 @@ public class OpenSSHConfig implements ConfigRepository {
             }
             if(Util.glob(Util.str2byte(foo), _host)){
               if(!negate){
-                _configs.addElement(config.get((String)hosts.elementAt(i)));
+                _configs.addElement(config.get(hosts.elementAt(i)));
               }
             }
             else if(negate){
-              _configs.addElement(config.get((String)hosts.elementAt(i)));
+              _configs.addElement(config.get(hosts.elementAt(i)));
             }
           }
         }
@@ -198,14 +198,14 @@ public class OpenSSHConfig implements ConfigRepository {
 
     private String find(String key) {
       if(keymap.get(key)!=null) {
-        key = (String)keymap.get(key);
+        key = keymap.get(key);
       }
       key = key.toUpperCase();
       String value = null;
       for(int i = 0; i < _configs.size(); i++) {
-        Vector v = (Vector)_configs.elementAt(i);
+        Vector<String[]> v = _configs.elementAt(i);
         for(int j = 0; j < v.size(); j++) {
-          String[] kv = (String[])v.elementAt(j);
+          String[] kv = v.elementAt(j);
           if(kv[0].toUpperCase().equals(key)) {
             value = kv[1];
             break;
@@ -233,11 +233,11 @@ public class OpenSSHConfig implements ConfigRepository {
 
     private String[] multiFind(String key) {
       key = key.toUpperCase();
-      Vector value = new Vector();
+      Vector<String> value = new Vector<>();
       for(int i = 0; i < _configs.size(); i++) {
-        Vector v = (Vector)_configs.elementAt(i);
+        Vector<String[]> v = _configs.elementAt(i);
         for(int j = 0; j < v.size(); j++) {
-          String[] kv = (String[])v.elementAt(j);
+          String[] kv = v.elementAt(j);
           if(kv[0].toUpperCase().equals(key)) {
             String foo = kv[1];
             if(foo != null) {
