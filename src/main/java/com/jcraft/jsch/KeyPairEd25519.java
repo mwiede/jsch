@@ -45,9 +45,13 @@ public class KeyPairEd25519 extends KeyPairEdDSA{
     super(jsch, pub_array, prv_array);
   }
 
+  @Override
   public int getKeyType(){ return ED25519; }
+  @Override
   public int getKeySize(){ return keySize; }
+  @Override
   String getSshName(){ return "ssh-ed25519"; }
+  @Override
   String getJceName(){ return "Ed25519"; }
 
   static KeyPair fromSSHAgent(JSch jsch, Buffer buf) throws JSchException {

@@ -243,10 +243,12 @@ public abstract class Channel implements Runnable{
 
         }
         byte[] b=new byte[1];
+        @Override
         public void write(int w) throws java.io.IOException{
           b[0]=(byte)w;
           write(b, 0, 1);
         }
+        @Override
         public void write(byte[] buf, int s, int l) throws java.io.IOException{
           if(packet==null){
             init();
@@ -276,6 +278,7 @@ public abstract class Channel implements Runnable{
           }
         }
 
+        @Override
         public void flush() throws java.io.IOException{
           if(closed){
             throw new java.io.IOException("Already closed");
@@ -301,6 +304,7 @@ public abstract class Channel implements Runnable{
           }
 
         }
+        @Override
         public void close() throws java.io.IOException{
           if(packet==null){
             try{
@@ -426,6 +430,7 @@ public abstract class Channel implements Runnable{
   }
   void setRemotePacketSize(int foo){ this.rmpsize=foo; }
 
+  @Override
   public void run(){
   }
 
@@ -630,6 +635,7 @@ public abstract class Channel implements Runnable{
       super(out);
       this.out=out;
     }
+    @Override
     public void close() throws IOException{
       if(out!=null){
         this.out.close();
@@ -646,12 +652,14 @@ public abstract class Channel implements Runnable{
         this._sink=(MyPipedInputStream)in;
       }
     }
+    @Override
     public void write(int b) throws IOException {
       if(_sink != null) {
         _sink.checkSpace(1);
       }
       super.write(b);
     }
+    @Override
     public void write(byte[] b, int off, int len) throws IOException {
       if(_sink != null) {
         _sink.checkSpace(len);

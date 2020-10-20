@@ -41,14 +41,17 @@ class LocalIdentityRepository implements IdentityRepository {
     this.jsch = jsch;
   }
 
+  @Override
   public String getName(){
     return name;
   }
 
+  @Override
   public int getStatus(){
     return RUNNING;
   }
 
+  @Override
   public synchronized Vector<Identity> getIdentities() {
     removeDupulicates();
     Vector<Identity> v = new Vector<>();
@@ -81,6 +84,7 @@ class LocalIdentityRepository implements IdentityRepository {
     }
   }
 
+  @Override
   public synchronized boolean add(byte[] identity) {
     try{
       Identity _identity =
@@ -103,6 +107,7 @@ class LocalIdentityRepository implements IdentityRepository {
     }
   }
 
+  @Override
   public synchronized boolean remove(byte[] blob) {
     if(blob == null) return false;
     for(int i=0; i<identities.size(); i++) {
@@ -117,6 +122,7 @@ class LocalIdentityRepository implements IdentityRepository {
     return false;
   }
 
+  @Override
   public synchronized void removeAll() {
     for(int i=0; i<identities.size(); i++) {
       Identity identity=identities.elementAt(i);

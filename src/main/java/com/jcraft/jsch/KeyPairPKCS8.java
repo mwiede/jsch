@@ -79,19 +79,24 @@ public class KeyPairPKCS8 extends KeyPair {
     super(jsch);
   }
 
+  @Override
   void generate(int key_size) throws JSchException{
   }
 
   private static final byte[] begin=Util.str2byte("-----BEGIN DSA PRIVATE KEY-----");
   private static final byte[] end=Util.str2byte("-----END DSA PRIVATE KEY-----");
 
+  @Override
   byte[] getBegin(){ return begin; }
+  @Override
   byte[] getEnd(){ return end; }
 
+  @Override
   byte[] getPrivateKey(){
     return null;
   }
 
+  @Override
   boolean parse(byte[] plain){
 
     /* from RFC5208
@@ -195,37 +200,47 @@ public class KeyPairPKCS8 extends KeyPair {
     return kpair != null;
   }
 
+  @Override
   public byte[] getPublicKeyBlob(){
     return kpair.getPublicKeyBlob();
   }
 
+  @Override
   byte[] getKeyTypeName(){ return kpair.getKeyTypeName();}
+  @Override
   public int getKeyType(){return kpair.getKeyType();}
 
+  @Override
   public int getKeySize(){
     return kpair.getKeySize();
   }
 
+  @Override
   public byte[] getSignature(byte[] data){
     return kpair.getSignature(data);
   }
 
+  @Override
   public byte[] getSignature(byte[] data, String alg){
     return kpair.getSignature(data, alg);
   }
 
+  @Override
   public Signature getVerifier(){
     return kpair.getVerifier();
   }
 
+  @Override
   public Signature getVerifier(String alg){
     return kpair.getVerifier(alg);
   }
 
+  @Override
   public byte[] forSSHAgent() throws JSchException {
     return kpair.forSSHAgent();
   }
 
+  @Override
   public boolean decrypt(byte[] _passphrase){
     if(!isEncrypted()){
       return true;

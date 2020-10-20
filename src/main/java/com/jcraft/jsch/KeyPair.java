@@ -1081,6 +1081,7 @@ public abstract class KeyPair{
   }
 
   @SuppressWarnings("deprecation")
+  @Override
   public void finalize(){
     dispose();
   }

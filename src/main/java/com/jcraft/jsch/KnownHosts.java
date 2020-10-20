@@ -244,8 +244,10 @@ loop:
     pool.addElement(hk);
   }
   String getKnownHostsFile(){ return known_hosts; }
+  @Override
   public String getKnownHostsRepositoryID(){ return known_hosts; }
 
+  @Override
   public int check(String host, byte[] key){
     int result=NOT_INCLUDED;
     if(host==null){
@@ -284,6 +286,7 @@ loop:
     return result;
   }
 
+  @Override
   public void add(HostKey hostkey, UserInfo userinfo){
     int type=hostkey.type;
     String host=hostkey.getHost();
@@ -350,9 +353,11 @@ loop:
     }
   }
 
+  @Override
   public HostKey[] getHostKey(){
     return getHostKey(null, (String)null);
   }
+  @Override
   public HostKey[] getHostKey(String host, String type){
     synchronized(pool){
       java.util.List<HostKey> v = new java.util.ArrayList<>();
@@ -382,9 +387,11 @@ loop:
       return foo;
     }
   }
+  @Override
   public void remove(String host, String type){
     remove(host, type, null);
   }
+  @Override
   public void remove(String host, String type, byte[] key){
     boolean sync=false;
     synchronized(pool){
@@ -534,6 +541,7 @@ loop:
       }
     }
 
+    @Override
     boolean isMatched(String _host){
       if(!hashed){
         return super.isMatched(_host);

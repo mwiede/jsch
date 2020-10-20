@@ -38,14 +38,11 @@ public class SftpException extends Exception{
     this.id=id;
   }
   public SftpException (int id, String message, Throwable e) {
-    super(message);
+    super(message, e);
     this.id=id;
-    this.cause=e;
   }
+  @Override
   public String toString(){
     return id+": "+getMessage();
-  }
-  public Throwable getCause(){
-    return this.cause;
   }
 }

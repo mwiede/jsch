@@ -38,6 +38,7 @@ public class ChannelShell extends ChannelSession{
     pty=true;
   }
 
+  @Override
   public void start() throws JSchException{
     Session _session=getSession();
     try{
@@ -63,6 +64,7 @@ public class ChannelShell extends ChannelSession{
     }
   }
 
+  @Override
   void init() throws JSchException {
     io.setInputStream(getSession().in);
     io.setOutputStream(getSession().out);

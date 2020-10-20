@@ -90,6 +90,7 @@ public class KeyPairECDSA extends KeyPair{
                   (prv_array.length>=48 ? 384 : 256);
   }
 
+  @Override
   void generate(int key_size) throws JSchException{
     this.key_size=key_size;
     try{
@@ -115,9 +116,12 @@ public class KeyPairECDSA extends KeyPair{
   private static final byte[] end =
     Util.str2byte("-----END EC PRIVATE KEY-----");
 
+  @Override
   byte[] getBegin(){ return begin; }
+  @Override
   byte[] getEnd(){ return end; }
 
+  @Override
   byte[] getPrivateKey(){
 
     byte[] tmp = new byte[1]; tmp[0]=1;
@@ -162,6 +166,7 @@ public class KeyPairECDSA extends KeyPair{
     return plain;
   }
 
+  @Override
   boolean parse(byte[] plain){
     try{
 
@@ -309,6 +314,7 @@ public class KeyPairECDSA extends KeyPair{
     return true;
   }
 
+  @Override
   public byte[] getPublicKeyBlob(){
     byte[] foo = super.getPublicKeyBlob();
 
@@ -327,16 +333,20 @@ public class KeyPairECDSA extends KeyPair{
     return Buffer.fromBytes(tmp).buffer;
   }
 
+  @Override
   byte[] getKeyTypeName(){
     return Util.str2byte("ecdsa-sha2-"+new String(name));
   }
+  @Override
   public int getKeyType(){
     return ECDSA;
   }
+  @Override
   public int getKeySize(){
     return key_size;
   }
 
+  @Override
   public byte[] getSignature(byte[] data){
     try{
       Class<?> c=Class.forName(JSch.getConfig("ecdsa-sha2-"+new String(name)));
@@ -358,10 +368,12 @@ public class KeyPairECDSA extends KeyPair{
     return null;
   }
 
+  @Override
   public byte[] getSignature(byte[] data, String al){
     return getSignature(data);
   }
 
+  @Override
   public Signature getVerifier(){
     try{
       Class<?> c=Class.forName(JSch.getConfig("ecdsa-sha2-"+new String(name)));
@@ -385,6 +397,7 @@ public class KeyPairECDSA extends KeyPair{
     return null;
   }
 
+  @Override
   public Signature getVerifier(String alg){
     return getVerifier();
   }
@@ -408,6 +421,7 @@ public class KeyPairECDSA extends KeyPair{
     return kpair;
   }
 
+  @Override
   public byte[] forSSHAgent() throws JSchException {
     if(isEncrypted()){
       throw new JSchException("key is encrypted.");
@@ -447,6 +461,7 @@ public class KeyPairECDSA extends KeyPair{
     return tmp;
   }
 
+  @Override
   public void dispose(){
     super.dispose();
     Util.bzero(prv_array);

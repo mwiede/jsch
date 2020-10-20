@@ -57,6 +57,7 @@ public abstract class DHXEC extends KeyExchange{
   protected String curve_name;
   protected int key_len;
 
+  @Override
   public void init(Session session,
 		   byte[] V_S, byte[] V_C, byte[] I_S, byte[] I_C) throws Exception{
     this.session=session;
@@ -110,6 +111,7 @@ public abstract class DHXEC extends KeyExchange{
     state=SSH_MSG_KEX_ECDH_REPLY;
   }
 
+  @Override
   public boolean next(Buffer _buf) throws Exception{
     int i,j;
     switch(state){
@@ -200,5 +202,6 @@ public abstract class DHXEC extends KeyExchange{
     return false;
   }
 
+  @Override
   public int getState(){return state; }
 }

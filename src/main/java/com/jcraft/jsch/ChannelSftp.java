@@ -216,9 +216,11 @@ public class ChannelSftp extends ChannelSession{
     setLocalPacketSize(LOCAL_MAXIMUM_PACKET_SIZE);
   }
 
+  @Override
   void init(){
   }
 
+  @Override
   public void start() throws JSchException{
     try{
 
@@ -785,10 +787,12 @@ public class ChannelSftp extends ChannelSession{
         private int writecount=0;
         private Header header=new Header();          
 
+        @Override
         public void write(byte[] d) throws java.io.IOException{
           write(d, 0, d.length);
         }
 
+        @Override
         public void write(byte[] d, int s, int len) throws java.io.IOException{
           if(init){
             startid=seq;
@@ -834,11 +838,13 @@ public class ChannelSftp extends ChannelSession{
         }
 
         byte[] _data=new byte[1];
+        @Override
         public void write(int foo) throws java.io.IOException{
           _data[0]=(byte)foo;
           write(_data, 0, 1);
         }
 
+        @Override
         public void flush() throws java.io.IOException{
 
           if(isClosed){
@@ -860,6 +866,7 @@ public class ChannelSftp extends ChannelSession{
           }
         }
 
+        @Override
         public void close() throws java.io.IOException{
           if(isClosed){
             return;
@@ -1354,6 +1361,7 @@ public class ChannelSftp extends ChannelSession{
            int request_max=1;
            long request_offset=offset;
 
+           @Override
            public int read() throws java.io.IOException{
              if(closed)return -1;
              int i=read(_data, 0, 1);
@@ -1362,10 +1370,12 @@ public class ChannelSftp extends ChannelSession{
                return _data[0]&0xff;
              }
            }
+           @Override
            public int read(byte[] d) throws java.io.IOException{
              if(closed)return -1;
              return read(d, 0, d.length);
            }
+           @Override
            public int read(byte[] d, int s, int len) throws java.io.IOException{
              if(closed)return -1;
              if(d==null){throw new NullPointerException();}
@@ -1526,6 +1536,7 @@ public class ChannelSftp extends ChannelSession{
              }
              return 0; // ??
            }
+           @Override
            public void close() throws IOException{
              if(closed)return;
              closed=true;
@@ -1548,6 +1559,7 @@ public class ChannelSftp extends ChannelSession{
    public java.util.Vector<LsEntry> ls(String path) throws SftpException{
      final java.util.Vector<LsEntry> v = new Vector<>();
      LsEntrySelector selector = new LsEntrySelector(){
+       @Override
        public int select(LsEntry entry){
          v.addElement(entry);
          return CONTINUE;
@@ -2884,6 +2896,7 @@ public class ChannelSftp extends ChannelSession{
     return (new File(path)).isAbsolute();
   }
 
+  @Override
   public void disconnect(){
     super.disconnect();
   }
@@ -3025,7 +3038,9 @@ public class ChannelSftp extends ChannelSession{
     void setLongname(String longname){this.longname = longname;};
     public SftpATTRS getAttrs(){return attrs;};
     void setAttrs(SftpATTRS attrs) {this.attrs = attrs;};
+    @Override
     public String toString(){ return longname; }
+    @Override
     public int compareTo(LsEntry o){
       return filename.compareTo(o.getFilename());
     }

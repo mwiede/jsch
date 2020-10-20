@@ -30,6 +30,7 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 package com.jcraft.jsch;
 
 class UserAuthKeyboardInteractive extends UserAuth{
+  @Override
   public boolean start(Session session) throws Exception{
     super.start(session);
 

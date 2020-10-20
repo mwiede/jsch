@@ -48,9 +48,13 @@ public class ChaCha20Poly1305 implements Cipher{
   private SecretKeySpec K_2_spec;
   private int mode;
   private Poly1305 poly1305;
+  @Override
   public int getIVSize(){return ivsize;}
+  @Override
   public int getBlockSize(){return bsize;}
+  @Override
   public int getTagSize(){return tagsize;}
+  @Override
   public void init(int mode, byte[] key, byte[] iv) throws Exception{
     byte[] tmp;
     if(key.length>bsize){
@@ -79,6 +83,7 @@ public class ChaCha20Poly1305 implements Cipher{
       throw e;
     }
   }
+  @Override
   public void update(int foo) throws Exception{
     ByteBuffer nonce=ByteBuffer.allocate(12);
     nonce.putLong(4, foo);
@@ -92,11 +97,14 @@ public class ChaCha20Poly1305 implements Cipher{
     main_cipher.update(discard, 0, 32, discard, 0);
     poly1305 = new Poly1305(poly_key);
   }
+  @Override
   public void update(byte[] foo, int s1, int len, byte[] bar, int s2) throws Exception{
     header_cipher.update(foo, s1, len, bar, s2);
   }
+  @Override
   public void updateAAD(byte[] foo, int s1, int len) throws Exception{
   }
+  @Override
   public void doFinal(byte[] foo, int s1, int len, byte[] bar, int s2) throws Exception{
     if(this.mode==javax.crypto.Cipher.DECRYPT_MODE){
       byte[] actual_tag = new byte[tagsize];
@@ -114,8 +122,11 @@ public class ChaCha20Poly1305 implements Cipher{
       poly1305.update(bar, s2, len).finish(bar, len);
     }
   }
+  @Override
   public boolean isCBC(){return false; }
+  @Override
   public boolean isAEAD(){return true; }
+  @Override
   public boolean isChaCha20(){return true; }
 
   private static boolean arraysequals(byte[] a, byte[] b){

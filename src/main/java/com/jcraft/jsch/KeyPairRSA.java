@@ -61,6 +61,7 @@ public class KeyPairRSA extends KeyPair{
     }
   }
 
+  @Override
   void generate(int key_size) throws JSchException{
     this.key_size=key_size;
     try{
@@ -90,9 +91,12 @@ public class KeyPairRSA extends KeyPair{
   private static final byte[] begin=Util.str2byte("-----BEGIN RSA PRIVATE KEY-----");
   private static final byte[] end=Util.str2byte("-----END RSA PRIVATE KEY-----");
 
+  @Override
   byte[] getBegin(){ return begin; }
+  @Override
   byte[] getEnd(){ return end; }
 
+  @Override
   byte[] getPrivateKey(){
     int content=
       1+countLength(1) + 1 +                           // INTEGER
@@ -123,6 +127,7 @@ public class KeyPairRSA extends KeyPair{
     return plain;
   }
 
+  @Override
   boolean parse(byte [] plain){
 
     try{
@@ -314,6 +319,7 @@ public class KeyPairRSA extends KeyPair{
     return true;
   }
 
+  @Override
   public byte[] getPublicKeyBlob(){
     byte[] foo=super.getPublicKeyBlob();
     if(foo!=null) return foo;
@@ -327,17 +333,22 @@ public class KeyPairRSA extends KeyPair{
   }
 
   private static final byte[] sshrsa=Util.str2byte("ssh-rsa");
+  @Override
   byte[] getKeyTypeName(){return sshrsa;}
+  @Override
   public int getKeyType(){return RSA;}
 
+  @Override
   public int getKeySize(){
     return key_size;
   }
 
+  @Override
   public byte[] getSignature(byte[] data){
     return getSignature(data, "ssh-rsa");
   }
 
+  @Override
   public byte[] getSignature(byte[] data, String alg){
     try{
       Class<?> c=Class.forName(JSch.getConfig(alg));
@@ -357,10 +368,12 @@ public class KeyPairRSA extends KeyPair{
     return null;
   }
 
+  @Override
   public Signature getVerifier(){
     return getVerifier("ssh-rsa");
   }
 
+  @Override
   public Signature getVerifier(String alg){
     try{
       Class<?> c=Class.forName(JSch.getConfig(alg));
@@ -398,6 +411,7 @@ public class KeyPairRSA extends KeyPair{
     return kpair;
   }
 
+  @Override
   public byte[] forSSHAgent() throws JSchException {
     if(isEncrypted()){
       throw new JSchException("key is encrypted.");
@@ -437,6 +451,7 @@ public class KeyPairRSA extends KeyPair{
     return c_array;
   }
 
+  @Override
   public void dispose(){
     super.dispose();
     Util.bzero(prv_array);

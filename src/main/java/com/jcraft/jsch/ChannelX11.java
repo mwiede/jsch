@@ -130,6 +130,7 @@ System.err.println("");
     */
   }
 
+  @Override
   public void run(){
 
     try{ 
@@ -187,6 +188,7 @@ System.err.println("");
     return cache;
   }
 
+  @Override
   void write(byte[] foo, int s, int l) throws java.io.IOException {
     //if(eof_local)return;
 

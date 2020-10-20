@@ -210,7 +210,9 @@ public class JSch{
   private HostKeyRepository known_hosts=null;
 
   private static final Logger DEVNULL=new Logger(){
+      @Override
       public boolean isEnabled(int level){return false;}
+      @Override
       public void log(int level, String message){}
     };
   static Logger logger=DEVNULL;

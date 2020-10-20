@@ -144,6 +144,7 @@ public class OpenSSHConfig implements ConfigRepository {
     hosts.addElement(host);
   }
 
+  @Override
   public Config getConfig(String host) {
     return new MyConfig(host);
   }
@@ -252,8 +253,11 @@ public class OpenSSHConfig implements ConfigRepository {
       return result;
     }
 
+    @Override
     public String getHostname(){ return find("Hostname"); }
+    @Override
     public String getUser(){ return find("User"); }
+    @Override
     public int getPort(){
       String foo = find("Port");
       int port = -1;
@@ -265,6 +269,7 @@ public class OpenSSHConfig implements ConfigRepository {
       }
       return port;
     }
+    @Override
     public String getValue(String key){
       if(key.equals("compression.s2c") ||
          key.equals("compression.c2s")) {
@@ -275,6 +280,7 @@ public class OpenSSHConfig implements ConfigRepository {
       }
       return find(key);
     }
+    @Override
     public String[] getValues(String key){ return multiFind(key); }
   }
 }

@@ -46,6 +46,7 @@ public abstract class KeyPairEdDSA extends KeyPair{
   abstract String getSshName();
   abstract String getJceName();
 
+  @Override
   void generate(int key_size) throws JSchException{
     try{
       Class<?> c=Class.forName(JSch.getConfig("keypairgen.eddsa"));
@@ -66,10 +67,14 @@ public abstract class KeyPairEdDSA extends KeyPair{
 
   // These methods appear to be for writing keys to a file.
   // And since writing VENDOR_OPENSSH_V1 isn't supported yet, have these methods fail.
+  @Override
   byte[] getBegin(){ throw new UnsupportedOperationException(); }
+  @Override
   byte[] getEnd(){ throw new UnsupportedOperationException(); }
+  @Override
   byte[] getPrivateKey(){ throw new UnsupportedOperationException(); }
 
+  @Override
   boolean parse(byte [] plain){
 
     // Only OPENSSH Key v1 Format supported for EdDSA keys
@@ -96,6 +101,7 @@ public abstract class KeyPairEdDSA extends KeyPair{
     }
   }
 
+  @Override
   public byte[] getPublicKeyBlob(){
     byte[] foo=super.getPublicKeyBlob();
     if(foo!=null) return foo;
@@ -107,12 +113,15 @@ public abstract class KeyPairEdDSA extends KeyPair{
     return Buffer.fromBytes(tmp).buffer;
   }
 
+  @Override
   byte[] getKeyTypeName(){ return Util.str2byte(getSshName()); }
 
+  @Override
   public byte[] getSignature(byte[] data){
     return getSignature(data, getSshName());
   }
 
+  @Override
   public byte[] getSignature(byte[] data, String alg){
     try{
       Class<?> c=Class.forName(JSch.getConfig(alg));
@@ -132,10 +141,12 @@ public abstract class KeyPairEdDSA extends KeyPair{
     return null;
   }
 
+  @Override
   public Signature getVerifier(){
     return getVerifier(getSshName());
   }
 
+  @Override
   public Signature getVerifier(String alg){
     try{
       Class<?> c=Class.forName(JSch.getConfig(alg));
@@ -156,6 +167,7 @@ public abstract class KeyPairEdDSA extends KeyPair{
     return null;
   }
 
+  @Override
   public byte[] forSSHAgent() throws JSchException {
     if(isEncrypted()){
       throw new JSchException("key is encrypted.");
@@ -173,6 +185,7 @@ public abstract class KeyPairEdDSA extends KeyPair{
     return result;
   }
 
+  @Override
   public void dispose(){
     super.dispose();
     Util.bzero(prv_array);

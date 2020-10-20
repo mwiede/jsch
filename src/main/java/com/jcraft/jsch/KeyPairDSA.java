@@ -59,6 +59,7 @@ public class KeyPairDSA extends KeyPair{
       key_size = (new java.math.BigInteger(P_array)).bitLength();
   }
 
+  @Override
   void generate(int key_size) throws JSchException{
     this.key_size=key_size;
     try{
@@ -84,9 +85,12 @@ public class KeyPairDSA extends KeyPair{
   private static final byte[] begin=Util.str2byte("-----BEGIN DSA PRIVATE KEY-----");
   private static final byte[] end=Util.str2byte("-----END DSA PRIVATE KEY-----");
 
+  @Override
   byte[] getBegin(){ return begin; }
+  @Override
   byte[] getEnd(){ return end; }
 
+  @Override
   byte[] getPrivateKey(){
     int content=
       1+countLength(1) + 1 +                           // INTEGER
@@ -111,6 +115,7 @@ public class KeyPairDSA extends KeyPair{
     return plain;
   }
 
+  @Override
   boolean parse(byte[] plain){
     try{
 
@@ -248,6 +253,7 @@ public class KeyPairDSA extends KeyPair{
     return true;
   }
 
+  @Override
   public byte[] getPublicKeyBlob(){
     byte[] foo=super.getPublicKeyBlob();
     if(foo!=null) return foo;
@@ -263,13 +269,17 @@ public class KeyPairDSA extends KeyPair{
   }
 
   private static final byte[] sshdss=Util.str2byte("ssh-dss");
+  @Override
   byte[] getKeyTypeName(){return sshdss;}
+  @Override
   public int getKeyType(){return DSA;}
 
+  @Override
   public int getKeySize(){
     return key_size;
   }
 
+  @Override
   public byte[] getSignature(byte[] data){
     try{
       Class<?> c=Class.forName(JSch.getConfig("signature.dss"));
@@ -290,10 +300,12 @@ public class KeyPairDSA extends KeyPair{
     return null;
   }
 
+  @Override
   public byte[] getSignature(byte[] data, String alg){
     return getSignature(data);
   }
 
+  @Override
   public Signature getVerifier(){
     try{
       Class<?> c=Class.forName(JSch.getConfig("signature.dss"));
@@ -318,6 +330,7 @@ public class KeyPairDSA extends KeyPair{
     return null;
   }
 
+  @Override
   public Signature getVerifier(String alg){
     return getVerifier();
   }
@@ -339,6 +352,7 @@ public class KeyPairDSA extends KeyPair{
     return kpair;
   }
 
+  @Override
   public byte[] forSSHAgent() throws JSchException {
     if(isEncrypted()){
       throw new JSchException("key is encrypted.");
@@ -356,6 +370,7 @@ public class KeyPairDSA extends KeyPair{
     return result;
   }
 
+  @Override
   public void dispose(){
     super.dispose();
     Util.bzero(prv_array);

@@ -79,6 +79,7 @@ class ChannelAgentForwarding extends Channel{
     connected=true;
   }
 
+  @Override
   public void run(){
     try{
       sendOpenConfirmation();
@@ -89,6 +90,7 @@ class ChannelAgentForwarding extends Channel{
     }
   }
 
+  @Override
   void write(byte[] foo, int s, int l) throws java.io.IOException {
 
     if(packet==null){
@@ -259,6 +261,7 @@ class ChannelAgentForwarding extends Channel{
     }
   }
 
+  @Override
   void eof_remote(){
     super.eof_remote();
     eof();

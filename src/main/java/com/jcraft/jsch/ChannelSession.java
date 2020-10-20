@@ -68,6 +68,7 @@ class ChannelSession extends Channel{
    *
    * @param enable
    */
+  @Override
   public void setXForwarding(boolean enable){
     xforwading=enable; 
   }
@@ -232,6 +233,7 @@ class ChannelSession extends Channel{
     return (byte[])o;
   }
 
+  @Override
   public void run(){
     //System.err.println(this+":run >");
 

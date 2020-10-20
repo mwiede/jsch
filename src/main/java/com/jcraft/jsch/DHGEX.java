@@ -58,6 +58,7 @@ public class DHGEX extends KeyExchange{
 
   protected String hash="sha-1";
 
+  @Override
   public void init(Session session,
 		   byte[] V_S, byte[] V_C, byte[] I_S, byte[] I_C) throws Exception{
     this.session=session;
@@ -109,6 +110,7 @@ public class DHGEX extends KeyExchange{
     state=SSH_MSG_KEX_DH_GEX_GROUP;
   }
 
+  @Override
   public boolean next(Buffer _buf) throws Exception{
     int i,j;
     switch(state){
@@ -226,6 +228,7 @@ public class DHGEX extends KeyExchange{
     return false;
   }
 
+  @Override
   public int getState(){return state; }
 
   protected int check2048(Class<?> c, int _max) throws Exception {

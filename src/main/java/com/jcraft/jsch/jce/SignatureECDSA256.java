@@ -35,6 +35,7 @@ import java.security.spec.*;
 import com.jcraft.jsch.Buffer;
 
 public class SignatureECDSA256 extends SignatureECDSAN {
+  @Override
   String getName() {
     return "ecdsa-sha2-nistp256";
   }

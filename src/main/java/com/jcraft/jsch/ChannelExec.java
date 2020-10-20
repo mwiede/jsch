@@ -35,6 +35,7 @@ public class ChannelExec extends ChannelSession{
 
   byte[] command=new byte[0];
 
+  @Override
   public void start() throws JSchException{
     Session _session=getSession();
     try{
@@ -66,6 +67,7 @@ public class ChannelExec extends ChannelSession{
     this.command=command;
   }
 
+  @Override
   void init() throws JSchException {
     io.setInputStream(getSession().in);
     io.setOutputStream(getSession().out);

@@ -56,6 +56,7 @@ public class ChannelForwardedTCPIP extends Channel{
     connected=true;
   }
 
+  @Override
   public void run(){
     try{ 
       if(config instanceof ConfigDaemon){
@@ -128,6 +129,7 @@ public class ChannelForwardedTCPIP extends Channel{
     disconnect();
   }
 
+  @Override
   void getData(Buffer buf){
     setRecipient(buf.getInt());
     setRemoteWindowSize(buf.getUInt());

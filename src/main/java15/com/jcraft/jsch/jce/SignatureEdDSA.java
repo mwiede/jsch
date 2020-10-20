@@ -44,6 +44,7 @@ public abstract class SignatureEdDSA implements com.jcraft.jsch.SignatureEdDSA {
   abstract String getAlgo();
   abstract int getKeylen();
 
+  @Override
   public void init() throws Exception{
     signature = java.security.Signature.getInstance("EdDSA");
     keyFactory = KeyFactory.getInstance("EdDSA");
@@ -73,6 +74,7 @@ public abstract class SignatureEdDSA implements com.jcraft.jsch.SignatureEdDSA {
   //       bit of the x-coordinate and denote this value x_0.  The
   //       y-coordinate is recovered simply by clearing this bit.  If the
   //       resulting value is >= p, decoding fails.
+  @Override
   public void setPubKey(byte[] y_arr) throws Exception{
     y_arr = rotate(y_arr);
     boolean xOdd = (y_arr[0] & 0x80) != 0;
@@ -85,6 +87,7 @@ public abstract class SignatureEdDSA implements com.jcraft.jsch.SignatureEdDSA {
     signature.initVerify(pubKey);
   }
 
+  @Override
   public void setPrvKey(byte[] bytes) throws Exception{
     NamedParameterSpec paramSpec = new NamedParameterSpec(getAlgo());
     EdECPrivateKeySpec privSpec = new EdECPrivateKeySpec(paramSpec, bytes);
@@ -92,15 +95,18 @@ public abstract class SignatureEdDSA implements com.jcraft.jsch.SignatureEdDSA {
     signature.initSign(prvKey);
   }
 
+  @Override
   public byte[] sign() throws Exception{
     byte[] sig = signature.sign();
     return sig;
   }
 
+  @Override
   public void update(byte[] foo) throws Exception{
     signature.update(foo);
   }
 
+  @Override
   public boolean verify(byte[] sig) throws Exception{
     int i = 0;
     int j = 0;

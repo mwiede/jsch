@@ -60,22 +60,28 @@ public interface IdentityRepository {
       this.ir = ir;
       this.keep_in_cache = keep_in_cache;
     }
+    @Override
     public String getName() {
       return ir.getName();
     }
+    @Override
     public int getStatus() {
       return ir.getStatus();
     }
+    @Override
     public boolean add(byte[] identity) {
       return ir.add(identity);
     }
+    @Override
     public boolean remove(byte[] blob) {
       return ir.remove(blob);
     }
+    @Override
     public void removeAll() {
       cache.removeAllElements();
       ir.removeAll();
     }
+    @Override
     public Vector<Identity> getIdentities() {
       Vector<Identity> result = new Vector<>();
       for(int i = 0; i< cache.size(); i++){

@@ -41,6 +41,7 @@ public class Compression implements com.jcraft.jsch.Compression {
   public Compression(){
   }
 
+  @Override
   public void init(int type, int level) throws Exception{
     if(type==DEFLATER){
       deflater=new Deflater(level);
@@ -53,6 +54,7 @@ public class Compression implements com.jcraft.jsch.Compression {
 
   private byte[] inflated_buf;
 
+  @Override
   public byte[] compress(byte[] buf, int start, int[] len){
     deflater.next_in=buf;
     deflater.next_in_index=start;
@@ -88,6 +90,7 @@ public class Compression implements com.jcraft.jsch.Compression {
     return outputbuf;
   }
 
+  @Override
   public byte[] uncompress(byte[] buffer, int start, int[] length){
     int inflated_end=0;
 
