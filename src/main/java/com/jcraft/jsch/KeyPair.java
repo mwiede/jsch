@@ -1289,7 +1289,7 @@ public abstract class KeyPair{
     this.cipher=kpair.cipher;
   }
 
-  class ASN1Exception extends Exception {
+  static class ASN1Exception extends Exception {
     private static final long serialVersionUID=-1L;
   }
 

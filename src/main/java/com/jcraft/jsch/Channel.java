@@ -328,7 +328,7 @@ public abstract class Channel implements Runnable{
     return out;
   }
 
-  class MyPipedInputStream extends PipedInputStream{
+  static class MyPipedInputStream extends PipedInputStream{
     private int BUFFER_SIZE = 1024;
     private int max_buffer_size = BUFFER_SIZE;
     MyPipedInputStream() throws IOException{ super(); }
@@ -625,7 +625,7 @@ public abstract class Channel implements Runnable{
   }
 */
 
-  class PassiveInputStream extends MyPipedInputStream{
+  static class PassiveInputStream extends MyPipedInputStream{
     PipedOutputStream out;
     PassiveInputStream(PipedOutputStream out, int size) throws IOException{
       super(out, size);
@@ -643,7 +643,7 @@ public abstract class Channel implements Runnable{
       out=null;
     }
   }
-  class PassiveOutputStream extends PipedOutputStream{
+  static class PassiveOutputStream extends PipedOutputStream{
     private MyPipedInputStream _sink=null;
     PassiveOutputStream(PipedInputStream in,
                         boolean resizable_buffer) throws IOException{

@@ -2941,7 +2941,7 @@ public class ChannelSftp extends ChannelSession{
     }
   }
 
-  class Header{
+  static class Header{
     int length;
     int type;
     int rid;
@@ -3023,7 +3023,7 @@ public class ChannelSftp extends ChannelSession{
     }
   }
 
-  public class LsEntry implements Comparable<LsEntry>{
+  public static class LsEntry implements Comparable<LsEntry>{
     private  String filename;
     private  String longname;
     private  SftpATTRS attrs;

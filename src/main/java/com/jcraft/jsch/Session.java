@@ -2293,7 +2293,7 @@ break;
     return ChannelForwardedTCPIP.getPortForwarding(this);
   }
 
-  class Forwarding {
+  static class Forwarding {
     String bind_address = null;
     int port = -1;
     String host = null;
@@ -2413,7 +2413,7 @@ break;
     return channel;
   }
 
-  private class GlobalRequestReply{
+  private static class GlobalRequestReply{
     private Thread thread=null;
     private int reply=-1;
     private int port=0;
