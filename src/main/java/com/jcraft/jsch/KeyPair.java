@@ -1080,7 +1080,8 @@ public abstract class KeyPair{
     Util.bzero(passphrase);
   }
 
-  public void finalize (){
+  @SuppressWarnings("deprecation")
+  public void finalize(){
     dispose();
   }
 
