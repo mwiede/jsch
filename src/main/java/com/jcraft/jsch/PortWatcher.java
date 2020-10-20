@@ -215,10 +215,10 @@ class PortWatcher implements Runnable{
           channel.setInputStream(in);
           channel.setOutputStream(out);
           session.addChannel(channel);
-          ((ChannelDirectTCPIP) channel).setHost(host);
-          ((ChannelDirectTCPIP) channel).setPort(rport);
-          ((ChannelDirectTCPIP) channel).setOrgIPAddress(socket.getInetAddress().getHostAddress());
-          ((ChannelDirectTCPIP) channel).setOrgPort(socket.getPort());
+          channel.setHost(host);
+          channel.setPort(rport);
+          channel.setOrgIPAddress(socket.getInetAddress().getHostAddress());
+          channel.setOrgPort(socket.getPort());
           channel.connect(connectTimeout);
           if (channel.exitstatus != -1) {
           }

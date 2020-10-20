@@ -56,7 +56,7 @@ public class KeyPairGenECDSA implements com.jcraft.jsch.KeyPairGenECDSA {
       prvKey = (ECPrivateKey)kp.getPrivate();
       pubKey = (ECPublicKey)kp.getPublic();
       params=pubKey.getParams();
-      d=((ECPrivateKey)prvKey).getS().toByteArray();
+      d=prvKey.getS().toByteArray();
       ECPoint w = pubKey.getW();
       r = w.getAffineX().toByteArray();
       s = w.getAffineY().toByteArray();
