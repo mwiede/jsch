@@ -94,6 +94,7 @@ class IdentityFile implements Identity{
    * @deprecated This method should not be invoked.
    * @see #setPassphrase(byte[] passphrase)
    */
+  @Deprecated
   public boolean decrypt(){
     throw new RuntimeException("not implemented");
   }

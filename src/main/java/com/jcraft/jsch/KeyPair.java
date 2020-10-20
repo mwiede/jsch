@@ -487,6 +487,7 @@ public abstract class KeyPair{
   /**
    * @deprecated use #writePrivateKey(java.io.OutputStream out, byte[] passphrase)
    */
+  @Deprecated
   public void setPassphrase(String passphrase){
     if(passphrase==null || passphrase.length()==0){
       setPassphrase((byte[])null);
@@ -499,6 +500,7 @@ public abstract class KeyPair{
   /**
    * @deprecated use #writePrivateKey(String name, byte[] passphrase)
    */
+  @Deprecated
   public void setPassphrase(byte[] passphrase){
     if(passphrase!=null && passphrase.length==0) 
       passphrase=null;

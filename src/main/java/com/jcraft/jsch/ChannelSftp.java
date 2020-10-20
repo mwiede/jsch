@@ -1296,12 +1296,14 @@ public class ChannelSftp extends ChannelSession{
   /**
    * @deprecated  This method will be deleted in the future.
    */
+  @Deprecated
   public InputStream get(String src, int mode) throws SftpException{
     return get(src, null, 0L);
   }
   /**
    * @deprecated  This method will be deleted in the future.
    */
+  @Deprecated
   public InputStream get(String src, final SftpProgressMonitor monitor, final int mode) throws SftpException{
     return get(src, monitor, 0L);
   }
