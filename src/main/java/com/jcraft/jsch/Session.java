@@ -2349,7 +2349,7 @@ break;
       }
     }
     catch(NumberFormatException e){
-      throw new JSchException ("parseForwarding: "+e.toString());
+      throw new JSchException("parseForwarding: "+e.toString(), e);
     }
     return f;
   }

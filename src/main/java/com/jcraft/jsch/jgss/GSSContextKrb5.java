@@ -108,7 +108,7 @@ public class GSSContextKrb5 implements com.jcraft.jsch.GSSContext{
       return;
     }
     catch(GSSException ex){
-      throw new JSchException(ex.toString());
+      throw new JSchException(ex.toString(), ex);
     }
   }
 
@@ -132,10 +132,10 @@ public class GSSContextKrb5 implements com.jcraft.jsch.GSSContext{
       return context.initSecContext(token, 0, l);
     }
     catch(GSSException ex){
-      throw new JSchException(ex.toString());
+      throw new JSchException(ex.toString(), ex);
     }
     catch(SecurityException ex){
-      throw new JSchException(ex.toString());
+      throw new JSchException(ex.toString(), ex);
     }
     finally{
       if(useSubjectCredsOnly==null){

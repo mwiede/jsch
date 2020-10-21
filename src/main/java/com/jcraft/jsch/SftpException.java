@@ -32,7 +32,6 @@ package com.jcraft.jsch;
 public class SftpException extends Exception{
   private static final long serialVersionUID=-1L;
   public int id;
-  private Throwable cause=null;
   public SftpException (int id, String message) {
     super(message);
     this.id=id;

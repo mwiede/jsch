@@ -189,7 +189,7 @@ public class ProxySOCKS4 implements Proxy{
       try{ if(socket!=null)socket.close(); }
       catch(Exception eee){
       }
-      throw new JSchException("ProxySOCKS4: "+e.toString());
+      throw new JSchException("ProxySOCKS4: "+e.toString(), e);
     }
   }
   @Override

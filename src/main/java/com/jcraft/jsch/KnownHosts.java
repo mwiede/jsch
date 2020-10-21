@@ -236,7 +236,7 @@ loop:
     finally {
       try{ input.close(); }
       catch(IOException e){
-        throw new JSchException(e.toString(), (Throwable)e);
+        throw new JSchException(e.toString(), e);
       }
     }
   }

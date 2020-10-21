@@ -201,7 +201,7 @@ System.err.println("");
         _session=getSession();
       }
       catch(JSchException e){
-        throw new IOException(e.toString());
+        throw new IOException(e.toString(), e);
       }
 
       foo=addCache(foo, s, l);

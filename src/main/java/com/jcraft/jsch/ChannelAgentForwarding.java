@@ -121,7 +121,7 @@ class ChannelAgentForwarding extends Channel{
       _session=getSession();
     }
     catch(JSchException e){
-      throw new IOException(e.toString());
+      throw new IOException(e.toString(), e);
     }
 
     IdentityRepository irepo = _session.getIdentityRepository();

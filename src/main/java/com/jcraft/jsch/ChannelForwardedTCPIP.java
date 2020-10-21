@@ -289,7 +289,7 @@ public class ChannelForwardedTCPIP extends Channel{
       session.write(packet);
     }
     catch(Exception e){
-//    throw new JSchException(e.toString());
+//    throw new JSchException(e.toString(), e);
     }
   }
   static void delPort(Session session){

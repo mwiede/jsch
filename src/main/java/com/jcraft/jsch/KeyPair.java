@@ -554,7 +554,7 @@ public abstract class KeyPair{
       prvkey = Util.fromFile(prvfile);
     }
     catch(IOException e){
-      throw new JSchException(e.toString(), (Throwable)e);
+      throw new JSchException(e.toString(), e);
     }
 
     String _pubfile=pubfile;
@@ -567,7 +567,7 @@ public abstract class KeyPair{
     }
     catch(IOException e){
       if(pubfile!=null){  
-        throw new JSchException(e.toString(), (Throwable)e);
+        throw new JSchException(e.toString(), e);
       }
     }
 

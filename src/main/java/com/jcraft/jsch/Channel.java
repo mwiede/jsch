@@ -300,7 +300,7 @@ public abstract class Channel implements Runnable{
           }
           catch(Exception e){
             close();
-            throw new IOException(e.toString());
+            throw new IOException(e.toString(), e);
           }
 
         }

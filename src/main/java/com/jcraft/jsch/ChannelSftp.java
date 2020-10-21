@@ -824,7 +824,7 @@ public class ChannelSftp extends ChannelSession{
 	    }
           }
           catch(IOException e){ throw e; }
-          catch(Exception e){ throw new IOException(e.toString());  }
+          catch(Exception e){ throw new IOException(e.toString(), e);  }
         }
 
         byte[] _data=new byte[1];
@@ -851,7 +851,7 @@ public class ChannelSftp extends ChannelSession{
               }
             }
             catch(SftpException e){
-              throw new IOException(e.toString());
+              throw new IOException(e.toString(), e);
             }
           }
         }
@@ -866,7 +866,7 @@ public class ChannelSftp extends ChannelSession{
           try{ _sendCLOSE(handle, header); }
           catch(IOException e){ throw e; }
           catch(Exception e){
-            throw new IOException(e.toString());
+            throw new IOException(e.toString(), e);
           }
           isClosed=true;
         }
@@ -1425,7 +1425,7 @@ public class ChannelSftp extends ChannelSession{
                return 0;
              }
              catch(SftpException e){
-               throw new IOException("error: "+e.toString());
+               throw new IOException("error: "+e.toString(), e);
              }
 
              if(type!=SSH_FXP_STATUS && type!=SSH_FXP_DATA){ 
