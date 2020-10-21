@@ -34,6 +34,10 @@ import java.io.InputStream;
 import java.io.InterruptedIOException;
 import java.io.OutputStream;
 import java.net.Socket;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Vector;
 
 public class Session implements Runnable{
@@ -629,10 +633,24 @@ public class Session implements Runnable{
     String ciphers2c=getConfig("cipher.s2c");
     String[] not_available_ciphers=checkCiphers(getConfig("CheckCiphers"));
     if(not_available_ciphers!=null && not_available_ciphers.length>0){
+      if(JSch.getLogger().isEnabled(Logger.DEBUG)){
+        JSch.getLogger().log(Logger.DEBUG,
+                "cipher.c2s proposal before removing unavailable algos is: " + cipherc2s);
+        JSch.getLogger().log(Logger.DEBUG,
+                "cipher.s2c proposal before removing unavailable algos is: " + ciphers2c);
+      }
+
       cipherc2s=Util.diffString(cipherc2s, not_available_ciphers);
       ciphers2c=Util.diffString(ciphers2c, not_available_ciphers);
       if(cipherc2s==null || ciphers2c==null){
         throw new JSchException("There are not any available ciphers.");
+      }
+
+      if(JSch.getLogger().isEnabled(Logger.DEBUG)){
+        JSch.getLogger().log(Logger.DEBUG,
+                "cipher.c2s proposal after removing unavailable algos is: " + cipherc2s);
+        JSch.getLogger().log(Logger.DEBUG,
+                "cipher.s2c proposal after removing unavailable algos is: " + ciphers2c);
       }
     }
 
@@ -640,19 +658,43 @@ public class Session implements Runnable{
     String macs2c=getConfig("mac.s2c");
     String[] not_available_macs=checkMacs(getConfig("CheckMacs"));
     if(not_available_macs!=null && not_available_macs.length>0){
+      if(JSch.getLogger().isEnabled(Logger.DEBUG)){
+        JSch.getLogger().log(Logger.DEBUG,
+                "mac.c2s proposal before removing unavailable algos is: " + macc2s);
+        JSch.getLogger().log(Logger.DEBUG,
+                "mac.s2c proposal before removing unavailable algos is: " + macs2c);
+      }
+
       macc2s=Util.diffString(macc2s, not_available_macs);
       macs2c=Util.diffString(macs2c, not_available_macs);
       if(macc2s==null || macs2c==null){
         throw new JSchException("There are not any available macs.");
+      }
+
+      if(JSch.getLogger().isEnabled(Logger.DEBUG)){
+        JSch.getLogger().log(Logger.DEBUG,
+                "mac.c2s proposal after removing unavailable algos is: " + macc2s);
+        JSch.getLogger().log(Logger.DEBUG,
+                "mac.s2c proposal after removing unavailable algos is: " + macs2c);
       }
     }
 
     String kex=getConfig("kex");
     String[] not_available_kexes=checkKexes(getConfig("CheckKexes"));
     if(not_available_kexes!=null && not_available_kexes.length>0){
+      if(JSch.getLogger().isEnabled(Logger.DEBUG)){
+        JSch.getLogger().log(Logger.DEBUG,
+                "kex proposal before removing unavailable algos is: " + kex);
+      }
+
       kex=Util.diffString(kex, not_available_kexes);
       if(kex==null){
         throw new JSchException("There are not any available kexes.");
+      }
+
+      if(JSch.getLogger().isEnabled(Logger.DEBUG)){
+        JSch.getLogger().log(Logger.DEBUG,
+                "kex proposal after removing unavailable algos is: " + kex);
       }
     }
 
@@ -662,9 +704,58 @@ public class Session implements Runnable{
     // Cache for UserAuthPublicKey
     this.not_available_shks = not_available_shks;
     if(not_available_shks!=null && not_available_shks.length>0){
+      if(JSch.getLogger().isEnabled(Logger.DEBUG)){
+        JSch.getLogger().log(Logger.DEBUG,
+                "server_host_key proposal before removing unavailable algos is: " + server_host_key);
+      }
+
       server_host_key=Util.diffString(server_host_key, not_available_shks);
       if(server_host_key==null){
         throw new JSchException("There are not any available sig algorithm.");
+      }
+
+      if(JSch.getLogger().isEnabled(Logger.DEBUG)){
+        JSch.getLogger().log(Logger.DEBUG,
+                "server_host_key proposal after removing unavailable algos is: " + server_host_key);
+      }
+    }
+
+    String prefer_hkr=getConfig("prefer_known_host_key_types");
+    if(prefer_hkr.equals("yes")){
+      if(JSch.getLogger().isEnabled(Logger.DEBUG)){
+        JSch.getLogger().log(Logger.DEBUG,
+                "server_host_key proposal before known_host reordering is: " + server_host_key);
+      }
+
+      HostKeyRepository hkr=getHostKeyRepository();
+      String chost=host;
+      if(hostKeyAlias!=null){
+        chost=hostKeyAlias;
+      }
+      if(hostKeyAlias==null && port!=22){
+        chost=("["+chost+"]:"+port);
+      }
+      List<String> pref_shks=new ArrayList<>();
+      List<String> shks=new ArrayList<>(Arrays.asList(Util.split(server_host_key, ",")));
+      Iterator<String> it=shks.iterator();
+      while(it.hasNext()){
+        String algo=it.next();
+        String type=algo;
+        if(type.equals("rsa-sha2-256") || type.equals("rsa-sha2-512")){
+          type="ssh-rsa";
+        }
+        HostKey[] hks=hkr.getHostKey(chost, type);
+        if(hks!=null && hks.length>0){
+          pref_shks.add(algo);
+          it.remove();
+        }
+      }
+      pref_shks.addAll(shks);
+      server_host_key=String.join(",", pref_shks);
+
+      if(JSch.getLogger().isEnabled(Logger.DEBUG)){
+        JSch.getLogger().log(Logger.DEBUG,
+                "server_host_key proposal after known_host reordering is: " + server_host_key);
       }
     }
 
@@ -2921,6 +3012,7 @@ break;
 
     checkConfig(config, "kex");
     checkConfig(config, "server_host_key");
+    checkConfig(config, "prefer_known_host_key_types");
 
     checkConfig(config, "cipher.c2s");
     checkConfig(config, "cipher.s2c");
