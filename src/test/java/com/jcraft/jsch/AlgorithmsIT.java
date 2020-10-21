@@ -1,6 +1,8 @@
 package com.jcraft.jsch;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.stream.Collectors.toList;
+import static org.apache.commons.codec.binary.Base64.decodeBase64;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.condition.JRE.JAVA_11;
@@ -13,6 +15,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -364,7 +367,8 @@ public class AlgorithmsIT {
     String[] split = fingerprint.split(":");
     String hash = split[0];
     MockUserInfo userInfo = new MockUserInfo();
-    JSch ssh = createRSAIdentity();
+    JSch ssh = new JSch();
+    ssh.addIdentity(getResourceFile("docker/id_rsa"), getResourceFile("docker/id_rsa.pub"), null);
     Session session = createSession(ssh);
     session.setConfig("PubkeyAcceptedKeyTypes", "ssh-rsa");
     session.setConfig("server_host_key", "ssh-rsa");
@@ -393,48 +397,67 @@ public class AlgorithmsIT {
   }
 
   private JSch createRSAIdentity() throws Exception {
+    HostKey hostKey = readHostKey(getResourceFile("docker/ssh_host_rsa_key.pub"));
     JSch ssh = new JSch();
     ssh.addIdentity(getResourceFile("docker/id_rsa"), getResourceFile("docker/id_rsa.pub"), null);
+    ssh.getHostKeyRepository().add(hostKey, null);
     return ssh;
   }
 
   private JSch createECDSA256Identity() throws Exception {
+    HostKey hostKey = readHostKey(getResourceFile("docker/ssh_host_ecdsa256_key.pub"));
     JSch ssh = new JSch();
     ssh.addIdentity(
         getResourceFile("docker/id_ecdsa256"), getResourceFile("docker/id_ecdsa256.pub"), null);
+    ssh.getHostKeyRepository().add(hostKey, null);
     return ssh;
   }
 
   private JSch createECDSA384Identity() throws Exception {
+    HostKey hostKey = readHostKey(getResourceFile("docker/ssh_host_ecdsa384_key.pub"));
     JSch ssh = new JSch();
     ssh.addIdentity(
         getResourceFile("docker/id_ecdsa384"), getResourceFile("docker/id_ecdsa384.pub"), null);
+    ssh.getHostKeyRepository().add(hostKey, null);
     return ssh;
   }
 
   private JSch createECDSA521Identity() throws Exception {
+    HostKey hostKey = readHostKey(getResourceFile("docker/ssh_host_ecdsa521_key.pub"));
     JSch ssh = new JSch();
     ssh.addIdentity(
         getResourceFile("docker/id_ecdsa521"), getResourceFile("docker/id_ecdsa521.pub"), null);
+    ssh.getHostKeyRepository().add(hostKey, null);
     return ssh;
   }
 
   private JSch createDSAIdentity() throws Exception {
+    HostKey hostKey = readHostKey(getResourceFile("docker/ssh_host_dsa_key.pub"));
     JSch ssh = new JSch();
     ssh.addIdentity(getResourceFile("docker/id_dsa"), getResourceFile("docker/id_dsa.pub"), null);
+    ssh.getHostKeyRepository().add(hostKey, null);
     return ssh;
   }
 
   private JSch createEd25519Identity() throws Exception {
+    HostKey hostKey = readHostKey(getResourceFile("docker/ssh_host_ed25519_key.pub"));
     JSch ssh = new JSch();
     ssh.addIdentity(
         getResourceFile("docker/id_ed25519"), getResourceFile("docker/id_ed25519.pub"), null);
+    ssh.getHostKeyRepository().add(hostKey, null);
     return ssh;
+  }
+
+  private HostKey readHostKey(String fileName) throws Exception {
+    List<String> lines = Files.readAllLines(Paths.get(fileName), UTF_8);
+    String[] split = lines.get(0).split("\\s+");
+    String hostname = String.format("[%s]:%d", sshd.getHost(), sshd.getFirstMappedPort());
+    return new HostKey(hostname, decodeBase64(split[1]));
   }
 
   private Session createSession(JSch ssh) throws Exception {
     Session session = ssh.getSession("root", sshd.getHost(), sshd.getFirstMappedPort());
-    session.setConfig("StrictHostKeyChecking", "no");
+    session.setConfig("StrictHostKeyChecking", "yes");
     session.setConfig("PreferredAuthentications", "publickey");
     return session;
   }

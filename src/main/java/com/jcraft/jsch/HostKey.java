@@ -34,22 +34,22 @@ public class HostKey{
   private static final byte[][] names = {
     Util.str2byte("ssh-dss"),
     Util.str2byte("ssh-rsa"),
-    Util.str2byte("ssh-ed25519"),
-    Util.str2byte("ssh-ed448"),
     Util.str2byte("ecdsa-sha2-nistp256"),
     Util.str2byte("ecdsa-sha2-nistp384"),
-    Util.str2byte("ecdsa-sha2-nistp521")
+    Util.str2byte("ecdsa-sha2-nistp521"),
+    Util.str2byte("ssh-ed25519"),
+    Util.str2byte("ssh-ed448")
   };
 
-  protected static final int GUESS=0;
+  public static final int UNKNOWN=-1;
+  public static final int GUESS=0;
   public static final int SSHDSS=1;
   public static final int SSHRSA=2;
   public static final int ECDSA256=3;
   public static final int ECDSA384=4;
   public static final int ECDSA521=5;
-  static final int UNKNOWN=6;
-  public static final int ED25519=7;
-  public static final int ED448=8;
+  public static final int ED25519=6;
+  public static final int ED448=7;
 
   protected String marker;
   protected String host;
