@@ -29,7 +29,9 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 package com.jcraft.jsch;
 
+import java.io.IOException;
 import java.net.*;
+import java.util.Hashtable;
 
 class ChannelX11 extends Channel{
 
@@ -46,8 +48,8 @@ class ChannelX11 extends Channel{
   static byte[] cookie=null;
   private static byte[] cookie_hex=null;
 
-  private static java.util.Hashtable<Session, byte[]> faked_cookie_pool=new java.util.Hashtable<>();
-  private static java.util.Hashtable<Session, byte[]> faked_cookie_hex_pool=new java.util.Hashtable<>();
+  private static Hashtable<Session, byte[]> faked_cookie_pool=new Hashtable<>();
+  private static Hashtable<Session, byte[]> faked_cookie_hex_pool=new Hashtable<>();
 
   private static byte[] table={0x30,0x31,0x32,0x33,0x34,0x35,0x36,0x37,0x38,0x39,
                                0x61,0x62,0x63,0x64,0x65,0x66};
@@ -189,7 +191,7 @@ System.err.println("");
   }
 
   @Override
-  void write(byte[] foo, int s, int l) throws java.io.IOException {
+  void write(byte[] foo, int s, int l) throws IOException {
     //if(eof_local)return;
 
     if(init){
@@ -199,7 +201,7 @@ System.err.println("");
         _session=getSession();
       }
       catch(JSchException e){
-        throw new java.io.IOException(e.toString());
+        throw new IOException(e.toString());
       }
 
       foo=addCache(foo, s, l);

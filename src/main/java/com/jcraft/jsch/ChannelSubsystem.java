@@ -29,6 +29,8 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 package com.jcraft.jsch;
 
+import java.io.*;
+
 public class ChannelSubsystem extends ChannelSession{
   boolean want_reply=true;
   String subsystem="";
@@ -70,10 +72,10 @@ public class ChannelSubsystem extends ChannelSession{
     io.setOutputStream(getSession().out);
   }
 
-  public void setErrStream(java.io.OutputStream out){
+  public void setErrStream(OutputStream out){
     setExtOutputStream(out);
   }
-  public java.io.InputStream getErrStream() throws java.io.IOException {
+  public InputStream getErrStream() throws IOException {
     return getExtInputStream();
   }
 }

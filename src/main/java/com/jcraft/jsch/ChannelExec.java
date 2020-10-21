@@ -29,6 +29,7 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 package com.jcraft.jsch;
 
+import java.io.*;
 import java.util.*;
 
 public class ChannelExec extends ChannelSession{
@@ -71,13 +72,13 @@ public class ChannelExec extends ChannelSession{
     io.setOutputStream(getSession().out);
   }
 
-  public void setErrStream(java.io.OutputStream out){
+  public void setErrStream(OutputStream out){
     setExtOutputStream(out);
   }
-  public void setErrStream(java.io.OutputStream out, boolean dontclose){
+  public void setErrStream(OutputStream out, boolean dontclose){
     setExtOutputStream(out, dontclose);
   }
-  public java.io.InputStream getErrStream() throws java.io.IOException {
+  public InputStream getErrStream() throws IOException {
     return getExtInputStream();
   }
 }

@@ -34,11 +34,8 @@ import java.io.InputStream;
 import java.io.InterruptedIOException;
 import java.io.OutputStream;
 import java.net.Socket;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Vector;
+import java.util.*;
+import javax.crypto.AEADBadTagException;
 
 public class Session implements Runnable{
 
@@ -133,7 +130,7 @@ public class Session implements Runnable{
                                    64 + // maximum mac length
                                    32;  // margin for deflater; deflater may inflate data
 
-  private java.util.Hashtable<String, String> config=null;
+  private Hashtable<String, String> config=null;
 
   private Proxy proxy=null;
   private UserInfo userinfo;
@@ -1102,7 +1099,7 @@ key_type+" key fingerprint is "+key_fprint+".\n"+
         try {
           s2ccipher.doFinal(buf.buffer, 0, j+4, buf.buffer, 0);
         }
-        catch(javax.crypto.AEADBadTagException e){
+        catch(AEADBadTagException e){
           start_discard(buf, s2ccipher, s2cmac, j, PACKET_MAX_SIZE-j, e);
           continue;
         }
@@ -1144,7 +1141,7 @@ key_type+" key fingerprint is "+key_fprint+".\n"+
             s2ccipher.updateAAD(buf.buffer, 0, 4);
             s2ccipher.doFinal(buf.buffer, 4, j, buf.buffer, 4);
           }
-          catch(javax.crypto.AEADBadTagException e){
+          catch(AEADBadTagException e){
             start_discard(buf, s2ccipher, s2cmac, j, PACKET_MAX_SIZE-j, e);
             continue;
           }
@@ -1517,7 +1514,7 @@ key_type+" key fingerprint is "+key_fprint+".\n"+
           throw new JSchException("timeout in waiting for rekeying process.");
         }
         try{Thread.sleep(10);}
-        catch(java.lang.InterruptedException e){};
+        catch(InterruptedException e){};
         continue;
       }
       synchronized(c){
@@ -1527,7 +1524,7 @@ key_type+" key fingerprint is "+key_fprint+".\n"+
             c.notifyme++;
             c.wait(100);
           }
-          catch(java.lang.InterruptedException e){
+          catch(InterruptedException e){
           }
           finally{
             c.notifyme--;
@@ -1592,7 +1589,7 @@ key_type+" key fingerprint is "+key_fprint+".\n"+
         //  c.notifyme++;
         //  c.wait(100);
         //}
-        //catch(java.lang.InterruptedException e){
+        //catch(InterruptedException e){
         //}
         //finally{
         //  c.notifyme--;
@@ -1626,7 +1623,7 @@ key_type+" key fingerprint is "+key_fprint+".\n"+
         break;
       }
       try{Thread.sleep(10);}
-      catch(java.lang.InterruptedException e){};
+      catch(InterruptedException e){};
     }
     _write(packet);
   }
@@ -2571,19 +2568,19 @@ break;
     }
   }
 
-  public void setConfig(java.util.Properties newconf){
-    java.util.Hashtable<String, String> foo=new java.util.Hashtable<>();
+  public void setConfig(Properties newconf){
+    Hashtable<String, String> foo=new Hashtable<>();
     for(String key : newconf.stringPropertyNames()){
       foo.put(key, newconf.getProperty(key));
     }
     setConfig(foo);
   }
 
-  public void setConfig(java.util.Hashtable<String, String> newconf){
+  public void setConfig(Hashtable<String, String> newconf){
     synchronized(lock){
       if(config==null)
-        config=new java.util.Hashtable<>();
-      for(java.util.Enumeration<String> e=newconf.keys() ; e.hasMoreElements() ;) {
+        config=new Hashtable<>();
+      for(Enumeration<String> e=newconf.keys() ; e.hasMoreElements() ;) {
         String key=e.nextElement();
         config.put(key, newconf.get(key));
       }
@@ -2593,7 +2590,7 @@ break;
   public void setConfig(String key, String value){
     synchronized(lock){
       if(config==null){
-        config=new java.util.Hashtable<>();
+        config=new Hashtable<>();
       }
       config.put(key, value);
     }
@@ -2840,7 +2837,7 @@ break;
                            "CheckKexes: "+kexes);
     }
 
-    java.util.Vector<String> result=new java.util.Vector<>();
+    Vector<String> result=new Vector<>();
     String[] _kexes=Util.split(kexes, ",");
     for(int i=0; i<_kexes.length; i++){
       if(!checkKex(this, getConfig(_kexes[i]))){
@@ -2881,7 +2878,7 @@ break;
                            "CheckSignatures: "+sigs);
     }
 
-    java.util.Vector<String> result=new java.util.Vector<>();
+    Vector<String> result=new Vector<>();
     String[] _sigs=Util.split(sigs, ",");
     for(int i=0; i<_sigs.length; i++){
       try{

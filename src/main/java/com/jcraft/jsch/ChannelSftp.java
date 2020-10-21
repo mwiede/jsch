@@ -30,7 +30,7 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 package com.jcraft.jsch;
 
 import java.io.*;
-
+import java.util.Hashtable;
 import java.util.Vector;
 
 public class ChannelSftp extends ChannelSession{
@@ -146,7 +146,7 @@ public class ChannelSftp extends ChannelSession{
   private int server_version=3;
   private String version=String.valueOf(client_version);
 
-  private java.util.Hashtable<String, String> extensions=null;
+  private Hashtable<String, String> extensions=null;
   private InputStream io_in=null;
 
   private boolean extension_posix_rename = false;
@@ -170,9 +170,9 @@ public class ChannelSftp extends ChannelSession{
    o  Implementation changes, no actual protocol changes.
 */
 
-  private static final String file_separator=java.io.File.separator;
-  private static final char file_separatorc=java.io.File.separatorChar;
-  private static boolean fs_is_bs=(byte)java.io.File.separatorChar == '\\';
+  private static final String file_separator=File.separator;
+  private static final char file_separatorc=File.separatorChar;
+  private static boolean fs_is_bs=(byte)File.separatorChar == '\\';
 
   private String cwd;
   private String home;
@@ -270,7 +270,7 @@ public class ChannelSftp extends ChannelSession{
       type=header.type;             // 2 -> SSH_FXP_VERSION
       server_version=header.rid;
       //System.err.println("SFTP protocol server-version="+server_version);
-      extensions=new java.util.Hashtable<>();
+      extensions=new Hashtable<>();
       if(length>0){
         // extension data
         fill(buf, length);
@@ -778,12 +778,12 @@ public class ChannelSftp extends ChannelSession{
         private Header header=new Header();          
 
         @Override
-        public void write(byte[] d) throws java.io.IOException{
+        public void write(byte[] d) throws IOException{
           write(d, 0, d.length);
         }
 
         @Override
-        public void write(byte[] d, int s, int len) throws java.io.IOException{
+        public void write(byte[] d, int s, int len) throws IOException{
           if(init){
             startid=seq;
             _ackid=seq;
@@ -829,13 +829,13 @@ public class ChannelSftp extends ChannelSession{
 
         byte[] _data=new byte[1];
         @Override
-        public void write(int foo) throws java.io.IOException{
+        public void write(int foo) throws IOException{
           _data[0]=(byte)foo;
           write(_data, 0, 1);
         }
 
         @Override
-        public void flush() throws java.io.IOException{
+        public void flush() throws IOException{
 
           if(isClosed){
             throw new IOException("stream already closed");
@@ -857,7 +857,7 @@ public class ChannelSftp extends ChannelSession{
         }
 
         @Override
-        public void close() throws java.io.IOException{
+        public void close() throws IOException{
           if(isClosed){
             return;
           }
@@ -933,8 +933,8 @@ public class ChannelSftp extends ChannelSession{
 	  else dstsb.append(_src.substring(i + 1));
           _dst=dstsb.toString();
           if(_dst.indexOf("..")!=-1){
-            String dstc = (new java.io.File(dst)).getCanonicalPath();
-            String _dstc = (new java.io.File(_dst)).getCanonicalPath();
+            String dstc = (new File(dst)).getCanonicalPath();
+            String _dstc = (new File(_dst)).getCanonicalPath();
             if(!(_dstc.length()>dstc.length() &&
                  _dstc.substring(0, dstc.length()+1).equals(dstc+file_separator))){
               throw new SftpException(SSH_FX_FAILURE,
@@ -1333,7 +1333,7 @@ public class ChannelSftp extends ChannelSession{
 
       rq.init();
 
-      java.io.InputStream in=new java.io.InputStream(){
+      InputStream in=new InputStream(){
            long offset=skip;
            boolean closed=false;
            int rest_length=0;
@@ -1344,7 +1344,7 @@ public class ChannelSftp extends ChannelSession{
            long request_offset=offset;
 
            @Override
-           public int read() throws java.io.IOException{
+           public int read() throws IOException{
              if(closed)return -1;
              int i=read(_data, 0, 1);
              if (i==-1) { return -1; }
@@ -1353,12 +1353,12 @@ public class ChannelSftp extends ChannelSession{
              }
            }
            @Override
-           public int read(byte[] d) throws java.io.IOException{
+           public int read(byte[] d) throws IOException{
              if(closed)return -1;
              return read(d, 0, d.length);
            }
            @Override
-           public int read(byte[] d, int s, int len) throws java.io.IOException{
+           public int read(byte[] d, int s, int len) throws IOException{
              if(closed)return -1;
              if(d==null){throw new NullPointerException();}
              if(s<0 || len <0 || s+len>d.length){
@@ -1536,8 +1536,8 @@ public class ChannelSftp extends ChannelSession{
      }
    }
 
-   public java.util.Vector<LsEntry> ls(String path) throws SftpException{
-     final java.util.Vector<LsEntry> v = new Vector<>();
+   public Vector<LsEntry> ls(String path) throws SftpException{
+     final Vector<LsEntry> v = new Vector<>();
      LsEntrySelector selector = new LsEntrySelector(){
        @Override
        public int select(LsEntry entry){
@@ -1566,7 +1566,7 @@ public class ChannelSftp extends ChannelSession{
 
        path=remoteAbsolutePath(path);
        byte[] pattern=null;
-       java.util.Vector<LsEntry> v=new java.util.Vector<>();
+       Vector<LsEntry> v=new Vector<>();
 
        int foo=path.lastIndexOf('/');
        String dir=path.substring(0, ((foo==0)?1:foo));

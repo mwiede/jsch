@@ -30,6 +30,9 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 package com.jcraft.jsch;
 
 import java.io.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Vector;
 
 public
 class KnownHosts implements HostKeyRepository{
@@ -37,7 +40,7 @@ class KnownHosts implements HostKeyRepository{
 
   private JSch jsch=null;
   private String known_hosts=null;
-  private java.util.Vector<HostKey> pool=null;
+  private Vector<HostKey> pool=null;
 
   private MAC hmacsha1=null;
 
@@ -45,7 +48,7 @@ class KnownHosts implements HostKeyRepository{
     super();
     this.jsch=jsch;
     this.hmacsha1 = getHMACSHA1();
-    pool=new java.util.Vector<>();
+    pool=new Vector<>();
   }
 
   void setKnownHosts(String filename) throws JSchException{
@@ -358,7 +361,7 @@ loop:
   @Override
   public HostKey[] getHostKey(String host, String type){
     synchronized(pool){
-      java.util.List<HostKey> v = new java.util.ArrayList<>();
+      List<HostKey> v = new ArrayList<>();
       for(int i=0; i<pool.size(); i++){
 	HostKey hk=pool.elementAt(i);
 	if(hk.type==HostKey.UNKNOWN) continue;

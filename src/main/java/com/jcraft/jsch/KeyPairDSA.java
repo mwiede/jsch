@@ -29,6 +29,8 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 package com.jcraft.jsch;
 
+import java.math.BigInteger;
+
 public class KeyPairDSA extends KeyPair{
   private byte[] P_array;
   private byte[] Q_array;
@@ -56,7 +58,7 @@ public class KeyPairDSA extends KeyPair{
     this.pub_array = pub_array;
     this.prv_array = prv_array;
     if(P_array!=null)
-      key_size = (new java.math.BigInteger(P_array)).bitLength();
+      key_size = (new BigInteger(P_array)).bitLength();
   }
 
   @Override
@@ -127,7 +129,7 @@ public class KeyPairDSA extends KeyPair{
 	  pub_array=buf.getMPIntBits();
 	  prv_array=buf.getMPIntBits();
           if(P_array!=null)
-            key_size = (new java.math.BigInteger(P_array)).bitLength();
+            key_size = (new BigInteger(P_array)).bitLength();
 	  return true;
 	}
 	return false;
@@ -165,7 +167,7 @@ public class KeyPairDSA extends KeyPair{
         pub_array=prvKEyBuffer.getMPInt();
         prv_array=prvKEyBuffer.getMPInt();
         publicKeyComment=Util.byte2str(prvKEyBuffer.getString());
-        //if(P_array!=null) key_size = (new java.math.BigInteger(P_array)).bitLength();
+        //if(P_array!=null) key_size = (new BigInteger(P_array)).bitLength();
         return true;
 
       }
@@ -241,7 +243,7 @@ public class KeyPairDSA extends KeyPair{
       index+=length;
 
       if(P_array!=null)
-        key_size = (new java.math.BigInteger(P_array)).bitLength();
+        key_size = (new BigInteger(P_array)).bitLength();
     }
     catch(Exception e){
       //System.err.println(e);

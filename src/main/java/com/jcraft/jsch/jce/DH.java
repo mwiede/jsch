@@ -32,6 +32,7 @@ package com.jcraft.jsch.jce;
 import java.math.BigInteger;
 import java.security.*;
 import javax.crypto.*;
+import javax.crypto.interfaces.*;
 import javax.crypto.spec.*;
 import com.jcraft.jsch.JSchException;
 
@@ -58,7 +59,7 @@ public class DH implements com.jcraft.jsch.DH{
       myKpairGen.initialize(dhSkipParamSpec);
       KeyPair myKpair=myKpairGen.generateKeyPair();
       myKeyAgree.init(myKpair.getPrivate());
-      e=((javax.crypto.interfaces.DHPublicKey)(myKpair.getPublic())).getY();
+      e=((DHPublicKey)(myKpair.getPublic())).getY();
       e_array=e.toByteArray();
     }
     return e_array;

@@ -32,6 +32,8 @@ import java.net.Socket;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.util.Vector;
 
 class Util{
 
@@ -114,7 +116,7 @@ class Util{
     if(foo==null)
       return null;
     byte[] buf=Util.str2byte(foo);
-    java.util.Vector<String> bar=new java.util.Vector<>();
+    Vector<String> bar=new Vector<>();
     int start=0;
     int index;
     while(true){
@@ -392,7 +394,7 @@ class Util{
       tmp.join(timeout);
       message="timeout: ";
     }
-    catch(java.lang.InterruptedException eee){
+    catch(InterruptedException eee){
     }
     if(sockp[0]!=null && sockp[0].isConnected()){
       socket=sockp[0];
@@ -413,7 +415,7 @@ class Util{
     if(str==null) 
       return null;
     try{ return str.getBytes(encoding); }
-    catch(java.io.UnsupportedEncodingException e){
+    catch(UnsupportedEncodingException e){
       throw new IllegalArgumentException(e);
     }
   }
@@ -428,7 +430,7 @@ class Util{
 
   static String byte2str(byte[] str, int s, int l, String encoding){
     try{ return new String(str, s, l, encoding); }
-    catch(java.io.UnsupportedEncodingException e){
+    catch(UnsupportedEncodingException e){
       throw new IllegalArgumentException(e);
     }
   }

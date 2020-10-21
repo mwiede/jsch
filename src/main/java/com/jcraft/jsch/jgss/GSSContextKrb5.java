@@ -134,7 +134,7 @@ public class GSSContextKrb5 implements com.jcraft.jsch.GSSContext{
     catch(GSSException ex){
       throw new JSchException(ex.toString());
     }
-    catch(java.lang.SecurityException ex){
+    catch(SecurityException ex){
       throw new JSchException(ex.toString());
     }
     finally{

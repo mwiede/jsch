@@ -57,7 +57,7 @@ public class KeyPairRSA extends KeyPair{
     this.pub_array = pub_array;
     this.prv_array = prv_array;
     if(n_array!=null){
-      key_size = (new java.math.BigInteger(n_array)).bitLength();
+      key_size = (new BigInteger(n_array)).bitLength();
     }
   }
 
@@ -163,7 +163,7 @@ public class KeyPairRSA extends KeyPair{
 	  p_array=buf.getMPIntBits();
 	  q_array=buf.getMPIntBits();
           if(n_array!=null){
-            key_size = (new java.math.BigInteger(n_array)).bitLength();
+            key_size = (new BigInteger(n_array)).bitLength();
           }
 
           getEPArray();
@@ -306,7 +306,7 @@ public class KeyPairRSA extends KeyPair{
       index+=length;
 
       if(n_array!=null){
-        key_size = (new java.math.BigInteger(n_array)).bitLength();
+        key_size = (new BigInteger(n_array)).bitLength();
       }
 
     }

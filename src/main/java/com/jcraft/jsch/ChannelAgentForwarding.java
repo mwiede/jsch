@@ -29,6 +29,7 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 package com.jcraft.jsch;
 
+import java.io.IOException;
 import java.net.*;
 import java.util.Vector;
 
@@ -91,7 +92,7 @@ class ChannelAgentForwarding extends Channel{
   }
 
   @Override
-  void write(byte[] foo, int s, int l) throws java.io.IOException {
+  void write(byte[] foo, int s, int l) throws IOException {
 
     if(packet==null){
       wbuf=new Buffer(rmpsize);
@@ -120,7 +121,7 @@ class ChannelAgentForwarding extends Channel{
       _session=getSession();
     }
     catch(JSchException e){
-      throw new java.io.IOException(e.toString());
+      throw new IOException(e.toString());
     }
 
     IdentityRepository irepo = _session.getIdentityRepository();

@@ -30,11 +30,13 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 package com.jcraft.jsch;
 
 import java.io.InputStream;
+import java.util.Enumeration;
+import java.util.Hashtable;
 import java.util.Vector;
 
 public class JSch{
 
-  static java.util.Hashtable<String, String> config=new java.util.Hashtable<>();
+  static Hashtable<String, String> config=new Hashtable<>();
   static{
     config.put("kex", "curve25519-sha256,curve25519-sha256@libssh.org,ecdh-sha2-nistp256,ecdh-sha2-nistp384,ecdh-sha2-nistp521,diffie-hellman-group-exchange-sha256,diffie-hellman-group16-sha512,diffie-hellman-group18-sha512,diffie-hellman-group14-sha256");
     config.put("server_host_key", "ecdsa-sha2-nistp256,ecdsa-sha2-nistp384,ecdsa-sha2-nistp521,ssh-ed25519,rsa-sha2-512,rsa-sha2-256,ssh-rsa");
@@ -168,7 +170,7 @@ public class JSch{
     config.put("ClearAllForwardings", "no");
   }
 
-  private java.util.Vector<Session> sessionPool = new java.util.Vector<>();
+  private Vector<Session> sessionPool = new Vector<>();
 
   private IdentityRepository defaultIdentityRepository =
     new LocalIdentityRepository(this);
@@ -571,9 +573,9 @@ public class JSch{
    *
    * @param newconf configurations
    */
-  public static void setConfig(java.util.Hashtable<String, String> newconf){
+  public static void setConfig(Hashtable<String, String> newconf){
     synchronized(config){
-      for(java.util.Enumeration<String> e=newconf.keys() ; e.hasMoreElements() ;) {
+      for(Enumeration<String> e=newconf.keys() ; e.hasMoreElements() ;) {
 	String key=e.nextElement();
 	config.put(key, newconf.get(key));
       }

@@ -30,7 +30,7 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 package com.jcraft.jsch;
 
 import java.io.*;
-
+import java.util.Vector;
 
 public abstract class Channel implements Runnable{
 
@@ -44,7 +44,7 @@ public abstract class Channel implements Runnable{
   static final int SSH_OPEN_RESOURCE_SHORTAGE=              4;
 
   static int index=0; 
-  private static java.util.Vector<Channel> pool=new java.util.Vector<>();
+  private static Vector<Channel> pool=new Vector<>();
   static Channel getChannel(String type){
     if(type.equals("session")){
       return new ChannelSession();
@@ -230,7 +230,7 @@ public abstract class Channel implements Runnable{
         private Buffer buffer=null;
         private Packet packet=null;
         private boolean closed=false;
-        private synchronized void init() throws java.io.IOException{
+        private synchronized void init() throws IOException{
           buffer=new Buffer(rmpsize);
           packet=new Packet(buffer);
 
@@ -244,18 +244,18 @@ public abstract class Channel implements Runnable{
         }
         byte[] b=new byte[1];
         @Override
-        public void write(int w) throws java.io.IOException{
+        public void write(int w) throws IOException{
           b[0]=(byte)w;
           write(b, 0, 1);
         }
         @Override
-        public void write(byte[] buf, int s, int l) throws java.io.IOException{
+        public void write(byte[] buf, int s, int l) throws IOException{
           if(packet==null){
             init();
           }
 
           if(closed){
-            throw new java.io.IOException("Already closed");
+            throw new IOException("Already closed");
           }
 
           byte[] _buf=buffer.buffer;
@@ -279,9 +279,9 @@ public abstract class Channel implements Runnable{
         }
 
         @Override
-        public void flush() throws java.io.IOException{
+        public void flush() throws IOException{
           if(closed){
-            throw new java.io.IOException("Already closed");
+            throw new IOException("Already closed");
           }
           if(dataLen==0)
             return;
@@ -300,17 +300,17 @@ public abstract class Channel implements Runnable{
           }
           catch(Exception e){
             close();
-            throw new java.io.IOException(e.toString());
+            throw new IOException(e.toString());
           }
 
         }
         @Override
-        public void close() throws java.io.IOException{
+        public void close() throws IOException{
           if(packet==null){
             try{
               init();
             }
-            catch(java.io.IOException e){
+            catch(IOException e){
               // close should be finished silently.
               return;
             }
@@ -757,7 +757,7 @@ public abstract class Channel implements Runnable{
           this.notifyme=1;
           wait(t);
         }
-        catch(java.lang.InterruptedException e){
+        catch(InterruptedException e){
         }
         finally{
           this.notifyme=0;

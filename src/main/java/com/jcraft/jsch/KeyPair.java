@@ -29,10 +29,10 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 package com.jcraft.jsch;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
+import java.io.*;
 import java.util.Arrays;
+import java.util.Hashtable;
+import java.util.Vector;
 
 public abstract class KeyPair{
   
@@ -117,9 +117,9 @@ public abstract class KeyPair{
   /**
    * Writes the plain private key to the given output stream.
    * @param out output stream 
-   * @see #writePrivateKey(java.io.OutputStream out, byte[] passphrase)
+   * @see #writePrivateKey(OutputStream out, byte[] passphrase)
    */
-  public void writePrivateKey(java.io.OutputStream out){
+  public void writePrivateKey(OutputStream out){
     this.writePrivateKey(out, null);
   }
 
@@ -128,7 +128,7 @@ public abstract class KeyPair{
    * @param out output stream 
    * @param passphrase a passphrase to encrypt the private key
    */
-  public void writePrivateKey(java.io.OutputStream out, byte[] passphrase){
+  public void writePrivateKey(OutputStream out, byte[] passphrase){
     if(passphrase == null)
       passphrase = this.passphrase;
 
@@ -192,7 +192,7 @@ public abstract class KeyPair{
    * @param out output stream 
    * @param comment comment
    */
-  public void writePublicKey(java.io.OutputStream out, String comment){
+  public void writePublicKey(OutputStream out, String comment){
     byte[] pubblob=getPublicKeyBlob();
     byte[] pub=Util.toBase64(pubblob, 0, pubblob.length, true);
     try{
@@ -209,9 +209,9 @@ public abstract class KeyPair{
    * Writes the public key with the specified comment to the file.
    * @param name file name
    * @param comment comment
-   * @see #writePublicKey(java.io.OutputStream out, String comment)
+   * @see #writePublicKey(OutputStream out, String comment)
    */
-  public void writePublicKey(String name, String comment) throws java.io.FileNotFoundException, java.io.IOException{
+  public void writePublicKey(String name, String comment) throws FileNotFoundException, IOException{
     FileOutputStream fos=new FileOutputStream(name);
     writePublicKey(fos, comment);
     fos.close();
@@ -223,7 +223,7 @@ public abstract class KeyPair{
    * @param out output stream 
    * @param comment comment
    */
-  public void writeSECSHPublicKey(java.io.OutputStream out, String comment){
+  public void writeSECSHPublicKey(OutputStream out, String comment){
     byte[] pubblob=getPublicKeyBlob();
     byte[] pub=Util.toBase64(pubblob, 0, pubblob.length, true);
     try{
@@ -247,9 +247,9 @@ public abstract class KeyPair{
    * the format defined in http://www.ietf.org/rfc/rfc4716.txt
    * @param name file name
    * @param comment comment
-   * @see #writeSECSHPublicKey(java.io.OutputStream out, String comment)
+   * @see #writeSECSHPublicKey(OutputStream out, String comment)
    */
-  public void writeSECSHPublicKey(String name, String comment) throws java.io.FileNotFoundException, java.io.IOException{
+  public void writeSECSHPublicKey(String name, String comment) throws FileNotFoundException, IOException{
     FileOutputStream fos=new FileOutputStream(name);
     writeSECSHPublicKey(fos, comment);
     fos.close();
@@ -260,7 +260,7 @@ public abstract class KeyPair{
    * @param name file name
    * @see #writePrivateKey(String name,  byte[] passphrase)
    */
-  public void writePrivateKey(String name) throws java.io.FileNotFoundException, java.io.IOException{
+  public void writePrivateKey(String name) throws FileNotFoundException, IOException{
     this.writePrivateKey(name, null);
   }
 
@@ -268,9 +268,9 @@ public abstract class KeyPair{
    * Writes the cyphered private key to the file.
    * @param name file name
    * @param passphrase a passphrase to encrypt the private key
-   * @see #writePrivateKey(java.io.OutputStream out,  byte[] passphrase)
+   * @see #writePrivateKey(OutputStream out,  byte[] passphrase)
    */
-  public void writePrivateKey(String name, byte[] passphrase) throws java.io.FileNotFoundException, java.io.IOException{
+  public void writePrivateKey(String name, byte[] passphrase) throws FileNotFoundException, IOException{
     FileOutputStream fos=new FileOutputStream(name);
     writePrivateKey(fos, passphrase);
     fos.close();
@@ -485,7 +485,7 @@ public abstract class KeyPair{
   } 
 
   /**
-   * @deprecated use #writePrivateKey(java.io.OutputStream out, byte[] passphrase)
+   * @deprecated use #writePrivateKey(OutputStream out, byte[] passphrase)
    */
   @Deprecated
   public void setPassphrase(String passphrase){
@@ -1105,7 +1105,7 @@ public abstract class KeyPair{
     int lines = 0;
 
     Buffer buffer = new Buffer(buf);
-    java.util.Hashtable<String, String> v = new java.util.Hashtable<>();
+    Hashtable<String, String> v = new Hashtable<>();
 
     while(true){
       if(!parseHeader(buffer, v))
@@ -1237,7 +1237,7 @@ public abstract class KeyPair{
     return data;
   }
 
-  private static boolean parseHeader(Buffer buffer, java.util.Hashtable<String, String> v){
+  private static boolean parseHeader(Buffer buffer, Hashtable<String, String> v){
     byte[] buf = buffer.buffer;
     int index = buffer.index;
     String key = null;
@@ -1348,7 +1348,7 @@ public abstract class KeyPair{
         return new ASN1[0];
       }
       int index=indexp[0];
-      java.util.Vector<ASN1> values = new java.util.Vector<>();
+      Vector<ASN1> values = new Vector<>();
       while(length>0) {
         index++; length--;
         int tmp=index;

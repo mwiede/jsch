@@ -30,6 +30,7 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 package com.jcraft.jsch;
 
 import java.io.*;
+import java.net.SocketException;
 
 public class IO{
   InputStream in;
@@ -56,7 +57,7 @@ public class IO{
     setInputStream(in);
   }
 
-  public void put(Packet p) throws IOException, java.net.SocketException {
+  public void put(Packet p) throws IOException, SocketException {
     out.write(p.buffer.buffer, 0, p.buffer.index);
     out.flush();
   }
