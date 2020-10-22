@@ -735,23 +735,30 @@ public class Session implements Runnable{
       if(hostKeyAlias==null && port!=22){
         chost=("["+chost+"]:"+port);
       }
-      List<String> pref_shks=new ArrayList<>();
-      List<String> shks=new ArrayList<>(Arrays.asList(Util.split(server_host_key, ",")));
-      Iterator<String> it=shks.iterator();
-      while(it.hasNext()){
-        String algo=it.next();
-        String type=algo;
-        if(type.equals("rsa-sha2-256") || type.equals("rsa-sha2-512")){
-          type="ssh-rsa";
+      HostKey[] hks=hkr.getHostKey(chost, null);
+      if(hks!=null && hks.length>0){
+        List<String> pref_shks=new ArrayList<>();
+        List<String> shks=new ArrayList<>(Arrays.asList(Util.split(server_host_key, ",")));
+        Iterator<String> it=shks.iterator();
+        while(it.hasNext()){
+          String algo=it.next();
+          String type=algo;
+          if(type.equals("rsa-sha2-256") || type.equals("rsa-sha2-512")){
+            type="ssh-rsa";
+          }
+          for(HostKey hk : hks){
+            if(hk.getType().equals(type)){
+              pref_shks.add(algo);
+              it.remove();
+              break;
+            }
+          }
         }
-        HostKey[] hks=hkr.getHostKey(chost, type);
-        if(hks!=null && hks.length>0){
-          pref_shks.add(algo);
-          it.remove();
+        if(pref_shks.size()>0){
+          pref_shks.addAll(shks);
+          server_host_key=String.join(",", pref_shks);
         }
       }
-      pref_shks.addAll(shks);
-      server_host_key=String.join(",", pref_shks);
 
       if(JSch.getLogger().isEnabled(Logger.DEBUG)){
         JSch.getLogger().log(Logger.DEBUG,
