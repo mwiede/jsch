@@ -230,7 +230,7 @@ public class Algorithms2IT {
 
   private static ListAppender<ILoggingEvent> getListAppender(Class<?> clazz) {
     Logger logger = (Logger) LoggerFactory.getLogger(clazz);
-    ListAppender<ILoggingEvent> listAppender = new ListAppender<>();
+    ListAppender<ILoggingEvent> listAppender = new ListAppender2<>();
     logger.addAppender(listAppender);
     return listAppender;
   }
