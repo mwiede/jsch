@@ -509,7 +509,7 @@ public class AlgorithmsIT {
     try {
       assertTrue(actualJsch.isPresent(), () -> "JSch: " + expected);
       assertTrue(actualSshd.isPresent(), () -> "sshd: " + expected);
-    } catch (Exception e) {
+    } catch (AssertionError e) {
       printInfo();
       throw e;
     }

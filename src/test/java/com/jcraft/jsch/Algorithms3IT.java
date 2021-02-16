@@ -172,7 +172,7 @@ public class Algorithms3IT {
             .findFirst();
     try {
       assertTrue(actualJsch.isPresent(), () -> "JSch: " + expected);
-    } catch (Exception e) {
+    } catch (AssertionError e) {
       printInfo();
       throw e;
     }
