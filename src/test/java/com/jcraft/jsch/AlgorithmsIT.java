@@ -473,6 +473,8 @@ public class AlgorithmsIT {
       sftp.disconnect();
       session.disconnect();
       jschAppender.stop();
+      // Sleep for a short bit to allow logs from test container to catch up
+      Thread.sleep(100L);
       sshdAppender.stop();
     } catch (Exception e) {
       if (debugException) {
@@ -509,7 +511,7 @@ public class AlgorithmsIT {
     try {
       assertTrue(actualJsch.isPresent(), () -> "JSch: " + expected);
       assertTrue(actualSshd.isPresent(), () -> "sshd: " + expected);
-    } catch (Exception e) {
+    } catch (AssertionError e) {
       printInfo();
       throw e;
     }

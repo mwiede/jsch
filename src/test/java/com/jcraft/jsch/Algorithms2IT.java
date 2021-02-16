@@ -207,6 +207,8 @@ public class Algorithms2IT {
       sftp.disconnect();
       session.disconnect();
       jschAppender.stop();
+      // Sleep for a short bit to allow logs from test container to catch up
+      Thread.sleep(100L);
       sshdAppender.stop();
     } catch (Exception e) {
       if (debugException) {
@@ -237,7 +239,7 @@ public class Algorithms2IT {
             .findFirst();
     try {
       assertTrue(actualJsch.isPresent(), () -> "JSch: " + expected);
-    } catch (Exception e) {
+    } catch (AssertionError e) {
       printInfo();
       throw e;
     }
