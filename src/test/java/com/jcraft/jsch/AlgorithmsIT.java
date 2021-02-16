@@ -506,8 +506,13 @@ public class AlgorithmsIT {
             .map(ILoggingEvent::getFormattedMessage)
             .filter(msg -> msg.matches("STDERR: debug1: " + expected))
             .findFirst();
-    assertTrue(actualJsch.isPresent(), () -> "JSch: " + expected);
-    assertTrue(actualSshd.isPresent(), () -> "sshd: " + expected);
+    try {
+      assertTrue(actualJsch.isPresent(), () -> "JSch: " + expected);
+      assertTrue(actualSshd.isPresent(), () -> "sshd: " + expected);
+    } catch (Exception e) {
+      printInfo();
+      throw e;
+    }
   }
 
   private String getResourceFile(String fileName) {

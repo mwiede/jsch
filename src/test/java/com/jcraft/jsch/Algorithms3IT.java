@@ -170,7 +170,12 @@ public class Algorithms3IT {
             .map(ILoggingEvent::getFormattedMessage)
             .filter(msg -> msg.matches(expected))
             .findFirst();
-    assertTrue(actualJsch.isPresent(), () -> "JSch: " + expected);
+    try {
+      assertTrue(actualJsch.isPresent(), () -> "JSch: " + expected);
+    } catch (Exception e) {
+      printInfo();
+      throw e;
+    }
   }
 
   private String getResourceFile(String fileName) {
