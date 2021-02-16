@@ -42,8 +42,11 @@ public abstract class AESGCM implements Cipher{
   private int mode;
   private ByteBuffer iv;
   private long initcounter;
+  @Override
   public int getIVSize(){return ivsize;}
+  @Override
   public int getTagSize(){return tagsize;}
+  @Override
   public void init(int mode, byte[] key, byte[] iv) throws Exception{
     String pad="NoPadding";      
     byte[] tmp;
@@ -77,14 +80,18 @@ public abstract class AESGCM implements Cipher{
       throw e;
     }
   }
+  @Override
   public void update(int foo) throws Exception{
   }
+  @Override
   public void update(byte[] foo, int s1, int len, byte[] bar, int s2) throws Exception{
     cipher.update(foo, s1, len, bar, s2);
   }
+  @Override
   public void updateAAD(byte[] foo, int s1, int len) throws Exception{
     cipher.updateAAD(foo, s1, len);
   }
+  @Override
   public void doFinal(byte[] foo, int s1, int len, byte[] bar, int s2) throws Exception{
     cipher.doFinal(foo, s1, len, bar, s2);
     long newcounter=iv.getLong(4)+1;
@@ -94,7 +101,10 @@ public abstract class AESGCM implements Cipher{
     iv.putLong(4, newcounter);
     cipher.init(mode, keyspec, new GCMParameterSpec(tagsize*8,iv.array()));
   }
+  @Override
   public boolean isCBC(){return false; }
+  @Override
   public boolean isAEAD(){return true; }
+  @Override
   public boolean isChaCha20(){return false; }
 }

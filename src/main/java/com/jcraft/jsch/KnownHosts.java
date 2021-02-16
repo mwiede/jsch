@@ -30,6 +30,9 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 package com.jcraft.jsch;
 
 import java.io.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Vector;
 
 public
 class KnownHosts implements HostKeyRepository{
@@ -37,7 +40,7 @@ class KnownHosts implements HostKeyRepository{
 
   private JSch jsch=null;
   private String known_hosts=null;
-  private java.util.Vector pool=null;
+  private Vector<HostKey> pool=null;
 
   private MAC hmacsha1=null;
 
@@ -45,7 +48,7 @@ class KnownHosts implements HostKeyRepository{
     super();
     this.jsch=jsch;
     this.hmacsha1 = getHMACSHA1();
-    pool=new java.util.Vector();
+    pool=new Vector<>();
   }
 
   void setKnownHosts(String filename) throws JSchException{
@@ -228,14 +231,12 @@ loop:
     catch(Exception e){
       if(e instanceof JSchException)
 	throw (JSchException)e;         
-      if(e instanceof Throwable)
-        throw new JSchException(e.toString(), (Throwable)e);
-      throw new JSchException(e.toString());
+      throw new JSchException(e.toString(), e);
     }
     finally {
       try{ input.close(); }
       catch(IOException e){
-        throw new JSchException(e.toString(), (Throwable)e);
+        throw new JSchException(e.toString(), e);
       }
     }
   }
@@ -244,8 +245,10 @@ loop:
     pool.addElement(hk);
   }
   String getKnownHostsFile(){ return known_hosts; }
+  @Override
   public String getKnownHostsRepositoryID(){ return known_hosts; }
 
+  @Override
   public int check(String host, byte[] key){
     int result=NOT_INCLUDED;
     if(host==null){
@@ -262,7 +265,7 @@ loop:
 
     synchronized(pool){
       for(int i=0; i<pool.size(); i++){
-        HostKey _hk=(HostKey)(pool.elementAt(i));
+        HostKey _hk=pool.elementAt(i);
         if(_hk.isMatched(host) && _hk.type==hk.type){
           if(Util.array_equals(_hk.key, key)){
             return OK;
@@ -284,6 +287,7 @@ loop:
     return result;
   }
 
+  @Override
   public void add(HostKey hostkey, UserInfo userinfo){
     int type=hostkey.type;
     String host=hostkey.getHost();
@@ -292,7 +296,7 @@ loop:
     HostKey hk=null;
     synchronized(pool){
       for(int i=0; i<pool.size(); i++){
-        hk=(HostKey)(pool.elementAt(i));
+        hk=pool.elementAt(i);
         if(hk.isMatched(host) && hk.type==type){
 /*
 	  if(Util.array_equals(hk.key, key)){ return; }
@@ -350,14 +354,16 @@ loop:
     }
   }
 
+  @Override
   public HostKey[] getHostKey(){
     return getHostKey(null, (String)null);
   }
+  @Override
   public HostKey[] getHostKey(String host, String type){
     synchronized(pool){
-      java.util.ArrayList v = new java.util.ArrayList();
+      List<HostKey> v = new ArrayList<>();
       for(int i=0; i<pool.size(); i++){
-	HostKey hk=(HostKey)pool.elementAt(i);
+	HostKey hk=pool.elementAt(i);
 	if(hk.type==HostKey.UNKNOWN) continue;
 	if(host==null || 
 	   (hk.isMatched(host) && 
@@ -367,7 +373,7 @@ loop:
       }
       HostKey[] foo = new HostKey[v.size()];
       for(int i=0; i<v.size(); i++){
-        foo[i] = (HostKey)v.get(i);
+        foo[i] = v.get(i);
       }
       if(host != null && host.startsWith("[") && host.indexOf("]:")>1){
         HostKey[] tmp =
@@ -382,14 +388,16 @@ loop:
       return foo;
     }
   }
+  @Override
   public void remove(String host, String type){
     remove(host, type, null);
   }
+  @Override
   public void remove(String host, String type, byte[] key){
     boolean sync=false;
     synchronized(pool){
     for(int i=0; i<pool.size(); i++){
-      HostKey hk=(HostKey)(pool.elementAt(i));
+      HostKey hk=pool.elementAt(i);
       if(host==null ||
 	 (hk.isMatched(host) && 
 	  (type==null || (hk.getType().equals(type) &&
@@ -430,7 +438,7 @@ loop:
       HostKey hk;
       synchronized(pool){
       for(int i=0; i<pool.size(); i++){
-        hk=(HostKey)(pool.elementAt(i));
+        hk=pool.elementAt(i);
         //hk.dump(out);
 	String marker=hk.getMarker();
 	String host=hk.getHost();
@@ -486,8 +494,8 @@ loop:
   private MAC getHMACSHA1(){
     if(hmacsha1==null){
       try{
-        Class c=Class.forName(jsch.getConfig("hmac-sha1"));
-        hmacsha1=(MAC)(c.newInstance());
+        Class<?> c=Class.forName(JSch.getConfig("hmac-sha1"));
+        hmacsha1=(MAC)(c.getDeclaredConstructor().newInstance());
       }
       catch(Exception e){ 
         System.err.println("hmacsha1: "+e); 
@@ -534,6 +542,7 @@ loop:
       }
     }
 
+    @Override
     boolean isMatched(String _host){
       if(!hashed){
         return super.isMatched(_host);

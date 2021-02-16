@@ -29,10 +29,10 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 package com.jcraft.jsch;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
+import java.io.*;
 import java.util.Arrays;
+import java.util.Hashtable;
+import java.util.Vector;
 
 public abstract class KeyPair{
   
@@ -53,7 +53,7 @@ public abstract class KeyPair{
 
   int vendor=VENDOR_OPENSSH;
 
-  private static final byte[] AUTH_MAGIC = "openssh-key-v1\0".getBytes();
+  private static final byte[] AUTH_MAGIC = Util.str2byte("openssh-key-v1\0");
   private static final byte[] cr=Util.str2byte("\n");
 
   public static KeyPair genKeyPair(JSch jsch, int type) throws JSchException{
@@ -117,9 +117,9 @@ public abstract class KeyPair{
   /**
    * Writes the plain private key to the given output stream.
    * @param out output stream 
-   * @see #writePrivateKey(java.io.OutputStream out, byte[] passphrase)
+   * @see #writePrivateKey(OutputStream out, byte[] passphrase)
    */
-  public void writePrivateKey(java.io.OutputStream out){
+  public void writePrivateKey(OutputStream out){
     this.writePrivateKey(out, null);
   }
 
@@ -128,7 +128,7 @@ public abstract class KeyPair{
    * @param out output stream 
    * @param passphrase a passphrase to encrypt the private key
    */
-  public void writePrivateKey(java.io.OutputStream out, byte[] passphrase){
+  public void writePrivateKey(OutputStream out, byte[] passphrase){
     if(passphrase == null)
       passphrase = this.passphrase;
 
@@ -192,7 +192,7 @@ public abstract class KeyPair{
    * @param out output stream 
    * @param comment comment
    */
-  public void writePublicKey(java.io.OutputStream out, String comment){
+  public void writePublicKey(OutputStream out, String comment){
     byte[] pubblob=getPublicKeyBlob();
     byte[] pub=Util.toBase64(pubblob, 0, pubblob.length, true);
     try{
@@ -209,9 +209,9 @@ public abstract class KeyPair{
    * Writes the public key with the specified comment to the file.
    * @param name file name
    * @param comment comment
-   * @see #writePublicKey(java.io.OutputStream out, String comment)
+   * @see #writePublicKey(OutputStream out, String comment)
    */
-  public void writePublicKey(String name, String comment) throws java.io.FileNotFoundException, java.io.IOException{
+  public void writePublicKey(String name, String comment) throws FileNotFoundException, IOException{
     FileOutputStream fos=new FileOutputStream(name);
     writePublicKey(fos, comment);
     fos.close();
@@ -223,7 +223,7 @@ public abstract class KeyPair{
    * @param out output stream 
    * @param comment comment
    */
-  public void writeSECSHPublicKey(java.io.OutputStream out, String comment){
+  public void writeSECSHPublicKey(OutputStream out, String comment){
     byte[] pubblob=getPublicKeyBlob();
     byte[] pub=Util.toBase64(pubblob, 0, pubblob.length, true);
     try{
@@ -247,9 +247,9 @@ public abstract class KeyPair{
    * the format defined in http://www.ietf.org/rfc/rfc4716.txt
    * @param name file name
    * @param comment comment
-   * @see #writeSECSHPublicKey(java.io.OutputStream out, String comment)
+   * @see #writeSECSHPublicKey(OutputStream out, String comment)
    */
-  public void writeSECSHPublicKey(String name, String comment) throws java.io.FileNotFoundException, java.io.IOException{
+  public void writeSECSHPublicKey(String name, String comment) throws FileNotFoundException, IOException{
     FileOutputStream fos=new FileOutputStream(name);
     writeSECSHPublicKey(fos, comment);
     fos.close();
@@ -260,7 +260,7 @@ public abstract class KeyPair{
    * @param name file name
    * @see #writePrivateKey(String name,  byte[] passphrase)
    */
-  public void writePrivateKey(String name) throws java.io.FileNotFoundException, java.io.IOException{
+  public void writePrivateKey(String name) throws FileNotFoundException, IOException{
     this.writePrivateKey(name, null);
   }
 
@@ -268,9 +268,9 @@ public abstract class KeyPair{
    * Writes the cyphered private key to the file.
    * @param name file name
    * @param passphrase a passphrase to encrypt the private key
-   * @see #writePrivateKey(java.io.OutputStream out,  byte[] passphrase)
+   * @see #writePrivateKey(OutputStream out,  byte[] passphrase)
    */
-  public void writePrivateKey(String name, byte[] passphrase) throws java.io.FileNotFoundException, java.io.IOException{
+  public void writePrivateKey(String name, byte[] passphrase) throws FileNotFoundException, IOException{
     FileOutputStream fos=new FileOutputStream(name);
     writePrivateKey(fos, passphrase);
     fos.close();
@@ -399,8 +399,8 @@ public abstract class KeyPair{
   private Random genRandom(){
     if(random==null){
       try{
-	Class c=Class.forName(jsch.getConfig("random"));
-        random=(Random)(c.newInstance());
+	Class<?> c=Class.forName(JSch.getConfig("random"));
+        random=(Random)(c.getDeclaredConstructor().newInstance());
       }
       catch(Exception e){ System.err.println("connect: random "+e); }
     }
@@ -409,8 +409,8 @@ public abstract class KeyPair{
 
   private HASH genHash(){
     try{
-      Class c=Class.forName(jsch.getConfig("md5"));
-      hash=(HASH)(c.newInstance());
+      Class<?> c=Class.forName(JSch.getConfig("md5"));
+      hash=(HASH)(c.getDeclaredConstructor().newInstance());
       hash.init();
     }
     catch(Exception e){
@@ -419,9 +419,8 @@ public abstract class KeyPair{
   }
   private Cipher genCipher(){
     try{
-      Class c;
-      c=Class.forName(jsch.getConfig("3des-cbc"));
-      cipher=(Cipher)(c.newInstance());
+      Class<?> c=Class.forName(JSch.getConfig("3des-cbc"));
+      cipher=(Cipher)(c.getDeclaredConstructor().newInstance());
     }
     catch(Exception e){
     }
@@ -466,8 +465,8 @@ public abstract class KeyPair{
 	System.arraycopy(hn, 0, key, 0, key.length); 
       }
       else if(vendor==VENDOR_PUTTY){
-        Class c=Class.forName((String)jsch.getConfig("sha-1"));
-        HASH sha1=(HASH)(c.newInstance());
+        Class<?> c=Class.forName(JSch.getConfig("sha-1"));
+        HASH sha1=(HASH)(c.getDeclaredConstructor().newInstance());
         tmp = new byte[4];
         key = new byte[20*2];
         for(int i = 0; i < 2; i++){
@@ -486,8 +485,9 @@ public abstract class KeyPair{
   } 
 
   /**
-   * @deprecated use #writePrivateKey(java.io.OutputStream out, byte[] passphrase)
+   * @deprecated use #writePrivateKey(OutputStream out, byte[] passphrase)
    */
+  @Deprecated
   public void setPassphrase(String passphrase){
     if(passphrase==null || passphrase.length()==0){
       setPassphrase((byte[])null);
@@ -500,6 +500,7 @@ public abstract class KeyPair{
   /**
    * @deprecated use #writePrivateKey(String name, byte[] passphrase)
    */
+  @Deprecated
   public void setPassphrase(byte[] passphrase){
     if(passphrase!=null && passphrase.length==0) 
       passphrase=null;
@@ -553,7 +554,7 @@ public abstract class KeyPair{
       prvkey = Util.fromFile(prvfile);
     }
     catch(IOException e){
-      throw new JSchException(e.toString(), (Throwable)e);
+      throw new JSchException(e.toString(), e);
     }
 
     String _pubfile=pubfile;
@@ -566,7 +567,7 @@ public abstract class KeyPair{
     }
     catch(IOException e){
       if(pubfile!=null){  
-        throw new JSchException(e.toString(), (Throwable)e);
+        throw new JSchException(e.toString(), e);
       }
     }
 
@@ -602,7 +603,7 @@ public abstract class KeyPair{
 
       Buffer buf=new Buffer(prvkey);
       buf.skip(prvkey.length);  // for using Buffer#available()
-      String _type = new String(buf.getString()); // ssh-rsa or ssh-dss
+      String _type = Util.byte2str(buf.getString()); // ssh-rsa or ssh-dss
       buf.rewind();
 
       KeyPair kpair=null;
@@ -624,7 +625,7 @@ public abstract class KeyPair{
         kpair=KeyPairEd448.fromSSHAgent(jsch, buf);
       }
       else{
-        throw new JSchException("privatekey: invalid key "+new String(prvkey, 4, 7));
+        throw new JSchException("privatekey: invalid key "+Util.byte2str(prvkey, 4, 7));
       }
       return kpair;
     }
@@ -655,7 +656,7 @@ public abstract class KeyPair{
         if(buf[i]=='B'&& i+3<len && buf[i+1]=='E'&& buf[i+2]=='G'&& buf[i+3]=='I'){
           i+=6;
           if(i+2 >= len)
-	    throw new JSchException("invalid privatekey: "+prvkey);
+	    throw new JSchException("invalid privatekey");
           if(buf[i]=='D'&& buf[i+1]=='S'&& buf[i+2]=='A'){ type=DSA; }
 	  else if(buf[i]=='R'&& buf[i+1]=='S'&& buf[i+2]=='A'){ type=RSA; }
 	  else if(buf[i]=='E'&& buf[i+1]=='C'){ type=ECDSA; }
@@ -685,7 +686,7 @@ public abstract class KeyPair{
           type = UNKNOWN;
           vendor = VENDOR_OPENSSH_V1;
       } else {
-	    throw new JSchException("invalid privatekey: "+prvkey);
+	    throw new JSchException("invalid privatekey");
 	  }
           i+=3;
 	  continue;
@@ -693,42 +694,42 @@ public abstract class KeyPair{
         if(buf[i]=='A'&& i+7<len && buf[i+1]=='E'&& buf[i+2]=='S'&& buf[i+3]=='-' && 
            buf[i+4]=='2'&& buf[i+5]=='5'&& buf[i+6]=='6'&& buf[i+7]=='-'){
           i+=8;
-          if(Session.checkCipher((String)jsch.getConfig("aes256-cbc"))){
-            Class c=Class.forName((String)jsch.getConfig("aes256-cbc"));
-            cipher=(Cipher)(c.newInstance());
+          if(Session.checkCipher(JSch.getConfig("aes256-cbc"))){
+            Class<?> c=Class.forName(JSch.getConfig("aes256-cbc"));
+            cipher=(Cipher)(c.getDeclaredConstructor().newInstance());
             // key=new byte[cipher.getBlockSize()];
             iv=new byte[cipher.getIVSize()];
           }
           else{
-            throw new JSchException("privatekey: aes256-cbc is not available "+prvkey);
+            throw new JSchException("privatekey: aes256-cbc is not available");
           }
           continue;
         }
         if(buf[i]=='A'&& i+7<len && buf[i+1]=='E'&& buf[i+2]=='S'&& buf[i+3]=='-' && 
            buf[i+4]=='1'&& buf[i+5]=='9'&& buf[i+6]=='2'&& buf[i+7]=='-'){
           i+=8;
-          if(Session.checkCipher((String)jsch.getConfig("aes192-cbc"))){
-            Class c=Class.forName((String)jsch.getConfig("aes192-cbc"));
-            cipher=(Cipher)(c.newInstance());
+          if(Session.checkCipher(JSch.getConfig("aes192-cbc"))){
+            Class<?> c=Class.forName(JSch.getConfig("aes192-cbc"));
+            cipher=(Cipher)(c.getDeclaredConstructor().newInstance());
             // key=new byte[cipher.getBlockSize()];
             iv=new byte[cipher.getIVSize()];
           }
           else{
-            throw new JSchException("privatekey: aes192-cbc is not available "+prvkey);
+            throw new JSchException("privatekey: aes192-cbc is not available");
           }
           continue;
         }
         if(buf[i]=='A'&& i+7<len && buf[i+1]=='E'&& buf[i+2]=='S'&& buf[i+3]=='-' && 
            buf[i+4]=='1'&& buf[i+5]=='2'&& buf[i+6]=='8'&& buf[i+7]=='-'){
           i+=8;
-          if(Session.checkCipher((String)jsch.getConfig("aes128-cbc"))){
-            Class c=Class.forName((String)jsch.getConfig("aes128-cbc"));
-            cipher=(Cipher)(c.newInstance());
+          if(Session.checkCipher(JSch.getConfig("aes128-cbc"))){
+            Class<?> c=Class.forName(JSch.getConfig("aes128-cbc"));
+            cipher=(Cipher)(c.getDeclaredConstructor().newInstance());
             // key=new byte[cipher.getBlockSize()];
             iv=new byte[cipher.getIVSize()];
           }
           else{
-            throw new JSchException("privatekey: aes128-cbc is not available "+prvkey);
+            throw new JSchException("privatekey: aes128-cbc is not available");
           }
           continue;
         }
@@ -768,7 +769,7 @@ public abstract class KeyPair{
       if(buf!=null){
 
         if(type==ERROR){
-          throw new JSchException("invalid privatekey: "+prvkey);
+          throw new JSchException("invalid privatekey");
         }
 
         int start = i;
@@ -778,7 +779,7 @@ public abstract class KeyPair{
         }
 
         if((len-i) == 0 || (i-start) == 0){
-          throw new JSchException("invalid privatekey: "+prvkey);
+          throw new JSchException("invalid privatekey");
         }
 
         // The content of 'buf' will be changed, so it should be copied.
@@ -820,7 +821,7 @@ public abstract class KeyPair{
 	_buf.getInt();  // 0x3f6ff9be
 	_buf.getInt();
 	byte[]_type=_buf.getString();
-	//System.err.println("type: "+new String(_type)); 
+	//System.err.println("type: "+Util.byte2str(_type)); 
 	String _cipher=Util.byte2str(_buf.getString());
 	//System.err.println("cipher: "+_cipher); 
 	if(_cipher.equals("3des-cbc")){
@@ -829,7 +830,7 @@ public abstract class KeyPair{
 	   _buf.getByte(foo);
 	   data=foo;
 	   encrypted=true;
-	   throw new JSchException("unknown privatekey format: "+prvkey);
+	   throw new JSchException("unknown privatekey format");
 	}
 	else if(_cipher.equals("none")){
   	   _buf.getInt();
@@ -866,9 +867,9 @@ public abstract class KeyPair{
           encrypted = false;
           data = buffer.getString();
           type = readOpenSSHKeyv1(data);
-      } else if (Session.checkCipher(jsch.getConfig(cipherName))) {
+      } else if (Session.checkCipher(JSch.getConfig(cipherName))) {
           encrypted = true;
-          Class c = Class.forName(jsch.getConfig(cipherName));
+          Class<?> c = Class.forName(JSch.getConfig(cipherName));
           cipher = (Cipher) c.getDeclaredConstructor().newInstance();
           data = buffer.getString();
           // the type can only be determined after encryption, so we take this intermediate here:
@@ -945,7 +946,7 @@ public abstract class KeyPair{
                 while(i<len){ if(buf[i]=='\n')break; i++;}
                 if(i>0 && buf[i-1]==0x0d) i--;
                 if(start<i){
-                  publicKeyComment = new String(buf, start, i-start);
+                  publicKeyComment = Util.byte2str(buf, start, i-start);
                 }
               } 
 	    }
@@ -965,7 +966,7 @@ public abstract class KeyPair{
                 while(i<len){ if(buf[i]=='\n')break; i++;}
                 if(i>0 && buf[i-1]==0x0d) i--;
                 if(start<i){
-                  publicKeyComment = new String(buf, start, i-start);
+                  publicKeyComment = Util.byte2str(buf, start, i-start);
                 }
               } 
             }
@@ -977,9 +978,7 @@ public abstract class KeyPair{
     }
     catch(Exception e){
       if(e instanceof JSchException) throw (JSchException)e;
-      if(e instanceof Throwable)
-        throw new JSchException(e.toString(), (Throwable)e);
-      throw new JSchException(e.toString());
+      throw new JSchException(e.toString(), e);
     }
 
         return getKeyPair(jsch, prvkey, pubkey, iv, encrypted, data, publickeyblob, type, vendor, publicKeyComment, cipher, kdfName, kdfOptions);
@@ -1015,7 +1014,7 @@ public abstract class KeyPair{
               return kpair;
           }
           else{
-            throw new JSchException("invalid privatekey: "+prvkey);
+            throw new JSchException("invalid privatekey");
           }
         }
       }
@@ -1063,7 +1062,7 @@ public abstract class KeyPair{
 
   private static boolean isOpenSSHPrivateKey(byte[] buf, int i, int len) {
       String ident = "OPENSSH PRIVATE KEY-----";
-      return i + ident.length() < len && ident.equals(new String(Arrays.copyOfRange(buf, i, i + ident.length())));
+      return i + ident.length() < len && ident.equals(Util.byte2str(Arrays.copyOfRange(buf, i, i + ident.length())));
   }
 
   static private byte a2b(byte c){
@@ -1079,7 +1078,9 @@ public abstract class KeyPair{
     Util.bzero(passphrase);
   }
 
-  public void finalize (){
+  @SuppressWarnings("deprecation")
+  @Override
+  public void finalize(){
     dispose();
   }
 
@@ -1104,19 +1105,19 @@ public abstract class KeyPair{
     int lines = 0;
 
     Buffer buffer = new Buffer(buf);
-    java.util.Hashtable v = new java.util.Hashtable();
+    Hashtable<String, String> v = new Hashtable<>();
 
     while(true){
       if(!parseHeader(buffer, v))
         break;
     } 
 
-    String typ = (String)v.get("PuTTY-User-Key-File-2");
+    String typ = v.get("PuTTY-User-Key-File-2");
     if(typ == null){
       return null;
     }
 
-    lines = Integer.parseInt((String)v.get("Public-Lines"));
+    lines = Integer.parseInt(v.get("Public-Lines"));
     pubkey = parseLines(buffer, lines); 
 
     while(true){
@@ -1124,7 +1125,7 @@ public abstract class KeyPair{
         break;
     } 
     
-    lines = Integer.parseInt((String)v.get("Private-Lines"));
+    lines = Integer.parseInt(v.get("Private-Lines"));
     prvkey = parseLines(buffer, lines); 
 
     while(true){
@@ -1178,12 +1179,12 @@ public abstract class KeyPair{
 
     kpair.encrypted = !v.get("Encryption").equals("none");
     kpair.vendor = VENDOR_PUTTY;
-    kpair.publicKeyComment = (String)v.get("Comment");
+    kpair.publicKeyComment = v.get("Comment");
     if(kpair.encrypted){
-      if(Session.checkCipher((String)jsch.getConfig("aes256-cbc"))){
+      if(Session.checkCipher(JSch.getConfig("aes256-cbc"))){
         try {
-          Class c=Class.forName((String)jsch.getConfig("aes256-cbc"));
-          kpair.cipher=(Cipher)(c.newInstance());
+          Class<?> c=Class.forName(JSch.getConfig("aes256-cbc"));
+          kpair.cipher=(Cipher)(c.getDeclaredConstructor().newInstance());
           kpair.iv=new byte[kpair.cipher.getIVSize()];
         }
         catch(Exception e){
@@ -1236,7 +1237,7 @@ public abstract class KeyPair{
     return data;
   }
 
-  private static boolean parseHeader(Buffer buffer, java.util.Hashtable v){
+  private static boolean parseHeader(Buffer buffer, Hashtable<String, String> v){
     byte[] buf = buffer.buffer;
     int index = buffer.index;
     String key = null;
@@ -1246,7 +1247,7 @@ public abstract class KeyPair{
         break;
       }
       if(buf[i] == ':'){
-        key = new String(buf, index, i - index);
+        key = Util.byte2str(buf, index, i - index);
         i++;
         if(i < buf.length && buf[i] == ' '){
           i++;
@@ -1261,7 +1262,7 @@ public abstract class KeyPair{
 
     for(int i = index; i < buf.length; i++){
       if(buf[i] == 0x0d){
-        value = new String(buf, index, i - index);
+        value = Util.byte2str(buf, index, i - index);
         i++;
         if(i < buf.length && buf[i] == 0x0a){
           i++;
@@ -1286,7 +1287,8 @@ public abstract class KeyPair{
     this.cipher=kpair.cipher;
   }
 
-  class ASN1Exception extends Exception {
+  static class ASN1Exception extends Exception {
+    private static final long serialVersionUID=-1L;
   }
 
   class ASN1 {
@@ -1346,7 +1348,7 @@ public abstract class KeyPair{
         return new ASN1[0];
       }
       int index=indexp[0];
-      java.util.Vector values = new java.util.Vector();
+      Vector<ASN1> values = new Vector<>();
       while(length>0) {
         index++; length--;
         int tmp=index;
@@ -1360,7 +1362,7 @@ public abstract class KeyPair{
       }
       ASN1[] result = new ASN1[values.size()];
       for(int  i = 0; i <values.size(); i++) {
-        result[i]=(ASN1)values.elementAt(i);
+        result[i]=values.elementAt(i);
       }
       return result;
     }

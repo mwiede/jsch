@@ -42,6 +42,7 @@ public class XDH implements com.jcraft.jsch.XDH {
   int keylen;
 
   private KeyAgreement myKeyAgree;
+  @Override
   public void init(String name, int keylen) throws Exception{
     this.keylen = keylen;
     myKeyAgree = KeyAgreement.getInstance("XDH");
@@ -52,10 +53,12 @@ public class XDH implements com.jcraft.jsch.XDH {
     myKeyAgree.init(kpair.getPrivateKey());
   }
 
+  @Override
   public byte[] getQ() throws Exception{
     return Q_array;
   }
 
+  @Override
   public byte[] getSecret(byte[] Q) throws Exception{
     // The u coordinate in BigInteger format needs to be a positive value.
     // So zero extend the little-endian input before rotating into big-endian.
@@ -80,6 +83,7 @@ public class XDH implements com.jcraft.jsch.XDH {
   //   SSH_DISCONNECT_KEY_EXCHANGE_FAILED reason for the message
   //   [IANA-REASON].  No further validation is required beyond what is
   //   described in [RFC7748].
+  @Override
   public boolean validate(byte[] u) throws Exception{
     return u.length == keylen;
   }

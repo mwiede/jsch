@@ -36,7 +36,7 @@ class ChannelSession extends Channel{
 
   protected boolean agent_forwarding=false;
   protected boolean xforwading=false;
-  protected Hashtable env=null;
+  protected Hashtable<byte[], byte[]> env=null;
 
   protected boolean pty=false;
 
@@ -68,6 +68,7 @@ class ChannelSession extends Channel{
    *
    * @param enable
    */
+  @Override
   public void setXForwarding(boolean enable){
     xforwading=enable; 
   }
@@ -77,7 +78,8 @@ class ChannelSession extends Channel{
    * @see #setEnv(String, String)
    * @see #setEnv(byte[], byte[])
    */
-  public void setEnv(Hashtable env){ 
+  @Deprecated
+  public void setEnv(Hashtable<byte[], byte[]> env){ 
     synchronized(this){
       this.env=env; 
     }
@@ -111,9 +113,9 @@ class ChannelSession extends Channel{
     }
   }
 
-  private Hashtable getEnv(){
+  private Hashtable<byte[], byte[]> getEnv(){
     if(env==null)
-      env=new Hashtable();
+      env=new Hashtable<>();
     return env;
   }
 
@@ -213,9 +215,9 @@ class ChannelSession extends Channel{
     }
 
     if(env!=null){
-      for(Enumeration _env=env.keys(); _env.hasMoreElements();){
-        Object name=_env.nextElement();
-        Object value=env.get(name);
+      for(Enumeration<byte[]> _env=env.keys(); _env.hasMoreElements();){
+        byte[] name=_env.nextElement();
+        byte[] value=env.get(name);
         request=new RequestEnv();
         ((RequestEnv)request).setEnv(toByteArray(name), 
                                      toByteArray(value));
@@ -231,6 +233,7 @@ class ChannelSession extends Channel{
     return (byte[])o;
   }
 
+  @Override
   public void run(){
     //System.err.println(this+":run >");
 

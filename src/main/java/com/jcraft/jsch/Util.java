@@ -32,6 +32,8 @@ import java.net.Socket;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.util.Vector;
 
 class Util{
 
@@ -114,7 +116,7 @@ class Util{
     if(foo==null)
       return null;
     byte[] buf=Util.str2byte(foo);
-    java.util.Vector bar=new java.util.Vector();
+    Vector<String> bar=new Vector<>();
     int start=0;
     int index;
     while(true){
@@ -129,7 +131,7 @@ class Util{
     }
     String[] result=new String[bar.size()];
     for(int i=0; i<result.length; i++){
-      result[i]=(String)(bar.elementAt(i));
+      result[i]=bar.elementAt(i);
     }
     return result;
   }
@@ -359,9 +361,7 @@ class Util{
       }
       catch(Exception e){
         String message=e.toString();
-        if(e instanceof Throwable)
-          throw new JSchException(message, (Throwable)e);
-        throw new JSchException(message);
+        throw new JSchException(message, e);
       }
     }
     final String _host=host;
@@ -370,6 +370,7 @@ class Util{
     final Exception[] ee=new Exception[1];
     String message="";
     Thread tmp=new Thread(new Runnable(){
+        @Override
         public void run(){
           sockp[0]=null;
           try{
@@ -393,7 +394,7 @@ class Util{
       tmp.join(timeout);
       message="timeout: ";
     }
-    catch(java.lang.InterruptedException eee){
+    catch(InterruptedException eee){
     }
     if(sockp[0]!=null && sockp[0].isConnected()){
       socket=sockp[0];
@@ -414,8 +415,8 @@ class Util{
     if(str==null) 
       return null;
     try{ return str.getBytes(encoding); }
-    catch(java.io.UnsupportedEncodingException e){
-      return str.getBytes();
+    catch(UnsupportedEncodingException e){
+      throw new IllegalArgumentException(e);
     }
   }
 
@@ -429,8 +430,8 @@ class Util{
 
   static String byte2str(byte[] str, int s, int l, String encoding){
     try{ return new String(str, s, l, encoding); }
-    catch(java.io.UnsupportedEncodingException e){
-      return new String(str, s, l);
+    catch(UnsupportedEncodingException e){
+      throw new IllegalArgumentException(e);
     }
   }
 

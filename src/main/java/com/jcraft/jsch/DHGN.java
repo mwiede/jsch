@@ -52,6 +52,7 @@ public abstract class DHGN extends KeyExchange{
   abstract byte[] P();
   abstract String sha_name();
 
+  @Override
   public void init(Session session,
 		   byte[] V_S, byte[] V_C, byte[] I_S, byte[] I_C) throws Exception{
     this.session=session;
@@ -61,8 +62,8 @@ public abstract class DHGN extends KeyExchange{
     this.I_C=I_C;      
 
     try{
-      Class c=Class.forName(session.getConfig(sha_name()));
-      sha=(HASH)(c.newInstance());
+      Class<?> c=Class.forName(session.getConfig(sha_name()));
+      sha=(HASH)(c.getDeclaredConstructor().newInstance());
       sha.init();
     }
     catch(Exception e){
@@ -73,8 +74,8 @@ public abstract class DHGN extends KeyExchange{
     packet=new Packet(buf);
 
     try{
-      Class c=Class.forName(session.getConfig("dh"));
-      dh=(DH)(c.newInstance());
+      Class<?> c=Class.forName(session.getConfig("dh"));
+      dh=(DH)(c.getDeclaredConstructor().newInstance());
       dh.init();
     }
     catch(Exception e){
@@ -110,6 +111,7 @@ public abstract class DHGN extends KeyExchange{
     state=SSH_MSG_KEXDH_REPLY;
   }
 
+  @Override
   public boolean next(Buffer _buf) throws Exception{
     int i,j;
 
@@ -178,5 +180,6 @@ public abstract class DHGN extends KeyExchange{
     return false;
   }
 
+  @Override
   public int getState(){return state; }
 }

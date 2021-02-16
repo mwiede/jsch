@@ -17,7 +17,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 public class KeyPairIT {
 
     @Container
-    public GenericContainer sshd = new GenericContainer(
+    public GenericContainer<?> sshd = new GenericContainer<>(
             new ImageFromDockerfile().withFileFromClasspath("sshd_config", "docker/sshd_config")
                     .withFileFromClasspath("authorized_keys", "docker/authorized_keys.KeyPairIT")
                     .withFileFromClasspath("Dockerfile", "docker/Dockerfile.KeyPairIT")).withExposedPorts(22);
@@ -39,7 +39,7 @@ public class KeyPairIT {
             session.setConfig("PubkeyAcceptedKeyTypes", keyType);
         }
         try {
-            session.connect(1000);
+            session.connect(2000);
             assertTrue(session.isConnected());
         } finally {
             session.disconnect();

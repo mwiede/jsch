@@ -40,7 +40,7 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 @Testcontainers
 public class AlgorithmsIT {
 
-  private static final int timeout = 1000;
+  private static final int timeout = 2000;
   private static final DigestUtils sha256sum = new DigestUtils(DigestUtils.getSha256Digest());
   private static final ListAppender<ILoggingEvent> jschAppender = getListAppender(JSch.class);
   private static final ListAppender<ILoggingEvent> sshdAppender =
@@ -53,8 +53,8 @@ public class AlgorithmsIT {
   private Slf4jLogConsumer sshdLogConsumer;
 
   @Container
-  public GenericContainer sshd =
-      new GenericContainer(
+  public GenericContainer<?> sshd =
+      new GenericContainer<>(
               new ImageFromDockerfile()
                   .withFileFromClasspath("ssh_host_rsa_key", "docker/ssh_host_rsa_key")
                   .withFileFromClasspath("ssh_host_rsa_key.pub", "docker/ssh_host_rsa_key.pub")

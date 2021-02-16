@@ -37,9 +37,13 @@ public class TripleDESCBC implements Cipher{
   private static final int ivsize=8;
   private static final int bsize=24;
   private javax.crypto.Cipher cipher;    
+  @Override
   public int getIVSize(){return ivsize;} 
+  @Override
   public int getBlockSize(){return bsize;}
+  @Override
   public int getTagSize(){return 0;}
+  @Override
   public void init(int mode, byte[] key, byte[] iv) throws Exception{
     String pad="NoPadding";      
     //if(padding) pad="PKCS5Padding";
@@ -80,16 +84,23 @@ public class TripleDESCBC implements Cipher{
       throw e;
     }
   }
+  @Override
   public void update(int foo) throws Exception{
   }
+  @Override
   public void update(byte[] foo, int s1, int len, byte[] bar, int s2) throws Exception{
     cipher.update(foo, s1, len, bar, s2);
   }
+  @Override
   public void updateAAD(byte[] foo, int s1, int len) throws Exception{
   }
+  @Override
   public void doFinal(byte[] foo, int s1, int len, byte[] bar, int s2) throws Exception{
   }
+  @Override
   public boolean isCBC(){return true; }
+  @Override
   public boolean isAEAD(){return false; }
+  @Override
   public boolean isChaCha20(){return false; }
 }

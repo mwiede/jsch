@@ -30,11 +30,13 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 package com.jcraft.jsch;
 
 import java.io.InputStream;
+import java.util.Enumeration;
+import java.util.Hashtable;
 import java.util.Vector;
 
 public class JSch{
 
-  static java.util.Hashtable config=new java.util.Hashtable();
+  static Hashtable<String, String> config=new Hashtable<>();
   static{
     config.put("kex", "curve25519-sha256,curve25519-sha256@libssh.org,ecdh-sha2-nistp256,ecdh-sha2-nistp384,ecdh-sha2-nistp521,diffie-hellman-group-exchange-sha256,diffie-hellman-group16-sha512,diffie-hellman-group18-sha512,diffie-hellman-group14-sha256");
     config.put("server_host_key", "ecdsa-sha2-nistp256,ecdsa-sha2-nistp384,ecdsa-sha2-nistp521,ssh-ed25519,rsa-sha2-512,rsa-sha2-256,ssh-rsa");
@@ -168,7 +170,7 @@ public class JSch{
     config.put("ClearAllForwardings", "no");
   }
 
-  private java.util.Vector sessionPool = new java.util.Vector();
+  private Vector<Session> sessionPool = new Vector<>();
 
   private IdentityRepository defaultIdentityRepository =
     new LocalIdentityRepository(this);
@@ -210,27 +212,14 @@ public class JSch{
   private HostKeyRepository known_hosts=null;
 
   private static final Logger DEVNULL=new Logger(){
+      @Override
       public boolean isEnabled(int level){return false;}
+      @Override
       public void log(int level, String message){}
     };
   static Logger logger=DEVNULL;
 
   public JSch(){
-    /*
-    // The JCE of Sun's Java5 on Mac OS X has the resource leak bug
-    // in calculating HMAC, so we need to use our own implementations.
-    try{
-      String osname=(String)(System.getProperties().get("os.name"));
-      if(osname!=null && osname.equals("Mac OS X")){
-        config.put("hmac-sha1",     "com.jcraft.jsch.jcraft.HMACSHA1"); 
-        config.put("hmac-md5",      "com.jcraft.jsch.jcraft.HMACMD5"); 
-        config.put("hmac-md5-96",   "com.jcraft.jsch.jcraft.HMACMD596"); 
-        config.put("hmac-sha1-96",  "com.jcraft.jsch.jcraft.HMACSHA196"); 
-      }
-    }
-    catch(Exception e){
-    }
-    */
   }
 
   /**
@@ -515,10 +504,11 @@ public class JSch{
   /**
    * @deprecated use #removeIdentity(Identity identity)
    */
+  @Deprecated
   public void removeIdentity(String name) throws JSchException{
-    Vector identities = identityRepository.getIdentities();
+    Vector<Identity> identities = identityRepository.getIdentities();
     for(int i=0; i<identities.size(); i++){
-      Identity identity=(Identity)(identities.elementAt(i));
+      Identity identity=identities.elementAt(i);
       if(!identity.getName().equals(name))
         continue;
       if(identityRepository instanceof LocalIdentityRepository){
@@ -547,11 +537,11 @@ public class JSch{
    *
    * @throws JSchException if identityReposory has problems.
    */
-  public Vector getIdentityNames() throws JSchException{
-    Vector foo=new Vector();
-    Vector identities = identityRepository.getIdentities();
+  public Vector<String> getIdentityNames() throws JSchException{
+    Vector<String> foo=new Vector<>();
+    Vector<Identity> identities = identityRepository.getIdentities();
     for(int i=0; i<identities.size(); i++){
-      Identity identity=(Identity)(identities.elementAt(i));
+      Identity identity=identities.elementAt(i);
       foo.addElement(identity.getName());
     }
     return foo;
@@ -574,7 +564,7 @@ public class JSch{
    */
   public static String getConfig(String key){ 
     synchronized(config){
-      return (String)(config.get(key));
+      return config.get(key);
     } 
   }
 
@@ -583,11 +573,11 @@ public class JSch{
    *
    * @param newconf configurations
    */
-  public static void setConfig(java.util.Hashtable newconf){
+  public static void setConfig(Hashtable<String, String> newconf){
     synchronized(config){
-      for(java.util.Enumeration e=newconf.keys() ; e.hasMoreElements() ;) {
-	String key=(String)(e.nextElement());
-	config.put(key, (String)(newconf.get(key)));
+      for(Enumeration<String> e=newconf.keys() ; e.hasMoreElements() ;) {
+	String key=e.nextElement();
+	config.put(key, newconf.get(key));
       }
     }
   }

@@ -58,6 +58,7 @@ public class DHGEX extends KeyExchange{
 
   protected String hash="sha-1";
 
+  @Override
   public void init(Session session,
 		   byte[] V_S, byte[] V_C, byte[] I_S, byte[] I_C) throws Exception{
     this.session=session;
@@ -67,8 +68,8 @@ public class DHGEX extends KeyExchange{
     this.I_C=I_C;      
 
     try{
-      Class c=Class.forName(session.getConfig(hash));
-      sha=(HASH)(c.newInstance());
+      Class<?> c=Class.forName(session.getConfig(hash));
+      sha=(HASH)(c.getDeclaredConstructor().newInstance());
       sha.init();
     }
     catch(Exception e){
@@ -79,13 +80,13 @@ public class DHGEX extends KeyExchange{
     packet=new Packet(buf);
 
     try{
-      Class c=Class.forName(session.getConfig("dh"));
+      Class<?> c=Class.forName(session.getConfig("dh"));
       // Since JDK8, SunJCE has lifted the keysize restrictions
       // from 1024 to 2048 for DH.
       // JDK-8072452 increases DH max to 8192
       max=check8192(c, max);
       if(max>=2048) preferred=2048;
-      dh=(com.jcraft.jsch.DH)(c.newInstance());
+      dh=(com.jcraft.jsch.DH)(c.getDeclaredConstructor().newInstance());
       dh.init();
     }
     catch(Exception e){
@@ -109,6 +110,7 @@ public class DHGEX extends KeyExchange{
     state=SSH_MSG_KEX_DH_GEX_GROUP;
   }
 
+  @Override
   public boolean next(Buffer _buf) throws Exception{
     int i,j;
     switch(state){
@@ -226,10 +228,11 @@ public class DHGEX extends KeyExchange{
     return false;
   }
 
+  @Override
   public int getState(){return state; }
 
-  protected int check2048(Class c, int _max) throws Exception {
-    DH dh=(com.jcraft.jsch.DH)(c.newInstance());
+  protected int check2048(Class<?> c, int _max) throws Exception {
+    DH dh=(com.jcraft.jsch.DH)(c.getDeclaredConstructor().newInstance());
     dh.init();
     byte[] foo = new byte[257];
     foo[1]=(byte)0xdd;
@@ -245,8 +248,8 @@ public class DHGEX extends KeyExchange{
     return _max;
   }
 
-  protected int check8192(Class c, int _max) throws Exception {
-    DH dh=(com.jcraft.jsch.DH)(c.newInstance());
+  protected int check8192(Class<?> c, int _max) throws Exception {
+    DH dh=(com.jcraft.jsch.DH)(c.getDeclaredConstructor().newInstance());
     dh.init();
     dh.setP(DHG18.p);
     dh.setG(DHG18.g);

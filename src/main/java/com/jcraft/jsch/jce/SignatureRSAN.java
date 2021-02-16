@@ -41,6 +41,7 @@ public abstract class SignatureRSAN implements com.jcraft.jsch.SignatureRSA{
 
   abstract String getName();
 
+  @Override
   public void init() throws Exception{
     String name=getName();
     String foo="SHA1withRSA";
@@ -49,6 +50,7 @@ public abstract class SignatureRSAN implements com.jcraft.jsch.SignatureRSA{
     signature=java.security.Signature.getInstance(foo);
     keyFactory=KeyFactory.getInstance("RSA");
   }     
+  @Override
   public void setPubKey(byte[] e, byte[] n) throws Exception{
     RSAPublicKeySpec rsaPubKeySpec = 
 	new RSAPublicKeySpec(new BigInteger(n),
@@ -56,6 +58,7 @@ public abstract class SignatureRSAN implements com.jcraft.jsch.SignatureRSA{
     PublicKey pubKey=keyFactory.generatePublic(rsaPubKeySpec);
     signature.initVerify(pubKey);
   }
+  @Override
   public void setPrvKey(byte[] d, byte[] n) throws Exception{
     RSAPrivateKeySpec rsaPrivKeySpec = 
 	new RSAPrivateKeySpec(new BigInteger(n),
@@ -63,20 +66,23 @@ public abstract class SignatureRSAN implements com.jcraft.jsch.SignatureRSA{
     PrivateKey prvKey = keyFactory.generatePrivate(rsaPrivKeySpec);
     signature.initSign(prvKey);
   }
+  @Override
   public byte[] sign() throws Exception{
     byte[] sig=signature.sign();      
     return sig;
   }
+  @Override
   public void update(byte[] foo) throws Exception{
    signature.update(foo);
   }
+  @Override
   public boolean verify(byte[] sig) throws Exception{
     int i=0;
     int j=0;
     byte[] tmp;
     Buffer buf=new Buffer(sig);
 
-    String foo=new String(buf.getString());
+    String foo=new String(buf.getString(), "UTF-8");
     if(foo.equals("ssh-rsa") || foo.equals("rsa-sha2-256") || foo.equals("rsa-sha2-512")){
       if(!foo.equals(getName())) return false;
       j=buf.getInt();

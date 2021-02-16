@@ -46,10 +46,11 @@ public abstract class KeyPairEdDSA extends KeyPair{
   abstract String getSshName();
   abstract String getJceName();
 
+  @Override
   void generate(int key_size) throws JSchException{
     try{
-      Class c=Class.forName(jsch.getConfig("keypairgen.eddsa"));
-      KeyPairGenEdDSA keypairgen=(KeyPairGenEdDSA)(c.newInstance());
+      Class<?> c=Class.forName(JSch.getConfig("keypairgen.eddsa"));
+      KeyPairGenEdDSA keypairgen=(KeyPairGenEdDSA)(c.getDeclaredConstructor().newInstance());
       keypairgen.init(getJceName(), getKeySize());
       pub_array=keypairgen.getPub();
       prv_array=keypairgen.getPrv();
@@ -58,18 +59,20 @@ public abstract class KeyPairEdDSA extends KeyPair{
     }
     catch(Exception e){
       //System.err.println("KeyPairEdDSA: "+e);
-      if(e instanceof Throwable)
-        throw new JSchException(e.toString(), (Throwable)e);
-      throw new JSchException(e.toString());
+      throw new JSchException(e.toString(), e);
     }
   }
 
   // These methods appear to be for writing keys to a file.
   // And since writing VENDOR_OPENSSH_V1 isn't supported yet, have these methods fail.
+  @Override
   byte[] getBegin(){ throw new UnsupportedOperationException(); }
+  @Override
   byte[] getEnd(){ throw new UnsupportedOperationException(); }
+  @Override
   byte[] getPrivateKey(){ throw new UnsupportedOperationException(); }
 
+  @Override
   boolean parse(byte [] plain){
 
     // Only OPENSSH Key v1 Format supported for EdDSA keys
@@ -96,6 +99,7 @@ public abstract class KeyPairEdDSA extends KeyPair{
     }
   }
 
+  @Override
   public byte[] getPublicKeyBlob(){
     byte[] foo=super.getPublicKeyBlob();
     if(foo!=null) return foo;
@@ -107,16 +111,19 @@ public abstract class KeyPairEdDSA extends KeyPair{
     return Buffer.fromBytes(tmp).buffer;
   }
 
+  @Override
   byte[] getKeyTypeName(){ return Util.str2byte(getSshName()); }
 
+  @Override
   public byte[] getSignature(byte[] data){
     return getSignature(data, getSshName());
   }
 
+  @Override
   public byte[] getSignature(byte[] data, String alg){
     try{
-      Class c=Class.forName(jsch.getConfig(alg));
-      SignatureEdDSA eddsa=(SignatureEdDSA)(c.newInstance());
+      Class<?> c=Class.forName(JSch.getConfig(alg));
+      SignatureEdDSA eddsa=(SignatureEdDSA)(c.getDeclaredConstructor().newInstance());
       eddsa.init();
       eddsa.setPrvKey(prv_array);
 
@@ -132,14 +139,16 @@ public abstract class KeyPairEdDSA extends KeyPair{
     return null;
   }
 
+  @Override
   public Signature getVerifier(){
     return getVerifier(getSshName());
   }
 
+  @Override
   public Signature getVerifier(String alg){
     try{
-      Class c=Class.forName(jsch.getConfig(alg));
-      SignatureEdDSA eddsa=(SignatureEdDSA)(c.newInstance());
+      Class<?> c=Class.forName(JSch.getConfig(alg));
+      SignatureEdDSA eddsa=(SignatureEdDSA)(c.getDeclaredConstructor().newInstance());
       eddsa.init();
 
       if(pub_array == null && getPublicKeyBlob()!=null){
@@ -156,6 +165,7 @@ public abstract class KeyPairEdDSA extends KeyPair{
     return null;
   }
 
+  @Override
   public byte[] forSSHAgent() throws JSchException {
     if(isEncrypted()){
       throw new JSchException("key is encrypted.");
@@ -173,6 +183,7 @@ public abstract class KeyPairEdDSA extends KeyPair{
     return result;
   }
 
+  @Override
   public void dispose(){
     super.dispose();
     Util.bzero(prv_array);

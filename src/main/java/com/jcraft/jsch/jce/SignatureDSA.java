@@ -39,10 +39,12 @@ public class SignatureDSA implements com.jcraft.jsch.SignatureDSA{
   java.security.Signature signature;
   KeyFactory keyFactory;
 
+  @Override
   public void init() throws Exception{
     signature=java.security.Signature.getInstance("SHA1withDSA");
     keyFactory=KeyFactory.getInstance("DSA");
   }     
+  @Override
   public void setPubKey(byte[] y, byte[] p, byte[] q, byte[] g) throws Exception{
     DSAPublicKeySpec dsaPubKeySpec = 
 	new DSAPublicKeySpec(new BigInteger(y),
@@ -52,6 +54,7 @@ public class SignatureDSA implements com.jcraft.jsch.SignatureDSA{
     PublicKey pubKey=keyFactory.generatePublic(dsaPubKeySpec);
     signature.initVerify(pubKey);
   }
+  @Override
   public void setPrvKey(byte[] x, byte[] p, byte[] q, byte[] g) throws Exception{
     DSAPrivateKeySpec dsaPrivKeySpec = 
 	new DSAPrivateKeySpec(new BigInteger(x),
@@ -61,6 +64,7 @@ public class SignatureDSA implements com.jcraft.jsch.SignatureDSA{
     PrivateKey prvKey = keyFactory.generatePrivate(dsaPrivKeySpec);
     signature.initSign(prvKey);
   }
+  @Override
   public byte[] sign() throws Exception{
     byte[] sig=signature.sign();      
 /*
@@ -100,16 +104,18 @@ System.err.println("");
 
     return result;
   }
+  @Override
   public void update(byte[] foo) throws Exception{
    signature.update(foo);
   }
+  @Override
   public boolean verify(byte[] sig) throws Exception{
     int i=0;
     int j=0;
     byte[] tmp;
     Buffer buf=new Buffer(sig);
 
-    if(new String(buf.getString()).equals("ssh-dss")){
+    if(new String(buf.getString(), "UTF-8").equals("ssh-dss")){
       j=buf.getInt();
       i=buf.getOffSet();
       tmp=new byte[j];

@@ -15,6 +15,7 @@ import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 class KeyPairTest {
 
@@ -81,7 +82,7 @@ class KeyPairTest {
         final JSch jSch = new JSch();
         assertDoesNotThrow(() -> {
             KeyPair kpair = KeyPair.genKeyPair(jSch, KeyPair.RSA, 1024);
-            kpair.writePrivateKey(tmpDir.resolve("my-private-key-encrypted").toString(), "my-password".getBytes());
+            kpair.writePrivateKey(tmpDir.resolve("my-private-key-encrypted").toString(), "my-password".getBytes(UTF_8));
         });
     }
 

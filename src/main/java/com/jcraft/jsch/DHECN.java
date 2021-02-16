@@ -52,6 +52,7 @@ public abstract class DHECN extends KeyExchange{
   protected String sha_name; 
   protected int key_size;
 
+  @Override
   public void init(Session session,
 		   byte[] V_S, byte[] V_C, byte[] I_S, byte[] I_C) throws Exception{
     this.session=session;
@@ -61,8 +62,8 @@ public abstract class DHECN extends KeyExchange{
     this.I_C=I_C;      
 
     try{
-      Class c=Class.forName(session.getConfig(sha_name));
-      sha=(HASH)(c.newInstance());
+      Class<?> c=Class.forName(session.getConfig(sha_name));
+      sha=(HASH)(c.getDeclaredConstructor().newInstance());
       sha.init();
     }
     catch(Exception e){
@@ -76,17 +77,15 @@ public abstract class DHECN extends KeyExchange{
     buf.putByte((byte)SSH_MSG_KEX_ECDH_INIT);
 
     try{
-      Class c=Class.forName(session.getConfig("ecdh-sha2-nistp"));
-      ecdh=(ECDH)(c.newInstance());
+      Class<?> c=Class.forName(session.getConfig("ecdh-sha2-nistp"));
+      ecdh=(ECDH)(c.getDeclaredConstructor().newInstance());
       ecdh.init(key_size);
 
       Q_C = ecdh.getQ();
       buf.putString(Q_C);
     }
     catch(Exception e){
-      if(e instanceof Throwable)
-        throw new JSchException(e.toString(), (Throwable)e);
-      throw new JSchException(e.toString());
+      throw new JSchException(e.toString(), e);
     }
 
     if(V_S==null){  // This is a really ugly hack for Session.checkKexes ;-(
@@ -105,6 +104,7 @@ public abstract class DHECN extends KeyExchange{
     state=SSH_MSG_KEX_ECDH_REPLY;
   }
 
+  @Override
   public boolean next(Buffer _buf) throws Exception{
     int i,j;
     switch(state){
@@ -183,5 +183,6 @@ public abstract class DHECN extends KeyExchange{
     return false;
   }
 
+  @Override
   public int getState(){return state; }
 }

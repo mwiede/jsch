@@ -37,6 +37,7 @@ import com.jcraft.jsch.JSchException;
 public class KeyPairGenXEC implements com.jcraft.jsch.KeyPairGenXEC {
   XECPublicKey pubKey;
   XECPrivateKey prvKey;
+  @Override
   public void init(String name) throws Exception {
     KeyPairGenerator kpg = KeyPairGenerator.getInstance("XDH");
     NamedParameterSpec paramSpec = new NamedParameterSpec(name);

@@ -100,7 +100,10 @@ public class DHG16 extends DHGN{
 (byte)0xFF,(byte)0xFF,(byte)0xFF,(byte)0xFF,(byte)0xFF,(byte)0xFF,(byte)0xFF,(byte)0xFF
 };
 
+  @Override
   byte[] G(){ return g; }
+  @Override
   byte[] P(){ return p; }
+  @Override
   String sha_name(){ return "sha-512"; }
 }

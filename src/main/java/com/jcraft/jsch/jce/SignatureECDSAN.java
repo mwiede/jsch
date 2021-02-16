@@ -41,6 +41,7 @@ public abstract class SignatureECDSAN implements com.jcraft.jsch.SignatureECDSA 
 
   abstract String getName();
 
+  @Override
   public void init() throws Exception{
     String name = getName();
     String foo="SHA256withECDSA";
@@ -49,7 +50,8 @@ public abstract class SignatureECDSAN implements com.jcraft.jsch.SignatureECDSA 
     signature=java.security.Signature.getInstance(foo);
     keyFactory=KeyFactory.getInstance("EC");
   }
-  
+
+  @Override
   public void setPubKey(byte[] r, byte[] s) throws Exception{
 
     // r and s must be unsigned values.
@@ -62,14 +64,14 @@ public abstract class SignatureECDSAN implements com.jcraft.jsch.SignatureECDSA 
 
     AlgorithmParameters param = AlgorithmParameters.getInstance("EC");
     param.init(new ECGenParameterSpec(name));
-    ECParameterSpec ecparam =
-      (ECParameterSpec)param.getParameterSpec(ECParameterSpec.class);
+    ECParameterSpec ecparam = param.getParameterSpec(ECParameterSpec.class);
     ECPoint w = new ECPoint(new BigInteger(1, r), new BigInteger(1, s));
     PublicKey pubKey = 
       keyFactory.generatePublic(new ECPublicKeySpec(w, ecparam));
     signature.initVerify(pubKey);
   }
 
+  @Override
   public void setPrvKey(byte[] d) throws Exception{
 
     // d must be unsigned value.
@@ -81,13 +83,13 @@ public abstract class SignatureECDSAN implements com.jcraft.jsch.SignatureECDSA 
 
     AlgorithmParameters param = AlgorithmParameters.getInstance("EC");
     param.init(new ECGenParameterSpec(name));
-    ECParameterSpec ecparam =
-      (ECParameterSpec)param.getParameterSpec(ECParameterSpec.class);
+    ECParameterSpec ecparam = param.getParameterSpec(ECParameterSpec.class);
     BigInteger _d = new BigInteger(1, d);
     PrivateKey prvKey = 
       keyFactory.generatePrivate(new ECPrivateKeySpec(_d, ecparam));
     signature.initSign(prvKey);
   }
+  @Override
   public byte[] sign() throws Exception{
     byte[] sig=signature.sign();
 
@@ -120,9 +122,11 @@ public abstract class SignatureECDSAN implements com.jcraft.jsch.SignatureECDSA 
 
     return sig;
   }
+  @Override
   public void update(byte[] foo) throws Exception{
    signature.update(foo);
   }
+  @Override
   public boolean verify(byte[] sig) throws Exception{
 
     // It seems that SunEC expects ASN.1 data,

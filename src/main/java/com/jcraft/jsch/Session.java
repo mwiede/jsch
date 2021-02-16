@@ -34,11 +34,8 @@ import java.io.InputStream;
 import java.io.InterruptedIOException;
 import java.io.OutputStream;
 import java.net.Socket;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Vector;
+import java.util.*;
+import javax.crypto.AEADBadTagException;
 
 public class Session implements Runnable{
 
@@ -133,7 +130,7 @@ public class Session implements Runnable{
                                    64 + // maximum mac length
                                    32;  // margin for deflater; deflater may inflate data
 
-  private java.util.Hashtable config=null;
+  private Hashtable<String, String> config=null;
 
   private Proxy proxy=null;
   private UserInfo userinfo;
@@ -198,8 +195,8 @@ public class Session implements Runnable{
     io=new IO();
     if(random==null){
       try{
-	Class c=Class.forName(getConfig("random"));
-        random=(Random)(c.newInstance());
+	Class<?> c=Class.forName(getConfig("random"));
+        random=(Random)(c.getDeclaredConstructor().newInstance());
       }
       catch(Exception e){
         throw new JSchException(e.toString(), e);
@@ -393,8 +390,8 @@ public class Session implements Runnable{
 
       UserAuth ua=null;
       try{
-	Class c=Class.forName(getConfig("userauth.none"));
-        ua=(UserAuth)(c.newInstance());
+	Class<?> c=Class.forName(getConfig("userauth.none"));
+        ua=(UserAuth)(c.getDeclaredConstructor().newInstance());
       }
       catch(Exception e){
         throw new JSchException(e.toString(), e);
@@ -458,10 +455,10 @@ public class Session implements Runnable{
 
 	  ua=null;
           try{
-            Class c=null;
+            Class<?> c=null;
             if(getConfig("userauth."+method)!=null){
               c=Class.forName(getConfig("userauth."+method));
-              ua=(UserAuth)(c.newInstance());
+              ua=(UserAuth)(c.getDeclaredConstructor().newInstance());
             }
           }
           catch(Exception e){
@@ -605,8 +602,8 @@ public class Session implements Runnable{
 
     KeyExchange kex=null;
     try{
-      Class c=Class.forName(getConfig(guess[KeyExchange.PROPOSAL_KEX_ALGS]));
-      kex=(KeyExchange)(c.newInstance());
+      Class<?> c=Class.forName(getConfig(guess[KeyExchange.PROPOSAL_KEX_ALGS]));
+      kex=(KeyExchange)(c.getDeclaredConstructor().newInstance());
     }
     catch(Exception e){
       throw new JSchException(e.toString(), e);
@@ -1102,7 +1099,7 @@ key_type+" key fingerprint is "+key_fprint+".\n"+
         try {
           s2ccipher.doFinal(buf.buffer, 0, j+4, buf.buffer, 0);
         }
-        catch(javax.crypto.AEADBadTagException e){
+        catch(AEADBadTagException e){
           start_discard(buf, s2ccipher, s2cmac, j, PACKET_MAX_SIZE-j, e);
           continue;
         }
@@ -1144,7 +1141,7 @@ key_type+" key fingerprint is "+key_fprint+".\n"+
             s2ccipher.updateAAD(buf.buffer, 0, 4);
             s2ccipher.doFinal(buf.buffer, 4, j, buf.buffer, 4);
           }
-          catch(javax.crypto.AEADBadTagException e){
+          catch(AEADBadTagException e){
             start_discard(buf, s2ccipher, s2cmac, j, PACKET_MAX_SIZE-j, e);
             continue;
           }
@@ -1403,12 +1400,12 @@ key_type+" key fingerprint is "+key_fprint+".\n"+
     MACs2c=hash.digest();
 
     try{
-      Class c;
+      Class<?> c;
       String method;
 
       method=guess[KeyExchange.PROPOSAL_ENC_ALGS_STOC];
       c=Class.forName(getConfig(method));
-      s2ccipher=(Cipher)(c.newInstance());
+      s2ccipher=(Cipher)(c.getDeclaredConstructor().newInstance());
       while(s2ccipher.getBlockSize()>Es2c.length){
         buf.reset();
         buf.putMPInt(K);
@@ -1427,7 +1424,7 @@ key_type+" key fingerprint is "+key_fprint+".\n"+
       if(!s2ccipher.isAEAD()){
         method=guess[KeyExchange.PROPOSAL_MAC_ALGS_STOC];
         c=Class.forName(getConfig(method));
-        s2cmac=(MAC)(c.newInstance());
+        s2cmac=(MAC)(c.getDeclaredConstructor().newInstance());
         MACs2c = expandKey(buf, K, H, MACs2c, hash, s2cmac.getBlockSize());
         s2cmac.init(MACs2c);
         //mac_buf=new byte[s2cmac.getBlockSize()];
@@ -1437,7 +1434,7 @@ key_type+" key fingerprint is "+key_fprint+".\n"+
 
       method=guess[KeyExchange.PROPOSAL_ENC_ALGS_CTOS];
       c=Class.forName(getConfig(method));
-      c2scipher=(Cipher)(c.newInstance());
+      c2scipher=(Cipher)(c.getDeclaredConstructor().newInstance());
       while(c2scipher.getBlockSize()>Ec2s.length){
         buf.reset();
         buf.putMPInt(K);
@@ -1456,7 +1453,7 @@ key_type+" key fingerprint is "+key_fprint+".\n"+
       if(!c2scipher.isAEAD()){
         method=guess[KeyExchange.PROPOSAL_MAC_ALGS_CTOS];
         c=Class.forName(getConfig(method));
-        c2smac=(MAC)(c.newInstance());
+        c2smac=(MAC)(c.getDeclaredConstructor().newInstance());
         MACc2s = expandKey(buf, K, H, MACc2s, hash, c2smac.getBlockSize());
         c2smac.init(MACc2s);
       }
@@ -1517,7 +1514,7 @@ key_type+" key fingerprint is "+key_fprint+".\n"+
           throw new JSchException("timeout in waiting for rekeying process.");
         }
         try{Thread.sleep(10);}
-        catch(java.lang.InterruptedException e){};
+        catch(InterruptedException e){};
         continue;
       }
       synchronized(c){
@@ -1527,7 +1524,7 @@ key_type+" key fingerprint is "+key_fprint+".\n"+
             c.notifyme++;
             c.wait(100);
           }
-          catch(java.lang.InterruptedException e){
+          catch(InterruptedException e){
           }
           finally{
             c.notifyme--;
@@ -1592,7 +1589,7 @@ key_type+" key fingerprint is "+key_fprint+".\n"+
         //  c.notifyme++;
         //  c.wait(100);
         //}
-        //catch(java.lang.InterruptedException e){
+        //catch(InterruptedException e){
         //}
         //finally{
         //  c.notifyme--;
@@ -1626,7 +1623,7 @@ key_type+" key fingerprint is "+key_fprint+".\n"+
         break;
       }
       try{Thread.sleep(10);}
-      catch(java.lang.InterruptedException e){};
+      catch(InterruptedException e){};
     }
     _write(packet);
   }
@@ -1642,6 +1639,7 @@ key_type+" key fingerprint is "+key_fprint+".\n"+
   }
 
   Runnable thread;
+  @Override
   public void run(){
     thread=this;
 
@@ -2292,7 +2290,7 @@ break;
     return ChannelForwardedTCPIP.getPortForwarding(this);
   }
 
-  class Forwarding {
+  static class Forwarding {
     String bind_address = null;
     int port = -1;
     String host = null;
@@ -2308,14 +2306,14 @@ break;
   Forwarding parseForwarding(String conf) throws JSchException {
     String[] tmp = conf.split(" ");
     if(tmp.length>1){   // "[bind_address:]port host:hostport"
-      Vector foo = new Vector();
+      Vector<String> foo = new Vector<>();
       for(int i=0; i<tmp.length; i++){
         if(tmp[i].length()==0) continue;
         foo.addElement(tmp[i].trim());
       }
       StringBuffer sb = new StringBuffer(); // join
       for(int i=0; i<foo.size(); i++){
-        sb.append((String)(foo.elementAt(i)));
+        sb.append(foo.elementAt(i));
         if(i+1<foo.size())
           sb.append(":");
       }
@@ -2351,7 +2349,7 @@ break;
       }
     }
     catch(NumberFormatException e){
-      throw new JSchException ("parseForwarding: "+e.toString());
+      throw new JSchException("parseForwarding: "+e.toString(), e);
     }
     return f;
   }
@@ -2412,7 +2410,7 @@ break;
     return channel;
   }
 
-  private class GlobalRequestReply{
+  private static class GlobalRequestReply{
     private Thread thread=null;
     private int reply=-1;
     private int port=0;
@@ -2453,9 +2451,7 @@ break;
     }
     catch(Exception e){
       grr.setThread(null);
-      if(e instanceof Throwable)
-        throw new JSchException(e.toString(), (Throwable)e);
-      throw new JSchException(e.toString());
+      throw new JSchException(e.toString(), e);
     }
 
     int count = 0;
@@ -2507,8 +2503,8 @@ break;
       if(method.equals("zlib") ||
          (isAuthed && method.equals("zlib@openssh.com"))){
         try{
-          Class c=Class.forName(foo);
-          deflater=(Compression)(c.newInstance());
+          Class<?> c=Class.forName(foo);
+          deflater=(Compression)(c.getDeclaredConstructor().newInstance());
           int level=6;
           try{ level=Integer.parseInt(getConfig("compression_level"));}
           catch(Exception ee){ }
@@ -2534,8 +2530,8 @@ break;
       if(method.equals("zlib") ||
          (isAuthed && method.equals("zlib@openssh.com"))){
         try{
-          Class c=Class.forName(foo);
-          inflater=(Compression)(c.newInstance());
+          Class<?> c=Class.forName(foo);
+          inflater=(Compression)(c.getDeclaredConstructor().newInstance());
           inflater.init(Compression.INFLATER, 0);
         }
         catch(Exception ee){
@@ -2572,17 +2568,21 @@ break;
     }
   }
 
-  public void setConfig(java.util.Properties newconf){
-    setConfig((java.util.Hashtable)newconf);
+  public void setConfig(Properties newconf){
+    Hashtable<String, String> foo=new Hashtable<>();
+    for(String key : newconf.stringPropertyNames()){
+      foo.put(key, newconf.getProperty(key));
+    }
+    setConfig(foo);
   }
 
-  public void setConfig(java.util.Hashtable newconf){
+  public void setConfig(Hashtable<String, String> newconf){
     synchronized(lock){
       if(config==null)
-        config=new java.util.Hashtable();
-      for(java.util.Enumeration e=newconf.keys() ; e.hasMoreElements() ;) {
-        String key=(String)(e.nextElement());
-        config.put(key, (String)(newconf.get(key)));
+        config=new Hashtable<>();
+      for(Enumeration<String> e=newconf.keys() ; e.hasMoreElements() ;) {
+        String key=e.nextElement();
+        config.put(key, newconf.get(key));
       }
     }
   }
@@ -2590,7 +2590,7 @@ break;
   public void setConfig(String key, String value){
     synchronized(lock){
       if(config==null){
-        config=new java.util.Hashtable();
+        config=new Hashtable<>();
       }
       config.put(key, value);
     }
@@ -2602,7 +2602,7 @@ break;
       foo=config.get(key);
       if(foo instanceof String) return (String)foo;
     }
-    foo=jsch.getConfig(key);
+    foo=JSch.getConfig(key);
     if(foo instanceof String) return (String)foo;
     return null;
   }
@@ -2625,9 +2625,7 @@ break;
       this.timeout=timeout;
     }
     catch(Exception e){
-      if(e instanceof Throwable)
-        throw new JSchException(e.toString(), (Throwable)e);
-      throw new JSchException(e.toString());
+      throw new JSchException(e.toString(), e);
     }
   }
   public String getServerVersion(){
@@ -2742,7 +2740,7 @@ break;
     String cipherc2s=getConfig("cipher.c2s");
     String ciphers2c=getConfig("cipher.s2c");
 
-    Vector result=new Vector();
+    Vector<String> result=new Vector<>();
     String[] _ciphers=Util.split(ciphers, ",");
     for(int i=0; i<_ciphers.length; i++){
       String cipher=_ciphers[i];
@@ -2769,8 +2767,8 @@ break;
 
   static boolean checkCipher(String cipher){
     try{
-      Class c=Class.forName(cipher);
-      Cipher _c=(Cipher)(c.newInstance());
+      Class<?> c=Class.forName(cipher);
+      Cipher _c=(Cipher)(c.getDeclaredConstructor().newInstance());
       _c.init(Cipher.ENCRYPT_MODE,
               new byte[_c.getBlockSize()],
               new byte[_c.getIVSize()]);
@@ -2793,7 +2791,7 @@ break;
     String macc2s=getConfig("mac.c2s");
     String macs2c=getConfig("mac.s2c");
 
-    Vector result=new Vector();
+    Vector<String> result=new Vector<>();
     String[] _macs=Util.split(macs, ",");
     for(int i=0; i<_macs.length; i++){
       String mac=_macs[i];
@@ -2820,8 +2818,8 @@ break;
 
   static boolean checkMac(String mac){
     try{
-      Class c=Class.forName(mac);
-      MAC _c=(MAC)(c.newInstance());
+      Class<?> c=Class.forName(mac);
+      MAC _c=(MAC)(c.getDeclaredConstructor().newInstance());
       _c.init(new byte[_c.getBlockSize()]);
       return true;
     }
@@ -2839,7 +2837,7 @@ break;
                            "CheckKexes: "+kexes);
     }
 
-    java.util.Vector result=new java.util.Vector();
+    Vector<String> result=new Vector<>();
     String[] _kexes=Util.split(kexes, ",");
     for(int i=0; i<_kexes.length; i++){
       if(!checkKex(this, getConfig(_kexes[i]))){
@@ -2863,8 +2861,8 @@ break;
 
   static boolean checkKex(Session s, String kex){
     try{
-      Class c=Class.forName(kex);
-      KeyExchange _c=(KeyExchange)(c.newInstance());
+      Class<?> c=Class.forName(kex);
+      KeyExchange _c=(KeyExchange)(c.getDeclaredConstructor().newInstance());
       _c.init(s ,null, null, null, null);
       return true;
     }
@@ -2880,12 +2878,12 @@ break;
                            "CheckSignatures: "+sigs);
     }
 
-    java.util.Vector result=new java.util.Vector();
+    Vector<String> result=new Vector<>();
     String[] _sigs=Util.split(sigs, ",");
     for(int i=0; i<_sigs.length; i++){
       try{
-        Class c=Class.forName((String)jsch.getConfig(_sigs[i]));
-        final Signature sig=(Signature)(c.newInstance());
+        Class<?> c=Class.forName(JSch.getConfig(_sigs[i]));
+        final Signature sig=(Signature)(c.getDeclaredConstructor().newInstance());
         sig.init();
       }
       catch(Exception e){

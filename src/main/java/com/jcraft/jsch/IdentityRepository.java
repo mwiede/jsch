@@ -37,7 +37,7 @@ public interface IdentityRepository {
   public static final int RUNNING=2;
   public String getName();
   public int getStatus();
-  public Vector getIdentities();
+  public Vector<Identity> getIdentities();
   public boolean add(byte[] identity);
   public boolean remove(byte[] blob);
   public void removeAll();
@@ -51,7 +51,7 @@ public interface IdentityRepository {
    */
   static class Wrapper implements IdentityRepository {
     private IdentityRepository ir;
-    private Vector cache = new Vector();
+    private Vector<Identity> cache = new Vector<>();
     private boolean keep_in_cache = false;
     Wrapper(IdentityRepository ir){
       this(ir, false);
@@ -60,29 +60,35 @@ public interface IdentityRepository {
       this.ir = ir;
       this.keep_in_cache = keep_in_cache;
     }
+    @Override
     public String getName() {
       return ir.getName();
     }
+    @Override
     public int getStatus() {
       return ir.getStatus();
     }
+    @Override
     public boolean add(byte[] identity) {
       return ir.add(identity);
     }
+    @Override
     public boolean remove(byte[] blob) {
       return ir.remove(blob);
     }
+    @Override
     public void removeAll() {
       cache.removeAllElements();
       ir.removeAll();
     }
-    public Vector getIdentities() {
-      Vector result = new Vector();
+    @Override
+    public Vector<Identity> getIdentities() {
+      Vector<Identity> result = new Vector<>();
       for(int i = 0; i< cache.size(); i++){
-        Identity identity = (Identity)(cache.elementAt(i));
+        Identity identity = cache.elementAt(i);
         result.add(identity);
       }
-      Vector tmp = ir.getIdentities();
+      Vector<Identity> tmp = ir.getIdentities();
       for(int i = 0; i< tmp.size(); i++){
         result.add(tmp.elementAt(i));
       }
