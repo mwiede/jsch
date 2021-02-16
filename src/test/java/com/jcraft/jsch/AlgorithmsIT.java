@@ -473,6 +473,8 @@ public class AlgorithmsIT {
       sftp.disconnect();
       session.disconnect();
       jschAppender.stop();
+      // Sleep for a short bit to allow logs from test container to catch up
+      Thread.sleep(100L);
       sshdAppender.stop();
     } catch (Exception e) {
       if (debugException) {
