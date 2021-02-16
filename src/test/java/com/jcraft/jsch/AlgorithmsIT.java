@@ -474,7 +474,7 @@ public class AlgorithmsIT {
       session.disconnect();
       jschAppender.stop();
       // Sleep for a short bit to allow logs from test container to catch up
-      Thread.sleep(100L);
+      Thread.sleep(250L);
       sshdAppender.stop();
     } catch (Exception e) {
       if (debugException) {
