@@ -64,6 +64,7 @@ public interface Identity{
    * @deprecated The decryption should be done automatically in #setPassphase(byte[] passphrase)
    * @see #setPassphrase(byte[] passphrase)
    */
+  @Deprecated
   public boolean decrypt();
 
   /**

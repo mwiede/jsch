@@ -37,7 +37,6 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 @Testcontainers
 public class Algorithms2IT {
 
-  // Python can be slow, so use larger timeout.
   private static final int timeout = 2000;
   private static final DigestUtils sha256sum = new DigestUtils(DigestUtils.getSha256Digest());
   private static final ListAppender<ILoggingEvent> jschAppender = getListAppender(JSch.class);
@@ -51,8 +50,8 @@ public class Algorithms2IT {
   private Slf4jLogConsumer sshdLogConsumer;
 
   @Container
-  public GenericContainer sshd =
-      new GenericContainer(
+  public GenericContainer<?> sshd =
+      new GenericContainer<>(
               new ImageFromDockerfile()
                   .withFileFromClasspath("asyncsshd.py", "docker/asyncsshd.py")
                   .withFileFromClasspath("ssh_host_ed448_key", "docker/ssh_host_ed448_key")

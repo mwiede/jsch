@@ -65,6 +65,7 @@ public class ProxyHTTP implements Proxy{
     this.user=user;
     this.passwd=passwd;
   }
+  @Override
   public void connect(SocketFactory socket_factory, String host, int port, int timeout) throws JSchException{
     try{
       if(socket_factory==null){
@@ -154,14 +155,16 @@ public class ProxyHTTP implements Proxy{
       catch(Exception eee){
       }
       String message="ProxyHTTP: "+e.toString();
-      if(e instanceof Throwable)
-        throw new JSchException(message, (Throwable)e);
-      throw new JSchException(message);
+      throw new JSchException(message, e);
     }
   }
+  @Override
   public InputStream getInputStream(){ return in; }
+  @Override
   public OutputStream getOutputStream(){ return out; }
+  @Override
   public Socket getSocket(){ return socket; }
+  @Override
   public void close(){
     try{
       if(in!=null)in.close();

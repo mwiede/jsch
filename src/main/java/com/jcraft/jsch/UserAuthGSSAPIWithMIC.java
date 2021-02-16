@@ -48,6 +48,7 @@ public class UserAuthGSSAPIWithMIC extends UserAuth {
     "gssapi-with-mic.krb5"
   };
 
+  @Override
   public boolean start(Session session)throws Exception{
     super.start(session);
 
@@ -114,8 +115,8 @@ public class UserAuthGSSAPIWithMIC extends UserAuth {
 
     GSSContext context=null;
     try{
-      Class c=Class.forName(session.getConfig(method));
-      context=(GSSContext)(c.newInstance());
+      Class<?> c=Class.forName(session.getConfig(method));
+      context=(GSSContext)(c.getDeclaredConstructor().newInstance());
     }
     catch(Exception e){ 
       return false;

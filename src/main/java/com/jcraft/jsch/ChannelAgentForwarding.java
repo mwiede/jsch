@@ -29,6 +29,7 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 package com.jcraft.jsch;
 
+import java.io.IOException;
 import java.net.*;
 import java.util.Vector;
 
@@ -79,6 +80,7 @@ class ChannelAgentForwarding extends Channel{
     connected=true;
   }
 
+  @Override
   public void run(){
     try{
       sendOpenConfirmation();
@@ -89,7 +91,8 @@ class ChannelAgentForwarding extends Channel{
     }
   }
 
-  void write(byte[] foo, int s, int l) throws java.io.IOException {
+  @Override
+  void write(byte[] foo, int s, int l) throws IOException {
 
     if(packet==null){
       wbuf=new Buffer(rmpsize);
@@ -118,7 +121,7 @@ class ChannelAgentForwarding extends Channel{
       _session=getSession();
     }
     catch(JSchException e){
-      throw new java.io.IOException(e.toString());
+      throw new IOException(e.toString(), e);
     }
 
     IdentityRepository irepo = _session.getIdentityRepository();
@@ -128,17 +131,17 @@ class ChannelAgentForwarding extends Channel{
 
     if(typ==SSH2_AGENTC_REQUEST_IDENTITIES){ 
       mbuf.putByte(SSH2_AGENT_IDENTITIES_ANSWER);
-      Vector identities = irepo.getIdentities();
+      Vector<Identity> identities = irepo.getIdentities();
       synchronized(identities){
         int count=0;
         for(int i=0; i<identities.size(); i++){
-          Identity identity=(Identity)(identities.elementAt(i));
+          Identity identity=identities.elementAt(i);
           if(identity.getPublicKeyBlob()!=null)
             count++;
         }
         mbuf.putInt(count);
         for(int i=0; i<identities.size(); i++){
-          Identity identity=(Identity)(identities.elementAt(i));
+          Identity identity=identities.elementAt(i);
           byte[] pubkeyblob=identity.getPublicKeyBlob();
           if(pubkeyblob==null)
             continue;
@@ -160,11 +163,11 @@ class ChannelAgentForwarding extends Channel{
 //        datafellows = SSH_BUG_SIGBLOB;
 //      }
 
-      Vector identities = irepo.getIdentities();
+      Vector<Identity> identities = irepo.getIdentities();
       Identity identity = null;
       synchronized(identities){
         for(int i=0; i<identities.size(); i++){
-          Identity _identity=(Identity)(identities.elementAt(i));
+          Identity _identity=identities.elementAt(i);
           if(_identity.getPublicKeyBlob()==null)
             continue;
           if(!Util.array_equals(blob, _identity.getPublicKeyBlob())){
@@ -259,6 +262,7 @@ class ChannelAgentForwarding extends Channel{
     }
   }
 
+  @Override
   void eof_remote(){
     super.eof_remote();
     eof();

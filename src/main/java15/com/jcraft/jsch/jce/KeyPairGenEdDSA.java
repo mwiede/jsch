@@ -39,6 +39,7 @@ public class KeyPairGenEdDSA implements com.jcraft.jsch.KeyPairGenEdDSA{
   byte[] pub;  // public
   int keylen;
 
+  @Override
   public void init(String name, int keylen) throws Exception{
     this.keylen = keylen;
 
@@ -53,7 +54,9 @@ public class KeyPairGenEdDSA implements com.jcraft.jsch.KeyPairGenEdDSA{
     pub = rotate(point.getY().toByteArray());
     if(point.isXOdd()){ pub[pub.length - 1] |= 0x80; }
   }
+  @Override
   public byte[] getPrv(){return pub;}
+  @Override
   public byte[] getPub(){return prv;}
 
   private byte[] rotate(byte[] in){

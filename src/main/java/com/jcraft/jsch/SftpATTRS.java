@@ -279,6 +279,7 @@ public class SftpATTRS {
   public int getMTime() { return mtime; }
   public String[] getExtended() { return extended; }
 
+  @Override
   public String toString() {
     return (getPermissionsString()+" "+getUId()+" "+getGId()+" "+getSize()+" "+getMtimeString());
   }

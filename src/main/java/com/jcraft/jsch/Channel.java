@@ -30,7 +30,7 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 package com.jcraft.jsch;
 
 import java.io.*;
-
+import java.util.Vector;
 
 public abstract class Channel implements Runnable{
 
@@ -44,7 +44,7 @@ public abstract class Channel implements Runnable{
   static final int SSH_OPEN_RESOURCE_SHORTAGE=              4;
 
   static int index=0; 
-  private static java.util.Vector pool=new java.util.Vector();
+  private static Vector<Channel> pool=new Vector<>();
   static Channel getChannel(String type){
     if(type.equals("session")){
       return new ChannelSession();
@@ -81,7 +81,7 @@ public abstract class Channel implements Runnable{
   static Channel getChannel(int id, Session session){
     synchronized(pool){
       for(int i=0; i<pool.size(); i++){
-        Channel c=(Channel)(pool.elementAt(i));
+        Channel c=pool.elementAt(i);
         if(c.id==id && c.session==session) return c;
       }
     }
@@ -230,7 +230,7 @@ public abstract class Channel implements Runnable{
         private Buffer buffer=null;
         private Packet packet=null;
         private boolean closed=false;
-        private synchronized void init() throws java.io.IOException{
+        private synchronized void init() throws IOException{
           buffer=new Buffer(rmpsize);
           packet=new Packet(buffer);
 
@@ -243,17 +243,19 @@ public abstract class Channel implements Runnable{
 
         }
         byte[] b=new byte[1];
-        public void write(int w) throws java.io.IOException{
+        @Override
+        public void write(int w) throws IOException{
           b[0]=(byte)w;
           write(b, 0, 1);
         }
-        public void write(byte[] buf, int s, int l) throws java.io.IOException{
+        @Override
+        public void write(byte[] buf, int s, int l) throws IOException{
           if(packet==null){
             init();
           }
 
           if(closed){
-            throw new java.io.IOException("Already closed");
+            throw new IOException("Already closed");
           }
 
           byte[] _buf=buffer.buffer;
@@ -276,9 +278,10 @@ public abstract class Channel implements Runnable{
           }
         }
 
-        public void flush() throws java.io.IOException{
+        @Override
+        public void flush() throws IOException{
           if(closed){
-            throw new java.io.IOException("Already closed");
+            throw new IOException("Already closed");
           }
           if(dataLen==0)
             return;
@@ -297,16 +300,17 @@ public abstract class Channel implements Runnable{
           }
           catch(Exception e){
             close();
-            throw new java.io.IOException(e.toString());
+            throw new IOException(e.toString(), e);
           }
 
         }
-        public void close() throws java.io.IOException{
+        @Override
+        public void close() throws IOException{
           if(packet==null){
             try{
               init();
             }
-            catch(java.io.IOException e){
+            catch(IOException e){
               // close should be finished silently.
               return;
             }
@@ -324,7 +328,7 @@ public abstract class Channel implements Runnable{
     return out;
   }
 
-  class MyPipedInputStream extends PipedInputStream{
+  static class MyPipedInputStream extends PipedInputStream{
     private int BUFFER_SIZE = 1024;
     private int max_buffer_size = BUFFER_SIZE;
     MyPipedInputStream() throws IOException{ super(); }
@@ -426,6 +430,7 @@ public abstract class Channel implements Runnable{
   }
   void setRemotePacketSize(int foo){ this.rmpsize=foo; }
 
+  @Override
   public void run(){
   }
 
@@ -546,7 +551,7 @@ public abstract class Channel implements Runnable{
       channels=new Channel[pool.size()];
       for(int i=0; i<pool.size(); i++){
 	try{
-	  Channel c=((Channel)(pool.elementAt(i)));
+	  Channel c=pool.elementAt(i);
 	  if(c.session==session){
 	    channels[count++]=c;
 	  }
@@ -620,24 +625,25 @@ public abstract class Channel implements Runnable{
   }
 */
 
-  class PassiveInputStream extends MyPipedInputStream{
-    PipedOutputStream out;
+  static class PassiveInputStream extends MyPipedInputStream{
+    PipedOutputStream os;
     PassiveInputStream(PipedOutputStream out, int size) throws IOException{
       super(out, size);
-      this.out=out;
+      this.os=out;
     }
     PassiveInputStream(PipedOutputStream out) throws IOException{
       super(out);
-      this.out=out;
+      this.os=out;
     }
+    @Override
     public void close() throws IOException{
-      if(out!=null){
-        this.out.close();
+      if(this.os!=null){
+        this.os.close();
       }
-      out=null;
+      this.os=null;
     }
   }
-  class PassiveOutputStream extends PipedOutputStream{
+  static class PassiveOutputStream extends PipedOutputStream{
     private MyPipedInputStream _sink=null;
     PassiveOutputStream(PipedInputStream in,
                         boolean resizable_buffer) throws IOException{
@@ -646,12 +652,14 @@ public abstract class Channel implements Runnable{
         this._sink=(MyPipedInputStream)in;
       }
     }
+    @Override
     public void write(int b) throws IOException {
       if(_sink != null) {
         _sink.checkSpace(1);
       }
       super.write(b);
     }
+    @Override
     public void write(byte[] b, int off, int len) throws IOException {
       if(_sink != null) {
         _sink.checkSpace(len);
@@ -749,7 +757,7 @@ public abstract class Channel implements Runnable{
           this.notifyme=1;
           wait(t);
         }
-        catch(java.lang.InterruptedException e){
+        catch(InterruptedException e){
         }
         finally{
           this.notifyme=0;

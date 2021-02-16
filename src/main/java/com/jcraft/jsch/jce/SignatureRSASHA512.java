@@ -35,6 +35,7 @@ import java.security.spec.*;
 import com.jcraft.jsch.Buffer;
 
 public class SignatureRSASHA512 extends SignatureRSAN {
+  @Override
   String getName() {
     return "rsa-sha2-512";
   }

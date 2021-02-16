@@ -45,9 +45,13 @@ public class KeyPairEd448 extends KeyPairEdDSA{
     super(jsch, pub_array, prv_array);
   }
 
+  @Override
   public int getKeyType(){ return ED448; }
+  @Override
   public int getKeySize(){ return keySize; }
+  @Override
   String getSshName(){ return "ssh-ed448"; }
+  @Override
   String getJceName(){ return "Ed448"; }
 
   static KeyPair fromSSHAgent(JSch jsch, Buffer buf) throws JSchException {
@@ -57,7 +61,7 @@ public class KeyPairEd448 extends KeyPairEdDSA{
     byte[] pub_array = tmp[1];
     byte[] prv_array = Arrays.copyOf(tmp[2], keySize);
     KeyPairEd448 kpair = new KeyPairEd448(jsch, pub_array, prv_array);
-    kpair.publicKeyComment = new String(tmp[3]);
+    kpair.publicKeyComment = Util.byte2str(tmp[3]);
     kpair.vendor=VENDOR_OPENSSH;
     return kpair;
   }
