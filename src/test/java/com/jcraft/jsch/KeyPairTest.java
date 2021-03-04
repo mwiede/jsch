@@ -13,13 +13,13 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.stream.Stream;
 
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.junit.jupiter.api.Assertions.*;
 
 class KeyPairTest {
 
-    @TempDir public Path tmpDir;
+    @TempDir
+    public Path tmpDir;
 
     @BeforeAll
     static void init() {
@@ -41,21 +41,20 @@ class KeyPairTest {
                 // encrypted dsa
                 Arguments.of("encrypted_openssh_private_key_dsa", "secret123", "ssh-dss"),
                 // ecdsa EC private key format
-                Arguments.of("docker/id_ecdsa256", null, null), //
-                Arguments.of("docker/id_ecdsa384", null, null), //
-                Arguments.of("docker/id_ecdsa521", null, null),
-                Arguments.of("docker/ssh_host_ecdsa256_key", null, null),
-                Arguments.of("docker/ssh_host_ecdsa384_key", null, null),
-                Arguments.of("docker/ssh_host_ecdsa521_key", null, null),
+                Arguments.of("docker/id_ecdsa256", null, "ecdsa-sha2-nistp256"), //
+                Arguments.of("docker/id_ecdsa384", null, "ecdsa-sha2-nistp384"), //
+                Arguments.of("docker/id_ecdsa521", null, "ecdsa-sha2-nistp521"),
+                Arguments.of("docker/ssh_host_ecdsa256_key", null, "ecdsa-sha2-nistp256"),
+                Arguments.of("docker/ssh_host_ecdsa384_key", null, "ecdsa-sha2-nistp384"),
+                Arguments.of("docker/ssh_host_ecdsa521_key", null, "ecdsa-sha2-nistp521"),
                 // encrypted ecdsa
-                Arguments.of("encrypted_openssh_private_key_ecdsa", "secret123", null)
-
+                Arguments.of("encrypted_openssh_private_key_ecdsa", "secret123", "ecdsa-sha2-nistp256")
         );
     }
 
     @ParameterizedTest
     @MethodSource("keyArgs")
-    void loadKey(String path, String password, String publicKeyType) throws URISyntaxException, JSchException {
+    void loadKey(String path, String password, String keyType) throws URISyntaxException, JSchException {
         final JSch jSch = new JSch();
         final String prvkey = Paths.get(ClassLoader.getSystemResource(path).toURI()).toFile().getAbsolutePath();
         assertTrue(new File(prvkey).exists());
@@ -66,6 +65,7 @@ class KeyPairTest {
                 jSch.addIdentity(prvkey);
             }
         });
+        assertEquals(keyType, jSch.getIdentityRepository().getIdentities().get(0).getAlgName());
     }
 
     @Test
@@ -83,6 +83,18 @@ class KeyPairTest {
         assertDoesNotThrow(() -> {
             KeyPair kpair = KeyPair.genKeyPair(jSch, KeyPair.RSA, 1024);
             kpair.writePrivateKey(tmpDir.resolve("my-private-key-encrypted").toString(), "my-password".getBytes(UTF_8));
+        });
+    }
+
+    @Test
+    void loadAndAcessEncryptedKeyWithoutPassword() throws URISyntaxException, JSchException {
+        final JSch jSch = new JSch();
+        final String prvkey = Paths.get(ClassLoader.getSystemResource("encrypted_openssh_private_key_dsa").toURI()).toFile().getAbsolutePath();
+        assertTrue(new File(prvkey).exists());
+        jSch.addIdentity(prvkey);
+
+        assertThrows(IllegalStateException.class, () -> {
+            jSch.getIdentityRepository().getIdentities().get(0).getAlgName();
         });
     }
 
