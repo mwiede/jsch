@@ -5,7 +5,7 @@ import com.jcraft.jsch.jbcrypt.BCrypt;
 import java.util.Arrays;
 
 /**
- * A {@link KeyPair} which can only reveal its type and content after it was decrypted using KeyPairDeferred{@link #decrypt(byte[])}.
+ * A {@link KeyPair} which can only reveal its type and content after it was decrypted using {@link com.jcraft.jsch.KeyPairDeferred#decrypt(byte[])}.
  * This is needed for openssh-v1-private-key format.
  */
 public class KeyPairDeferred extends KeyPair {
@@ -72,62 +72,62 @@ public class KeyPairDeferred extends KeyPair {
 
     @Override
     byte[] getBegin() {
-        return delegate.getBegin();
+        return requireDecrypted(delegate).getBegin();
     }
 
     @Override
     byte[] getEnd() {
-        return delegate.getEnd();
+        return requireDecrypted(delegate).getEnd();
     }
 
     @Override
     int getKeySize() {
-        return delegate.getKeySize();
+        return requireDecrypted(delegate).getKeySize();
     }
 
     @Override
     public byte[] getSignature(byte[] data) {
-        return delegate.getSignature(data);
+        return requireDecrypted(delegate).getSignature(data);
     }
 
     @Override
     public byte[] getSignature(byte[] data, String alg) {
-        return delegate.getSignature(data, alg);
+        return requireDecrypted(delegate).getSignature(data, alg);
     }
 
     @Override
     public Signature getVerifier() {
-        return delegate.getVerifier();
+        return requireDecrypted(delegate).getVerifier();
     }
 
     @Override
     public Signature getVerifier(String alg) {
-        return delegate.getVerifier(alg);
+        return requireDecrypted(delegate).getVerifier(alg);
     }
 
     @Override
     public byte[] forSSHAgent() throws JSchException {
-        return delegate.forSSHAgent();
+        return requireDecrypted(delegate).forSSHAgent();
     }
 
     @Override
     byte[] getPrivateKey() {
-        return delegate.getPrivateKey();
+        return requireDecrypted(delegate).getPrivateKey();
     }
 
     @Override
     byte[] getKeyTypeName() {
-        return delegate.getKeyTypeName();
+        return requireDecrypted(delegate).getKeyTypeName();
     }
 
     @Override
     public int getKeyType() {
-        return delegate.getKeyType();
+        return requireDecrypted(delegate).getKeyType();
     }
 
     @Override
     boolean parse(byte[] data) {
-        return delegate.parse(data);
+        return requireDecrypted(delegate).parse(data);
     }
 
     @Override
@@ -137,16 +137,22 @@ public class KeyPairDeferred extends KeyPair {
 
     @Override
     public String getPublicKeyComment() {
-        return delegate.getPublicKeyComment();
+        return requireDecrypted(delegate).getPublicKeyComment();
     }
 
     @Override
     public String getFingerPrint() {
-        return delegate.getFingerPrint();
+        return requireDecrypted(delegate).getFingerPrint();
     }
 
     @Override
     public boolean isEncrypted() {
         return delegate != null ? delegate.isEncrypted() : super.isEncrypted();
+    }
+
+    private <T> T requireDecrypted(T obj) {
+        if (obj == null)
+            throw new IllegalStateException("encrypted key has not been decrypted yet.");
+        return obj;
     }
 }
