@@ -47,6 +47,59 @@ public class KeyPairIT {
 
     }
 
+    @ParameterizedTest
+    @MethodSource("com.jcraft.jsch.KeyPairTest#keyArgs")
+    void connectWithPublicKeyAndUserInfo(String path, String password, String keyType) throws Exception {
+
+        final JSch jSch = new JSch();
+        
+        jSch.addIdentity(Paths.get(ClassLoader.getSystemResource(path).toURI()).toFile().getAbsolutePath());
+
+        Session session = createSession(jSch);
+        session.setUserInfo(new UserInfo() {
+            @Override
+            public String getPassphrase() {
+                return password;
+            }
+
+            @Override
+            public String getPassword() {
+                return null;
+            }
+
+            @Override
+            public boolean promptPassword(String message) {
+                return false;
+            }
+
+            @Override
+            public boolean promptPassphrase(String message) {
+                return true;
+            }
+
+            @Override
+            public boolean promptYesNo(String message) {
+                return false;
+            }
+
+            @Override
+            public void showMessage(String message) {
+
+            }
+        });
+
+        if (keyType != null) {
+            session.setConfig("PubkeyAcceptedKeyTypes", keyType);
+        }
+        try {
+            session.connect(2000);
+            assertTrue(session.isConnected());
+        } finally {
+            session.disconnect();
+        }
+
+    }
+
     private JSch createIdentity(String path, String password) throws JSchException, URISyntaxException {
         JSch ssh = new JSch();
         if (password != null) {
