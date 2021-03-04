@@ -16,6 +16,7 @@ As I explained in a [blog post](http://www.matez.de/index.php/2020/06/22/the-fut
 * stay in sync with JDK features so there is no need for additional dependencies
 
 ## Changes since fork:
+* [0.1.62](https://github.com/mwiede/jsch/releases/tag/jsch-0.1.62) bugfixes and code cleanup
 * 0.1.61
   * Add support for chacha20-poly1305@<!-- -->openssh.com, ssh-ed25519, ssh-ed448, curve448-sha512, diffie-hellman-group15-sha512 & diffie-hellman-group17-sha512. This makes use of the new EdDSA feature added in [Java 15's JEP 339](https://openjdk.java.net/jeps/339). [#17](https://github.com/mwiede/jsch/pull/17)
   * added integration test for public key authentication [#19](https://github.com/mwiede/jsch/pull/19)
