@@ -98,4 +98,23 @@ class KeyPairTest {
         });
     }
 
+    @Test
+    void decryptEncryptedOpensshKey() throws URISyntaxException, JSchException {
+        final JSch jSch = new JSch();
+        final String prvkey = Paths.get(ClassLoader.getSystemResource("encrypted_openssh_private_key_dsa").toURI()).toFile().getAbsolutePath();
+        assertTrue(new File(prvkey).exists());
+        IdentityFile identity = IdentityFile.newInstance(prvkey, null, jSch);
+
+        // Decrypt the key file
+        assertTrue(identity.getKeyPair().decrypt("secret123"));
+
+        // From now on, the pair now longer counts as encrypted
+        assertFalse(identity.getKeyPair().isEncrypted());
+
+        // An unencrypted key pair should allow #decrypt(null)
+        // com.jcraft.jsch.UserAuthPublicKey relies on this
+        assertTrue(identity.getKeyPair().decrypt((byte[])null));
+        assertTrue(identity.getKeyPair().decrypt((String)null));
+    }
+
 }
