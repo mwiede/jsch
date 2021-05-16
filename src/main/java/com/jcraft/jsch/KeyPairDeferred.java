@@ -17,9 +17,14 @@ public class KeyPairDeferred extends KeyPair {
     }
 
     @Override
+    public boolean decrypt(String _passphrase) {
+        return decrypt(Util.str2byte(_passphrase));
+    }
+
+    @Override
     public boolean decrypt(byte[] _passphrase) {
         try {
-            if (!encrypted) {
+            if (!isEncrypted()) {
                 return true;
             }
             if (_passphrase == null) {

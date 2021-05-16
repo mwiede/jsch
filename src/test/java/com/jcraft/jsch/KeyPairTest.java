@@ -114,6 +114,7 @@ class KeyPairTest {
         // An unencrypted key pair should allow #decrypt(null)
         // com.jcraft.jsch.UserAuthPublicKey relies on this
         assertTrue(identity.getKeyPair().decrypt((byte[])null));
+        assertTrue(identity.getKeyPair().decrypt((String)null));
     }
 
 }
