@@ -244,7 +244,7 @@ public class Algorithms2IT {
   }
 
   private String getResourceFile(String fileName) {
-    return this.getClass().getClassLoader().getResource(fileName).getPath();
+    return ResourceUtil.getResourceFile(getClass(), fileName);
   }
 
   private static ListAppender<ILoggingEvent> getListAppender(Class<?> clazz) {
