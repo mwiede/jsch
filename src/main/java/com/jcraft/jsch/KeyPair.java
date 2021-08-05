@@ -875,7 +875,7 @@ public abstract class KeyPair{
           // the type can only be determined after encryption, so we take this intermediate here:
           type = DEFERRED;
       } else {
-          throw new JSchException("cipher" + cipherName + " is not available");
+          throw new JSchException("cipher " + cipherName + " is not available");
       }
     }
 
