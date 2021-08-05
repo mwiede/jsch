@@ -6,6 +6,7 @@ import org.junit.jupiter.api.io.TempDir;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import java.io.File;
 import java.net.URISyntaxException;
@@ -98,10 +99,11 @@ class KeyPairTest {
         });
     }
 
-    @Test
-    void decryptEncryptedOpensshKey() throws URISyntaxException, JSchException {
+    @ParameterizedTest
+    @ValueSource(strings = {"encrypted_openssh_private_key_rsa", "encrypted_openssh_private_key_dsa", "encrypted_openssh_private_key_ecdsa"})
+    void decryptEncryptedOpensshKey(String keyFile) throws URISyntaxException, JSchException {
         final JSch jSch = new JSch();
-        final String prvkey = Paths.get(ClassLoader.getSystemResource("encrypted_openssh_private_key_dsa").toURI()).toFile().getAbsolutePath();
+        final String prvkey = Paths.get(ClassLoader.getSystemResource(keyFile).toURI()).toFile().getAbsolutePath();
         assertTrue(new File(prvkey).exists());
         IdentityFile identity = IdentityFile.newInstance(prvkey, null, jSch);
 
@@ -110,7 +112,7 @@ class KeyPairTest {
 
         // From now on, the pair now longer counts as encrypted
         assertFalse(identity.getKeyPair().isEncrypted());
-
+        assertNotNull(identity.getKeyPair().getPrivateKey());
         // An unencrypted key pair should allow #decrypt(null)
         // com.jcraft.jsch.UserAuthPublicKey relies on this
         assertTrue(identity.getKeyPair().decrypt((byte[])null));
