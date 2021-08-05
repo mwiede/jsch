@@ -23,6 +23,7 @@ As I explained in a [blog post](http://www.matez.de/index.php/2020/06/22/the-fut
   * This library is a Multi-Release-jar, which means, that you can only use certain features, when a more recent java version is used. In order to use ssh-ed25519, you must use at least Java 15
 
 ## Changes since fork:
+* [0.1.64](https://github.com/mwiede/jsch/releases/tag/jsch-0.1.64) Fixing [#55](https://github.com/mwiede/jsch/pull/55)
 * [0.1.63](https://github.com/mwiede/jsch/releases/tag/jsch-0.1.63) Fixing [#42](https://github.com/mwiede/jsch/issues/42)
 * [0.1.62](https://github.com/mwiede/jsch/releases/tag/jsch-0.1.62) bugfixes and code cleanup
 * 0.1.61
