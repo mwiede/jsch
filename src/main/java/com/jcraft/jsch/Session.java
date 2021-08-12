@@ -170,12 +170,7 @@ public class Session implements Runnable{
     applyConfig();
 
     if(this.username==null) {
-      try {
-        this.username=(String)(System.getProperties().get("user.name"));
-      }
-      catch(SecurityException e){
-        // ignore e
-      }
+      this.username=Util.getSystemProperty("user.name");
     }
 
     if(this.username==null) {
