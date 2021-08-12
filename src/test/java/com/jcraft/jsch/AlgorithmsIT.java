@@ -157,7 +157,7 @@ public class AlgorithmsIT {
   public void testEd25519() throws Exception {
     JSch ssh = createEd25519Identity();
     Session session = createSession(ssh);
-    session.setConfig("PubkeyAcceptedKeyTypes", "ssh-ed25519");
+    session.setConfig("PubkeyAcceptedAlgorithms", "ssh-ed25519");
     session.setConfig("server_host_key", "ssh-ed25519");
     doSftp(session, true);
 
@@ -169,7 +169,7 @@ public class AlgorithmsIT {
   public void testECDSA521() throws Exception {
     JSch ssh = createECDSA521Identity();
     Session session = createSession(ssh);
-    session.setConfig("PubkeyAcceptedKeyTypes", "ecdsa-sha2-nistp521");
+    session.setConfig("PubkeyAcceptedAlgorithms", "ecdsa-sha2-nistp521");
     session.setConfig("server_host_key", "ecdsa-sha2-nistp521");
     doSftp(session, true);
 
@@ -181,7 +181,7 @@ public class AlgorithmsIT {
   public void testECDSA384() throws Exception {
     JSch ssh = createECDSA384Identity();
     Session session = createSession(ssh);
-    session.setConfig("PubkeyAcceptedKeyTypes", "ecdsa-sha2-nistp384");
+    session.setConfig("PubkeyAcceptedAlgorithms", "ecdsa-sha2-nistp384");
     session.setConfig("server_host_key", "ecdsa-sha2-nistp384");
     doSftp(session, true);
 
@@ -193,7 +193,7 @@ public class AlgorithmsIT {
   public void testECDSA256() throws Exception {
     JSch ssh = createECDSA256Identity();
     Session session = createSession(ssh);
-    session.setConfig("PubkeyAcceptedKeyTypes", "ecdsa-sha2-nistp256");
+    session.setConfig("PubkeyAcceptedAlgorithms", "ecdsa-sha2-nistp256");
     session.setConfig("server_host_key", "ecdsa-sha2-nistp256");
     doSftp(session, true);
 
@@ -206,7 +206,7 @@ public class AlgorithmsIT {
   public void testRSA(String keyType) throws Exception {
     JSch ssh = createRSAIdentity();
     Session session = createSession(ssh);
-    session.setConfig("PubkeyAcceptedKeyTypes", keyType);
+    session.setConfig("PubkeyAcceptedAlgorithms", keyType);
     session.setConfig("server_host_key", keyType);
     doSftp(session, true);
 
@@ -218,7 +218,7 @@ public class AlgorithmsIT {
   public void testDSA() throws Exception {
     JSch ssh = createDSAIdentity();
     Session session = createSession(ssh);
-    session.setConfig("PubkeyAcceptedKeyTypes", "ssh-dss");
+    session.setConfig("PubkeyAcceptedAlgorithms", "ssh-dss");
     session.setConfig("server_host_key", "ssh-dss");
     doSftp(session, true);
 
@@ -370,7 +370,7 @@ public class AlgorithmsIT {
     JSch ssh = new JSch();
     ssh.addIdentity(getResourceFile("docker/id_rsa"), getResourceFile("docker/id_rsa.pub"), null);
     Session session = createSession(ssh);
-    session.setConfig("PubkeyAcceptedKeyTypes", "ssh-rsa");
+    session.setConfig("PubkeyAcceptedAlgorithms", "ssh-rsa");
     session.setConfig("server_host_key", "ssh-rsa");
     session.setConfig("StrictHostKeyChecking", "ask");
     session.setConfig("FingerprintHash", hash);

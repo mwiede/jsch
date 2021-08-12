@@ -158,7 +158,7 @@ public class JSch{
     config.put("HashKnownHosts",  "no");
 
     config.put("PreferredAuthentications", Util.getSystemProperty("jsch.preferred_authentications", "gssapi-with-mic,publickey,keyboard-interactive,password"));
-    config.put("PubkeyAcceptedKeyTypes", Util.getSystemProperty("jsch.client_pubkey", "ecdsa-sha2-nistp256,ecdsa-sha2-nistp384,ecdsa-sha2-nistp521,ssh-ed25519,rsa-sha2-512,rsa-sha2-256,ssh-rsa"));
+    config.put("PubkeyAcceptedAlgorithms", Util.getSystemProperty("jsch.client_pubkey", "ecdsa-sha2-nistp256,ecdsa-sha2-nistp384,ecdsa-sha2-nistp521,ssh-ed25519,rsa-sha2-512,rsa-sha2-256,ssh-rsa"));
 
     config.put("CheckCiphers", Util.getSystemProperty("jsch.check_ciphers", "chacha20-poly1305@openssh.com"));
     config.put("CheckMacs", Util.getSystemProperty("jsch.check_macs", ""));
@@ -564,6 +564,9 @@ public class JSch{
    */
   public static String getConfig(String key){ 
     synchronized(config){
+      if(key.equals("PubkeyAcceptedKeyTypes")){
+        key="PubkeyAcceptedAlgorithms";
+      }
       return config.get(key);
     } 
   }
@@ -576,8 +579,9 @@ public class JSch{
   public static void setConfig(Hashtable<String, String> newconf){
     synchronized(config){
       for(Enumeration<String> e=newconf.keys() ; e.hasMoreElements() ;) {
-	String key=e.nextElement();
-	config.put(key, newconf.get(key));
+	String newkey=e.nextElement();
+	String key=(newkey.equals("PubkeyAcceptedKeyTypes") ? "PubkeyAcceptedAlgorithms" : newkey);
+	config.put(key, newconf.get(newkey));
       }
     }
   }
@@ -589,7 +593,12 @@ public class JSch{
    * @param value value for the configuration
    */
   public static void setConfig(String key, String value){
-    config.put(key, value);
+    if(key.equals("PubkeyAcceptedKeyTypes")){
+      config.put("PubkeyAcceptedAlgorithms", value);
+    }
+    else{
+      config.put(key, value);
+    }
   }
 
   /**

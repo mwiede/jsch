@@ -48,7 +48,7 @@ class UserAuthPublicKey extends UserAuth{
         return false;
       }
 
-      String pkmethods=session.getConfig("PubkeyAcceptedKeyTypes");
+      String pkmethods=session.getConfig("PubkeyAcceptedAlgorithms");
       String[] not_available_pks = session.getUnavailableSignatures();
       if(not_available_pks!=null && not_available_pks.length>0){
         pkmethods=Util.diffString(pkmethods, not_available_pks);
