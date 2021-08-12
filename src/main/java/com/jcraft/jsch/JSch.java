@@ -51,6 +51,10 @@ public class JSch{
     config.put("lang.s2c", Util.getSystemProperty("jsch.lang", ""));
     config.put("lang.c2s", Util.getSystemProperty("jsch.lang", ""));
 
+    config.put("dhgex_min", Util.getSystemProperty("jsch.dhgex_min", "2048"));
+    config.put("dhgex_max", Util.getSystemProperty("jsch.dhgex_max", "8192"));
+    config.put("dhgex_preferred", Util.getSystemProperty("jsch.dhgex_preferred", "3072"));
+
     config.put("compression_level", Util.getSystemProperty("jsch.compression_level", "6"));
 
     config.put("diffie-hellman-group-exchange-sha1", 
