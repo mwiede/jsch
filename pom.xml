@@ -129,6 +129,19 @@
                 </configuration>
                 <executions>
                     <execution>
+                        <id>default-compile-9</id>
+                        <goals>
+                            <goal>compile</goal>
+                        </goals>
+                        <configuration>
+                            <compileSourceRoots>
+                                <compileSourceRoot>${project.basedir}/src/main/java9</compileSourceRoot>
+                            </compileSourceRoots>
+                            <multiReleaseOutput>true</multiReleaseOutput>
+                            <release>9</release>
+                        </configuration>
+                    </execution>
+                    <execution>
                         <id>default-compile-11</id>
                         <goals>
                             <goal>compile</goal>
