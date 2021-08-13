@@ -36,7 +36,7 @@ public class InflaterInputStream extends FilterInputStream {
 
   private boolean closed = false;
 
-  private boolean eof = false;
+  protected boolean eof = false;
 
   private boolean close_in = true;
 

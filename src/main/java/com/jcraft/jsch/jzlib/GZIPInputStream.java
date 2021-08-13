@@ -50,7 +50,38 @@ public class GZIPInputStream extends InflaterInputStream {
     super(in, inflater, size, close_in);
   }
 
+  public int read(byte[] b, int off, int len) throws IOException {
+    int i = super.read(b, off, len);
+    if(i == -1){
+      if(inflater.avail_in<2){
+        int l = in.read(buf, 0, buf.length);
+        if(l>0)
+          inflater.setInput(buf, 0, l, true);
+      }
+      if(inflater.avail_in>2 &&
+         ((inflater.next_in[inflater.next_in_index]&0xff) == 0x1f) &&
+         ((inflater.next_in[inflater.next_in_index+1]&0xff) == (0x8b&0xff))){
+        this.inflater.reset();
+        this.eof=false;
+        return super.read(b, off, len);
+      }
+    } 
+    return i;
+  }
+
+  /**
+   * @deprecated use getModifiedTime()
+   * @return long modified time.
+   */
+  @Deprecated
   public long getModifiedtime() {
+    return this.getModifiedTime();
+  }
+
+  /**
+   * @return the modified time.
+   */
+  public long getModifiedTime() {
     return inflater.istate.getGZIPHeader().getModifiedTime();
   }
 

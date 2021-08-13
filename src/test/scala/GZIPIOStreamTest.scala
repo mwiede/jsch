@@ -29,6 +29,7 @@ class GZIPIOStreamTest extends AnyFlatSpec with BeforeAndAfter with Matchers {
 
     val comment = "hi"
     val name = "/tmp/foo"
+    val time = System.currentTimeMillis() / 1000
 
     val content = "hello".getBytes
 
@@ -37,6 +38,7 @@ class GZIPIOStreamTest extends AnyFlatSpec with BeforeAndAfter with Matchers {
 
     gos.setComment(comment)
     gos.setName(name)
+    gos.setModifiedTime(time)
  
     gos.write(content)
     gos.close
@@ -54,6 +56,7 @@ class GZIPIOStreamTest extends AnyFlatSpec with BeforeAndAfter with Matchers {
 
     comment should equal(gis.getComment)
     name should equal(gis.getName)
+    time should equal(gis.getModifiedTime)
 
     val crc32 = new CRC32
     crc32.update(content, 0, content.length)
@@ -89,5 +92,28 @@ class GZIPIOStreamTest extends AnyFlatSpec with BeforeAndAfter with Matchers {
     t.join()
 
     csIn.getValue() should equal(csOut.getValue)
+  }
+
+  behavior of "GZIPInputStream"
+
+  it can "inflate a concatenated gzip stream." in {
+    // echo -n "a" | gzip > data
+    // echo -n "b" | gzip >> data
+    // echo -n "c" | gzip >> data
+    val data =  {
+     val baos1 = new ByteArrayOutputStream
+      List("a", "b", "c").map{s =>
+        val gos = new GZIPOutputStream(baos1)
+        gos.write(s.getBytes);
+        gos.close
+      }
+      baos1.toByteArray
+    }
+
+    val gis = new GZIPInputStream(new ByteArrayInputStream(data))
+    val baos = new ByteArrayOutputStream()
+    gis -> baos
+
+    baos.toByteArray should equal("abc".getBytes)
   }
 }

@@ -58,6 +58,10 @@ final public class Inflater extends ZStream{
   static final private int Z_BUF_ERROR=-5;
   static final private int Z_VERSION_ERROR=-6;
 
+  private int param_w = -1;
+  private JZlib.WrapperType param_wrapperType = null;
+  private boolean param_nowrap = false;
+
   public Inflater() {
     super();
     init();
@@ -69,6 +73,8 @@ final public class Inflater extends ZStream{
 
   public Inflater(int w, JZlib.WrapperType wrapperType) throws GZIPException {
     super();
+    param_w = w;
+    param_wrapperType = wrapperType;
     int ret = init(w, wrapperType);
     if(ret!=Z_OK)
       throw new GZIPException(ret+": "+msg);
@@ -84,9 +90,21 @@ final public class Inflater extends ZStream{
 
   public Inflater(int w, boolean nowrap) throws GZIPException {
     super();
+    param_w = w;
+    param_nowrap = nowrap;
     int ret = init(w, nowrap);
     if(ret!=Z_OK)
       throw new GZIPException(ret+": "+msg);
+  }
+
+  void reset() {
+    finished = false;
+    if(param_wrapperType != null){
+      init(param_w, param_wrapperType);
+    }
+    else {
+      init(param_w, param_nowrap);
+    }
   }
 
   private boolean finished = false;

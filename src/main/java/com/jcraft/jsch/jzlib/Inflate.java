@@ -456,8 +456,9 @@ final class Inflate{
       case TIME:
         try { r=readBytes(4, r, f); }
         catch(Return e){ return e.r; }
-        if(gheader!=null)
-          gheader.time = this.need;
+        if(gheader!=null){
+          gheader.setModifiedTime(this.need);
+        }
         if ((flags & 0x0200)!=0){
           checksum(4, this.need);
         }
