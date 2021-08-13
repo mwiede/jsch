@@ -36,12 +36,12 @@ package com.jcraft.jsch.jzlib;
 
 import java.io.IOException;
 
-public class GZIPException extends IOException {
+final class GZIPException extends IOException {
   private static final long serialVersionUID=-1L;
-  public GZIPException() {
+  GZIPException() {
     super();
   }
-  public GZIPException(String s) {
+  GZIPException(String s) {
     super(s);
   }
 }

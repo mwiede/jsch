@@ -34,8 +34,7 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 package com.jcraft.jsch.jzlib;
 
-@SuppressWarnings("deprecation")
-final public class Deflater extends ZStream{
+final class Deflater extends ZStream{
 
   static final private int MAX_WBITS=15;        // 32K LZ77 window
   static final private int DEF_WBITS=MAX_WBITS;
@@ -60,53 +59,53 @@ final public class Deflater extends ZStream{
 
   private boolean finished = false;
 
-  public Deflater(){
+  Deflater(){
     super();
   }
 
-  public Deflater(int level) throws GZIPException {
+  Deflater(int level) throws GZIPException {
     this(level, MAX_WBITS);
   }
 
-  public Deflater(int level, boolean nowrap) throws GZIPException {
+  Deflater(int level, boolean nowrap) throws GZIPException {
     this(level, MAX_WBITS, nowrap);
   }
 
-  public Deflater(int level, int bits) throws GZIPException {
+  Deflater(int level, int bits) throws GZIPException {
     this(level, bits, false);
   }
 
-  public Deflater(int level, int bits, boolean nowrap) throws GZIPException {
+  Deflater(int level, int bits, boolean nowrap) throws GZIPException {
     super();
     int ret = init(level, bits, nowrap);
     if(ret!=Z_OK)
       throw new GZIPException(ret+": "+msg);
   }
 
-  public Deflater(int level, int bits, int memlevel, JZlib.WrapperType wrapperType) throws GZIPException {
+  Deflater(int level, int bits, int memlevel, JZlib.WrapperType wrapperType) throws GZIPException {
     super();
     int ret = init(level, bits, memlevel, wrapperType);
     if(ret!=Z_OK)
       throw new GZIPException(ret+": "+msg);
   }
 
-  public Deflater(int level, int bits, int memlevel) throws GZIPException {
+  Deflater(int level, int bits, int memlevel) throws GZIPException {
     super();
     int ret = init(level, bits, memlevel);
     if(ret!=Z_OK)
       throw new GZIPException(ret+": "+msg);
   }
 
-  public int init(int level){
+  int init(int level){
     return init(level, MAX_WBITS);
   }
-  public int init(int level, boolean nowrap){
+  int init(int level, boolean nowrap){
     return init(level, MAX_WBITS, nowrap);
   }
-  public int init(int level, int bits){
+  int init(int level, int bits){
     return init(level, bits, false);
   }
-  public int init(int level, int bits, int memlevel, JZlib.WrapperType wrapperType){
+  int init(int level, int bits, int memlevel, JZlib.WrapperType wrapperType){
     if(bits < 9 || bits > 15){
       return Z_STREAM_ERROR;
     }
@@ -123,19 +122,19 @@ final public class Deflater extends ZStream{
     }
     return init(level, bits, memlevel);
   }
-  public int init(int level, int bits, int memlevel){
+  int init(int level, int bits, int memlevel){
     finished = false;
     dstate=new Deflate(this);
     return dstate.deflateInit(level, bits, memlevel);
   }
-  public int init(int level, int bits, boolean nowrap){
+  int init(int level, int bits, boolean nowrap){
     finished = false;
     dstate=new Deflate(this);
     return dstate.deflateInit(level, nowrap?-bits:bits);
   }
 
   @Override
-  public int deflate(int flush){
+  int deflate(int flush){
     if(dstate==null){
       return Z_STREAM_ERROR;
     }
@@ -145,7 +144,7 @@ final public class Deflater extends ZStream{
     return ret;
   }
   @Override
-  public int end(){
+  int end(){
     finished = true;
     if(dstate==null) return Z_STREAM_ERROR;
     int ret=dstate.deflateEnd();
@@ -153,22 +152,22 @@ final public class Deflater extends ZStream{
     free();
     return ret;
   }
-  public int params(int level, int strategy){
+  int params(int level, int strategy){
     if(dstate==null) return Z_STREAM_ERROR;
     return dstate.deflateParams(level, strategy);
   }
-  public int setDictionary (byte[] dictionary, int dictLength){
+  int setDictionary (byte[] dictionary, int dictLength){
     if(dstate == null)
       return Z_STREAM_ERROR;
     return dstate.deflateSetDictionary(dictionary, dictLength);
   }
 
   @Override
-  public boolean finished(){
+  boolean finished(){
     return finished;
   }
 
-  public int copy(Deflater src){
+  int copy(Deflater src){
     this.finished = src.finished;
     return Deflate.deflateCopy(this, src);
   }

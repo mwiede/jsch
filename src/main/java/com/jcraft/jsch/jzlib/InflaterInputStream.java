@@ -30,7 +30,7 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 package com.jcraft.jsch.jzlib;
 import java.io.*;
 
-public class InflaterInputStream extends FilterInputStream {
+final class InflaterInputStream extends FilterInputStream {
   protected final Inflater inflater;
   protected byte[] buf;
 
@@ -42,25 +42,25 @@ public class InflaterInputStream extends FilterInputStream {
 
   protected static final int DEFAULT_BUFSIZE = 512;
 
-  public InflaterInputStream(InputStream in) throws IOException {
+  InflaterInputStream(InputStream in) throws IOException {
     this(in, false);
   }
 
-  public InflaterInputStream(InputStream in, boolean nowrap) throws IOException {
+  InflaterInputStream(InputStream in, boolean nowrap) throws IOException {
     this(in, new Inflater(nowrap));
     myinflater = true;
   }
 
-  public InflaterInputStream(InputStream in, Inflater inflater) throws IOException {
+  InflaterInputStream(InputStream in, Inflater inflater) throws IOException {
     this(in, inflater, DEFAULT_BUFSIZE);
   }
 
-  public InflaterInputStream(InputStream in,
+  InflaterInputStream(InputStream in,
                              Inflater inflater, int size) throws IOException {
     this(in, inflater, size, true);
   }
 
-  public InflaterInputStream(InputStream in,
+  InflaterInputStream(InputStream in,
                              Inflater inflater,
                              int size, boolean close_in) throws IOException {
     super(in);
@@ -208,15 +208,15 @@ public class InflaterInputStream extends FilterInputStream {
     throw new IOException("mark/reset not supported");
   }
 
-  public long getTotalIn() {
+  long getTotalIn() {
     return inflater.getTotalIn();
   }
 
-  public long getTotalOut() {
+  long getTotalOut() {
     return inflater.getTotalOut();
   }
 
-  public byte[] getAvailIn() {
+  byte[] getAvailIn() {
     if(inflater.avail_in<=0)
       return null;
     byte[] tmp = new byte[inflater.avail_in];
@@ -225,7 +225,7 @@ public class InflaterInputStream extends FilterInputStream {
     return tmp;
   }
 
-  public void readHeader() throws IOException {
+  void readHeader() throws IOException {
 
     byte[] empty = "".getBytes();
     inflater.setInput(empty, 0, 0, false);
@@ -249,7 +249,7 @@ public class InflaterInputStream extends FilterInputStream {
     while(inflater.istate.inParsingHeader());
   }
 
-  public Inflater getInflater(){
+  Inflater getInflater(){
     return inflater;
   }
 }

@@ -34,7 +34,6 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 package com.jcraft.jsch.jzlib;
 
-@SuppressWarnings("deprecation")
 final class InfCodes{
 
   static final private int[] inflate_mask = {

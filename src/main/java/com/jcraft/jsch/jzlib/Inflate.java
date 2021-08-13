@@ -36,7 +36,6 @@ package com.jcraft.jsch.jzlib;
 
 import java.io.ByteArrayOutputStream;
 
-@SuppressWarnings("deprecation")
 final class Inflate{
   
   static final private int MAX_WBITS=15; // 32K LZ77 window
@@ -730,7 +729,7 @@ final class Inflate{
     z.adler.update(crcbuf, 0, n);
   }
 
-  public GZIPHeader getGZIPHeader(){
+  GZIPHeader getGZIPHeader(){
     return gheader;
   }
 

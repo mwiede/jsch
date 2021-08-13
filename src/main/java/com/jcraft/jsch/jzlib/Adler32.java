@@ -34,7 +34,7 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 package com.jcraft.jsch.jzlib;
 
-final public class Adler32 implements Checksum {
+final class Adler32 implements Checksum {
 
   // largest prime smaller than 65536
   static final private int BASE=65521; 
@@ -122,14 +122,14 @@ final public class Adler32 implements Checksum {
 
 /*
   private java.util.zip.Adler32 adler=new java.util.zip.Adler32();
-  public void update(byte[] buf, int index, int len){
+  void update(byte[] buf, int index, int len){
     if(buf==null) {adler.reset();}
     else{adler.update(buf, index, len);}
   }
-  public void reset(){
+  void reset(){
     adler.reset();
   }
-  public void reset(long init){
+  void reset(long init){
     if(init==1L){
       adler.reset();
     }
@@ -137,7 +137,7 @@ final public class Adler32 implements Checksum {
       System.err.println("unsupported operation");
     }
   }
-  public long getValue(){
+  long getValue(){
     return adler.getValue();
   }
 */

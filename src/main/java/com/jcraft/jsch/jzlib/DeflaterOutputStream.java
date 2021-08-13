@@ -30,7 +30,7 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 package com.jcraft.jsch.jzlib;
 import java.io.*;
 
-public class DeflaterOutputStream extends FilterOutputStream {
+final class DeflaterOutputStream extends FilterOutputStream {
 
   protected final Deflater deflater;
 
@@ -48,23 +48,23 @@ public class DeflaterOutputStream extends FilterOutputStream {
 
   protected static final int DEFAULT_BUFSIZE = 512;
 
-  public DeflaterOutputStream(OutputStream out) throws IOException {
+  DeflaterOutputStream(OutputStream out) throws IOException {
     this(out, 
          new Deflater(JZlib.Z_DEFAULT_COMPRESSION),
          DEFAULT_BUFSIZE, true);
     mydeflater = true;
   }
 
-  public DeflaterOutputStream(OutputStream out, Deflater def) throws IOException {
+  DeflaterOutputStream(OutputStream out, Deflater def) throws IOException {
     this(out, def, DEFAULT_BUFSIZE, true);
   }
 
-  public DeflaterOutputStream(OutputStream out,
+  DeflaterOutputStream(OutputStream out,
                               Deflater deflater,
                               int size) throws IOException {
     this(out, deflater, size, true);
   }
-  public DeflaterOutputStream(OutputStream out,
+  DeflaterOutputStream(OutputStream out,
                               Deflater deflater,
                               int size,
                               boolean close_out)  throws IOException {
@@ -108,7 +108,7 @@ public class DeflaterOutputStream extends FilterOutputStream {
     }
   }
 
-  public void finish() throws IOException {
+  void finish() throws IOException {
     while (!deflater.finished()) {
       deflate(JZlib.Z_FINISH);
     }
@@ -164,23 +164,23 @@ public class DeflaterOutputStream extends FilterOutputStream {
     out.flush();
   }
 
-  public long getTotalIn() {
+  long getTotalIn() {
     return deflater.getTotalIn();
   }
 
-  public long getTotalOut() {
+  long getTotalOut() {
     return deflater.getTotalOut();
   }
 
-  public void setSyncFlush(boolean syncFlush){
+  void setSyncFlush(boolean syncFlush){
     this.syncFlush = syncFlush;
   }
 
-  public boolean getSyncFlush(){
+  boolean getSyncFlush(){
     return this.syncFlush;
   }
 
-  public Deflater getDeflater(){
+  Deflater getDeflater(){
     return deflater;
   }
 }

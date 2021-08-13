@@ -11,7 +11,6 @@ import java.io.{ByteArrayOutputStream => BAOS, ByteArrayInputStream => BAIS}
 
 import JZlib._
 
-@deprecated("", "")
 class WrapperTypeTest extends AnyFlatSpec with BeforeAndAfter with Matchers {
   val data = "hello, hello!".getBytes
 

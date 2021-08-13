@@ -40,23 +40,23 @@ import java.util.Arrays;
 /**
  * @see <a href="http://www.ietf.org/rfc/rfc1952.txt">http://www.ietf.org/rfc/rfc1952.txt</a>
  */
-public class GZIPHeader implements Cloneable {
+final class GZIPHeader implements Cloneable {
 
-  public static final byte OS_MSDOS = (byte) 0x00;
-  public static final byte OS_AMIGA = (byte) 0x01;
-  public static final byte OS_VMS = (byte) 0x02;
-  public static final byte OS_UNIX = (byte) 0x03;
-  public static final byte OS_ATARI = (byte) 0x05;
-  public static final byte OS_OS2 = (byte) 0x06;
-  public static final byte OS_MACOS = (byte) 0x07;
-  public static final byte OS_TOPS20 = (byte) 0x0a;
-  public static final byte OS_WIN32 = (byte) 0x0b;
-  public static final byte OS_VMCMS = (byte) 0x04;
-  public static final byte OS_ZSYSTEM = (byte) 0x08;
-  public static final byte OS_CPM = (byte) 0x09;
-  public static final byte OS_QDOS = (byte) 0x0c;
-  public static final byte OS_RISCOS = (byte) 0x0d;
-  public static final byte OS_UNKNOWN = (byte) 0xff;
+  static final byte OS_MSDOS = (byte) 0x00;
+  static final byte OS_AMIGA = (byte) 0x01;
+  static final byte OS_VMS = (byte) 0x02;
+  static final byte OS_UNIX = (byte) 0x03;
+  static final byte OS_ATARI = (byte) 0x05;
+  static final byte OS_OS2 = (byte) 0x06;
+  static final byte OS_MACOS = (byte) 0x07;
+  static final byte OS_TOPS20 = (byte) 0x0a;
+  static final byte OS_WIN32 = (byte) 0x0b;
+  static final byte OS_VMCMS = (byte) 0x04;
+  static final byte OS_ZSYSTEM = (byte) 0x08;
+  static final byte OS_CPM = (byte) 0x09;
+  static final byte OS_QDOS = (byte) 0x0c;
+  static final byte OS_RISCOS = (byte) 0x0d;
+  static final byte OS_UNKNOWN = (byte) 0xff;
 
   boolean text = false;
   private boolean fhcrc = false;
@@ -70,26 +70,26 @@ public class GZIPHeader implements Cloneable {
   boolean done = false;
   long mtime = 0;
 
-  public void setModifiedTime(long mtime) {
+  void setModifiedTime(long mtime) {
     this.mtime = mtime;
   }
 
-  public long getModifiedTime() {
+  long getModifiedTime() {
     return mtime;
   }
 
-  public void setOS(int os) {
+  void setOS(int os) {
     if((0<=os && os <=13) || os==255)
       this.os=os;
     else
       throw new IllegalArgumentException("os: "+os);
   }
 
-  public int getOS(){
+  int getOS(){
     return os;
   }
 
-  public void setName(String name) {
+  void setName(String name) {
     try{
       this.name=name.getBytes("ISO-8859-1");
     }
@@ -98,7 +98,7 @@ public class GZIPHeader implements Cloneable {
     }
   }
 
-  public String getName(){
+  String getName(){
     if(name==null) return "";
     try {
       return new String(name, "ISO-8859-1");
@@ -108,7 +108,7 @@ public class GZIPHeader implements Cloneable {
     }
   }
 
-  public void setComment(String comment) {
+  void setComment(String comment) {
     try{
       this.comment=comment.getBytes("ISO-8859-1");
     }
@@ -117,7 +117,7 @@ public class GZIPHeader implements Cloneable {
     }
   }
 
-  public String getComment(){
+  String getComment(){
     if(comment==null) return "";
     try {
       return new String(comment, "ISO-8859-1");
@@ -127,11 +127,11 @@ public class GZIPHeader implements Cloneable {
     }
   }
 
-  public void setCRC(long crc){
+  void setCRC(long crc){
     this.crc = crc;
   }
 
-  public long getCRC(){
+  long getCRC(){
     return crc;
   }
 

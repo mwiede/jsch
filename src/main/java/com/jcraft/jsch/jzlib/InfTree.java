@@ -34,7 +34,6 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 package com.jcraft.jsch.jzlib;
 
-@SuppressWarnings("deprecation")
 final class InfTree{
 
   static final private int MANY=1440;

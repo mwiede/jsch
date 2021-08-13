@@ -34,8 +34,7 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 package com.jcraft.jsch.jzlib;
 
-@SuppressWarnings("deprecation")
-final public class Inflater extends ZStream{
+final class Inflater extends ZStream{
 
   static final private int MAX_WBITS=15;        // 32K LZ77 window
   static final private int DEF_WBITS=MAX_WBITS;
@@ -62,16 +61,16 @@ final public class Inflater extends ZStream{
   private JZlib.WrapperType param_wrapperType = null;
   private boolean param_nowrap = false;
 
-  public Inflater() {
+  Inflater() {
     super();
     init();
   }
 
-  public Inflater(JZlib.WrapperType wrapperType) throws GZIPException {
+  Inflater(JZlib.WrapperType wrapperType) throws GZIPException {
     this(DEF_WBITS, wrapperType);
   }
 
-  public Inflater(int w, JZlib.WrapperType wrapperType) throws GZIPException {
+  Inflater(int w, JZlib.WrapperType wrapperType) throws GZIPException {
     super();
     param_w = w;
     param_wrapperType = wrapperType;
@@ -80,15 +79,15 @@ final public class Inflater extends ZStream{
       throw new GZIPException(ret+": "+msg);
   }
 
-  public Inflater(int w) throws GZIPException {
+  Inflater(int w) throws GZIPException {
     this(w, false);
   }
 
-  public Inflater(boolean nowrap) throws GZIPException {
+  Inflater(boolean nowrap) throws GZIPException {
     this(DEF_WBITS, nowrap);
   }
 
-  public Inflater(int w, boolean nowrap) throws GZIPException {
+  Inflater(int w, boolean nowrap) throws GZIPException {
     super();
     param_w = w;
     param_nowrap = nowrap;
@@ -109,15 +108,15 @@ final public class Inflater extends ZStream{
 
   private boolean finished = false;
 
-  public int init(){
+  int init(){
     return init(DEF_WBITS);
   }
 
-  public int init(JZlib.WrapperType wrapperType){
+  int init(JZlib.WrapperType wrapperType){
     return init(DEF_WBITS, wrapperType);
   }
 
-  public int init(int w, JZlib.WrapperType wrapperType) {
+  int init(int w, JZlib.WrapperType wrapperType) {
     boolean nowrap = false;
     if(wrapperType == JZlib.W_NONE){
       nowrap = true;
@@ -133,22 +132,22 @@ final public class Inflater extends ZStream{
     return init(w, nowrap);
   }
 
-  public int init(boolean nowrap){
+  int init(boolean nowrap){
     return init(DEF_WBITS, nowrap);
   }
 
-  public int init(int w){
+  int init(int w){
     return init(w, false);
   }
 
-  public int init(int w, boolean nowrap){
+  int init(int w, boolean nowrap){
     finished = false;
     istate=new Inflate(this);
     return istate.inflateInit(nowrap?-w:w);
   }
 
   @Override
-  public int inflate(int f){
+  int inflate(int f){
     if(istate==null) return Z_STREAM_ERROR;
     int ret = istate.inflate(f);
     if(ret == Z_STREAM_END) 
@@ -157,7 +156,7 @@ final public class Inflater extends ZStream{
   }
 
   @Override
-  public int end(){
+  int end(){
     finished = true;
     if(istate==null) return Z_STREAM_ERROR;
     int ret=istate.inflateEnd();
@@ -165,26 +164,26 @@ final public class Inflater extends ZStream{
     return ret;
   }
 
-  public int sync(){
+  int sync(){
     if(istate == null)
       return Z_STREAM_ERROR;
     return istate.inflateSync();
   }
 
-  public int syncPoint(){
+  int syncPoint(){
     if(istate == null)
       return Z_STREAM_ERROR;
     return istate.inflateSyncPoint();
   }
 
-  public int setDictionary(byte[] dictionary, int dictLength){
+  int setDictionary(byte[] dictionary, int dictLength){
     if(istate == null)
       return Z_STREAM_ERROR;
     return istate.inflateSetDictionary(dictionary, dictLength);
   }
 
   @Override
-  public boolean finished(){
+  boolean finished(){
     return istate.mode==12 /*DONE*/;
   }
 }

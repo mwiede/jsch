@@ -34,7 +34,7 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 package com.jcraft.jsch.jzlib;
 
-final public class CRC32 implements Checksum {
+final class CRC32 implements Checksum {
 
   /*
    *  The following logic has come from RFC1952.
@@ -150,14 +150,14 @@ final public class CRC32 implements Checksum {
   /*
   private java.util.zip.CRC32 crc32 = new java.util.zip.CRC32();
 
-  public void update(byte[] buf, int index, int len){
+  void update(byte[] buf, int index, int len){
     if(buf==null) {crc32.reset();}
     else{crc32.update(buf, index, len);}
   }
-  public void reset(){
+  void reset(){
     crc32.reset();
   }
-  public void reset(long init){
+  void reset(long init){
     if(init==0L){
       crc32.reset();
     }
@@ -165,7 +165,7 @@ final public class CRC32 implements Checksum {
       System.err.println("unsupported operation");
     }
   }
-  public long getValue(){
+  long getValue(){
     return crc32.getValue();
   }
 */
@@ -176,7 +176,7 @@ final public class CRC32 implements Checksum {
     return foo;
   }
 
-  public static int[] getCRC32Table(){
+  static int[] getCRC32Table(){
     int[] tmp = new int[crc_table.length];
     System.arraycopy(crc_table, 0, tmp, 0, tmp.length);
     return tmp;
