@@ -29,7 +29,7 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 package com.jcraft.jsch;
 
-public class RequestSubsystem extends Request{
+class RequestSubsystem extends Request{
   private String subsystem=null;
   public void request(Session session, Channel channel, String subsystem, boolean want_reply) throws Exception{
     setReply(want_reply);

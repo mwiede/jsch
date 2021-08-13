@@ -29,7 +29,7 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 package com.jcraft.jsch;
 
-public class RequestSftp extends Request{
+class RequestSftp extends Request{
   RequestSftp(){
     setReply(true);
   }
