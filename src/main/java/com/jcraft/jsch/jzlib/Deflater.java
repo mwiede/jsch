@@ -134,6 +134,7 @@ final public class Deflater extends ZStream{
     return dstate.deflateInit(level, nowrap?-bits:bits);
   }
 
+  @Override
   public int deflate(int flush){
     if(dstate==null){
       return Z_STREAM_ERROR;
@@ -143,6 +144,7 @@ final public class Deflater extends ZStream{
       finished = true;
     return ret;
   }
+  @Override
   public int end(){
     finished = true;
     if(dstate==null) return Z_STREAM_ERROR;
@@ -161,6 +163,7 @@ final public class Deflater extends ZStream{
     return dstate.deflateSetDictionary(dictionary, dictLength);
   }
 
+  @Override
   public boolean finished(){
     return finished;
   }

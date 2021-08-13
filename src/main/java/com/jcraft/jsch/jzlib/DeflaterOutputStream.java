@@ -80,16 +80,18 @@ public class DeflaterOutputStream extends FilterOutputStream {
     this.close_out = close_out;
   }
 
+  @Override
   public void write(int b) throws IOException {
     buf1[0] = (byte)(b & 0xff);
     write(buf1, 0, 1);
   }
 
+  @Override
   public void write(byte[] b, int off, int len) throws IOException {
     if (deflater.finished()) {
       throw new IOException("finished");
     }
-    else if (off<0 | len<0 | off+len>b.length) {
+    else if (off<0 || len<0 || off+len>b.length) {
       throw new IndexOutOfBoundsException();
     }
     else if (len == 0) {
@@ -112,6 +114,7 @@ public class DeflaterOutputStream extends FilterOutputStream {
     }
   }
 
+  @Override
   public void close() throws IOException {
     if (!closed) {
       finish();
@@ -147,6 +150,7 @@ public class DeflaterOutputStream extends FilterOutputStream {
     return err;
   }
 
+  @Override
   public void flush() throws IOException {
     if (syncFlush && !deflater.finished()) {
       while (true) {

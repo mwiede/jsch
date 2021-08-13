@@ -35,6 +35,7 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 package com.jcraft.jsch.jzlib;
 
 import java.io.UnsupportedEncodingException;
+import java.util.Arrays;
 
 /**
  * @see <a href="http://www.ietf.org/rfc/rfc1952.txt">http://www.ietf.org/rfc/rfc1952.txt</a>
@@ -112,7 +113,7 @@ public class GZIPHeader implements Cloneable {
       this.comment=comment.getBytes("ISO-8859-1");
     }
     catch(UnsupportedEncodingException e){
-      throw new IllegalArgumentException("comment must be in ISO-8859-1 "+name);
+      throw new IllegalArgumentException("comment must be in ISO-8859-1 "+Arrays.toString(name));
     }
   }
 

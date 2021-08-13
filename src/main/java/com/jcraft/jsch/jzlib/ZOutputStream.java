@@ -43,7 +43,7 @@ public class ZOutputStream extends FilterOutputStream {
   protected byte[] buf=new byte[bufsize];
   protected boolean compress;
 
-  protected OutputStream out;
+  protected OutputStream os;
   private boolean end=false;
 
   private DeflaterOutputStream dos;
@@ -51,7 +51,7 @@ public class ZOutputStream extends FilterOutputStream {
 
   public ZOutputStream(OutputStream out) throws IOException {
     super(out);
-    this.out=out;
+    os=out;
     inflater = new Inflater();
     inflater.init();
     compress=false;
@@ -63,18 +63,20 @@ public class ZOutputStream extends FilterOutputStream {
 
   public ZOutputStream(OutputStream out, int level, boolean nowrap) throws IOException {
     super(out);
-    this.out=out;
+    os=out;
     Deflater deflater = new Deflater(level, nowrap);
     dos = new DeflaterOutputStream(out, deflater);
     compress=true;
   }
 
   private byte[] buf1 = new byte[1];
+  @Override
   public void write(int b) throws IOException {
     buf1[0]=(byte)b;
     write(buf1, 0, 1);
   }
 
+  @Override
   public void write(byte b[], int off, int len) throws IOException {
     if(len==0) return;
     if(compress){
@@ -87,7 +89,7 @@ public class ZOutputStream extends FilterOutputStream {
         inflater.setOutput(buf, 0, buf.length);
         err = inflater.inflate(flush);
         if(inflater.next_out_index>0)
-          out.write(buf, 0, inflater.next_out_index);
+          os.write(buf, 0, inflater.next_out_index);
         if(err != JZlib.Z_OK)
           break;
       }
@@ -130,6 +132,7 @@ public class ZOutputStream extends FilterOutputStream {
     }
     end=true;
   }
+  @Override
   public void close() throws IOException {
     try{
       try{finish();}
@@ -137,8 +140,8 @@ public class ZOutputStream extends FilterOutputStream {
     }
     finally{
       end();
-      out.close();
-      out=null;
+      os.close();
+      os=null;
     }
   }
 
@@ -152,8 +155,9 @@ public class ZOutputStream extends FilterOutputStream {
     else return inflater.total_out;
   }
 
+  @Override
   public void flush() throws IOException {
-    out.flush();
+    os.flush();
   }
 
 }

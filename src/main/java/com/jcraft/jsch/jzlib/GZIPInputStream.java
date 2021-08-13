@@ -50,6 +50,7 @@ public class GZIPInputStream extends InflaterInputStream {
     super(in, inflater, size, close_in);
   }
 
+  @Override
   public int read(byte[] b, int off, int len) throws IOException {
     int i = super.read(b, off, len);
     if(i == -1){
@@ -103,6 +104,7 @@ public class GZIPInputStream extends InflaterInputStream {
     return inflater.istate.getGZIPHeader().getCRC();
   }
 
+  @Override
   public void readHeader() throws IOException {
 
     byte[] empty = "".getBytes();

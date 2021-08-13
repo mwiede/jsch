@@ -1697,11 +1697,11 @@ final class Deflate implements Cloneable {
     return Z_OK;
   }
 
+  @Override
   public Object clone() throws CloneNotSupportedException {
     Deflate dest = (Deflate)super.clone();
 
     dest.pending_buf = dup(dest.pending_buf);
-    dest.d_buf = dest.d_buf;
     dest.l_buf = dup(dest.l_buf);
     dest.window = dup(dest.window);
 

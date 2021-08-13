@@ -40,7 +40,7 @@ public class ZInputStream extends FilterInputStream {
 
   protected int flush=JZlib.Z_NO_FLUSH;
   protected boolean compress;
-  protected InputStream in=null;
+  protected InputStream is=null;
 
   protected Deflater deflater;
   protected InflaterInputStream iis;
@@ -56,13 +56,14 @@ public class ZInputStream extends FilterInputStream {
 
   public ZInputStream(InputStream in, int level) throws IOException {
     super(in);
-    this.in=in;
+    is=in;
     deflater = new Deflater();
     deflater.init(level);
     compress=true;
   }
 
   private byte[] buf1 = new byte[1];
+  @Override
   public int read() throws IOException {
     if(read(buf1, 0, 1)==-1) return -1;
     return(buf1[0]&0xFF);
@@ -70,11 +71,12 @@ public class ZInputStream extends FilterInputStream {
 
   private byte[] buf = new byte[512];
 
+  @Override
   public int read(byte[] b, int off, int len) throws IOException {
     if(compress){
       deflater.setOutput(b, off, len);
       while(true){
-        int datalen = in.read(buf, 0, buf.length);
+        int datalen = is.read(buf, 0, buf.length);
         if(datalen == -1) return -1;
         deflater.setInput(buf, 0, datalen, true);
         int err = deflater.deflate(flush);
@@ -93,6 +95,7 @@ public class ZInputStream extends FilterInputStream {
     }
   }
 
+  @Override
   public long skip(long n) throws IOException {
     int len=512;
     if(n<len)
@@ -119,6 +122,7 @@ public class ZInputStream extends FilterInputStream {
     else return iis.getTotalOut();
   }
 
+  @Override
   public void close() throws IOException{
     if(compress) deflater.end();
     else iis.close();

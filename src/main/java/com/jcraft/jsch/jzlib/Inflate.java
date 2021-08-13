@@ -34,6 +34,8 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 package com.jcraft.jsch.jzlib;
 
+import java.io.ByteArrayOutputStream;
+
 @SuppressWarnings("deprecation")
 final class Inflate{
   
@@ -680,16 +682,16 @@ final class Inflate{
     need_bytes=-1;
     return r;
   }
-  class Return extends Exception{
+  static class Return extends Exception{
     private static final long serialVersionUID=-1L;
     int r;
     Return(int r){this.r=r; }
   }
 
-  private java.io.ByteArrayOutputStream tmp_string = null;
+  private ByteArrayOutputStream tmp_string = null;
   private int readString(int r, int f) throws Return{
     if(tmp_string == null){
-      tmp_string=new java.io.ByteArrayOutputStream();
+      tmp_string=new ByteArrayOutputStream();
     }
     int b=0; 
     do {
@@ -705,7 +707,7 @@ final class Inflate{
 
   private int readBytes(int r, int f) throws Return{
     if(tmp_string == null){
-      tmp_string=new java.io.ByteArrayOutputStream();
+      tmp_string=new ByteArrayOutputStream();
     }
     int b=0; 
     while(this.need>0){
