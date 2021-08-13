@@ -118,6 +118,7 @@
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>3.8.1</version>
                 <configuration>
+                    <fork>true</fork>
                     <release>8</release>
                     <showDeprecation>true</showDeprecation>
                     <showWarnings>true</showWarnings>
@@ -136,7 +137,7 @@
                             <compileSourceRoots>
                                 <compileSourceRoot>${project.basedir}/src/main/java11</compileSourceRoot>
                             </compileSourceRoots>
-                            <outputDirectory>${project.build.directory}/classes-java11</outputDirectory>
+                            <multiReleaseOutput>true</multiReleaseOutput>
                             <release>11</release>
                         </configuration>
                     </execution>
@@ -149,7 +150,7 @@
                             <compileSourceRoots>
                                 <compileSourceRoot>${project.basedir}/src/main/java15</compileSourceRoot>
                             </compileSourceRoots>
-                            <outputDirectory>${project.build.directory}/classes-java15</outputDirectory>
+                            <multiReleaseOutput>true</multiReleaseOutput>
                             <release>15</release>
                         </configuration>
                     </execution>
@@ -205,44 +206,6 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-resources-plugin</artifactId>
                 <version>3.2.0</version>
-                <executions>
-                    <execution>
-                        <id>copy-resources-11</id>
-                        <phase>prepare-package</phase>
-                        <goals>
-                            <goal>copy-resources</goal>
-                        </goals>
-                        <configuration>
-                            <nonFilteredFileExtensions>
-                                <nonFilteredFileExtension>class</nonFilteredFileExtension>
-                            </nonFilteredFileExtensions>
-                            <outputDirectory>${project.build.outputDirectory}/META-INF/versions/11</outputDirectory>
-                            <resources>
-                                <resource>
-                                    <directory>${project.build.directory}/classes-java11</directory>
-                                </resource>
-                            </resources>
-                        </configuration>
-                    </execution>
-                    <execution>
-                        <id>copy-resources-15</id>
-                        <phase>prepare-package</phase>
-                        <goals>
-                            <goal>copy-resources</goal>
-                        </goals>
-                        <configuration>
-                            <nonFilteredFileExtensions>
-                                <nonFilteredFileExtension>class</nonFilteredFileExtension>
-                            </nonFilteredFileExtensions>
-                            <outputDirectory>${project.build.outputDirectory}/META-INF/versions/15</outputDirectory>
-                            <resources>
-                                <resource>
-                                    <directory>${project.build.directory}/classes-java15</directory>
-                                </resource>
-                            </resources>
-                        </configuration>
-                    </execution>
-                </executions>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -313,10 +276,7 @@
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-compiler-plugin</artifactId>
                         <configuration>
-                            <fork>true</fork>
-                            <compilerArgs combine.self="override">
-                                <arg>-Xlint:all</arg>
-                                <arg>-Werror</arg>
+                            <compilerArgs combine.children="append">
                                 <arg>-XDcompilePolicy=simple</arg>
                                 <arg>-Xplugin:ErrorProne</arg>
                                 <arg>-J--add-exports=jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED</arg>
