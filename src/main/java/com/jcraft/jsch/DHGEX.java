@@ -36,9 +36,9 @@ public class DHGEX extends KeyExchange{
   private static final int SSH_MSG_KEX_DH_GEX_REPLY=               33;
   private static final int SSH_MSG_KEX_DH_GEX_REQUEST=             34;
 
-  static int min=1024;
-  int preferred=1024;
-  int max=1024;
+  int min;
+  int preferred;
+  int max;
 
   private int state;
 
@@ -81,11 +81,12 @@ public class DHGEX extends KeyExchange{
 
     try{
       Class<?> c=Class.forName(session.getConfig("dh"));
-      // Since JDK8, SunJCE has lifted the keysize restrictions
-      // from 1024 to 2048 for DH.
-      // JDK-8072452 increases DH max to 8192
-      max=check8192(c, max);
-      if(max>=2048) preferred=2048;
+      min=Integer.parseInt(session.getConfig("dhgex_min"));
+      max=Integer.parseInt(session.getConfig("dhgex_max"));
+      preferred=Integer.parseInt(session.getConfig("dhgex_preferred"));
+      if(checkInvalidSize(min) || checkInvalidSize(max) || checkInvalidSize(preferred) || preferred < min || max < preferred){
+        throw new JSchException("Invalid DHGEX sizes: min=" + min + " max=" + max + " preferred=" + preferred);
+      }
       dh=(com.jcraft.jsch.DH)(c.getDeclaredConstructor().newInstance());
       dh.init();
     }
@@ -231,35 +232,7 @@ public class DHGEX extends KeyExchange{
   @Override
   public int getState(){return state; }
 
-  protected int check2048(Class<?> c, int _max) throws Exception {
-    DH dh=(com.jcraft.jsch.DH)(c.getDeclaredConstructor().newInstance());
-    dh.init();
-    byte[] foo = new byte[257];
-    foo[1]=(byte)0xdd;
-    foo[256]=0x73;
-    dh.setP(foo);
-    byte[] bar = {(byte)0x02};
-    dh.setG(bar);
-    try {
-      dh.getE();
-      _max=2048;
-    }
-    catch(Exception e){ }
-    return _max;
-  }
-
-  protected int check8192(Class<?> c, int _max) throws Exception {
-    DH dh=(com.jcraft.jsch.DH)(c.getDeclaredConstructor().newInstance());
-    dh.init();
-    dh.setP(DHG18.p);
-    dh.setG(DHG18.g);
-    try {
-      dh.getE();
-      _max=8192;
-      return _max;
-    }
-    catch(Exception e){
-      return check2048(c, _max);
-    }
+  static boolean checkInvalidSize(int size) {
+    return (size < 1024 || size > 8192 || size % 1024 != 0);
   }
 }

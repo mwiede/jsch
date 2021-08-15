@@ -170,12 +170,7 @@ public class Session implements Runnable{
     applyConfig();
 
     if(this.username==null) {
-      try {
-        this.username=(String)(System.getProperties().get("user.name"));
-      }
-      catch(SecurityException e){
-        // ignore e
-      }
+      this.username=Util.getSystemProperty("user.name");
     }
 
     if(this.username==null) {
@@ -2581,8 +2576,9 @@ break;
       if(config==null)
         config=new Hashtable<>();
       for(Enumeration<String> e=newconf.keys() ; e.hasMoreElements() ;) {
-        String key=e.nextElement();
-        config.put(key, newconf.get(key));
+        String newkey=e.nextElement();
+        String key=(newkey.equals("PubkeyAcceptedKeyTypes") ? "PubkeyAcceptedAlgorithms" : newkey);
+        config.put(key, newconf.get(newkey));
       }
     }
   }
@@ -2592,11 +2588,19 @@ break;
       if(config==null){
         config=new Hashtable<>();
       }
-      config.put(key, value);
+      if(key.equals("PubkeyAcceptedKeyTypes")){
+        config.put("PubkeyAcceptedAlgorithms", value);
+      }
+      else{
+        config.put(key, value);
+      }
     }
   }
 
   public String getConfig(String key){
+    if(key.equals("PubkeyAcceptedKeyTypes")){
+      key="PubkeyAcceptedAlgorithms";
+    }
     Object foo=null;
     if(config!=null){
       foo=config.get(key);
@@ -3030,7 +3034,7 @@ break;
     checkConfig(config, "StrictHostKeyChecking");
     checkConfig(config, "HashKnownHosts");
     checkConfig(config, "PreferredAuthentications");
-    checkConfig(config, "PubkeyAcceptedKeyTypes");
+    checkConfig(config, "PubkeyAcceptedAlgorithms");
     checkConfig(config, "FingerprintHash");
     checkConfig(config, "MaxAuthTries");
     checkConfig(config, "ClearAllForwardings");
@@ -3161,6 +3165,8 @@ break;
 
   private void checkConfig(ConfigRepository.Config config, String key){
     String value = config.getValue(key);
+    if(value == null && key.equals("PubkeyAcceptedAlgorithms"))
+      value = config.getValue("PubkeyAcceptedKeyTypes");
     if(value != null)
       this.setConfig(key, value);
   }

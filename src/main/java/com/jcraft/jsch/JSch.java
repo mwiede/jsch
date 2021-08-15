@@ -38,20 +38,24 @@ public class JSch{
 
   static Hashtable<String, String> config=new Hashtable<>();
   static{
-    config.put("kex", "curve25519-sha256,curve25519-sha256@libssh.org,ecdh-sha2-nistp256,ecdh-sha2-nistp384,ecdh-sha2-nistp521,diffie-hellman-group-exchange-sha256,diffie-hellman-group16-sha512,diffie-hellman-group18-sha512,diffie-hellman-group14-sha256");
-    config.put("server_host_key", "ecdsa-sha2-nistp256,ecdsa-sha2-nistp384,ecdsa-sha2-nistp521,ssh-ed25519,rsa-sha2-512,rsa-sha2-256,ssh-rsa");
-    config.put("prefer_known_host_key_types", "yes");
-    config.put("cipher.s2c", "aes128-ctr,aes192-ctr,aes256-ctr,aes128-gcm@openssh.com,aes256-gcm@openssh.com,chacha20-poly1305@openssh.com");
-    config.put("cipher.c2s", "aes128-ctr,aes192-ctr,aes256-ctr,aes128-gcm@openssh.com,aes256-gcm@openssh.com,chacha20-poly1305@openssh.com");
-    config.put("mac.s2c", "hmac-sha2-256-etm@openssh.com,hmac-sha2-512-etm@openssh.com,hmac-sha1-etm@openssh.com,hmac-sha2-256,hmac-sha2-512,hmac-sha1");
-    config.put("mac.c2s", "hmac-sha2-256-etm@openssh.com,hmac-sha2-512-etm@openssh.com,hmac-sha1-etm@openssh.com,hmac-sha2-256,hmac-sha2-512,hmac-sha1");
-    config.put("compression.s2c", "none");
-    config.put("compression.c2s", "none");
+    config.put("kex", Util.getSystemProperty("jsch.kex", "curve25519-sha256,curve25519-sha256@libssh.org,ecdh-sha2-nistp256,ecdh-sha2-nistp384,ecdh-sha2-nistp521,diffie-hellman-group-exchange-sha256,diffie-hellman-group16-sha512,diffie-hellman-group18-sha512,diffie-hellman-group14-sha256"));
+    config.put("server_host_key", Util.getSystemProperty("jsch.server_host_key", "ssh-ed25519,ecdsa-sha2-nistp256,ecdsa-sha2-nistp384,ecdsa-sha2-nistp521,rsa-sha2-512,rsa-sha2-256,ssh-rsa"));
+    config.put("prefer_known_host_key_types", Util.getSystemProperty("jsch.prefer_known_host_key_types", "yes"));
+    config.put("cipher.s2c", Util.getSystemProperty("jsch.cipher", "aes128-ctr,aes192-ctr,aes256-ctr,aes128-gcm@openssh.com,aes256-gcm@openssh.com,chacha20-poly1305@openssh.com"));
+    config.put("cipher.c2s", Util.getSystemProperty("jsch.cipher", "aes128-ctr,aes192-ctr,aes256-ctr,aes128-gcm@openssh.com,aes256-gcm@openssh.com,chacha20-poly1305@openssh.com"));
+    config.put("mac.s2c", Util.getSystemProperty("jsch.mac", "hmac-sha2-256-etm@openssh.com,hmac-sha2-512-etm@openssh.com,hmac-sha1-etm@openssh.com,hmac-sha2-256,hmac-sha2-512,hmac-sha1"));
+    config.put("mac.c2s", Util.getSystemProperty("jsch.mac", "hmac-sha2-256-etm@openssh.com,hmac-sha2-512-etm@openssh.com,hmac-sha1-etm@openssh.com,hmac-sha2-256,hmac-sha2-512,hmac-sha1"));
+    config.put("compression.s2c", Util.getSystemProperty("jsch.compression", "none"));
+    config.put("compression.c2s", Util.getSystemProperty("jsch.compression", "none"));
 
-    config.put("lang.s2c", "");
-    config.put("lang.c2s", "");
+    config.put("lang.s2c", Util.getSystemProperty("jsch.lang", ""));
+    config.put("lang.c2s", Util.getSystemProperty("jsch.lang", ""));
 
-    config.put("compression_level", "6");
+    config.put("dhgex_min", Util.getSystemProperty("jsch.dhgex_min", "2048"));
+    config.put("dhgex_max", Util.getSystemProperty("jsch.dhgex_max", "8192"));
+    config.put("dhgex_preferred", Util.getSystemProperty("jsch.dhgex_preferred", "3072"));
+
+    config.put("compression_level", Util.getSystemProperty("jsch.compression_level", "6"));
 
     config.put("diffie-hellman-group-exchange-sha1", 
                                 "com.jcraft.jsch.DHGEX");
@@ -149,24 +153,24 @@ public class JSch{
     config.put("userauth.gssapi-with-mic",    "com.jcraft.jsch.UserAuthGSSAPIWithMIC");
     config.put("gssapi-with-mic.krb5",    "com.jcraft.jsch.jgss.GSSContextKrb5");
 
-    config.put("zlib",             "com.jcraft.jsch.jcraft.Compression");
-    config.put("zlib@openssh.com", "com.jcraft.jsch.jcraft.Compression");
+    config.put("zlib",             "com.jcraft.jsch.jzlib.Compression");
+    config.put("zlib@openssh.com", "com.jcraft.jsch.jzlib.Compression");
 
     config.put("pbkdf", "com.jcraft.jsch.jce.PBKDF");
 
     config.put("StrictHostKeyChecking",  "ask");
     config.put("HashKnownHosts",  "no");
 
-    config.put("PreferredAuthentications", "gssapi-with-mic,publickey,keyboard-interactive,password");
-    config.put("PubkeyAcceptedKeyTypes", "ecdsa-sha2-nistp256,ecdsa-sha2-nistp384,ecdsa-sha2-nistp521,ssh-ed25519,rsa-sha2-512,rsa-sha2-256,ssh-rsa");
+    config.put("PreferredAuthentications", Util.getSystemProperty("jsch.preferred_authentications", "gssapi-with-mic,publickey,keyboard-interactive,password"));
+    config.put("PubkeyAcceptedAlgorithms", Util.getSystemProperty("jsch.client_pubkey", "ssh-ed25519,ecdsa-sha2-nistp256,ecdsa-sha2-nistp384,ecdsa-sha2-nistp521,rsa-sha2-512,rsa-sha2-256,ssh-rsa"));
 
-    config.put("CheckCiphers", "chacha20-poly1305@openssh.com,aes256-gcm@openssh.com,aes128-gcm@openssh.com,aes256-ctr,aes192-ctr,aes128-ctr,aes256-cbc,aes192-cbc,aes128-cbc,3des-ctr,arcfour,arcfour128,arcfour256");
-    config.put("CheckMacs", "hmac-sha2-256-etm@openssh.com,hmac-sha2-512-etm@openssh.com,hmac-sha2-256,hmac-sha2-512");
-    config.put("CheckKexes", "curve25519-sha256,curve25519-sha256@libssh.org,curve448-sha512,diffie-hellman-group14-sha1,diffie-hellman-group14-sha256,diffie-hellman-group15-sha512,diffie-hellman-group16-sha512,diffie-hellman-group17-sha512,diffie-hellman-group18-sha512,ecdh-sha2-nistp256,ecdh-sha2-nistp384,ecdh-sha2-nistp521");
-    config.put("CheckSignatures", "rsa-sha2-256,rsa-sha2-512,ecdsa-sha2-nistp256,ecdsa-sha2-nistp384,ecdsa-sha2-nistp521,ssh-ed25519,ssh-ed448");
-    config.put("FingerprintHash", "sha256");
+    config.put("CheckCiphers", Util.getSystemProperty("jsch.check_ciphers", "chacha20-poly1305@openssh.com"));
+    config.put("CheckMacs", Util.getSystemProperty("jsch.check_macs", ""));
+    config.put("CheckKexes", Util.getSystemProperty("jsch.check_kexes", "curve25519-sha256,curve25519-sha256@libssh.org,curve448-sha512"));
+    config.put("CheckSignatures", Util.getSystemProperty("jsch.check_signatures", "ssh-ed25519,ssh-ed448"));
+    config.put("FingerprintHash", Util.getSystemProperty("jsch.fingerprint_hash", "sha256"));
 
-    config.put("MaxAuthTries", "6");
+    config.put("MaxAuthTries", Util.getSystemProperty("jsch.max_auth_tries", "6"));
     config.put("ClearAllForwardings", "no");
   }
 
@@ -564,6 +568,9 @@ public class JSch{
    */
   public static String getConfig(String key){ 
     synchronized(config){
+      if(key.equals("PubkeyAcceptedKeyTypes")){
+        key="PubkeyAcceptedAlgorithms";
+      }
       return config.get(key);
     } 
   }
@@ -576,8 +583,9 @@ public class JSch{
   public static void setConfig(Hashtable<String, String> newconf){
     synchronized(config){
       for(Enumeration<String> e=newconf.keys() ; e.hasMoreElements() ;) {
-	String key=e.nextElement();
-	config.put(key, newconf.get(key));
+	String newkey=e.nextElement();
+	String key=(newkey.equals("PubkeyAcceptedKeyTypes") ? "PubkeyAcceptedAlgorithms" : newkey);
+	config.put(key, newconf.get(newkey));
       }
     }
   }
@@ -589,7 +597,12 @@ public class JSch{
    * @param value value for the configuration
    */
   public static void setConfig(String key, String value){
-    config.put(key, value);
+    if(key.equals("PubkeyAcceptedKeyTypes")){
+      config.put("PubkeyAcceptedAlgorithms", value);
+    }
+    else{
+      config.put(key, value);
+    }
   }
 
   /**

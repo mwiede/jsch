@@ -1,6 +1,6 @@
-/* -*-mode:java; c-basic-offset:2; indent-tabs-mode:nil -*- */
+/* -*-mode:java; c-basic-offset:2; -*- */
 /*
-Copyright (c) 2002-2018 ymnk, JCraft,Inc. All rights reserved.
+Copyright (c) 2011 ymnk, JCraft,Inc. All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions are met:
@@ -25,26 +25,23 @@ OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
 LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
 NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*/
+ */
+/*
+ * This program is based on zlib-1.1.3, so all credit should go authors
+ * Jean-loup Gailly(jloup@gzip.org) and Mark Adler(madler@alumni.caltech.edu)
+ * and contributors of zlib.
+ */
 
-package com.jcraft.jsch;
+package com.jcraft.jsch.jzlib;
 
-class RequestSftp extends Request{
-  RequestSftp(){
-    setReply(true);
+import java.io.IOException;
+
+final class GZIPException extends IOException {
+  private static final long serialVersionUID=-1L;
+  GZIPException() {
+    super();
   }
-  @Override
-  public void request(Session session, Channel channel) throws Exception{
-    super.request(session, channel);
-
-    Buffer buf=new Buffer();
-    Packet packet=new Packet(buf);
-    packet.reset();
-    buf.putByte((byte)Session.SSH_MSG_CHANNEL_REQUEST);
-    buf.putInt(channel.getRecipient());
-    buf.putString(Util.str2byte("subsystem"));
-    buf.putByte((byte)(waitForReply() ? 1 : 0));
-    buf.putString(Util.str2byte("sftp"));
-    write(packet);
+  GZIPException(String s) {
+    super(s);
   }
 }

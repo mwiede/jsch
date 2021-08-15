@@ -27,8 +27,7 @@ NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-package com.jcraft.jsch.jcraft;
-import com.jcraft.jzlib.*;
+package com.jcraft.jsch.jzlib;
 import com.jcraft.jsch.*;
 
 public class Compression implements com.jcraft.jsch.Compression {

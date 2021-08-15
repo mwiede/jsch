@@ -36,7 +36,7 @@ public class KeyPairIT {
         Session session = createSession(jSch);
 
         if (keyType != null) {
-            session.setConfig("PubkeyAcceptedKeyTypes", keyType);
+            session.setConfig("PubkeyAcceptedAlgorithms", keyType);
         }
         try {
             session.connect(2000);
@@ -89,7 +89,7 @@ public class KeyPairIT {
         });
 
         if (keyType != null) {
-            session.setConfig("PubkeyAcceptedKeyTypes", keyType);
+            session.setConfig("PubkeyAcceptedAlgorithms", keyType);
         }
         try {
             session.connect(2000);

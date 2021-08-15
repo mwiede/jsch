@@ -143,7 +143,7 @@ public class Algorithms2IT {
   public void testEd448() throws Exception {
     JSch ssh = createEd448Identity();
     Session session = createSession(ssh);
-    session.setConfig("PubkeyAcceptedKeyTypes", "ssh-ed448");
+    session.setConfig("PubkeyAcceptedAlgorithms", "ssh-ed448");
     session.setConfig("server_host_key", "ssh-ed448");
     doSftp(session, true);
 

@@ -1,5 +1,6 @@
 package com.jcraft.jsch;
 
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -36,5 +37,21 @@ class SessionTest {
                 Arguments.of("bind_adress:42 socket", "bind_adress", null, -1, "socket"),// socket
                 Arguments.of("42 socket", "127.0.0.1", null, -1, "socket")// socket wo bind
         );
+    }
+
+    @Test
+    void getPubkeyAcceptedKeyTypes() throws JSchException {
+        Session session = new Session(jsch, null, null, 0);
+        session.setConfig("PubkeyAcceptedAlgorithms", "SessionTest111");
+        assertEquals("SessionTest111", session.getConfig("PubkeyAcceptedKeyTypes"));
+        assertEquals("SessionTest111", session.getConfig("PubkeyAcceptedAlgorithms"));
+    }
+
+    @Test
+    void setPubkeyAcceptedKeyTypes() throws JSchException {
+        Session session = new Session(jsch, null, null, 0);
+        session.setConfig("PubkeyAcceptedKeyTypes", "SessionTest222");
+        assertEquals("SessionTest222", session.getConfig("PubkeyAcceptedKeyTypes"));
+        assertEquals("SessionTest222", session.getConfig("PubkeyAcceptedAlgorithms"));
     }
 }

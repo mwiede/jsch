@@ -16,7 +16,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        java: [8, 11, 15]
+        java: [8, 11, 16]
     steps:
     - uses: actions/checkout@v2
     - name: Cache local Maven repository
@@ -29,7 +29,7 @@ jobs:
     - name: Set up build JDK
       uses: actions/setup-java@v1
       with:
-        java-version: 15
+        java-version: 16
     - name: Build with Maven
       run: mvn -B -DskipTests=true package --file pom.xml
     - name: Set up test JDK ${{ matrix.java }}

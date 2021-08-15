@@ -49,7 +49,7 @@ import java.util.Vector;
  *   <li>Hostname</li>
  *   <li>Port</li>
  *   <li>PreferredAuthentications</li>
- *   <li>PubkeyAcceptedKeyTypes</li>
+ *   <li>PubkeyAcceptedAlgorithms</li>
  *   <li>FingerprintHash</li>
  *   <li>IdentityFile</li>
  *   <li>NumberOfPasswordPrompts</li>
