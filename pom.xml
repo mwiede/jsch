@@ -243,6 +243,7 @@
                 <version>3.3.0</version>
                 <configuration>
                     <detectJavaApiLink>false</detectJavaApiLink>
+                    <sourcepath>src/main/java</sourcepath>
                 </configuration>
             </plugin>
         </plugins>
