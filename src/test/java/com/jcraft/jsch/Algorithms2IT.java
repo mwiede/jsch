@@ -26,6 +26,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledForJreRange;
 import org.junit.jupiter.api.io.TempDir;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.GenericContainer;
@@ -136,6 +137,27 @@ public class Algorithms2IT {
 
     String expected = String.format("kex: algorithm: %s.*", kex);
     checkLogs(expected);
+  }
+
+  @ParameterizedTest
+  @CsvSource(
+      value = {
+        "diffie-hellman-group-exchange-sha256,1024",
+        "diffie-hellman-group-exchange-sha1,1024"
+      })
+  public void testDHGEXSizes(String kex, String size) throws Exception {
+    JSch ssh = createRSAIdentity();
+    Session session = createSession(ssh);
+    session.setConfig("kex", kex);
+    session.setConfig("dhgex_min", size);
+    session.setConfig("dhgex_max", size);
+    session.setConfig("dhgex_preferred", size);
+    doSftp(session, true);
+
+    String expectedKex = String.format("kex: algorithm: %s.*", kex);
+    String expectedSizes = String.format("SSH_MSG_KEX_DH_GEX_REQUEST\\(%s<%s<%s\\) sent", size, size, size);
+    checkLogs(expectedKex);
+    checkLogs(expectedSizes);
   }
 
   @Test
