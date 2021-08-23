@@ -45,8 +45,10 @@ public abstract class SignatureRSAN implements com.jcraft.jsch.SignatureRSA{
   public void init() throws Exception{
     String name=getName();
     String foo="SHA1withRSA";
-    if(name.equals("rsa-sha2-256")) foo="SHA256withRSA";
-    else if(name.equals("rsa-sha2-512")) foo="SHA512withRSA";
+    if(name.equals("rsa-sha2-256") || name.equals("ssh-rsa-sha256@ssh.com")) foo="SHA256withRSA";
+    else if(name.equals("rsa-sha2-512") || name.equals("ssh-rsa-sha512@ssh.com")) foo="SHA512withRSA";
+    else if(name.equals("ssh-rsa-sha384@ssh.com")) foo="SHA384withRSA";
+    else if(name.equals("ssh-rsa-sha224@ssh.com")) foo="SHA224withRSA";
     signature=java.security.Signature.getInstance(foo);
     keyFactory=KeyFactory.getInstance("RSA");
   }     
@@ -83,7 +85,9 @@ public abstract class SignatureRSAN implements com.jcraft.jsch.SignatureRSA{
     Buffer buf=new Buffer(sig);
 
     String foo=new String(buf.getString(), "UTF-8");
-    if(foo.equals("ssh-rsa") || foo.equals("rsa-sha2-256") || foo.equals("rsa-sha2-512")){
+    if(foo.equals("ssh-rsa") || foo.equals("rsa-sha2-256") || foo.equals("rsa-sha2-512") ||
+       foo.equals("ssh-rsa-sha224@ssh.com") || foo.equals("ssh-rsa-sha256@ssh.com") ||
+       foo.equals("ssh-rsa-sha384@ssh.com") || foo.equals("ssh-rsa-sha512@ssh.com")){
       if(!foo.equals(getName())) return false;
       j=buf.getInt();
       i=buf.getOffSet();

@@ -1,6 +1,6 @@
 /* -*-mode:java; c-basic-offset:2; indent-tabs-mode:nil -*- */
 /*
-Copyright (c) 2002-2018 ymnk, JCraft,Inc. All rights reserved.
+Copyright (c) 2012-2018 ymnk, JCraft,Inc. All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions are met:
@@ -27,10 +27,19 @@ NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-package com.jcraft.jsch;
+package com.jcraft.jsch.jce;
 
-public class DHG16 extends DHG16N{
+//This MAC appears to use a shortened keysize of 16 bytes instead of 32 bytes.
+//See discussion at https://github.com/ronf/asyncssh/issues/399.
+public class HMACSHA256SSHCOM extends HMAC {
+  public HMACSHA256SSHCOM(){
+    name = "hmac-sha256@ssh.com";
+    bsize = 16;
+    algorithm = "HmacSHA256";
+  }
 
   @Override
-  String sha_name(){ return "sha-512"; }
+  public int getBlockSize(){
+    return 32;
+  };
 }

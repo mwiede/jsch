@@ -63,6 +63,28 @@ As I explained in a [blog post](http://www.matez.de/index.php/2020/06/22/the-fut
     * In order to use curve25519-sha256, curve448-sha512 & chacha20-poly1305@<!-- -->openssh.com, you must use at least Java 11.
 
 ## Changes since fork:
+* [0.1.66](https://github.com/mwiede/jsch/releases/tag/jsch-0.1.66)
+  * Added support for various algorithms supported by Tectia (ssh.com):
+    * diffie-hellman-group14-sha224@<!-- -->ssh.com
+    * diffie-hellman-group14-sha256@<!-- -->ssh.com
+    * diffie-hellman-group15-sha256@<!-- -->ssh.com
+    * diffie-hellman-group15-sha384@<!-- -->ssh.com
+    * diffie-hellman-group16-sha384@<!-- -->ssh.com
+    * diffie-hellman-group16-sha512@<!-- -->ssh.com
+    * diffie-hellman-group18-sha512@<!-- -->ssh.com
+    * diffie-hellman-group-exchange-sha224@<!-- -->ssh.com
+    * diffie-hellman-group-exchange-sha384@<!-- -->ssh.com
+    * diffie-hellman-group-exchange-sha512@<!-- -->ssh.com
+    * hmac-sha224@<!-- -->ssh.com
+    * hmac-sha256@<!-- -->ssh.com
+    * hmac-sha256-2@<!-- -->ssh.com
+    * hmac-sha384@<!-- -->ssh.com
+    * hmac-sha512@<!-- -->ssh.com
+    * ssh-rsa-sha224@<!-- -->ssh.com
+    * ssh-rsa-sha256@<!-- -->ssh.com
+    * ssh-rsa-sha384@<!-- -->ssh.com
+    * ssh-rsa-sha512@<!-- -->ssh.com
+  * Added support for SHA224 to FingerprintHash
 * [0.1.65](https://github.com/mwiede/jsch/releases/tag/jsch-0.1.65)
   * Added system properties to allow manipulation of various crypto algorithms used by default
   * Integrated JZlib, allowing use of zlib@<!-- -->openssh.com & zlib compressions without the need to provide the JZlib jar-file

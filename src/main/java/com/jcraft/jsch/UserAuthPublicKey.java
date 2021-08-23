@@ -65,7 +65,9 @@ class UserAuthPublicKey extends UserAuth{
       String rsamethods=null;
       String nonrsamethods=null;
       for(int i=0; i<pkmethoda.length; i++){
-        if(pkmethoda[i].equals("ssh-rsa") || pkmethoda[i].equals("rsa-sha2-256") || pkmethoda[i].equals("rsa-sha2-512")){
+        if(pkmethoda[i].equals("ssh-rsa") || pkmethoda[i].equals("rsa-sha2-256") || pkmethoda[i].equals("rsa-sha2-512") ||
+           pkmethoda[i].equals("ssh-rsa-sha224@ssh.com") || pkmethoda[i].equals("ssh-rsa-sha256@ssh.com") ||
+           pkmethoda[i].equals("ssh-rsa-sha384@ssh.com") || pkmethoda[i].equals("ssh-rsa-sha512@ssh.com")){
           if(rsamethods==null) rsamethods=pkmethoda[i];
           else rsamethods+=","+pkmethoda[i];
         }

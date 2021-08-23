@@ -735,7 +735,9 @@ public class Session implements Runnable{
         while(it.hasNext()){
           String algo=it.next();
           String type=algo;
-          if(type.equals("rsa-sha2-256") || type.equals("rsa-sha2-512")){
+          if(type.equals("rsa-sha2-256") || type.equals("rsa-sha2-512") ||
+             type.equals("ssh-rsa-sha224@ssh.com") || type.equals("ssh-rsa-sha256@ssh.com") ||
+             type.equals("ssh-rsa-sha384@ssh.com") || type.equals("ssh-rsa-sha512@ssh.com")){
             type="ssh-rsa";
           }
           for(HostKey hk : hks){

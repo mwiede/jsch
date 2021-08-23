@@ -389,6 +389,7 @@ public class AlgorithmsIT {
         "SHA512:EyyvMhUehzuELz3ySpqMw2UggtNqVmWnTSrQy2x4FLT7aF1lmqKC30oF+VUOLhvTmFHYaDLLN9UnpuGphIltKQ",
         "SHA384:CMxHNJ/xzOfsmNqw4g6Be+ltVZX3ixtplON7nOspNlji0iMnWzM7X4SelzcpP7Ap",
         "SHA256:iqNO6JDjrpga8TvgBKGReaKEnGoF/1csoxWp/DV5xJ0",
+        "SHA224:mJNHjKtQuiRHioFZIGj1g/+fcKMOsKmzcokU2w",
         "SHA1:FO2EB514+YMk4jTFmNGOwscY2Pk",
         "MD5:3b:50:5b:c5:53:66:8c:2c:98:9b:ee:3f:19:0a:ff:29"
       })

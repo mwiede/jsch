@@ -1,6 +1,6 @@
 /* -*-mode:java; c-basic-offset:2; indent-tabs-mode:nil -*- */
 /*
-Copyright (c) 2002-2018 ymnk, JCraft,Inc. All rights reserved.
+Copyright (c) 2012-2018 ymnk, JCraft,Inc. All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions are met:
@@ -27,10 +27,12 @@ NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-package com.jcraft.jsch;
+package com.jcraft.jsch.jce;
 
-public class DHG16 extends DHG16N{
-
-  @Override
-  String sha_name(){ return "sha-512"; }
+public class HMACSHA224SSHCOM extends HMAC {
+  public HMACSHA224SSHCOM(){
+    name = "hmac-sha224@ssh.com";
+    bsize = 28;
+    algorithm = "HmacSHA224";
+  }
 }

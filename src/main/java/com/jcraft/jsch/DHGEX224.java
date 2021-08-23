@@ -29,8 +29,8 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 package com.jcraft.jsch;
 
-public class DHG16 extends DHG16N{
-
-  @Override
-  String sha_name(){ return "sha-512"; }
+public class DHGEX224 extends DHGEX {
+  DHGEX224(){
+    hash="sha-224";
+  }
 }

@@ -27,10 +27,31 @@ NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-package com.jcraft.jsch;
+package com.jcraft.jsch.jce;
 
-public class DHG16 extends DHG16N{
+import com.jcraft.jsch.HASH;
 
+import java.security.*;
+
+public class SHA224 implements HASH {
+  MessageDigest md;
   @Override
-  String sha_name(){ return "sha-512"; }
+  public int getBlockSize(){return 28;}
+  @Override
+  public void init() throws Exception {
+    try{ md=MessageDigest.getInstance("SHA-224"); }
+    catch(Exception e){
+      System.err.println(e);
+    }
+  }
+  @Override
+  public void update(byte[] foo, int start, int len) throws Exception {
+    md.update(foo, start, len);
+  }
+  @Override
+  public byte[] digest() throws Exception {
+    return md.digest();
+  }
+  @Override
+  public String name(){return "SHA224";}
 }

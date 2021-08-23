@@ -27,10 +27,16 @@ NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-package com.jcraft.jsch;
+package com.jcraft.jsch.jce;
 
-public class DHG16 extends DHG16N{
+import java.math.BigInteger;
+import java.security.*;
+import java.security.spec.*;
+import com.jcraft.jsch.Buffer;
 
+public class SignatureRSASHA512SSHCOM extends SignatureRSAN {
   @Override
-  String sha_name(){ return "sha-512"; }
+  String getName() {
+    return "ssh-rsa-sha512@ssh.com";
+  }
 }
