@@ -35,7 +35,7 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 package com.jcraft.jsch.jzlib;
 
 final class JZlib{
-  private static final String version="1.1.0";
+  private static final String version="1.1.3";
   static String version(){return version;}
 
   static final int MAX_WBITS=15;        // 32K LZ77 window
