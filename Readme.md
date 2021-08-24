@@ -19,12 +19,13 @@ As I explained in a [blog post](http://www.matez.de/index.php/2020/06/22/the-fut
 
 * Is this fork 100% compatible with original JSch, because the connection to my server does not work any more!
   * For compatibility with OpenSSH and improved security, the order of crypto algorithms was changed. If you still want to use older or deprecated algorithms, you need to change the configuration. Examples see [#37](https://github.com/mwiede/jsch/issues/37), [#40](https://github.com/mwiede/jsch/issues/40)
-  * To make it easier to adjust the crypto algorithms, starting with [0.1.65](https://github.com/mwiede/jsch/releases/tag/jsch-0.1.65) the following system properties can be set
-    at your application's startup:
+  * To make it easier to adjust the crypto algorithms, starting with [0.1.65](https://github.com/mwiede/jsch/releases/tag/jsch-0.1.65) the following system properties can be set at your application's startup:
     * `jsch.kex`
       * analogous to `JSch.setConfig("kex", "...")`
     * `jsch.server_host_key`
       * analogous to `JSch.setConfig("server_host_key", "...")`
+    * `jsch.prefer_known_host_key_types`
+      * analogous to `JSch.setConfig("prefer_known_host_key_types", "...")`
     * `jsch.enable_server_sig_algs`
       * analogous to `JSch.setConfig("enable_server_sig_algs", "...")`
     * `jsch.cipher`
@@ -97,7 +98,12 @@ As I explained in a [blog post](http://www.matez.de/index.php/2020/06/22/the-fut
   * Modularized the jar-file for use with Java 9 or newer
   * Added runtime controls for the min/max/preferred sizes used for diffie-hellman-group-exchange-sha256 & diffie-hellman-group-exchange-sha1
   * Renamed PubkeyAcceptedKeyTypes config to PubkeyAcceptedAlgorithms to match recent changes in OpenSSH (PubkeyAcceptedKeyTypes is still accepted for backward compatibility)
-  * Reduced number of algorithms that are runtime checked by default via CheckCiphers, CheckMacs, CheckKExes & CheckSignatures to improve runtime performance
+  * Reduced number of algorithms that are runtime checked by default via CheckCiphers, CheckMacs, CheckKexes & CheckSignatures to improve runtime performance
+  * Added config options dhgex_min, dhgex_max & dhgex_preferred to allow runtime manipulation of key size negotiation in diffie-hellman-group-exchange type Kex algorithms
+    * Default values are:
+    * dhgex_min = 2048
+    * dhgex_max = 8192
+    * dhgex_preferred = 3072
 * [0.1.64](https://github.com/mwiede/jsch/releases/tag/jsch-0.1.64) Fixing [#55](https://github.com/mwiede/jsch/pull/55)
 * [0.1.63](https://github.com/mwiede/jsch/releases/tag/jsch-0.1.63) Fixing [#42](https://github.com/mwiede/jsch/issues/42)
 * [0.1.62](https://github.com/mwiede/jsch/releases/tag/jsch-0.1.62) bugfixes and code cleanup
