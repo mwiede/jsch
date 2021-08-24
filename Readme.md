@@ -25,6 +25,8 @@ As I explained in a [blog post](http://www.matez.de/index.php/2020/06/22/the-fut
       * analogous to `JSch.setConfig("kex", "...")`
     * `jsch.server_host_key`
       * analogous to `JSch.setConfig("server_host_key", "...")`
+    * `jsch.enable_server_sig_algs`
+      * analogous to `JSch.setConfig("enable_server_sig_algs", "...")`
     * `jsch.cipher`
       * analogous to `JSch.setConfig("cipher.s2c", "...")` + `JSch.setConfig("cipher.c2s", "...")`
     * `jsch.mac`
@@ -64,6 +66,10 @@ As I explained in a [blog post](http://www.matez.de/index.php/2020/06/22/the-fut
 
 ## Changes since fork:
 * [0.1.66](https://github.com/mwiede/jsch/releases/tag/jsch-0.1.66)
+  * Added support for [RFC 8308](https://datatracker.ietf.org/doc/html/rfc8308) extension negotiation and server-sig-algs extension
+    * This support is enabled by default, but can be controlled via the enable_server_sig_algs config option (or `jsch.enable_server_sig_algs` system property)
+    * When enabled and a server-sig-algs message is received from the server, the algorithms included by the server and also present in the PubkeyAcceptedKeyTypes config option will be attempted first when using publickey authentication
+    * Additionally if the server is detected as OpenSSH version 7.4, the rsa-sha2-256 & rsa-sha2-512 algorithms will be added to the received server-sig-algs as a workaround for [OpenSSH bug 2680](https://bugzilla.mindrot.org/show_bug.cgi?id=2680)
   * Added support for various algorithms supported by Tectia (ssh.com):
     * diffie-hellman-group14-sha224@<!-- -->ssh.com
     * diffie-hellman-group14-sha256@<!-- -->ssh.com
