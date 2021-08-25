@@ -73,7 +73,7 @@ public class Session implements Runnable{
   private static final int PACKET_MAX_SIZE = 256 * 1024;
 
   private byte[] V_S;                                 // server version
-  private byte[] V_C=Util.str2byte("SSH-2.0-JSCH-"+getClass().getPackage().getImplementationVersion()); // client version
+  private byte[] V_C=Util.str2byte("SSH-2.0-JSCH-"+Version.getVersion()); // client version
 
   private byte[] I_C; // the payload of the client's SSH_MSG_KEXINIT
   private byte[] I_S; // the payload of the server's SSH_MSG_KEXINIT
