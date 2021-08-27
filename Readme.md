@@ -92,6 +92,7 @@ As I explained in a [blog post](http://www.matez.de/index.php/2020/06/22/the-fut
     * ssh-rsa-sha384@<!-- -->ssh.com
     * ssh-rsa-sha512@<!-- -->ssh.com
   * Added support for SHA224 to FingerprintHash
+  * Fixing [#52](https://github.com/mwiede/jsch/issues/52)
 * [0.1.65](https://github.com/mwiede/jsch/releases/tag/jsch-0.1.65)
   * Added system properties to allow manipulation of various crypto algorithms used by default
   * Integrated JZlib, allowing use of zlib@<!-- -->openssh.com & zlib compressions without the need to provide the JZlib jar-file

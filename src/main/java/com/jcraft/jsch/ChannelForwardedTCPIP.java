@@ -188,10 +188,12 @@ public class ChannelForwardedTCPIP extends Channel{
     synchronized(pool){
       for(int i=0; i<pool.size(); i++){
         Config config = pool.elementAt(i);
-        if(config instanceof ConfigDaemon)
-          foo.addElement(config.allocated_rport+":"+config.target+":");
-        else
-          foo.addElement(config.allocated_rport+":"+config.target+":"+((ConfigLHost)config).lport);
+        if(config.session==session){
+          if(config instanceof ConfigDaemon)
+            foo.addElement(config.allocated_rport+":"+config.target+":");
+          else
+            foo.addElement(config.allocated_rport+":"+config.target+":"+((ConfigLHost)config).lport);
+        }
       }
     }
     String[] bar=new String[foo.size()];
