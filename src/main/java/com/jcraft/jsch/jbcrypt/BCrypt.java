@@ -14,7 +14,7 @@
 
 package com.jcraft.jsch.jbcrypt;
 
-import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 import java.security.DigestException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -764,11 +764,7 @@ public class BCrypt {
         rounds = Integer.parseInt(salt.substring(off, off + 2));
 
         real_salt = salt.substring(off + 3, off + 25);
-        try {
-            passwordb = (password + (minor >= 'a' ? "\000" : "")).getBytes("UTF-8");
-        } catch (UnsupportedEncodingException uee) {
-            throw new AssertionError("UTF-8 is not supported");
-        }
+        passwordb = (password + (minor >= 'a' ? "\000" : "")).getBytes(StandardCharsets.UTF_8);
 
         saltb = decode_base64(real_salt, BCRYPT_SALT_LEN);
 
@@ -850,15 +846,9 @@ public class BCrypt {
      * @return	true if the passwords match, false otherwise
      */
     public static boolean checkpw(String plaintext, String hashed) {
-        byte hashed_bytes[];
-        byte try_bytes[];
-        try {
-            String try_pw = hashpw(plaintext, hashed);
-            hashed_bytes = hashed.getBytes("UTF-8");
-            try_bytes = try_pw.getBytes("UTF-8");
-        } catch (UnsupportedEncodingException uee) {
-            return false;
-        }
+        String try_pw = hashpw(plaintext, hashed);
+        byte hashed_bytes[] = hashed.getBytes(StandardCharsets.UTF_8);
+        byte try_bytes[] = try_pw.getBytes(StandardCharsets.UTF_8);
         if (hashed_bytes.length != try_bytes.length)
             return false;
         byte ret = 0;

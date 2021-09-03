@@ -32,7 +32,8 @@ import java.net.Socket;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.Vector;
 
 class Util{
@@ -411,36 +412,30 @@ class Util{
     return socket;
   } 
 
-  static byte[] str2byte(String str, String encoding){
+  static byte[] str2byte(String str, Charset encoding){
     if(str==null) 
       return null;
-    try{ return str.getBytes(encoding); }
-    catch(UnsupportedEncodingException e){
-      throw new IllegalArgumentException(e);
-    }
+    return str.getBytes(encoding);
   }
 
   static byte[] str2byte(String str){
-    return str2byte(str, "UTF-8");
+    return str2byte(str, StandardCharsets.UTF_8);
   }
 
-  static String byte2str(byte[] str, String encoding){
+  static String byte2str(byte[] str, Charset encoding){
     return byte2str(str, 0, str.length, encoding);
   }
 
-  static String byte2str(byte[] str, int s, int l, String encoding){
-    try{ return new String(str, s, l, encoding); }
-    catch(UnsupportedEncodingException e){
-      throw new IllegalArgumentException(e);
-    }
+  static String byte2str(byte[] str, int s, int l, Charset encoding){
+    return new String(str, s, l, encoding);
   }
 
   static String byte2str(byte[] str){
-    return byte2str(str, 0, str.length, "UTF-8");
+    return byte2str(str, 0, str.length, StandardCharsets.UTF_8);
   }
 
   static String byte2str(byte[] str, int s, int l){
-    return byte2str(str, s, l, "UTF-8");
+    return byte2str(str, s, l, StandardCharsets.UTF_8);
   }
 
   static String toHex(byte[] str){
