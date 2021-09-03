@@ -60,12 +60,10 @@ public class AES128CBC implements Cipher{
     try{
       SecretKeySpec keyspec=new SecretKeySpec(key, "AES");
       cipher=javax.crypto.Cipher.getInstance("AES/CBC/"+pad);
-      synchronized(javax.crypto.Cipher.class){
-        cipher.init((mode==ENCRYPT_MODE?
-                     javax.crypto.Cipher.ENCRYPT_MODE:
-                     javax.crypto.Cipher.DECRYPT_MODE),
-                    keyspec, new IvParameterSpec(iv));
-      }
+      cipher.init((mode==ENCRYPT_MODE?
+                   javax.crypto.Cipher.ENCRYPT_MODE:
+                   javax.crypto.Cipher.DECRYPT_MODE),
+                  keyspec, new IvParameterSpec(iv));
     }
     catch(Exception e){
       cipher=null;

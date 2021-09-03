@@ -59,12 +59,10 @@ public class AES256CTR implements Cipher{
     try{
       SecretKeySpec keyspec=new SecretKeySpec(key, "AES");
       cipher=javax.crypto.Cipher.getInstance("AES/CTR/"+pad);
-      synchronized(javax.crypto.Cipher.class){
-        cipher.init((mode==ENCRYPT_MODE?
-                     javax.crypto.Cipher.ENCRYPT_MODE:
-                     javax.crypto.Cipher.DECRYPT_MODE),
-                    keyspec, new IvParameterSpec(iv));
-      }
+      cipher.init((mode==ENCRYPT_MODE?
+                   javax.crypto.Cipher.ENCRYPT_MODE:
+                   javax.crypto.Cipher.DECRYPT_MODE),
+                  keyspec, new IvParameterSpec(iv));
     }
     catch(Exception e){
       cipher=null;
