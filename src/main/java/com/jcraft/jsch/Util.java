@@ -321,7 +321,7 @@ class Util{
       hash.init();
       hash.update(data, 0, data.length);
       byte[] foo=hash.digest();
-      StringBuffer sb=new StringBuffer();
+      StringBuilder sb=new StringBuilder();
       if(include_prefix){
         sb.append(hash.name());
         sb.append(":");
@@ -439,7 +439,7 @@ class Util{
   }
 
   static String toHex(byte[] str){
-    StringBuffer sb = new StringBuffer();
+    StringBuilder sb = new StringBuilder();
     for(int i = 0; i<str.length; i++){
       String foo = Integer.toHexString(str[i]&0xff);
       sb.append("0x"+(foo.length() == 1 ? "0" : "")+foo);

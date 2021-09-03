@@ -63,7 +63,7 @@ class KnownHosts implements HostKeyRepository{
   }
   void setKnownHosts(InputStream input) throws JSchException{
     pool.removeAllElements();
-    StringBuffer sb=new StringBuffer();
+    StringBuilder sb=new StringBuilder();
     byte i;
     int j;
     boolean error=false;

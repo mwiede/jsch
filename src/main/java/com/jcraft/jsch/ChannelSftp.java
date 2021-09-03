@@ -410,12 +410,12 @@ public class ChannelSftp extends ChannelSession{
       v=glob_local(src);
       vsize=v.size();
 
-      StringBuffer dstsb=null;
+      StringBuilder dstsb=null;
       if(isRemoteDir){
         if(!dst.endsWith("/")){
 	    dst+="/";
         }
-        dstsb=new StringBuffer(dst);
+        dstsb=new StringBuilder(dst);
       }
       else if(vsize>1){
         throw new SftpException(SSH_FX_FAILURE, 
@@ -907,12 +907,12 @@ public class ChannelSftp extends ChannelSession{
 
       File dstFile=new File(dst);
       boolean isDstDir=dstFile.isDirectory();
-      StringBuffer dstsb=null;
+      StringBuilder dstsb=null;
       if(isDstDir){
         if(!dst.endsWith(file_separator)){
           dst+=file_separator;
         }
-        dstsb=new StringBuffer(dst);
+        dstsb=new StringBuilder(dst);
       }
       else if(vsize>1){
         throw new SftpException(SSH_FX_FAILURE, 
