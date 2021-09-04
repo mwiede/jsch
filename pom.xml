@@ -39,8 +39,40 @@
     </licenses>
     <properties>
         <skipITs>true</skipITs>
+        <junixsocket.version>2.4.0</junixsocket.version>
+        <jna.version>5.9.0</jna.version>
     </properties>
     <dependencies>
+        <dependency>
+            <groupId>com.kohlschutter.junixsocket</groupId>
+            <artifactId>junixsocket-common</artifactId>
+            <version>${junixsocket.version}</version>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>com.kohlschutter.junixsocket</groupId>
+            <artifactId>junixsocket-native-common</artifactId>
+            <version>${junixsocket.version}</version>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>com.kohlschutter</groupId>
+            <artifactId>compiler-annotations</artifactId>
+            <version>1.4.2</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>net.java.dev.jna</groupId>
+            <artifactId>jna-jpms</artifactId>
+            <version>${jna.version}</version>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>net.java.dev.jna</groupId>
+            <artifactId>jna-platform-jpms</artifactId>
+            <version>${jna.version}</version>
+            <optional>true</optional>
+        </dependency>
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter</artifactId>
@@ -106,7 +138,7 @@
                         <configuration>
                             <rules>
                                 <requireJavaVersion>
-                                    <version>15</version>
+                                    <version>16</version>
                                 </requireJavaVersion>
                             </rules>
                         </configuration>
@@ -177,6 +209,19 @@
                             </compileSourceRoots>
                             <multiReleaseOutput>true</multiReleaseOutput>
                             <release>15</release>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>default-compile-16</id>
+                        <goals>
+                            <goal>compile</goal>
+                        </goals>
+                        <configuration>
+                            <compileSourceRoots>
+                                <compileSourceRoot>${project.basedir}/src/main/java16</compileSourceRoot>
+                            </compileSourceRoots>
+                            <multiReleaseOutput>true</multiReleaseOutput>
+                            <release>16</release>
                         </configuration>
                     </execution>
                 </executions>
@@ -276,6 +321,11 @@
                         <groupId>org.jacoco</groupId>
                         <artifactId>jacoco-maven-plugin</artifactId>
                         <version>0.8.7</version>
+                        <configuration>
+                            <excludes>
+                                <exclude>com/jcraft/jsch/UnixDomainSocketFactory.class</exclude>
+                            </excludes>
+                        </configuration>
                         <executions>
                             <execution>
                                 <id>default-prepare-agent</id>

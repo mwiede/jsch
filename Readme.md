@@ -95,6 +95,10 @@ As I explained in a [blog post](http://www.matez.de/index.php/2020/06/22/the-fut
   * Fixing [#52](https://github.com/mwiede/jsch/issues/52)
   * Deprecate `void setFilenameEncoding(String encoding)` in favor of `void setFilenameEncoding(Charset encoding)` in `ChannelSftp`
   * Added support for rsa-sha2-256 & rsa-rsa2-512 algorithms to `ChannelAgentForwarding`
+  * Address [#65](https://github.com/mwiede/jsch/issues/65) by adding ssh-agent support derived from [jsch-agent-proxy](https://github.com/ymnk/jsch-agent-proxy)
+    * See `examples/JSchWithAgentProxy.java` for simple example
+    * ssh-agent support requires either [Java 16's JEP 380](https://openjdk.java.net/jeps/380) or the addition of [junixsocket](https://github.com/kohlschutter/junixsocket) to classpath
+    * Pageant support is untested & requires the addition of [JNA](https://github.com/java-native-access/jna) to classpath
 * [0.1.65](https://github.com/mwiede/jsch/releases/tag/jsch-0.1.65)
   * Added system properties to allow manipulation of various crypto algorithms used by default
   * Integrated JZlib, allowing use of zlib@<!-- -->openssh.com & zlib compressions without the need to provide the JZlib jar-file

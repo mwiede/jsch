@@ -543,6 +543,15 @@ class Util{
     return res==0;
   }
 
+  static String getSystemEnv(String name){
+    try{
+      return System.getenv(name);
+    }
+    catch(SecurityException e){
+      return null;
+    }
+  }
+
   static String getSystemProperty(String key){
     try{
       return System.getProperty(key);
