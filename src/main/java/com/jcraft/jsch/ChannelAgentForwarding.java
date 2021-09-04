@@ -57,6 +57,10 @@ class ChannelAgentForwarding extends Channel{
   private final byte SSH2_AGENTC_REMOVE_ALL_IDENTITIES=19;
   private final byte SSH2_AGENT_FAILURE=30;
 
+  //private final int SSH_AGENT_OLD_SIGNATURE=0x1;
+  private final int SSH_AGENT_RSA_SHA2_256=0x2;
+  private final int SSH_AGENT_RSA_SHA2_512=0x4;
+
   boolean init=true;
 
   private Buffer rbuf=null;
@@ -159,7 +163,7 @@ class ChannelAgentForwarding extends Channel{
       byte[] data=rbuf.getString();
       int flags=rbuf.getInt();
 
-//      if((flags & 1)!=0){ //SSH_AGENT_OLD_SIGNATURE // old OpenSSH 2.0, 2.1
+//      if((flags & SSH_AGENT_OLD_SIGNATURE)!=0){ //SSH_AGENT_OLD_SIGNATURE // old OpenSSH 2.0, 2.1
 //        datafellows = SSH_BUG_SIGBLOB;
 //      }
 
@@ -208,7 +212,22 @@ class ChannelAgentForwarding extends Channel{
       byte[] signature=null;
 
       if(identity!=null){
-        signature=identity.getSignature(data);
+        Buffer kbuf=new Buffer(blob);
+        String keytype=Util.byte2str(kbuf.getString());
+        if(keytype.equals("ssh-rsa")){
+          if((flags & SSH_AGENT_RSA_SHA2_256)!=0){
+            signature=identity.getSignature(data, "rsa-sha2-256");
+          }
+          else if((flags & SSH_AGENT_RSA_SHA2_512)!=0){
+            signature=identity.getSignature(data, "rsa-sha2-512");
+          }
+          else{
+            signature=identity.getSignature(data, "ssh-rsa");
+          }
+        }
+        else{
+          signature=identity.getSignature(data);
+        }
       }
 
       if(signature==null){

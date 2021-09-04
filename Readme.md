@@ -94,6 +94,7 @@ As I explained in a [blog post](http://www.matez.de/index.php/2020/06/22/the-fut
   * Added support for SHA224 to FingerprintHash
   * Fixing [#52](https://github.com/mwiede/jsch/issues/52)
   * Deprecate `void setFilenameEncoding(String encoding)` in favor of `void setFilenameEncoding(Charset encoding)` in `ChannelSftp`
+  * Added support for rsa-sha2-256 & rsa-rsa2-512 algorithms to `ChannelAgentForwarding`
 * [0.1.65](https://github.com/mwiede/jsch/releases/tag/jsch-0.1.65)
   * Added system properties to allow manipulation of various crypto algorithms used by default
   * Integrated JZlib, allowing use of zlib@<!-- -->openssh.com & zlib compressions without the need to provide the JZlib jar-file
