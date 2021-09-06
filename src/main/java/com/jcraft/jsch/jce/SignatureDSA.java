@@ -30,6 +30,7 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 package com.jcraft.jsch.jce;
 
 import java.math.BigInteger;
+import java.nio.charset.StandardCharsets;
 import java.security.*;
 import java.security.spec.*;
 import com.jcraft.jsch.Buffer;
@@ -115,7 +116,7 @@ System.err.println("");
     byte[] tmp;
     Buffer buf=new Buffer(sig);
 
-    if(new String(buf.getString(), "UTF-8").equals("ssh-dss")){
+    if(new String(buf.getString(), StandardCharsets.UTF_8).equals("ssh-dss")){
       j=buf.getInt();
       i=buf.getOffSet();
       tmp=new byte[j];

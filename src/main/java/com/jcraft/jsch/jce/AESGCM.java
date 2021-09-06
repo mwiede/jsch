@@ -69,9 +69,7 @@ public abstract class AESGCM implements Cipher{
     try{
       keyspec=new SecretKeySpec(key, "AES");
       cipher=javax.crypto.Cipher.getInstance("AES/GCM/"+pad);
-      synchronized(javax.crypto.Cipher.class){
-        cipher.init(this.mode, keyspec, new GCMParameterSpec(tagsize*8,iv));
-      }
+      cipher.init(this.mode, keyspec, new GCMParameterSpec(tagsize*8,iv));
     }
     catch(Exception e){
       cipher=null;

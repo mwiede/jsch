@@ -41,6 +41,7 @@ public class JSch{
     config.put("kex", Util.getSystemProperty("jsch.kex", "curve25519-sha256,curve25519-sha256@libssh.org,ecdh-sha2-nistp256,ecdh-sha2-nistp384,ecdh-sha2-nistp521,diffie-hellman-group-exchange-sha256,diffie-hellman-group16-sha512,diffie-hellman-group18-sha512,diffie-hellman-group14-sha256"));
     config.put("server_host_key", Util.getSystemProperty("jsch.server_host_key", "ssh-ed25519,ecdsa-sha2-nistp256,ecdsa-sha2-nistp384,ecdsa-sha2-nistp521,rsa-sha2-512,rsa-sha2-256,ssh-rsa"));
     config.put("prefer_known_host_key_types", Util.getSystemProperty("jsch.prefer_known_host_key_types", "yes"));
+    config.put("enable_server_sig_algs", Util.getSystemProperty("jsch.enable_server_sig_algs", "yes"));
     config.put("cipher.s2c", Util.getSystemProperty("jsch.cipher", "aes128-ctr,aes192-ctr,aes256-ctr,aes128-gcm@openssh.com,aes256-gcm@openssh.com,chacha20-poly1305@openssh.com"));
     config.put("cipher.c2s", Util.getSystemProperty("jsch.cipher", "aes128-ctr,aes192-ctr,aes256-ctr,aes128-gcm@openssh.com,aes256-gcm@openssh.com,chacha20-poly1305@openssh.com"));
     config.put("mac.s2c", Util.getSystemProperty("jsch.mac", "hmac-sha2-256-etm@openssh.com,hmac-sha2-512-etm@openssh.com,hmac-sha1-etm@openssh.com,hmac-sha2-256,hmac-sha2-512,hmac-sha1"));
@@ -62,10 +63,15 @@ public class JSch{
     config.put("diffie-hellman-group1-sha1", 
 	                        "com.jcraft.jsch.DHG1");
     config.put("diffie-hellman-group14-sha1", 
-               "com.jcraft.jsch.DHG14");    // available since JDK8.
+               "com.jcraft.jsch.DHG14");
     config.put("diffie-hellman-group-exchange-sha256", 
-               "com.jcraft.jsch.DHGEX256"); // available since JDK1.4.2.
-                                            // On JDK8, 2048bits will be used.
+               "com.jcraft.jsch.DHGEX256");
+    config.put("diffie-hellman-group-exchange-sha224@ssh.com", 
+               "com.jcraft.jsch.DHGEX224");
+    config.put("diffie-hellman-group-exchange-sha384@ssh.com", 
+               "com.jcraft.jsch.DHGEX384");
+    config.put("diffie-hellman-group-exchange-sha512@ssh.com", 
+               "com.jcraft.jsch.DHGEX512");
     config.put("diffie-hellman-group14-sha256", 
                "com.jcraft.jsch.DHG14256");
     config.put("diffie-hellman-group15-sha512", 
@@ -75,6 +81,20 @@ public class JSch{
     config.put("diffie-hellman-group17-sha512", 
                "com.jcraft.jsch.DHG17");
     config.put("diffie-hellman-group18-sha512", 
+               "com.jcraft.jsch.DHG18");
+    config.put("diffie-hellman-group14-sha256@ssh.com", 
+               "com.jcraft.jsch.DHG14256");
+    config.put("diffie-hellman-group14-sha224@ssh.com", 
+               "com.jcraft.jsch.DHG14224");
+    config.put("diffie-hellman-group15-sha256@ssh.com", 
+               "com.jcraft.jsch.DHG15256");
+    config.put("diffie-hellman-group15-sha384@ssh.com", 
+               "com.jcraft.jsch.DHG15384");
+    config.put("diffie-hellman-group16-sha512@ssh.com", 
+               "com.jcraft.jsch.DHG16");
+    config.put("diffie-hellman-group16-sha384@ssh.com", 
+               "com.jcraft.jsch.DHG16384");
+    config.put("diffie-hellman-group18-sha512@ssh.com", 
                "com.jcraft.jsch.DHG18");
     config.put("ecdsa-sha2-nistp256", "com.jcraft.jsch.jce.SignatureECDSA256");
     config.put("ecdsa-sha2-nistp384", "com.jcraft.jsch.jce.SignatureECDSA384");
@@ -109,12 +129,19 @@ public class JSch{
     config.put("hmac-sha2-512-etm@openssh.com",  "com.jcraft.jsch.jce.HMACSHA512ETM");
     config.put("hmac-md5-etm@openssh.com",      "com.jcraft.jsch.jce.HMACMD5ETM");
     config.put("hmac-md5-96-etm@openssh.com",   "com.jcraft.jsch.jce.HMACMD596ETM");
+    config.put("hmac-sha256-2@ssh.com",  "com.jcraft.jsch.jce.HMACSHA2562SSHCOM");
+    config.put("hmac-sha224@ssh.com",  "com.jcraft.jsch.jce.HMACSHA224SSHCOM");
+    config.put("hmac-sha256@ssh.com",  "com.jcraft.jsch.jce.HMACSHA256SSHCOM");
+    config.put("hmac-sha384@ssh.com",  "com.jcraft.jsch.jce.HMACSHA384SSHCOM");
+    config.put("hmac-sha512@ssh.com",  "com.jcraft.jsch.jce.HMACSHA512SSHCOM");
     config.put("sha-1",         "com.jcraft.jsch.jce.SHA1");
-    config.put("sha-256",         "com.jcraft.jsch.jce.SHA256");
-    config.put("sha-384",         "com.jcraft.jsch.jce.SHA384");
-    config.put("sha-512",         "com.jcraft.jsch.jce.SHA512");
+    config.put("sha-224",       "com.jcraft.jsch.jce.SHA224");
+    config.put("sha-256",       "com.jcraft.jsch.jce.SHA256");
+    config.put("sha-384",       "com.jcraft.jsch.jce.SHA384");
+    config.put("sha-512",       "com.jcraft.jsch.jce.SHA512");
     config.put("md5",           "com.jcraft.jsch.jce.MD5");
     config.put("sha1",          "com.jcraft.jsch.jce.SHA1");
+    config.put("sha224",        "com.jcraft.jsch.jce.SHA224");
     config.put("sha256",        "com.jcraft.jsch.jce.SHA256");
     config.put("sha384",        "com.jcraft.jsch.jce.SHA384");
     config.put("sha512",        "com.jcraft.jsch.jce.SHA512");
@@ -122,6 +149,10 @@ public class JSch{
     config.put("ssh-rsa",       "com.jcraft.jsch.jce.SignatureRSA");
     config.put("rsa-sha2-256",  "com.jcraft.jsch.jce.SignatureRSASHA256");
     config.put("rsa-sha2-512",  "com.jcraft.jsch.jce.SignatureRSASHA512");
+    config.put("ssh-rsa-sha224@ssh.com",  "com.jcraft.jsch.jce.SignatureRSASHA224SSHCOM");
+    config.put("ssh-rsa-sha256@ssh.com",  "com.jcraft.jsch.jce.SignatureRSASHA256SSHCOM");
+    config.put("ssh-rsa-sha384@ssh.com",  "com.jcraft.jsch.jce.SignatureRSASHA384SSHCOM");
+    config.put("ssh-rsa-sha512@ssh.com",  "com.jcraft.jsch.jce.SignatureRSASHA512SSHCOM");
     config.put("keypairgen.dsa",   "com.jcraft.jsch.jce.KeyPairGenDSA");
     config.put("keypairgen.rsa",   "com.jcraft.jsch.jce.KeyPairGenRSA");
     config.put("keypairgen.ecdsa", "com.jcraft.jsch.jce.KeyPairGenECDSA");

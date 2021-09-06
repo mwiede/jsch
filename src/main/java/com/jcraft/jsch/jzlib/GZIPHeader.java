@@ -34,7 +34,7 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 package com.jcraft.jsch.jzlib;
 
-import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 
 /**
@@ -90,41 +90,21 @@ final class GZIPHeader implements Cloneable {
   }
 
   void setName(String name) {
-    try{
-      this.name=name.getBytes("ISO-8859-1");
-    }
-    catch(UnsupportedEncodingException e){
-      throw new IllegalArgumentException("name must be in ISO-8859-1 "+name);
-    }
+    this.name=name.getBytes(StandardCharsets.ISO_8859_1);
   }
 
   String getName(){
     if(name==null) return "";
-    try {
-      return new String(name, "ISO-8859-1");
-    }
-    catch (UnsupportedEncodingException e) {
-      throw new InternalError(e.toString());
-    }
+    return new String(name, StandardCharsets.ISO_8859_1);
   }
 
   void setComment(String comment) {
-    try{
-      this.comment=comment.getBytes("ISO-8859-1");
-    }
-    catch(UnsupportedEncodingException e){
-      throw new IllegalArgumentException("comment must be in ISO-8859-1 "+Arrays.toString(name));
-    }
+    this.comment=comment.getBytes(StandardCharsets.ISO_8859_1);
   }
 
   String getComment(){
     if(comment==null) return "";
-    try {
-      return new String(comment, "ISO-8859-1");
-    }
-    catch (UnsupportedEncodingException e) {
-      throw new InternalError(e.toString());
-    }
+    return new String(comment, StandardCharsets.ISO_8859_1);
   }
 
   void setCRC(long crc){

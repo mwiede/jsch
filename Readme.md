@@ -19,12 +19,15 @@ As I explained in a [blog post](http://www.matez.de/index.php/2020/06/22/the-fut
 
 * Is this fork 100% compatible with original JSch, because the connection to my server does not work any more!
   * For compatibility with OpenSSH and improved security, the order of crypto algorithms was changed. If you still want to use older or deprecated algorithms, you need to change the configuration. Examples see [#37](https://github.com/mwiede/jsch/issues/37), [#40](https://github.com/mwiede/jsch/issues/40)
-  * To make it easier to adjust the crypto algorithms, starting with [0.1.65](https://github.com/mwiede/jsch/releases/tag/jsch-0.1.65) the following system properties can be set
-    at your application's startup:
+  * To make it easier to adjust the crypto algorithms, starting with [0.1.65](https://github.com/mwiede/jsch/releases/tag/jsch-0.1.65) the following system properties can be set at your application's startup:
     * `jsch.kex`
       * analogous to `JSch.setConfig("kex", "...")`
     * `jsch.server_host_key`
       * analogous to `JSch.setConfig("server_host_key", "...")`
+    * `jsch.prefer_known_host_key_types`
+      * analogous to `JSch.setConfig("prefer_known_host_key_types", "...")`
+    * `jsch.enable_server_sig_algs`
+      * analogous to `JSch.setConfig("enable_server_sig_algs", "...")`
     * `jsch.cipher`
       * analogous to `JSch.setConfig("cipher.s2c", "...")` + `JSch.setConfig("cipher.c2s", "...")`
     * `jsch.mac`
@@ -63,13 +66,51 @@ As I explained in a [blog post](http://www.matez.de/index.php/2020/06/22/the-fut
     * In order to use curve25519-sha256, curve448-sha512 & chacha20-poly1305@<!-- -->openssh.com, you must use at least Java 11.
 
 ## Changes since fork:
+* [0.1.66](https://github.com/mwiede/jsch/releases/tag/jsch-0.1.66)
+  * Added support for [RFC 8308](https://datatracker.ietf.org/doc/html/rfc8308) extension negotiation and server-sig-algs extension
+    * This support is enabled by default, but can be controlled via the enable_server_sig_algs config option (or `jsch.enable_server_sig_algs` system property)
+    * When enabled and a server-sig-algs message is received from the server, the algorithms included by the server and also present in the PubkeyAcceptedKeyTypes config option will be attempted first when using publickey authentication
+    * Additionally if the server is detected as OpenSSH version 7.4, the rsa-sha2-256 & rsa-sha2-512 algorithms will be added to the received server-sig-algs as a workaround for [OpenSSH bug 2680](https://bugzilla.mindrot.org/show_bug.cgi?id=2680)
+  * Added support for various algorithms supported by Tectia (ssh.com):
+    * diffie-hellman-group14-sha224@<!-- -->ssh.com
+    * diffie-hellman-group14-sha256@<!-- -->ssh.com
+    * diffie-hellman-group15-sha256@<!-- -->ssh.com
+    * diffie-hellman-group15-sha384@<!-- -->ssh.com
+    * diffie-hellman-group16-sha384@<!-- -->ssh.com
+    * diffie-hellman-group16-sha512@<!-- -->ssh.com
+    * diffie-hellman-group18-sha512@<!-- -->ssh.com
+    * diffie-hellman-group-exchange-sha224@<!-- -->ssh.com
+    * diffie-hellman-group-exchange-sha384@<!-- -->ssh.com
+    * diffie-hellman-group-exchange-sha512@<!-- -->ssh.com
+    * hmac-sha224@<!-- -->ssh.com
+    * hmac-sha256@<!-- -->ssh.com
+    * hmac-sha256-2@<!-- -->ssh.com
+    * hmac-sha384@<!-- -->ssh.com
+    * hmac-sha512@<!-- -->ssh.com
+    * ssh-rsa-sha224@<!-- -->ssh.com
+    * ssh-rsa-sha256@<!-- -->ssh.com
+    * ssh-rsa-sha384@<!-- -->ssh.com
+    * ssh-rsa-sha512@<!-- -->ssh.com
+  * Added support for SHA224 to FingerprintHash
+  * Fixing [#52](https://github.com/mwiede/jsch/issues/52)
+  * Deprecate `void setFilenameEncoding(String encoding)` in favor of `void setFilenameEncoding(Charset encoding)` in `ChannelSftp`
+  * Added support for rsa-sha2-256 & rsa-rsa2-512 algorithms to `ChannelAgentForwarding`
+  * Address [#65](https://github.com/mwiede/jsch/issues/65) by adding ssh-agent support derived from [jsch-agent-proxy](https://github.com/ymnk/jsch-agent-proxy)
+    * See `examples/JSchWithAgentProxy.java` for simple example
+    * ssh-agent support requires either [Java 16's JEP 380](https://openjdk.java.net/jeps/380) or the addition of [junixsocket](https://github.com/kohlschutter/junixsocket) to classpath
+    * Pageant support is untested & requires the addition of [JNA](https://github.com/java-native-access/jna) to classpath
 * [0.1.65](https://github.com/mwiede/jsch/releases/tag/jsch-0.1.65)
   * Added system properties to allow manipulation of various crypto algorithms used by default
   * Integrated JZlib, allowing use of zlib@<!-- -->openssh.com & zlib compressions without the need to provide the JZlib jar-file
   * Modularized the jar-file for use with Java 9 or newer
   * Added runtime controls for the min/max/preferred sizes used for diffie-hellman-group-exchange-sha256 & diffie-hellman-group-exchange-sha1
   * Renamed PubkeyAcceptedKeyTypes config to PubkeyAcceptedAlgorithms to match recent changes in OpenSSH (PubkeyAcceptedKeyTypes is still accepted for backward compatibility)
-  * Reduced number of algorithms that are runtime checked by default via CheckCiphers, CheckMacs, CheckKExes & CheckSignatures to improve runtime performance
+  * Reduced number of algorithms that are runtime checked by default via CheckCiphers, CheckMacs, CheckKexes & CheckSignatures to improve runtime performance
+  * Added config options dhgex_min, dhgex_max & dhgex_preferred to allow runtime manipulation of key size negotiation in diffie-hellman-group-exchange type Kex algorithms
+    * Default values are:
+    * dhgex_min = 2048
+    * dhgex_max = 8192
+    * dhgex_preferred = 3072
 * [0.1.64](https://github.com/mwiede/jsch/releases/tag/jsch-0.1.64) Fixing [#55](https://github.com/mwiede/jsch/pull/55)
 * [0.1.63](https://github.com/mwiede/jsch/releases/tag/jsch-0.1.63) Fixing [#42](https://github.com/mwiede/jsch/issues/42)
 * [0.1.62](https://github.com/mwiede/jsch/releases/tag/jsch-0.1.62) bugfixes and code cleanup

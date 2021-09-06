@@ -26,6 +26,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledForJreRange;
 import org.junit.jupiter.api.io.TempDir;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.GenericContainer;
@@ -37,7 +38,8 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 @Testcontainers
 public class Algorithms2IT {
 
-  private static final int timeout = 2000;
+  // Python can be slow for DH group 18
+  private static final int timeout = 5000;
   private static final DigestUtils sha256sum = new DigestUtils(DigestUtils.getSha256Digest());
   private static final ListAppender<ILoggingEvent> jschAppender = getListAppender(JSch.class);
   private static final ListAppender<ILoggingEvent> sshdAppender =
@@ -127,7 +129,21 @@ public class Algorithms2IT {
   }
 
   @ParameterizedTest
-  @ValueSource(strings = {"diffie-hellman-group17-sha512", "diffie-hellman-group15-sha512"})
+  @ValueSource(
+      strings = {
+        "diffie-hellman-group17-sha512",
+        "diffie-hellman-group15-sha512",
+        "diffie-hellman-group18-sha512@ssh.com",
+        "diffie-hellman-group16-sha512@ssh.com",
+        "diffie-hellman-group16-sha384@ssh.com",
+        "diffie-hellman-group15-sha384@ssh.com",
+        "diffie-hellman-group15-sha256@ssh.com",
+        "diffie-hellman-group14-sha256@ssh.com",
+        "diffie-hellman-group14-sha224@ssh.com",
+        "diffie-hellman-group-exchange-sha512@ssh.com",
+        "diffie-hellman-group-exchange-sha384@ssh.com",
+        "diffie-hellman-group-exchange-sha224@ssh.com"
+      })
   public void testKEXs(String kex) throws Exception {
     JSch ssh = createRSAIdentity();
     Session session = createSession(ssh);
@@ -136,6 +152,42 @@ public class Algorithms2IT {
 
     String expected = String.format("kex: algorithm: %s.*", kex);
     checkLogs(expected);
+  }
+
+  @ParameterizedTest
+  @CsvSource(
+      value = {
+        "diffie-hellman-group-exchange-sha256,1024",
+        "diffie-hellman-group-exchange-sha1,1024",
+        "diffie-hellman-group-exchange-sha512@ssh.com,1024",
+        "diffie-hellman-group-exchange-sha512@ssh.com,2048",
+        "diffie-hellman-group-exchange-sha512@ssh.com,4096",
+        "diffie-hellman-group-exchange-sha512@ssh.com,6144",
+        "diffie-hellman-group-exchange-sha512@ssh.com,8192",
+        "diffie-hellman-group-exchange-sha384@ssh.com,1024",
+        "diffie-hellman-group-exchange-sha384@ssh.com,2048",
+        "diffie-hellman-group-exchange-sha384@ssh.com,4096",
+        "diffie-hellman-group-exchange-sha384@ssh.com,6144",
+        "diffie-hellman-group-exchange-sha384@ssh.com,8192",
+        "diffie-hellman-group-exchange-sha224@ssh.com,1024",
+        "diffie-hellman-group-exchange-sha224@ssh.com,2048",
+        "diffie-hellman-group-exchange-sha224@ssh.com,4096",
+        "diffie-hellman-group-exchange-sha224@ssh.com,6144",
+        "diffie-hellman-group-exchange-sha224@ssh.com,8192"
+      })
+  public void testDHGEXSizes(String kex, String size) throws Exception {
+    JSch ssh = createRSAIdentity();
+    Session session = createSession(ssh);
+    session.setConfig("kex", kex);
+    session.setConfig("dhgex_min", size);
+    session.setConfig("dhgex_max", size);
+    session.setConfig("dhgex_preferred", size);
+    doSftp(session, true);
+
+    String expectedKex = String.format("kex: algorithm: %s.*", kex);
+    String expectedSizes = String.format("SSH_MSG_KEX_DH_GEX_REQUEST\\(%s<%s<%s\\) sent", size, size, size);
+    checkLogs(expectedKex);
+    checkLogs(expectedSizes);
   }
 
   @Test
@@ -149,6 +201,57 @@ public class Algorithms2IT {
 
     String expected = "kex: host key algorithm: ssh-ed448.*";
     checkLogs(expected);
+  }
+
+  @ParameterizedTest
+  @ValueSource(
+      strings = {
+        "ssh-rsa-sha512@ssh.com",
+        "ssh-rsa-sha384@ssh.com",
+        "ssh-rsa-sha256@ssh.com",
+        "ssh-rsa-sha224@ssh.com"
+      })
+  public void testRSA(String keyType) throws Exception {
+    JSch ssh = createRSAIdentity();
+    Session session = createSession(ssh);
+    session.setConfig("PubkeyAcceptedAlgorithms", keyType);
+    session.setConfig("server_host_key", keyType);
+    doSftp(session, true);
+
+    String expected = String.format("kex: host key algorithm: %s.*", keyType);
+    checkLogs(expected);
+  }
+
+  @ParameterizedTest
+  @CsvSource(
+      value = {
+        "hmac-sha512@ssh.com,none",
+        "hmac-sha512@ssh.com,zlib@openssh.com",
+        "hmac-sha384@ssh.com,none",
+        "hmac-sha384@ssh.com,zlib@openssh.com",
+        "hmac-sha256-2@ssh.com,none",
+        "hmac-sha256-2@ssh.com,zlib@openssh.com",
+        "hmac-sha256@ssh.com,none",
+        "hmac-sha256@ssh.com,zlib@openssh.com",
+        "hmac-sha224@ssh.com,none",
+        "hmac-sha224@ssh.com,zlib@openssh.com"
+      })
+  public void testMACs(String mac, String compression) throws Exception {
+    JSch ssh = createRSAIdentity();
+    Session session = createSession(ssh);
+    session.setConfig("mac.s2c", mac);
+    session.setConfig("mac.c2s", mac);
+    session.setConfig("compression.s2c", compression);
+    session.setConfig("compression.c2s", compression);
+    // Make sure a non-AEAD cipher is used
+    session.setConfig("cipher.s2c", "aes128-ctr");
+    session.setConfig("cipher.c2s", "aes128-ctr");
+    doSftp(session, true);
+
+    String expectedS2C = String.format("kex: server->client .* MAC: %s.*", mac);
+    String expectedC2S = String.format("kex: client->server .* MAC: %s.*", mac);
+    checkLogs(expectedS2C);
+    checkLogs(expectedC2S);
   }
 
   @Test

@@ -152,6 +152,35 @@ public class AlgorithmsIT {
     checkLogs(expected);
   }
 
+  @ParameterizedTest
+  @CsvSource(
+      value = {
+        "diffie-hellman-group-exchange-sha256,2048",
+        "diffie-hellman-group-exchange-sha256,3072",
+        "diffie-hellman-group-exchange-sha256,4096",
+        "diffie-hellman-group-exchange-sha256,6144",
+        "diffie-hellman-group-exchange-sha256,8192",
+        "diffie-hellman-group-exchange-sha1,2048",
+        "diffie-hellman-group-exchange-sha1,3072",
+        "diffie-hellman-group-exchange-sha1,4096",
+        "diffie-hellman-group-exchange-sha1,6144",
+        "diffie-hellman-group-exchange-sha1,8192"
+      })
+  public void testDHGEXSizes(String kex, String size) throws Exception {
+    JSch ssh = createRSAIdentity();
+    Session session = createSession(ssh);
+    session.setConfig("kex", kex);
+    session.setConfig("dhgex_min", size);
+    session.setConfig("dhgex_max", size);
+    session.setConfig("dhgex_preferred", size);
+    doSftp(session, true);
+
+    String expectedKex = String.format("kex: algorithm: %s.*", kex);
+    String expectedSizes = String.format("SSH_MSG_KEX_DH_GEX_REQUEST\\(%s<%s<%s\\) sent", size, size, size);
+    checkLogs(expectedKex);
+    checkLogs(expectedSizes);
+  }
+
   @Test
   @EnabledForJreRange(min = JAVA_15)
   public void testEd25519() throws Exception {
@@ -360,6 +389,7 @@ public class AlgorithmsIT {
         "SHA512:EyyvMhUehzuELz3ySpqMw2UggtNqVmWnTSrQy2x4FLT7aF1lmqKC30oF+VUOLhvTmFHYaDLLN9UnpuGphIltKQ",
         "SHA384:CMxHNJ/xzOfsmNqw4g6Be+ltVZX3ixtplON7nOspNlji0iMnWzM7X4SelzcpP7Ap",
         "SHA256:iqNO6JDjrpga8TvgBKGReaKEnGoF/1csoxWp/DV5xJ0",
+        "SHA224:mJNHjKtQuiRHioFZIGj1g/+fcKMOsKmzcokU2w",
         "SHA1:FO2EB514+YMk4jTFmNGOwscY2Pk",
         "MD5:3b:50:5b:c5:53:66:8c:2c:98:9b:ee:3f:19:0a:ff:29"
       })

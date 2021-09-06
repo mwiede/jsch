@@ -46,6 +46,7 @@ public class Session implements Runnable{
   static final int SSH_MSG_DEBUG=                           4;
   static final int SSH_MSG_SERVICE_REQUEST=                 5;
   static final int SSH_MSG_SERVICE_ACCEPT=                  6;
+  static final int SSH_MSG_EXT_INFO=                        7;
   static final int SSH_MSG_KEXINIT=                        20;
   static final int SSH_MSG_NEWKEYS=                        21;
   static final int SSH_MSG_KEXDH_INIT=                     30;
@@ -72,7 +73,7 @@ public class Session implements Runnable{
   private static final int PACKET_MAX_SIZE = 256 * 1024;
 
   private byte[] V_S;                                 // server version
-  private byte[] V_C=Util.str2byte("SSH-2.0-JSCH-"+getClass().getPackage().getImplementationVersion()); // client version
+  private byte[] V_C=Util.str2byte("SSH-2.0-JSCH-"+Version.getVersion()); // client version
 
   private byte[] I_C; // the payload of the client's SSH_MSG_KEXINIT
   private byte[] I_S; // the payload of the server's SSH_MSG_KEXINIT
@@ -108,7 +109,7 @@ public class Session implements Runnable{
 
   private volatile boolean isConnected=false;
 
-  private boolean isAuthed=false;
+  private volatile boolean isAuthed=false;
 
   private Thread connectThread=null;
   private Object lock=new Object();
@@ -141,6 +142,8 @@ public class Session implements Runnable{
 
   private IdentityRepository identityRepository = null;
   private HostKeyRepository hostkeyRepository = null;
+  private volatile String[] serverSigAlgs = null;
+  private volatile boolean sshBugSigType74 = false;
 
   protected boolean daemon_thread=false;
 
@@ -295,10 +298,12 @@ public class Session implements Runnable{
 
       V_S=new byte[i]; System.arraycopy(buf.buffer, 0, V_S, 0, i);
       //System.err.println("V_S: ("+i+") ["+new String(V_S)+"]");
+      String _v_s=Util.byte2str(V_S);
+      sshBugSigType74=_v_s.startsWith("SSH-2.0-OpenSSH_7.4");
 
       if(JSch.getLogger().isEnabled(Logger.INFO)){
         JSch.getLogger().log(Logger.INFO,
-                             "Remote version string: "+Util.byte2str(V_S));
+                             "Remote version string: "+_v_s);
         JSch.getLogger().log(Logger.INFO,
                              "Local version string: "+Util.byte2str(V_C));
       }
@@ -589,6 +594,11 @@ public class Session implements Runnable{
       throw new JSchException("Algorithm negotiation fail");
     }
 
+    if(guess[KeyExchange.PROPOSAL_KEX_ALGS].equals("ext-info-c") ||
+       guess[KeyExchange.PROPOSAL_KEX_ALGS].equals("ext-info-s")){
+      throw new JSchException("Invalid Kex negotiated: " + guess[KeyExchange.PROPOSAL_KEX_ALGS]);
+    }
+
     if(!isAuthed &&
        (guess[KeyExchange.PROPOSAL_ENC_ALGS_CTOS].equals("none") ||
         (guess[KeyExchange.PROPOSAL_ENC_ALGS_STOC].equals("none")))){
@@ -690,6 +700,11 @@ public class Session implements Runnable{
       }
     }
 
+    String enable_server_sig_algs=getConfig("enable_server_sig_algs");
+    if(enable_server_sig_algs.equals("yes")){
+      kex+=",ext-info-c";
+    }
+
     String server_host_key = getConfig("server_host_key");
     String[] not_available_shks =
       checkSignatures(getConfig("CheckSignatures"));
@@ -735,7 +750,9 @@ public class Session implements Runnable{
         while(it.hasNext()){
           String algo=it.next();
           String type=algo;
-          if(type.equals("rsa-sha2-256") || type.equals("rsa-sha2-512")){
+          if(type.equals("rsa-sha2-256") || type.equals("rsa-sha2-512") ||
+             type.equals("ssh-rsa-sha224@ssh.com") || type.equals("ssh-rsa-sha256@ssh.com") ||
+             type.equals("ssh-rsa-sha384@ssh.com") || type.equals("ssh-rsa-sha512@ssh.com")){
             type="ssh-rsa";
           }
           for(HostKey hk : hks){
@@ -927,7 +944,7 @@ key_type+" key fingerprint is "+key_fprint+".\n"+
         hkr.getHostKey(chost, kex.getKeyAlgorithName());
       String _key= Util.byte2str(Util.toBase64(K_S, 0, K_S.length, true));
       for(int j=0; j< keys.length; j++){
-        if(keys[i].getKey().equals(_key) &&
+        if(keys[j].getKey().equals(_key) &&
            keys[j].getMarker().equals("@revoked")){
           if(userinfo!=null){
             userinfo.showMessage(
@@ -1274,6 +1291,58 @@ key_type+" key fingerprint is "+key_fprint+".\n"+
 	  else{
 	    c.addRemoteWindowSize(buf.getUInt());
 	  }
+      }
+      else if(type==SSH_MSG_EXT_INFO){
+        buf.rewind();
+        buf.getInt();buf.getShort();
+        boolean ignore=false;
+        String enable_server_sig_algs=getConfig("enable_server_sig_algs");
+        if(!enable_server_sig_algs.equals("yes")){
+          ignore=true;
+          if(JSch.getLogger().isEnabled(Logger.INFO)){
+            JSch.getLogger().log(Logger.INFO, "Ignoring SSH_MSG_EXT_INFO while enable_server_sig_algs != yes");
+          }
+        }
+        else if(isAuthed){
+          ignore=true;
+          if(JSch.getLogger().isEnabled(Logger.INFO)){
+            JSch.getLogger().log(Logger.INFO, "Ignoring SSH_MSG_EXT_INFO received after SSH_MSG_USERAUTH_SUCCESS");
+          }
+        }
+        else if(in_kex){
+          ignore=true;
+          if(JSch.getLogger().isEnabled(Logger.INFO)){
+            JSch.getLogger().log(Logger.INFO, "Ignoring SSH_MSG_EXT_INFO received before SSH_MSG_NEWKEYS");
+          }
+        }
+        else{
+          if(JSch.getLogger().isEnabled(Logger.INFO)){
+            JSch.getLogger().log(Logger.INFO, "SSH_MSG_EXT_INFO received");
+          }
+        }
+        long num_extensions=buf.getUInt();
+        for(long i=0; i<num_extensions; i++){
+          byte[] ext_name=buf.getString();
+          byte[] ext_value=buf.getString();
+          if(!ignore && Util.byte2str(ext_name).equals("server-sig-algs")){
+            String foo=Util.byte2str(ext_value);
+            if(JSch.getLogger().isEnabled(Logger.INFO)){
+              JSch.getLogger().log(Logger.INFO, "server-sig-algs=<" + foo + ">");
+            }
+            if(sshBugSigType74){
+              if(!foo.isEmpty()){
+                foo+=",rsa-sha2-256,rsa-sha2-512";
+              }
+              else{
+                foo="rsa-sha2-256,rsa-sha2-512";
+              }
+              if(JSch.getLogger().isEnabled(Logger.INFO)){
+                JSch.getLogger().log(Logger.INFO, "OpenSSH 7.4 detected: adding rsa-sha2-256 & rsa-sha2-512 to server-sig-algs");
+              }
+            }
+            serverSigAlgs=Util.split(foo, ",");
+          }
+        }
       }
       else if(type==UserAuth.SSH_MSG_USERAUTH_SUCCESS){
         isAuthed=true;
@@ -2306,7 +2375,7 @@ break;
         if(tmp[i].length()==0) continue;
         foo.addElement(tmp[i].trim());
       }
-      StringBuffer sb = new StringBuffer(); // join
+      StringBuilder sb = new StringBuilder(); // join
       for(int i=0; i<foo.size(); i++){
         sb.append(foo.elementAt(i));
         if(i+1<foo.size())
@@ -2541,6 +2610,7 @@ break;
     channel.setSession(this);
   }
 
+  String[] getServerSigAlgs(){ return serverSigAlgs; }
   public void setProxy(Proxy proxy){ this.proxy=proxy; }
   public void setHost(String host){ this.host=host; }
   public void setPort(int port){ this.port=port; }
@@ -2578,7 +2648,11 @@ break;
       for(Enumeration<String> e=newconf.keys() ; e.hasMoreElements() ;) {
         String newkey=e.nextElement();
         String key=(newkey.equals("PubkeyAcceptedKeyTypes") ? "PubkeyAcceptedAlgorithms" : newkey);
-        config.put(key, newconf.get(newkey));
+        String value=newconf.get(newkey);
+        if(key.equals("enable_server_sig_algs") && !value.equals("yes")){
+          serverSigAlgs=null;
+        }
+        config.put(key, value);
       }
     }
   }
@@ -2592,6 +2666,9 @@ break;
         config.put("PubkeyAcceptedAlgorithms", value);
       }
       else{
+        if(key.equals("enable_server_sig_algs") && !value.equals("yes")){
+          serverSigAlgs=null;
+        }
         config.put(key, value);
       }
     }

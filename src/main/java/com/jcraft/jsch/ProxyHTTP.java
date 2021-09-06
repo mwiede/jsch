@@ -98,7 +98,7 @@ public class ProxyHTTP implements Proxy{
 
       int foo=0;
 
-      StringBuffer sb=new StringBuffer();
+      StringBuilder sb=new StringBuilder();
       while(foo>=0){
         foo=in.read(); if(foo!=13){sb.append((char)foo);  continue;}
         foo=in.read(); if(foo!=10){continue;}
