@@ -5,12 +5,8 @@
     <packaging>jar</packaging>
     <version>0.1.66-SNAPSHOT</version>
     <name>JSch</name>
-    <url>http://www.jcraft.com/jsch/</url>
+    <url>https://github.com/mwiede/jsch</url>
     <description>JSch is a pure Java implementation of SSH2</description>
-    <organization>
-        <name>JCraft,Inc.</name>
-        <url>http://www.jcraft.com/</url>
-    </organization>
     <scm>
       <connection>scm:git:https://github.com/mwiede/jsch.git</connection>
       <developerConnection>scm:git:https://github.com/mwiede/jsch.git</developerConnection>
@@ -30,11 +26,22 @@
             </roles>
             <timezone>+9</timezone>
         </developer>
+        <developer>
+            <name>Matthias Wiedemann</name>
+            <email>mwiede@gmx.de</email>
+            <organization>Community</organization>
+            <organizationUrl>https://github.com/mwiede</organizationUrl>
+        </developer>
+        <developer>
+            <name>Jeremy Norris</name>
+            <organization>Community</organization>
+            <organizationUrl>https://github.com/norrisjeremy</organizationUrl>
+        </developer>
     </developers>
     <licenses>
         <license>
             <name>Revised BSD</name>
-            <url>http://www.jcraft.com/jsch/LICENSE.txt</url>
+            <url>https://github.com/mwiede/jsch/blob/master/LICENSE.txt</url>
         </license>
     </licenses>
     <properties>
