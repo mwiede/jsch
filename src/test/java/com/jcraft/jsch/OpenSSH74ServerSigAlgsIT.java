@@ -120,16 +120,14 @@ public class OpenSSH74ServerSigAlgsIT {
     String expectedExtInfo = "SSH_MSG_EXT_INFO received";
     String expectedServerSigAlgs = "server-sig-algs=<ssh-ed25519,ssh-rsa,ssh-dss,ecdsa-sha2-nistp256,ecdsa-sha2-nistp384,ecdsa-sha2-nistp521>";
     String expectedOpenSSH74Bug = "OpenSSH 7.4 detected: adding rsa-sha2-256 & rsa-sha2-512 to server-sig-algs";
-    String expectedPubkeysBefore = String.format("After getUnavailableSignatures PubkeyAcceptedAlgorithms = %s", algos);
-    String expectedPubkeysKnown = "PubkeyAcceptedAlgorithms in server-sig-algs = rsa-sha2-512,rsa-sha2-256,ssh-rsa";
-    String expectedPubkeysUnknown = "PubkeyAcceptedAlgorithms not in server-sig-algs = ssh-rsa-sha512@ssh.com,ssh-rsa-sha384@ssh.com,ssh-rsa-sha256@ssh.com,ssh-rsa-sha224@ssh.com";
+    String expectedPubkeysKnown = "PubkeyAcceptedAlgorithms in server-sig-algs = \\[rsa-sha2-512, rsa-sha2-256, ssh-rsa\\]";
+    String expectedPubkeysUnknown = "PubkeyAcceptedAlgorithms not in server-sig-algs = \\[ssh-rsa-sha512@ssh.com, ssh-rsa-sha384@ssh.com, ssh-rsa-sha256@ssh.com, ssh-rsa-sha224@ssh.com\\]";
     String expectedPreauth = "rsa-sha2-512 preauth success";
     String expectedAuth = "rsa-sha2-512 auth success";
     checkLogs(expectedKex);
     checkLogs(expectedExtInfo);
     checkLogs(expectedServerSigAlgs);
     checkLogs(expectedOpenSSH74Bug);
-    checkLogs(expectedPubkeysBefore);
     checkLogs(expectedPubkeysKnown);
     checkLogs(expectedPubkeysUnknown);
     checkLogs(expectedPreauth);

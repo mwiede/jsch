@@ -27,24 +27,21 @@ NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-package com.jcraft.jsch.jce;
+package com.jcraft.jsch.bc;
 
-import java.security.*;
-import java.security.interfaces.*;
-import java.security.spec.*;
-
-public class KeyPairGenXEC implements com.jcraft.jsch.KeyPairGenXEC {
-  XECPublicKey pubKey;
-  XECPrivateKey prvKey;
+public class SignatureEd448 extends SignatureEdDSA {
   @Override
-  public void init(String name) throws Exception {
-    KeyPairGenerator kpg = KeyPairGenerator.getInstance("XDH");
-    NamedParameterSpec paramSpec = new NamedParameterSpec(name);
-    kpg.initialize(paramSpec);
-    KeyPair kp = kpg.genKeyPair();
-    prvKey = (XECPrivateKey)kp.getPrivate();
-    pubKey = (XECPublicKey)kp.getPublic();
+  String getName() {
+    return "ssh-ed448";
   }
-  XECPublicKey getPublicKey(){ return pubKey; }
-  XECPrivateKey getPrivateKey(){ return prvKey; }
+
+  @Override
+  String getAlgo() {
+    return "Ed448";
+  }
+
+  @Override
+  int getKeylen() {
+    return 57;
+  }
 }

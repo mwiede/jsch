@@ -106,13 +106,9 @@ public class JSch{
 
     config.put("ecdh-sha2-nistp", "com.jcraft.jsch.jce.ECDHN");
 
-    config.put("ssh-ed25519", "com.jcraft.jsch.jce.SignatureEd25519");
-    config.put("ssh-ed448",   "com.jcraft.jsch.jce.SignatureEd448");
-
     config.put("curve25519-sha256",            "com.jcraft.jsch.DH25519");
     config.put("curve25519-sha256@libssh.org", "com.jcraft.jsch.DH25519");
     config.put("curve448-sha512",              "com.jcraft.jsch.DH448");
-    config.put("xdh", "com.jcraft.jsch.jce.XDH");
 
     config.put("dh",            "com.jcraft.jsch.jce.DH");
     config.put("3des-cbc",      "com.jcraft.jsch.jce.TripleDESCBC");
@@ -156,12 +152,10 @@ public class JSch{
     config.put("keypairgen.dsa",   "com.jcraft.jsch.jce.KeyPairGenDSA");
     config.put("keypairgen.rsa",   "com.jcraft.jsch.jce.KeyPairGenRSA");
     config.put("keypairgen.ecdsa", "com.jcraft.jsch.jce.KeyPairGenECDSA");
-    config.put("keypairgen.eddsa", "com.jcraft.jsch.jce.KeyPairGenEdDSA");
     config.put("random",        "com.jcraft.jsch.jce.Random");
 
     config.put("none",           "com.jcraft.jsch.CipherNone");
 
-    config.put("chacha20-poly1305@openssh.com",    "com.jcraft.jsch.jce.ChaCha20Poly1305");
     config.put("aes128-gcm@openssh.com",    "com.jcraft.jsch.jce.AES128GCM");
     config.put("aes256-gcm@openssh.com",    "com.jcraft.jsch.jce.AES256GCM");
 
@@ -188,6 +182,26 @@ public class JSch{
     config.put("zlib@openssh.com", "com.jcraft.jsch.jzlib.Compression");
 
     config.put("pbkdf", "com.jcraft.jsch.jce.PBKDF");
+
+    if(JavaVersion.getVersion()>=11){
+      config.put("chacha20-poly1305@openssh.com", "com.jcraft.jsch.jce.ChaCha20Poly1305");
+      config.put("xdh", "com.jcraft.jsch.jce.XDH");
+    }
+    else{
+      config.put("chacha20-poly1305@openssh.com", "com.jcraft.jsch.bc.ChaCha20Poly1305");
+      config.put("xdh", "com.jcraft.jsch.bc.XDH");
+    }
+
+    if(JavaVersion.getVersion()>=15){
+      config.put("keypairgen.eddsa", "com.jcraft.jsch.jce.KeyPairGenEdDSA");
+      config.put("ssh-ed25519", "com.jcraft.jsch.jce.SignatureEd25519");
+      config.put("ssh-ed448", "com.jcraft.jsch.jce.SignatureEd448");
+    }
+    else{
+      config.put("keypairgen.eddsa", "com.jcraft.jsch.bc.KeyPairGenEdDSA");
+      config.put("ssh-ed25519", "com.jcraft.jsch.bc.SignatureEd25519");
+      config.put("ssh-ed448", "com.jcraft.jsch.bc.SignatureEd448");
+    }
 
     config.put("StrictHostKeyChecking",  "ask");
     config.put("HashKnownHosts",  "no");

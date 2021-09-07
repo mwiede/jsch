@@ -610,7 +610,7 @@ public class Session implements Runnable{
       Class<?> c=Class.forName(getConfig(guess[KeyExchange.PROPOSAL_KEX_ALGS]));
       kex=(KeyExchange)(c.getDeclaredConstructor().newInstance());
     }
-    catch(Exception e){
+    catch(Exception | NoClassDefFoundError e){
       throw new JSchException(e.toString(), e);
     }
 
@@ -1528,7 +1528,7 @@ key_type+" key fingerprint is "+key_fprint+".\n"+
       method=guess[KeyExchange.PROPOSAL_COMP_ALGS_STOC];
       initInflater(method);
     }
-    catch(Exception e){
+    catch(Exception | NoClassDefFoundError e){
       if(e instanceof JSchException)
         throw e;
       throw new JSchException(e.toString(), e);
@@ -2574,9 +2574,6 @@ break;
           catch(Exception ee){ }
           deflater.init(Compression.DEFLATER, level);
         }
-        catch(NoClassDefFoundError ee){
-          throw new JSchException(ee.toString(), ee);
-        }
         catch(Exception ee){
           throw new JSchException(ee.toString(), ee);
           //System.err.println(foo+" isn't accessible.");
@@ -2855,7 +2852,7 @@ break;
               new byte[_c.getIVSize()]);
       return true;
     }
-    catch(Exception e){
+    catch(Exception | NoClassDefFoundError e){
       return false;
     }
   }
@@ -2904,7 +2901,7 @@ break;
       _c.init(new byte[_c.getBlockSize()]);
       return true;
     }
-    catch(Exception e){
+    catch(Exception | NoClassDefFoundError e){
       return false;
     }
   }
@@ -2947,7 +2944,7 @@ break;
       _c.init(s ,null, null, null, null);
       return true;
     }
-    catch(Exception e){ return false; }
+    catch(Exception | NoClassDefFoundError e){ return false; }
   }
 
   private String[] checkSignatures(String sigs){
@@ -2967,7 +2964,7 @@ break;
         final Signature sig=(Signature)(c.getDeclaredConstructor().newInstance());
         sig.init();
       }
-      catch(Exception e){
+      catch(Exception | NoClassDefFoundError e){
         result.addElement(_sigs[i]);
       }
    }

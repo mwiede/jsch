@@ -1,0 +1,14 @@
+FROM alpine:3.7
+ARG testuid
+ARG testgid
+RUN apk update && \
+    apk upgrade && \
+    apk add openssh su-exec && \
+    rm /var/cache/apk/* && \
+    addgroup -g $testgid testuser && \
+    adduser -Du $testuid -G testuser -Hh /testuser -s /bin/sh -g testuser testuser && \
+    mkdir /testuser && \
+    chown testuser:testuser /testuser && \
+    chmod 700 /testuser && \
+    passwd -u testuser
+ENTRYPOINT ["/sbin/su-exec", "testuser:testuser", "/usr/bin/ssh-agent", "-d", "-a", "/testuser/sock"]

@@ -121,6 +121,19 @@ public class Algorithms2IT {
   public void testJava11KEXs() throws Exception {
     JSch ssh = createRSAIdentity();
     Session session = createSession(ssh);
+    session.setConfig("xdh", "com.jcraft.jsch.jce.XDH");
+    session.setConfig("kex", "curve448-sha512");
+    doSftp(session, true);
+
+    String expected = "kex: algorithm: curve448-sha512.*";
+    checkLogs(expected);
+  }
+
+  @Test
+  public void testBCKEXs() throws Exception {
+    JSch ssh = createRSAIdentity();
+    Session session = createSession(ssh);
+    session.setConfig("xdh", "com.jcraft.jsch.bc.XDH");
     session.setConfig("kex", "curve448-sha512");
     doSftp(session, true);
 
@@ -131,6 +144,7 @@ public class Algorithms2IT {
   @ParameterizedTest
   @ValueSource(
       strings = {
+        "curve448-sha512",
         "diffie-hellman-group17-sha512",
         "diffie-hellman-group15-sha512",
         "diffie-hellman-group18-sha512@ssh.com",
@@ -192,6 +206,34 @@ public class Algorithms2IT {
 
   @Test
   @EnabledForJreRange(min = JAVA_15)
+  public void testJava15Ed448() throws Exception {
+    JSch ssh = createEd448Identity();
+    Session session = createSession(ssh);
+    session.setConfig("keypairgen.eddsa", "com.jcraft.jsch.jce.KeyPairGenEdDSA");
+    session.setConfig("ssh-ed448", "com.jcraft.jsch.jce.SignatureEd448");
+    session.setConfig("PubkeyAcceptedAlgorithms", "ssh-ed448");
+    session.setConfig("server_host_key", "ssh-ed448");
+    doSftp(session, true);
+
+    String expected = "kex: host key algorithm: ssh-ed448.*";
+    checkLogs(expected);
+  }
+
+  @Test
+  public void testBCEd448() throws Exception {
+    JSch ssh = createEd448Identity();
+    Session session = createSession(ssh);
+    session.setConfig("keypairgen.eddsa", "com.jcraft.jsch.bc.KeyPairGenEdDSA");
+    session.setConfig("ssh-ed448", "com.jcraft.jsch.bc.SignatureEd448");
+    session.setConfig("PubkeyAcceptedAlgorithms", "ssh-ed448");
+    session.setConfig("server_host_key", "ssh-ed448");
+    doSftp(session, true);
+
+    String expected = "kex: host key algorithm: ssh-ed448.*";
+    checkLogs(expected);
+  }
+
+  @Test
   public void testEd448() throws Exception {
     JSch ssh = createEd448Identity();
     Session session = createSession(ssh);

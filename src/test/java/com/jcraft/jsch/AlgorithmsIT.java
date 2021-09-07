@@ -121,6 +121,20 @@ public class AlgorithmsIT {
   public void testJava11KEXs(String kex) throws Exception {
     JSch ssh = createRSAIdentity();
     Session session = createSession(ssh);
+    session.setConfig("xdh", "com.jcraft.jsch.jce.XDH");
+    session.setConfig("kex", kex);
+    doSftp(session, true);
+
+    String expected = String.format("kex: algorithm: %s.*", kex);
+    checkLogs(expected);
+  }
+
+  @ParameterizedTest
+  @ValueSource(strings = {"curve25519-sha256", "curve25519-sha256@libssh.org"})
+  public void testBCKEXs(String kex) throws Exception {
+    JSch ssh = createRSAIdentity();
+    Session session = createSession(ssh);
+    session.setConfig("xdh", "com.jcraft.jsch.bc.XDH");
     session.setConfig("kex", kex);
     doSftp(session, true);
 
@@ -131,6 +145,8 @@ public class AlgorithmsIT {
   @ParameterizedTest
   @ValueSource(
       strings = {
+        "curve25519-sha256",
+        "curve25519-sha256@libssh.org",
         "ecdh-sha2-nistp521",
         "ecdh-sha2-nistp384",
         "ecdh-sha2-nistp256",
@@ -183,6 +199,34 @@ public class AlgorithmsIT {
 
   @Test
   @EnabledForJreRange(min = JAVA_15)
+  public void testJava15Ed25519() throws Exception {
+    JSch ssh = createEd25519Identity();
+    Session session = createSession(ssh);
+    session.setConfig("keypairgen.eddsa", "com.jcraft.jsch.jce.KeyPairGenEdDSA");
+    session.setConfig("ssh-ed25519", "com.jcraft.jsch.jce.SignatureEd25519");
+    session.setConfig("PubkeyAcceptedAlgorithms", "ssh-ed25519");
+    session.setConfig("server_host_key", "ssh-ed25519");
+    doSftp(session, true);
+
+    String expected = "kex: host key algorithm: ssh-ed25519.*";
+    checkLogs(expected);
+  }
+
+  @Test
+  public void testBCEd25519() throws Exception {
+    JSch ssh = createEd25519Identity();
+    Session session = createSession(ssh);
+    session.setConfig("keypairgen.eddsa", "com.jcraft.jsch.bc.KeyPairGenEdDSA");
+    session.setConfig("ssh-ed25519", "com.jcraft.jsch.bc.SignatureEd25519");
+    session.setConfig("PubkeyAcceptedAlgorithms", "ssh-ed25519");
+    session.setConfig("server_host_key", "ssh-ed25519");
+    doSftp(session, true);
+
+    String expected = "kex: host key algorithm: ssh-ed25519.*";
+    checkLogs(expected);
+  }
+
+  @Test
   public void testEd25519() throws Exception {
     JSch ssh = createEd25519Identity();
     Session session = createSession(ssh);
@@ -265,6 +309,7 @@ public class AlgorithmsIT {
   public void testJava11Ciphers(String cipher, String compression) throws Exception {
     JSch ssh = createRSAIdentity();
     Session session = createSession(ssh);
+    session.setConfig("chacha20-poly1305@openssh.com", "com.jcraft.jsch.jce.ChaCha20Poly1305");
     session.setConfig("cipher.s2c", cipher);
     session.setConfig("cipher.c2s", cipher);
     session.setConfig("compression.s2c", compression);
@@ -280,6 +325,30 @@ public class AlgorithmsIT {
   @ParameterizedTest
   @CsvSource(
       value = {
+        "chacha20-poly1305@openssh.com,none",
+        "chacha20-poly1305@openssh.com,zlib@openssh.com"
+      })
+  public void testBCCiphers(String cipher, String compression) throws Exception {
+    JSch ssh = createRSAIdentity();
+    Session session = createSession(ssh);
+    session.setConfig("chacha20-poly1305@openssh.com", "com.jcraft.jsch.bc.ChaCha20Poly1305");
+    session.setConfig("cipher.s2c", cipher);
+    session.setConfig("cipher.c2s", cipher);
+    session.setConfig("compression.s2c", compression);
+    session.setConfig("compression.c2s", compression);
+    doSftp(session, true);
+
+    String expectedS2C = String.format("kex: server->client cipher: %s.*", cipher);
+    String expectedC2S = String.format("kex: client->server cipher: %s.*", cipher);
+    checkLogs(expectedS2C);
+    checkLogs(expectedC2S);
+  }
+
+  @ParameterizedTest
+  @CsvSource(
+      value = {
+        "chacha20-poly1305@openssh.com,none",
+        "chacha20-poly1305@openssh.com,zlib@openssh.com",
         "aes256-gcm@openssh.com,none",
         "aes256-gcm@openssh.com,zlib@openssh.com",
         "aes128-gcm@openssh.com,none",

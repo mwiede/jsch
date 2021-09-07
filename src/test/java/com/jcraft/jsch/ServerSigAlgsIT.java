@@ -119,15 +119,13 @@ public class ServerSigAlgsIT {
     String expectedKex = "kex: host key algorithm: rsa-sha2-512";
     String expectedExtInfo = "SSH_MSG_EXT_INFO received";
     String expectedServerSigAlgs = "server-sig-algs=<ssh-ed25519,ssh-rsa,rsa-sha2-256,rsa-sha2-512,ssh-dss,ecdsa-sha2-nistp256,ecdsa-sha2-nistp384,ecdsa-sha2-nistp521>";
-    String expectedPubkeysBefore = String.format("After getUnavailableSignatures PubkeyAcceptedAlgorithms = %s", algos);
-    String expectedPubkeysKnown = "PubkeyAcceptedAlgorithms in server-sig-algs = rsa-sha2-512,rsa-sha2-256,ssh-rsa";
-    String expectedPubkeysUnknown = "PubkeyAcceptedAlgorithms not in server-sig-algs = ssh-rsa-sha512@ssh.com,ssh-rsa-sha384@ssh.com,ssh-rsa-sha256@ssh.com,ssh-rsa-sha224@ssh.com";
+    String expectedPubkeysKnown = "PubkeyAcceptedAlgorithms in server-sig-algs = \\[rsa-sha2-512, rsa-sha2-256, ssh-rsa\\]";
+    String expectedPubkeysUnknown = "PubkeyAcceptedAlgorithms not in server-sig-algs = \\[ssh-rsa-sha512@ssh.com, ssh-rsa-sha384@ssh.com, ssh-rsa-sha256@ssh.com, ssh-rsa-sha224@ssh.com\\]";
     String expectedPreauth = "rsa-sha2-512 preauth success";
     String expectedAuth = "rsa-sha2-512 auth success";
     checkLogs(expectedKex);
     checkLogs(expectedExtInfo);
     checkLogs(expectedServerSigAlgs);
-    checkLogs(expectedPubkeysBefore);
     checkLogs(expectedPubkeysKnown);
     checkLogs(expectedPubkeysUnknown);
     checkLogs(expectedPreauth);
@@ -145,7 +143,6 @@ public class ServerSigAlgsIT {
     doSftp(session, true);
 
     String expectedKex = "kex: host key algorithm: rsa-sha2-512";
-    String expectedPubkeysBefore = String.format("After getUnavailableSignatures PubkeyAcceptedAlgorithms = %s", algos);
     String expectedPubkeysNoServerSigs = String.format("No server-sig-algs found, using PubkeyAcceptedAlgorithms = %s", algos);
     String expectedPreauthFail1 = "ssh-rsa-sha512@ssh.com preauth failure";
     String expectedPreauthFail2 = "ssh-rsa-sha384@ssh.com preauth failure";
@@ -154,7 +151,6 @@ public class ServerSigAlgsIT {
     String expectedPreauth = "rsa-sha2-512 preauth success";
     String expectedAuth = "rsa-sha2-512 auth success";
     checkLogs(expectedKex);
-    checkLogs(expectedPubkeysBefore);
     checkLogs(expectedPreauthFail1);
     checkLogs(expectedPreauthFail2);
     checkLogs(expectedPreauthFail3);

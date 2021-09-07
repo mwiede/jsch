@@ -27,13 +27,14 @@ NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-package com.jcraft.jsch.jce;
+package com.jcraft.jsch.bc;
 
 import com.jcraft.jsch.Cipher;
 import com.jcraft.jsch.openjax.Poly1305;
 import java.nio.ByteBuffer;
 import javax.crypto.AEADBadTagException;
-import javax.crypto.spec.*;
+import org.bouncycastle.crypto.engines.ChaChaEngine;
+import org.bouncycastle.crypto.params.*;
 
 public class ChaCha20Poly1305 implements Cipher{
   //Actually the block size, not IV size
@@ -41,10 +42,10 @@ public class ChaCha20Poly1305 implements Cipher{
   //Actually the key size, not block size
   private static final int bsize=64;
   private static final int tagsize=16;
-  private javax.crypto.Cipher header_cipher;
-  private javax.crypto.Cipher main_cipher;
-  private SecretKeySpec K_1_spec;
-  private SecretKeySpec K_2_spec;
+  private ChaChaEngine header_cipher;
+  private ChaChaEngine main_cipher;
+  private KeyParameter K_1_spec;
+  private KeyParameter K_2_spec;
   private int mode;
   private Poly1305 poly1305;
   @Override
@@ -65,14 +66,12 @@ public class ChaCha20Poly1305 implements Cipher{
     byte[] K_2=new byte[bsize/2];
     System.arraycopy(key, bsize/2, K_1, 0, bsize/2);
     System.arraycopy(key, 0, K_2, 0, bsize/2);
-    this.mode=((mode==ENCRYPT_MODE)?
-                javax.crypto.Cipher.ENCRYPT_MODE:
-                javax.crypto.Cipher.DECRYPT_MODE);
+    this.mode=mode;
     try{
-      K_1_spec=new SecretKeySpec(K_1, "ChaCha20");
-      K_2_spec=new SecretKeySpec(K_2, "ChaCha20");
-      header_cipher=javax.crypto.Cipher.getInstance("ChaCha20");
-      main_cipher=javax.crypto.Cipher.getInstance("ChaCha20");
+      K_1_spec=new KeyParameter(K_1);
+      K_2_spec=new KeyParameter(K_2);
+      header_cipher=new ChaChaEngine();
+      main_cipher=new ChaChaEngine();
     }
     catch(Exception e){
       header_cipher=null;
@@ -84,28 +83,28 @@ public class ChaCha20Poly1305 implements Cipher{
   }
   @Override
   public void update(int foo) throws Exception{
-    ByteBuffer nonce=ByteBuffer.allocate(12);
-    nonce.putLong(4, foo);
-    header_cipher.init(this.mode, K_1_spec, new ChaCha20ParameterSpec(nonce.array(), 0));
-    main_cipher.init(this.mode, K_2_spec, new ChaCha20ParameterSpec(nonce.array(), 0));
+    ByteBuffer nonce=ByteBuffer.allocate(8);
+    nonce.putLong(0, foo);
+    header_cipher.init(this.mode==ENCRYPT_MODE, new ParametersWithIV(K_1_spec, nonce.array()));
+    main_cipher.init(this.mode==ENCRYPT_MODE, new ParametersWithIV(K_2_spec, nonce.array()));
     // Trying to reinit the cipher again with same nonce results in InvalidKeyException
     // So just read entire first 64-byte block, which should increment global counter from 0->1
     byte[] poly_key = new byte[32];
     byte[] discard = new byte[32];
-    main_cipher.update(poly_key, 0, 32, poly_key, 0);
-    main_cipher.update(discard, 0, 32, discard, 0);
+    main_cipher.processBytes(poly_key, 0, 32, poly_key, 0);
+    main_cipher.processBytes(discard, 0, 32, discard, 0);
     poly1305 = new Poly1305(poly_key);
   }
   @Override
   public void update(byte[] foo, int s1, int len, byte[] bar, int s2) throws Exception{
-    header_cipher.update(foo, s1, len, bar, s2);
+    header_cipher.processBytes(foo, s1, len, bar, s2);
   }
   @Override
   public void updateAAD(byte[] foo, int s1, int len) throws Exception{
   }
   @Override
   public void doFinal(byte[] foo, int s1, int len, byte[] bar, int s2) throws Exception{
-    if(this.mode==javax.crypto.Cipher.DECRYPT_MODE){
+    if(this.mode==DECRYPT_MODE){
       byte[] actual_tag = new byte[tagsize];
       System.arraycopy(foo, len, actual_tag, 0, tagsize);
       byte[] expected_tag = new byte[tagsize];
@@ -115,9 +114,9 @@ public class ChaCha20Poly1305 implements Cipher{
       }
     }
 
-    main_cipher.update(foo, s1+4, len-4, bar, s2+4);
+    main_cipher.processBytes(foo, s1+4, len-4, bar, s2+4);
 
-    if(this.mode==javax.crypto.Cipher.ENCRYPT_MODE){
+    if(this.mode==ENCRYPT_MODE){
       poly1305.update(bar, s2, len).finish(bar, len);
     }
   }

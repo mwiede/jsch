@@ -51,6 +51,12 @@
     </properties>
     <dependencies>
         <dependency>
+            <groupId>org.bouncycastle</groupId>
+            <artifactId>bcprov-jdk15on</artifactId>
+            <version>1.69</version>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
             <groupId>com.kohlschutter.junixsocket</groupId>
             <artifactId>junixsocket-common</artifactId>
             <version>${junixsocket.version}</version>
@@ -335,6 +341,7 @@
                         <version>0.8.7</version>
                         <configuration>
                             <excludes>
+                                <exclude>com/jcraft/jsch/JavaVersion.class</exclude>
                                 <exclude>com/jcraft/jsch/UnixDomainSocketFactory.class</exclude>
                             </excludes>
                         </configuration>

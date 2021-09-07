@@ -1,6 +1,6 @@
 /* -*-mode:java; c-basic-offset:2; indent-tabs-mode:nil -*- */
 /*
-Copyright (c) 2015-2018 ymnk, JCraft,Inc. All rights reserved.
+Copyright (c) 2002-2018 ymnk, JCraft,Inc. All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions are met:
@@ -27,24 +27,38 @@ NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-package com.jcraft.jsch.jce;
+package com.jcraft.jsch.bc;
 
-import java.security.*;
-import java.security.interfaces.*;
-import java.security.spec.*;
+import java.security.SecureRandom;
+import org.bouncycastle.crypto.params.*;
 
-public class KeyPairGenXEC implements com.jcraft.jsch.KeyPairGenXEC {
-  XECPublicKey pubKey;
-  XECPrivateKey prvKey;
+public class KeyPairGenEdDSA implements com.jcraft.jsch.KeyPairGenEdDSA{
+  byte[] prv;  // private
+  byte[] pub;  // public
+  int keylen;
+  String name;
+
   @Override
-  public void init(String name) throws Exception {
-    KeyPairGenerator kpg = KeyPairGenerator.getInstance("XDH");
-    NamedParameterSpec paramSpec = new NamedParameterSpec(name);
-    kpg.initialize(paramSpec);
-    KeyPair kp = kpg.genKeyPair();
-    prvKey = (XECPrivateKey)kp.getPrivate();
-    pubKey = (XECPublicKey)kp.getPublic();
+  public void init(String name, int keylen) throws Exception{
+    if(!name.equals("Ed25519") && !name.equals("Ed448")){
+      throw new IllegalArgumentException("invalid curve");
+    }
+    this.keylen = keylen;
+    this.name = name;
+
+    if(name.equals("Ed25519")){
+      Ed25519PrivateKeyParameters privateKey = new Ed25519PrivateKeyParameters(new SecureRandom());
+      pub = privateKey.generatePublicKey().getEncoded();
+      prv = privateKey.getEncoded();
+    }
+    else{
+      Ed448PrivateKeyParameters privateKey = new Ed448PrivateKeyParameters(new SecureRandom());
+      pub = privateKey.generatePublicKey().getEncoded();
+      prv = privateKey.getEncoded();
+    }
   }
-  XECPublicKey getPublicKey(){ return pubKey; }
-  XECPrivateKey getPrivateKey(){ return prvKey; }
+  @Override
+  public byte[] getPrv(){return pub;}
+  @Override
+  public byte[] getPub(){return prv;}
 }
