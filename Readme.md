@@ -64,6 +64,7 @@ As I explained in a [blog post](http://www.matez.de/index.php/2020/06/22/the-fut
   * This library is a Multi-Release-jar, which means that you can only use certain features when a more recent Java version is used.
     * In order to use ssh-ed25519 & ssh-ed448, you must use at least Java 15.
     * In order to use curve25519-sha256, curve448-sha512 & chacha20-poly1305@<!-- -->openssh.com, you must use at least Java 11.
+  * As of the [0.1.66](https://github.com/mwiede/jsch/releases/tag/jsch-0.1.66) release, these algorithms can now be used with older Java releases if [Bouncy Castle](https://www.bouncycastle.org/) (bcprov-jdk15on) is added to the classpath.
 
 ## Changes since fork:
 * [0.1.66](https://github.com/mwiede/jsch/releases/tag/jsch-0.1.66)
@@ -99,6 +100,13 @@ As I explained in a [blog post](http://www.matez.de/index.php/2020/06/22/the-fut
     * See `examples/JSchWithAgentProxy.java` for simple example
     * ssh-agent support requires either [Java 16's JEP 380](https://openjdk.java.net/jeps/380) or the addition of [junixsocket](https://github.com/kohlschutter/junixsocket) to classpath
     * Pageant support is untested & requires the addition of [JNA](https://github.com/java-native-access/jna) to classpath
+  * Added support for the following algorithms with older Java releases by using [Bouncy Castle](https://www.bouncycastle.org/):
+    * ssh-ed25519
+    * ssh-ed448
+    * curve25519-sha256
+    * curve25519-sha256@<!-- -->libssh.org
+    * curve448-sha512
+    * chacha20-poly1305@<!-- -->openssh.com
 * [0.1.65](https://github.com/mwiede/jsch/releases/tag/jsch-0.1.65)
   * Added system properties to allow manipulation of various crypto algorithms used by default
   * Integrated JZlib, allowing use of zlib@<!-- -->openssh.com & zlib compressions without the need to provide the JZlib jar-file

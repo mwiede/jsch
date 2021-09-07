@@ -89,7 +89,7 @@ public abstract class DHXEC extends KeyExchange{
       Q_C = xdh.getQ();
       buf.putString(Q_C);
     }
-    catch(Exception e){
+    catch(Exception | NoClassDefFoundError e){
       throw new JSchException(e.toString(), e);
     }
 

@@ -57,7 +57,7 @@ public abstract class KeyPairEdDSA extends KeyPair{
 
       keypairgen=null;
     }
-    catch(Exception e){
+    catch(Exception | NoClassDefFoundError e){
       //System.err.println("KeyPairEdDSA: "+e);
       throw new JSchException(e.toString(), e);
     }
@@ -134,7 +134,7 @@ public abstract class KeyPairEdDSA extends KeyPair{
       tmp[1] = sig;
       return Buffer.fromBytes(tmp).buffer;
     }
-    catch(Exception e){
+    catch(Exception | NoClassDefFoundError e){
     }
     return null;
   }
@@ -160,7 +160,7 @@ public abstract class KeyPairEdDSA extends KeyPair{
       eddsa.setPubKey(pub_array);
       return eddsa;
     }
-    catch(Exception e){
+    catch(Exception | NoClassDefFoundError e){
     }
     return null;
   }

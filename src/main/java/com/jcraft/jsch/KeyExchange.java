@@ -143,18 +143,25 @@ public abstract class KeyExchange{
       }
     }
 
-    Class<?> _s2cclazz=Class.forName(session.getConfig(guess[PROPOSAL_ENC_ALGS_STOC]));
-    Cipher _s2ccipher=(Cipher)(_s2cclazz.getDeclaredConstructor().newInstance());
-    boolean _s2cAEAD=_s2ccipher.isAEAD();
-    if(_s2cAEAD){
-      guess[PROPOSAL_MAC_ALGS_STOC]=null;
-    }
+    boolean _s2cAEAD=false;
+    boolean _c2sAEAD=false;
+    try{
+      Class<?> _s2cclazz=Class.forName(session.getConfig(guess[PROPOSAL_ENC_ALGS_STOC]));
+      Cipher _s2ccipher=(Cipher)(_s2cclazz.getDeclaredConstructor().newInstance());
+      _s2cAEAD=_s2ccipher.isAEAD();
+      if(_s2cAEAD){
+        guess[PROPOSAL_MAC_ALGS_STOC]=null;
+      }
 
-    Class<?> _c2sclazz=Class.forName(session.getConfig(guess[PROPOSAL_ENC_ALGS_CTOS]));
-    Cipher _c2scipher=(Cipher)(_c2sclazz.getDeclaredConstructor().newInstance());
-    boolean _c2sAEAD=_c2scipher.isAEAD();
-    if(_c2sAEAD){
-      guess[PROPOSAL_MAC_ALGS_CTOS]=null;
+      Class<?> _c2sclazz=Class.forName(session.getConfig(guess[PROPOSAL_ENC_ALGS_CTOS]));
+      Cipher _c2scipher=(Cipher)(_c2sclazz.getDeclaredConstructor().newInstance());
+      _c2sAEAD=_c2scipher.isAEAD();
+      if(_c2sAEAD){
+        guess[PROPOSAL_MAC_ALGS_CTOS]=null;
+      }
+    }
+    catch(Exception | NoClassDefFoundError e){
+      throw new JSchException(e.toString(), e);
     }
 
     if(JSch.getLogger().isEnabled(Logger.INFO)){
@@ -361,7 +368,7 @@ public abstract class KeyExchange{
         sig=(SignatureEdDSA)(c.getDeclaredConstructor().newInstance());
         sig.init();
       }
-      catch(Exception e){
+      catch(Exception | NoClassDefFoundError e){
         System.err.println(e);
       }
 
