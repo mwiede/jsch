@@ -29,7 +29,7 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 package com.jcraft.jsch.bc;
 
-import java.security.SecureRandom;
+import java.security.*;
 import org.bouncycastle.crypto.params.*;
 
 public class KeyPairGenEdDSA implements com.jcraft.jsch.KeyPairGenEdDSA{
@@ -41,7 +41,7 @@ public class KeyPairGenEdDSA implements com.jcraft.jsch.KeyPairGenEdDSA{
   @Override
   public void init(String name, int keylen) throws Exception{
     if(!name.equals("Ed25519") && !name.equals("Ed448")){
-      throw new IllegalArgumentException("invalid curve");
+      throw new NoSuchAlgorithmException("invalid curve " + name);
     }
     this.keylen = keylen;
     this.name = name;
