@@ -701,7 +701,7 @@ public class Session implements Runnable{
     }
 
     String enable_server_sig_algs=getConfig("enable_server_sig_algs");
-    if(enable_server_sig_algs.equals("yes")){
+    if(enable_server_sig_algs.equals("yes") && !isAuthed){
       kex+=",ext-info-c";
     }
 
