@@ -374,7 +374,9 @@ public class AlgorithmsIT {
         "arcfour256,none",
         "arcfour256,zlib@openssh.com",
         "arcfour128,none",
-        "arcfour128,zlib@openssh.com"
+        "arcfour128,zlib@openssh.com",
+        "rijndael-cbc@lysator.liu.se,none",
+        "rijndael-cbc@lysator.liu.se,zlib@openssh.com"
       })
   public void testCiphers(String cipher, String compression) throws Exception {
     JSch ssh = createRSAIdentity();
