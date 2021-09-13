@@ -168,6 +168,9 @@ public class JSch{
     config.put("aes256-cbc",    "com.jcraft.jsch.jce.AES256CBC");
     config.put("rijndael-cbc@lysator.liu.se",    "com.jcraft.jsch.jce.AES256CBC");
 
+    config.put("cast128-cbc",    "com.jcraft.jsch.bc.CAST128CBC");
+    config.put("cast128-ctr",    "com.jcraft.jsch.bc.CAST128CTR");
+
     config.put("aes128-ctr",    "com.jcraft.jsch.jce.AES128CTR");
     config.put("aes192-ctr",    "com.jcraft.jsch.jce.AES192CTR");
     config.put("aes256-ctr",    "com.jcraft.jsch.jce.AES256CTR");
