@@ -1,5 +1,6 @@
 * [0.1.68](https://github.com/mwiede/jsch/releases/tag/jsch-0.1.68)
   * Added support for the rijndael-cbc@<!-- -->lysator.liu.se algorithm
+  * Added support for the hmac-ripemd160, hmac-ripemd160@<!-- -->openssh.com and hmac-ripemd160-etm@<!-- -->openssh.com algorithms using [Bouncy Castle](https://www.bouncycastle.org/)
 * [0.1.67](https://github.com/mwiede/jsch/releases/tag/jsch-0.1.67)
   * Added support for the blowfish-ctr algorithm from [RFC 4344](https://datatracker.ietf.org/doc/html/rfc4344)
   * Fix bug where ext-info-c was incorrectly advertised during rekeying

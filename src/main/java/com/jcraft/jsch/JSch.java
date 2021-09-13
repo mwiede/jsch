@@ -154,6 +154,10 @@ public class JSch{
     config.put("keypairgen.ecdsa", "com.jcraft.jsch.jce.KeyPairGenECDSA");
     config.put("random",        "com.jcraft.jsch.jce.Random");
 
+    config.put("hmac-ripemd160", "com.jcraft.jsch.bc.HMACRIPEMD160");
+    config.put("hmac-ripemd160@openssh.com", "com.jcraft.jsch.bc.HMACRIPEMD160OpenSSH");
+    config.put("hmac-ripemd160-etm@openssh.com", "com.jcraft.jsch.bc.HMACRIPEMD160ETM");
+
     config.put("none",           "com.jcraft.jsch.CipherNone");
 
     config.put("aes128-gcm@openssh.com",    "com.jcraft.jsch.jce.AES128GCM");

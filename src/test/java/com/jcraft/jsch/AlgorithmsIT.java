@@ -419,7 +419,13 @@ public class AlgorithmsIT {
         "hmac-md5,none",
         "hmac-md5,zlib@openssh.com",
         "hmac-md5-96,none",
-        "hmac-md5-96,zlib@openssh.com"
+        "hmac-md5-96,zlib@openssh.com",
+        "hmac-ripemd160,none",
+        "hmac-ripemd160,zlib@openssh.com",
+        "hmac-ripemd160@openssh.com,none",
+        "hmac-ripemd160@openssh.com,zlib@openssh.com",
+        "hmac-ripemd160-etm@openssh.com,none",
+        "hmac-ripemd160-etm@openssh.com,zlib@openssh.com"
       })
   public void testMACs(String mac, String compression) throws Exception {
     JSch ssh = createRSAIdentity();
