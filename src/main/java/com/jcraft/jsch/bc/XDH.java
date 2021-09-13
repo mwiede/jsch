@@ -69,7 +69,7 @@ public class XDH implements com.jcraft.jsch.XDH {
     if(name.equals("X25519")){
       X25519PublicKeyParameters publicKey = null;
       try{
-        publicKey = new X25519PublicKeyParameters(Q);
+        publicKey = new X25519PublicKeyParameters(Q, 0);
       }
       catch(Exception e){
         throw new InvalidKeyException(e);
@@ -86,7 +86,7 @@ public class XDH implements com.jcraft.jsch.XDH {
     else{
       X448PublicKeyParameters publicKey = null;
       try{
-        publicKey = new X448PublicKeyParameters(Q);
+        publicKey = new X448PublicKeyParameters(Q, 0);
       }
       catch(Exception e){
         throw new InvalidKeyException(e);

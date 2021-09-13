@@ -2,6 +2,7 @@
   * Added support for the blowfish-ctr algorithm from [RFC 4344](https://datatracker.ietf.org/doc/html/rfc4344)
   * Fix bug where ext-info-c was incorrectly advertised during rekeying
     * According to [RFC 8308 section 2.1](https://datatracker.ietf.org/doc/html/rfc8308#section-2.1), ext-info-c should only advertised during the first key exchange
+  * Address [#77](https://github.com/mwiede/jsch/issues/77) by attempting to add compatibility with older [Bouncy Castle](https://www.bouncycastle.org/) releases
 * [0.1.66](https://github.com/mwiede/jsch/releases/tag/jsch-0.1.66)
   * Added support for [RFC 8308](https://datatracker.ietf.org/doc/html/rfc8308) extension negotiation and server-sig-algs extension
     * This support is enabled by default, but can be controlled via the enable_server_sig_algs config option (or `jsch.enable_server_sig_algs` system property)

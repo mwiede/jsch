@@ -63,11 +63,11 @@ public abstract class SignatureEdDSA implements com.jcraft.jsch.SignatureEdDSA {
   public void setPubKey(byte[] y_arr) throws Exception{
     try {
       if(getAlgo().equals("Ed25519")){
-        Ed25519PublicKeyParameters pubKey = new Ed25519PublicKeyParameters(y_arr);
+        Ed25519PublicKeyParameters pubKey = new Ed25519PublicKeyParameters(y_arr, 0);
         signature.init(false, pubKey);
       }
       else{
-        Ed448PublicKeyParameters pubKey = new Ed448PublicKeyParameters(y_arr);
+        Ed448PublicKeyParameters pubKey = new Ed448PublicKeyParameters(y_arr, 0);
         signature.init(false, pubKey);
       }
     }
@@ -80,11 +80,11 @@ public abstract class SignatureEdDSA implements com.jcraft.jsch.SignatureEdDSA {
   public void setPrvKey(byte[] bytes) throws Exception{
     try {
       if(getAlgo().equals("Ed25519")){
-        Ed25519PrivateKeyParameters prvKey = new Ed25519PrivateKeyParameters(bytes);
+        Ed25519PrivateKeyParameters prvKey = new Ed25519PrivateKeyParameters(bytes, 0);
         signature.init(true, prvKey);
       }
       else{
-        Ed448PrivateKeyParameters prvKey = new Ed448PrivateKeyParameters(bytes);
+        Ed448PrivateKeyParameters prvKey = new Ed448PrivateKeyParameters(bytes, 0);
         signature.init(true, prvKey);
       }
     }
