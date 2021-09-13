@@ -30,6 +30,7 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 package com.jcraft.jsch.bc;
 
 import java.nio.charset.StandardCharsets;
+import java.security.*;
 import java.util.Arrays;
 import org.bouncycastle.crypto.Signer;
 import org.bouncycastle.crypto.params.*;
@@ -47,7 +48,7 @@ public abstract class SignatureEdDSA implements com.jcraft.jsch.SignatureEdDSA {
   @Override
   public void init() throws Exception{
     if(!getAlgo().equals("Ed25519") && !getAlgo().equals("Ed448")){
-      throw new IllegalArgumentException("invalid curve");
+      throw new NoSuchAlgorithmException("invalid curve " + getAlgo());
     }
 
     if(getAlgo().equals("Ed25519")){
@@ -60,37 +61,56 @@ public abstract class SignatureEdDSA implements com.jcraft.jsch.SignatureEdDSA {
 
   @Override
   public void setPubKey(byte[] y_arr) throws Exception{
-    if(getAlgo().equals("Ed25519")){
-      Ed25519PublicKeyParameters pubKey = new Ed25519PublicKeyParameters(y_arr);
-      signature.init(false, pubKey);
+    try {
+      if(getAlgo().equals("Ed25519")){
+        Ed25519PublicKeyParameters pubKey = new Ed25519PublicKeyParameters(y_arr, 0);
+        signature.init(false, pubKey);
+      }
+      else{
+        Ed448PublicKeyParameters pubKey = new Ed448PublicKeyParameters(y_arr, 0);
+        signature.init(false, pubKey);
+      }
     }
-    else{
-      Ed448PublicKeyParameters pubKey = new Ed448PublicKeyParameters(y_arr);
-      signature.init(false, pubKey);
+    catch(Exception e){
+      throw new InvalidKeyException(e);
     }
   }
 
   @Override
   public void setPrvKey(byte[] bytes) throws Exception{
-    if(getAlgo().equals("Ed25519")){
-      Ed25519PrivateKeyParameters prvKey = new Ed25519PrivateKeyParameters(bytes);
-      signature.init(true, prvKey);
+    try {
+      if(getAlgo().equals("Ed25519")){
+        Ed25519PrivateKeyParameters prvKey = new Ed25519PrivateKeyParameters(bytes, 0);
+        signature.init(true, prvKey);
+      }
+      else{
+        Ed448PrivateKeyParameters prvKey = new Ed448PrivateKeyParameters(bytes, 0);
+        signature.init(true, prvKey);
+      }
     }
-    else{
-      Ed448PrivateKeyParameters prvKey = new Ed448PrivateKeyParameters(bytes);
-      signature.init(true, prvKey);
+    catch(Exception e){
+      throw new InvalidKeyException(e);
     }
   }
 
   @Override
   public byte[] sign() throws Exception{
-    byte[] sig = signature.generateSignature();
-    return sig;
+    try {
+      return signature.generateSignature();
+    }
+    catch(Exception e){
+      throw new SignatureException(e);
+    }
   }
 
   @Override
   public void update(byte[] foo) throws Exception{
-    signature.update(foo, 0, foo.length);
+    try {
+      signature.update(foo, 0, foo.length);
+    }
+    catch(Exception e){
+      throw new SignatureException(e);
+    }
   }
 
   @Override
@@ -109,6 +129,11 @@ public abstract class SignatureEdDSA implements com.jcraft.jsch.SignatureEdDSA {
       sig = tmp;
     }
 
-    return signature.verifySignature(sig);
+    try {
+      return signature.verifySignature(sig);
+    }
+    catch(Exception e){
+      throw new SignatureException(e);
+    }
   }
 }

@@ -68,8 +68,8 @@ public class ChaCha20Poly1305 implements Cipher{
     System.arraycopy(key, 0, K_2, 0, bsize/2);
     this.mode=mode;
     try{
-      K_1_spec=new KeyParameter(K_1);
-      K_2_spec=new KeyParameter(K_2);
+      K_1_spec=new KeyParameter(K_1, 0, K_1.length);
+      K_2_spec=new KeyParameter(K_2, 0, K_2.length);
       header_cipher=new ChaChaEngine();
       main_cipher=new ChaChaEngine();
     }
@@ -85,8 +85,8 @@ public class ChaCha20Poly1305 implements Cipher{
   public void update(int foo) throws Exception{
     ByteBuffer nonce=ByteBuffer.allocate(8);
     nonce.putLong(0, foo);
-    header_cipher.init(this.mode==ENCRYPT_MODE, new ParametersWithIV(K_1_spec, nonce.array()));
-    main_cipher.init(this.mode==ENCRYPT_MODE, new ParametersWithIV(K_2_spec, nonce.array()));
+    header_cipher.init(this.mode==ENCRYPT_MODE, new ParametersWithIV(K_1_spec, nonce.array(), 0, nonce.array().length));
+    main_cipher.init(this.mode==ENCRYPT_MODE, new ParametersWithIV(K_2_spec, nonce.array(), 0, nonce.array().length));
     // Trying to reinit the cipher again with same nonce results in InvalidKeyException
     // So just read entire first 64-byte block, which should increment global counter from 0->1
     byte[] poly_key = new byte[32];

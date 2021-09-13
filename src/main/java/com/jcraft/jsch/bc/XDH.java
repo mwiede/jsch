@@ -29,7 +29,7 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 package com.jcraft.jsch.bc;
 
-import java.security.SecureRandom;
+import java.security.*;
 import java.util.Arrays;
 import org.bouncycastle.crypto.params.*;
 
@@ -42,7 +42,7 @@ public class XDH implements com.jcraft.jsch.XDH {
   @Override
   public void init(String name, int keylen) throws Exception{
     if(!name.equals("X25519") && !name.equals("X448")){
-      throw new IllegalArgumentException("invalid curve");
+      throw new NoSuchAlgorithmException("invalid curve " + name);
     }
     this.keylen = keylen;
     this.name = name;
@@ -67,12 +67,38 @@ public class XDH implements com.jcraft.jsch.XDH {
   public byte[] getSecret(byte[] Q) throws Exception{
     byte[] secret = new byte[keylen];
     if(name.equals("X25519")){
+      X25519PublicKeyParameters publicKey = null;
+      try{
+        publicKey = new X25519PublicKeyParameters(Q, 0);
+      }
+      catch(Exception e){
+        throw new InvalidKeyException(e);
+      }
+
       X25519PrivateKeyParameters privateKey = (X25519PrivateKeyParameters) this.privateKey;
-      privateKey.generateSecret(new X25519PublicKeyParameters(Q), secret, 0);
+      try{
+        privateKey.generateSecret(publicKey, secret, 0);
+      }
+      catch(Exception e){
+        throw new IllegalStateException(e);
+      }
     }
     else{
+      X448PublicKeyParameters publicKey = null;
+      try{
+        publicKey = new X448PublicKeyParameters(Q, 0);
+      }
+      catch(Exception e){
+        throw new InvalidKeyException(e);
+      }
+
       X448PrivateKeyParameters privateKey = (X448PrivateKeyParameters) this.privateKey;
-      privateKey.generateSecret(new X448PublicKeyParameters(Q), secret, 0);
+      try{
+        privateKey.generateSecret(publicKey, secret, 0);
+      }
+      catch(Exception e){
+        throw new IllegalStateException(e);
+      }
     }
     return secret;
   }
