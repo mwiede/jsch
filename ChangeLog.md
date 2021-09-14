@@ -12,6 +12,7 @@
     * twofish256-cbc
     * twofish256-ctr
   * Added support for the seed-cbc@<!-- -->ssh.com algorithm using [Bouncy Castle](https://www.bouncycastle.org/)
+  * Address [#76](https://github.com/mwiede/jsch/issues/76) by making the "Host" keyword case-insensitive
 * [0.1.67](https://github.com/mwiede/jsch/releases/tag/jsch-0.1.67)
   * Added support for the blowfish-ctr algorithm from [RFC 4344](https://datatracker.ietf.org/doc/html/rfc4344)
   * Fix bug where ext-info-c was incorrectly advertised during rekeying
