@@ -170,6 +170,13 @@ public class JSch{
 
     config.put("cast128-cbc",    "com.jcraft.jsch.bc.CAST128CBC");
     config.put("cast128-ctr",    "com.jcraft.jsch.bc.CAST128CTR");
+    config.put("twofish128-cbc",    "com.jcraft.jsch.bc.Twofish128CBC");
+    config.put("twofish192-cbc",    "com.jcraft.jsch.bc.Twofish192CBC");
+    config.put("twofish256-cbc",    "com.jcraft.jsch.bc.Twofish256CBC");
+    config.put("twofish-cbc",    "com.jcraft.jsch.bc.Twofish256CBC");
+    config.put("twofish128-ctr",    "com.jcraft.jsch.bc.Twofish128CTR");
+    config.put("twofish192-ctr",    "com.jcraft.jsch.bc.Twofish192CTR");
+    config.put("twofish256-ctr",    "com.jcraft.jsch.bc.Twofish256CTR");
     config.put("seed-cbc@ssh.com",    "com.jcraft.jsch.bc.SEEDCBC");
 
     config.put("aes128-ctr",    "com.jcraft.jsch.jce.AES128CTR");
