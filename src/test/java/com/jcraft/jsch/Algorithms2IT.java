@@ -267,6 +267,27 @@ public class Algorithms2IT {
   @ParameterizedTest
   @CsvSource(
       value = {
+        "seed-cbc@ssh.com,none",
+        "seed-cbc@ssh.com,zlib@openssh.com"
+      })
+  public void testCiphers(String cipher, String compression) throws Exception {
+    JSch ssh = createRSAIdentity();
+    Session session = createSession(ssh);
+    session.setConfig("cipher.s2c", cipher);
+    session.setConfig("cipher.c2s", cipher);
+    session.setConfig("compression.s2c", compression);
+    session.setConfig("compression.c2s", compression);
+    doSftp(session, true);
+
+    String expectedS2C = String.format("kex: server->client cipher: %s.*", cipher);
+    String expectedC2S = String.format("kex: client->server cipher: %s.*", cipher);
+    checkLogs(expectedS2C);
+    checkLogs(expectedC2S);
+  }
+
+  @ParameterizedTest
+  @CsvSource(
+      value = {
         "hmac-sha512@ssh.com,none",
         "hmac-sha512@ssh.com,zlib@openssh.com",
         "hmac-sha384@ssh.com,none",

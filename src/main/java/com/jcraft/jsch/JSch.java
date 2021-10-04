@@ -154,6 +154,10 @@ public class JSch{
     config.put("keypairgen.ecdsa", "com.jcraft.jsch.jce.KeyPairGenECDSA");
     config.put("random",        "com.jcraft.jsch.jce.Random");
 
+    config.put("hmac-ripemd160", "com.jcraft.jsch.bc.HMACRIPEMD160");
+    config.put("hmac-ripemd160@openssh.com", "com.jcraft.jsch.bc.HMACRIPEMD160OpenSSH");
+    config.put("hmac-ripemd160-etm@openssh.com", "com.jcraft.jsch.bc.HMACRIPEMD160ETM");
+
     config.put("none",           "com.jcraft.jsch.CipherNone");
 
     config.put("aes128-gcm@openssh.com",    "com.jcraft.jsch.jce.AES128GCM");
@@ -162,6 +166,18 @@ public class JSch{
     config.put("aes128-cbc",    "com.jcraft.jsch.jce.AES128CBC");
     config.put("aes192-cbc",    "com.jcraft.jsch.jce.AES192CBC");
     config.put("aes256-cbc",    "com.jcraft.jsch.jce.AES256CBC");
+    config.put("rijndael-cbc@lysator.liu.se",    "com.jcraft.jsch.jce.AES256CBC");
+
+    config.put("cast128-cbc",    "com.jcraft.jsch.bc.CAST128CBC");
+    config.put("cast128-ctr",    "com.jcraft.jsch.bc.CAST128CTR");
+    config.put("twofish128-cbc",    "com.jcraft.jsch.bc.Twofish128CBC");
+    config.put("twofish192-cbc",    "com.jcraft.jsch.bc.Twofish192CBC");
+    config.put("twofish256-cbc",    "com.jcraft.jsch.bc.Twofish256CBC");
+    config.put("twofish-cbc",    "com.jcraft.jsch.bc.Twofish256CBC");
+    config.put("twofish128-ctr",    "com.jcraft.jsch.bc.Twofish128CTR");
+    config.put("twofish192-ctr",    "com.jcraft.jsch.bc.Twofish192CTR");
+    config.put("twofish256-ctr",    "com.jcraft.jsch.bc.Twofish256CTR");
+    config.put("seed-cbc@ssh.com",    "com.jcraft.jsch.bc.SEEDCBC");
 
     config.put("aes128-ctr",    "com.jcraft.jsch.jce.AES128CTR");
     config.put("aes192-ctr",    "com.jcraft.jsch.jce.AES192CTR");

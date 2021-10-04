@@ -1,8 +1,23 @@
+* [0.1.68](https://github.com/mwiede/jsch/releases/tag/jsch-0.1.68)
+  * Added support for the rijndael-cbc@<!-- -->lysator.liu.se algorithm
+  * Added support for the hmac-ripemd160, hmac-ripemd160@<!-- -->openssh.com and hmac-ripemd160-etm@<!-- -->openssh.com algorithms using [Bouncy Castle](https://www.bouncycastle.org/java.html)
+  * Added support for various algorithms from [RFC 4253](https://datatracker.ietf.org/doc/html/rfc4253) and [RFC 4344](https://datatracker.ietf.org/doc/html/rfc4344) using [Bouncy Castle](https://www.bouncycastle.org/java.html)
+    * cast128-cbc
+    * cast128-ctr
+    * twofish-cbc
+    * twofish128-cbc
+    * twofish128-ctr
+    * twofish192-cbc
+    * twofish192-ctr
+    * twofish256-cbc
+    * twofish256-ctr
+  * Added support for the seed-cbc@<!-- -->ssh.com algorithm using [Bouncy Castle](https://www.bouncycastle.org/java.html)
+  * Address [#76](https://github.com/mwiede/jsch/issues/76) by making the "Host" keyword case-insensitive
 * [0.1.67](https://github.com/mwiede/jsch/releases/tag/jsch-0.1.67)
   * Added support for the blowfish-ctr algorithm from [RFC 4344](https://datatracker.ietf.org/doc/html/rfc4344)
   * Fix bug where ext-info-c was incorrectly advertised during rekeying
     * According to [RFC 8308 section 2.1](https://datatracker.ietf.org/doc/html/rfc8308#section-2.1), ext-info-c should only advertised during the first key exchange
-  * Address [#77](https://github.com/mwiede/jsch/issues/77) by attempting to add compatibility with older [Bouncy Castle](https://www.bouncycastle.org/) releases
+  * Address [#77](https://github.com/mwiede/jsch/issues/77) by attempting to add compatibility with older [Bouncy Castle](https://www.bouncycastle.org/java.html) releases
 * [0.1.66](https://github.com/mwiede/jsch/releases/tag/jsch-0.1.66)
   * Added support for [RFC 8308](https://datatracker.ietf.org/doc/html/rfc8308) extension negotiation and server-sig-algs extension
     * This support is enabled by default, but can be controlled via the enable_server_sig_algs config option (or `jsch.enable_server_sig_algs` system property)
@@ -36,7 +51,7 @@
     * See `examples/JSchWithAgentProxy.java` for simple example
     * ssh-agent support requires either [Java 16's JEP 380](https://openjdk.java.net/jeps/380) or the addition of [junixsocket](https://github.com/kohlschutter/junixsocket) to classpath
     * Pageant support is untested & requires the addition of [JNA](https://github.com/java-native-access/jna) to classpath
-  * Added support for the following algorithms with older Java releases by using [Bouncy Castle](https://www.bouncycastle.org/):
+  * Added support for the following algorithms with older Java releases by using [Bouncy Castle](https://www.bouncycastle.org/java.html):
     * ssh-ed25519
     * ssh-ed448
     * curve25519-sha256
