@@ -16,7 +16,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        java: ['8', '11', '16']
+        java: ['8', '11', '17']
     steps:
     - uses: actions/checkout@v2
     - name: Cache local Maven repository
@@ -30,7 +30,7 @@ jobs:
       uses: actions/setup-java@v2
       with:
         distribution: 'zulu'
-        java-version: '16'
+        java-version: '17'
         check-latest: true
     - name: Build with Maven
       run: mvn -B -DskipTests=true package --file pom.xml
