@@ -252,8 +252,9 @@ public class Session implements Runnable{
 
       {
 	// Some Cisco devices will miss to read '\n' if it is sent separately.
-	byte[] foo=new byte[V_C.length+1];
+	byte[] foo=new byte[V_C.length+2];
 	System.arraycopy(V_C, 0, foo, 0, V_C.length);
+	foo[foo.length-2]=(byte)'\r';
 	foo[foo.length-1]=(byte)'\n';
 	io.put(foo, 0, foo.length);
       }

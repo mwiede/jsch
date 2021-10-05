@@ -1,3 +1,5 @@
+* [0.1.69](https://github.com/mwiede/jsch/releases/tag/jsch-0.1.69)
+  * Address [#83](https://github.com/mwiede/jsch/issues/83) by sending CR LF at the end of the identification string
 * [0.1.68](https://github.com/mwiede/jsch/releases/tag/jsch-0.1.68)
   * Added support for the rijndael-cbc@<!-- -->lysator.liu.se algorithm
   * Added support for the hmac-ripemd160, hmac-ripemd160@<!-- -->openssh.com and hmac-ripemd160-etm@<!-- -->openssh.com algorithms using [Bouncy Castle](https://www.bouncycastle.org/java.html)
