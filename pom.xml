@@ -89,7 +89,7 @@
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter</artifactId>
-            <version>5.7.2</version>
+            <version>5.8.1</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -113,7 +113,7 @@
         <dependency>
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-classic</artifactId>
-            <version>1.2.5</version>
+            <version>1.2.6</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -125,7 +125,7 @@
         <dependency>
             <groupId>org.scalatest</groupId>
             <artifactId>scalatest_2.13</artifactId>
-            <version>3.2.9</version>
+            <version>3.2.10</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -315,7 +315,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-javadoc-plugin</artifactId>
-                <version>3.3.0</version>
+                <version>3.3.1</version>
                 <configuration>
                     <detectJavaApiLink>false</detectJavaApiLink>
                     <sourcepath>src/main/java</sourcepath>

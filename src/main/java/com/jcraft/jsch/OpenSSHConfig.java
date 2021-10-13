@@ -124,7 +124,7 @@ public class OpenSSHConfig implements ConfigRepository {
       if(key_value.length <= 1)
         continue;
 
-      if(key_value[0].toUpperCase().equals("Host")){
+      if(key_value[0].equalsIgnoreCase("Host")){
         config.put(host, kv);
         hosts.addElement(host);
         host = key_value[1];
