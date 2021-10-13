@@ -88,7 +88,7 @@ public class PageantConnector implements AgentConnector {
     long SendMessage(HWND hWnd, int msg, WPARAM num1, byte[] num2);
   }
 
-  private static class COPYDATASTRUCT32 extends Structure {
+  public static class COPYDATASTRUCT32 extends Structure {
     public int dwData;
     public int cbData;
     public Pointer lpData;
@@ -99,7 +99,7 @@ public class PageantConnector implements AgentConnector {
     }
   }
 
-  private static class COPYDATASTRUCT64 extends Structure {
+  public static class COPYDATASTRUCT64 extends Structure {
     public int dwData;
     public long cbData;
     public Pointer lpData;
