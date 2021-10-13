@@ -10,7 +10,7 @@ See original [README](README)
 ## Why should you use this library?
 
 As I explained in a [blog post](http://www.matez.de/index.php/2020/06/22/the-future-of-jsch-without-ssh-rsa/) the main points are:
-* OpenSSH will disable ssh-rsa in the future per default and you need a library which supports rsa-sha2-256 and rsa-sha2-512.
+* OpenSSH will disable ssh-rsa in <strike>the future</strike>  [release 8.8](https://www.openssh.com/txt/release-8.8) per default and you need a library which supports rsa-sha2-256 and rsa-sha2-512.
 * Drop in replacement: just change dependency coordinates and you are good to go.
 * No active maintenance of [JSch at SourceForge](https://sourceforge.net/projects/jsch/).
 * Stay in sync with OpenJDK features so there is no need for additional dependencies.
