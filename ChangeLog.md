@@ -1,3 +1,5 @@
+* [0.1.70](https://github.com/mwiede/jsch/releases/tag/jsch-0.1.70)
+  * Address [#89](https://github.com/mwiede/jsch/issues/89) by fixing rare ECDSA signature validation issue
 * [0.1.69](https://github.com/mwiede/jsch/releases/tag/jsch-0.1.69)
   * Address [#83](https://github.com/mwiede/jsch/issues/83) by sending CR LF at the end of the identification string
   * Fix earlier change for [#76](https://github.com/mwiede/jsch/issues/76) that failed to correctly make the "Host" keyword case-insensitive
