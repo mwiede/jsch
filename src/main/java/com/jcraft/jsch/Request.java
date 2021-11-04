@@ -31,17 +31,21 @@ package com.jcraft.jsch;
 
 abstract class Request{
   private boolean reply=false;
+  private boolean checkReply=false;
   private Session session=null;
   private Channel channel=null;
   void request(Session session, Channel channel) throws Exception{
     this.session=session;
     this.channel=channel;
     if(channel.connectTimeout>0){
-      setReply(true);
+      reply=true;
     }
   }
   boolean waitForReply(){ return reply; }
-  void setReply(boolean reply){ this.reply=reply; }
+  void setReply(boolean reply){
+    this.reply=reply;
+    this.checkReply=reply;
+  }
   void write(Packet packet) throws Exception{
     if(reply){
       channel.reply=-1;
@@ -60,8 +64,10 @@ abstract class Request{
           throw new JSchException("channel request: timeout");
         }
       }
-
-      if(channel.reply==0){
+      // When asked unwant-reply/setReply(false) and timeout>0,
+      // we ignore a reply value.
+      // When asked want-reply/setReply(true), we check it.
+      if(checkReply && channel.reply==0){
 	throw new JSchException("failed to send channel request");
       }
     }

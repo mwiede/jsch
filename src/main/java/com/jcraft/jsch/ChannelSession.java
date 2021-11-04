@@ -219,7 +219,8 @@ class ChannelSession extends Channel{
         byte[] name=_env.nextElement();
         byte[] value=env.get(name);
         request=new RequestEnv();
-        ((RequestEnv)request).setEnv(toByteArray(name), 
+        request.setReply(false);
+        ((RequestEnv)request).setEnv(toByteArray(name),
                                      toByteArray(value));
         request.request(_session, this);
       }
