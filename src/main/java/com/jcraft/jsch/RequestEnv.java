@@ -39,6 +39,7 @@ class RequestEnv extends Request{
   @Override
   public void request(Session session, Channel channel) throws Exception{
     super.request(session, channel);
+    setReply(false);
 
     Buffer buf=new Buffer();
     Packet packet=new Packet(buf);
@@ -47,7 +48,7 @@ class RequestEnv extends Request{
     buf.putByte((byte) Session.SSH_MSG_CHANNEL_REQUEST);
     buf.putInt(channel.getRecipient());
     buf.putString(Util.str2byte("env"));
-    buf.putByte((byte)(waitForReply() ? 1 : 0));
+    buf.putByte((byte) 0);
     buf.putString(name);
     buf.putString(value);
     write(packet);
