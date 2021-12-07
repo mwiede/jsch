@@ -1,3 +1,5 @@
+* [0.1.71](https://github.com/mwiede/jsch/releases/tag/jsch-0.1.71)
+  * Address [#98](https://github.com/mwiede/jsch/issues/98) by restoring JSch.VERSION
 * [0.1.70](https://github.com/mwiede/jsch/releases/tag/jsch-0.1.70)
   * Address [#89](https://github.com/mwiede/jsch/issues/89) by fixing rare ECDSA signature validation issue
   * Address [#93](https://github.com/mwiede/jsch/issues/93) by always setting the "want reply" flag for "env" type channel requests to false

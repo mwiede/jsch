@@ -35,6 +35,10 @@ import java.util.Hashtable;
 import java.util.Vector;
 
 public class JSch{
+  /**
+   * The version number.
+   */
+  public static final String VERSION  = Version.getVersion();
 
   static Hashtable<String, String> config=new Hashtable<>();
   static{
