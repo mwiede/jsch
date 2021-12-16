@@ -39,6 +39,7 @@ import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Hashtable;
 import java.util.List;
+import java.util.Set;
 import java.util.Vector;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -77,8 +78,10 @@ import java.util.stream.Stream;
  */
 public class OpenSSHConfig implements ConfigRepository {
 
-  private static final List<String> keysWithListAdoption = Stream.of("KexAlgorithms", "Ciphers", "HostbasedAcceptedAlgorithms", 
-  "HostKeyAlgorithms", "MACs", "PubkeyAcceptedAlgorithms", "CASignatureAlgorithms").map(String::toUpperCase).collect(Collectors.toList());
+  private static final Set<String> keysWithListAdoption = Stream
+      .of("KexAlgorithms", "Ciphers", "HostbasedAcceptedAlgorithms",
+          "HostKeyAlgorithms", "MACs", "PubkeyAcceptedAlgorithms", "CASignatureAlgorithms", "PubkeyAcceptedKeyTypes")
+      .map(String::toUpperCase).collect(Collectors.toSet());
 
   /**
    * Parses the given string, and returns an instance of ConfigRepository.
@@ -247,8 +250,8 @@ public class OpenSSHConfig implements ConfigRepository {
         if (value.startsWith("+")) {
           value=origConfig + "," + value.substring(1);
         } else if (value.startsWith("-")) {
-          List<String> algList = Arrays.stream(origConfig.split(",")).collect(Collectors.toList());
-          for (String alg : value.substring(1).split(",")) {
+          List<String> algList = Arrays.stream(Util.split(origConfig,",")).collect(Collectors.toList());
+          for (String alg : Util.split(value.substring(1),",")) {
             algList.remove(alg.trim());
           }
           value = String.join(",", algList);

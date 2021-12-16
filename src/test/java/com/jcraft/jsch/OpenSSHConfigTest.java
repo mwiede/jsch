@@ -45,7 +45,7 @@ class OpenSSHConfigTest {
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {"KexAlgorithms", "Ciphers", "HostKeyAlgorithms", "MACs", "PubkeyAcceptedAlgorithms"})
+    @ValueSource(strings = {"KexAlgorithms", "Ciphers", "HostKeyAlgorithms", "MACs", "PubkeyAcceptedAlgorithms", "PubkeyAcceptedKeyTypes"})
     void appendAlgorithms(String key) throws IOException {
         OpenSSHConfig parse = OpenSSHConfig.parse(key + " +someValue,someValue1");
         ConfigRepository.Config config = parse.getConfig("");
@@ -54,7 +54,7 @@ class OpenSSHConfigTest {
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {"KexAlgorithms", "Ciphers", "HostKeyAlgorithms", "MACs", "PubkeyAcceptedAlgorithms"})
+    @ValueSource(strings = {"KexAlgorithms", "Ciphers", "HostKeyAlgorithms", "MACs", "PubkeyAcceptedAlgorithms", "PubkeyAcceptedKeyTypes"})
     void prependAlgorithms(String key) throws IOException {
         OpenSSHConfig parse = OpenSSHConfig.parse(key + " ^someValue,someValue1");
         ConfigRepository.Config config = parse.getConfig("");
