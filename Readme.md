@@ -62,9 +62,11 @@ As I explained in a [blog post](http://www.matez.de/index.php/2020/06/22/the-fut
       * analogous to `JSch.setConfig("MaxAuthTries", "...")`
 * Are ssh-ed25519, ssh-ed448, curve25519-sha256, curve448-sha512 & chacha20-poly1305@<!-- -->openssh.com supported?
   * This library is a Multi-Release-jar, which means that you can only use certain features when a more recent Java version is used.
-    * In order to use ssh-ed25519 & ssh-ed448, you must use at least Java 15.
-    * In order to use curve25519-sha256, curve448-sha512 & chacha20-poly1305@<!-- -->openssh.com, you must use at least Java 11.
+    * In order to use ssh-ed25519 & ssh-ed448, you must use at least Java 15 or add [Bouncy Castle](https://www.bouncycastle.org/java.html) (bcprov-jdk15on) to the classpath.
+    * In order to use curve25519-sha256 & curve448-sha512, you must use at least Java 11 or add [Bouncy Castle](https://www.bouncycastle.org/java.html) (bcprov-jdk15on) to the classpath.
+    * In order to use chacha20-poly1305@<!-- -->openssh.com, you must add [Bouncy Castle](https://www.bouncycastle.org/java.html) (bcprov-jdk15on) to the classpath.
   * As of the [0.1.66](https://github.com/mwiede/jsch/releases/tag/jsch-0.1.66) release, these algorithms can now be used with older Java releases if [Bouncy Castle](https://www.bouncycastle.org/java.html) (bcprov-jdk15on) is added to the classpath.
+    * As of the [0.1.72](https://github.com/mwiede/jsch/releases/tag/jsch-0.1.72) release, chacha20-poly1305@<!-- -->openssh.com can only be used if [Bouncy Castle](https://www.bouncycastle.org/java.html) (bcprov-jdk15on) is added to the classpath.
 
 ## Changes since fork:
 See [ChangeLog.md](ChangeLog.md)

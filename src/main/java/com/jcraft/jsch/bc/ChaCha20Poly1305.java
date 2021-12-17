@@ -30,10 +30,10 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 package com.jcraft.jsch.bc;
 
 import com.jcraft.jsch.Cipher;
-import com.jcraft.jsch.openjax.Poly1305;
 import java.nio.ByteBuffer;
 import javax.crypto.AEADBadTagException;
 import org.bouncycastle.crypto.engines.ChaChaEngine;
+import org.bouncycastle.crypto.macs.Poly1305;
 import org.bouncycastle.crypto.params.*;
 
 public class ChaCha20Poly1305 implements Cipher{
@@ -72,6 +72,7 @@ public class ChaCha20Poly1305 implements Cipher{
       K_2_spec=new KeyParameter(K_2, 0, K_2.length);
       header_cipher=new ChaChaEngine();
       main_cipher=new ChaChaEngine();
+      poly1305 = new Poly1305();
     }
     catch(Exception e){
       header_cipher=null;
@@ -89,11 +90,9 @@ public class ChaCha20Poly1305 implements Cipher{
     main_cipher.init(this.mode==ENCRYPT_MODE, new ParametersWithIV(K_2_spec, nonce.array(), 0, nonce.array().length));
     // Trying to reinit the cipher again with same nonce results in InvalidKeyException
     // So just read entire first 64-byte block, which should increment global counter from 0->1
-    byte[] poly_key = new byte[32];
-    byte[] discard = new byte[32];
-    main_cipher.processBytes(poly_key, 0, 32, poly_key, 0);
-    main_cipher.processBytes(discard, 0, 32, discard, 0);
-    poly1305 = new Poly1305(poly_key);
+    byte[] poly_key = new byte[64];
+    main_cipher.processBytes(poly_key, 0, poly_key.length, poly_key, 0);
+    poly1305.init(new KeyParameter(poly_key, 0, 32));
   }
   @Override
   public void update(byte[] foo, int s1, int len, byte[] bar, int s2) throws Exception{
@@ -108,7 +107,8 @@ public class ChaCha20Poly1305 implements Cipher{
       byte[] actual_tag = new byte[tagsize];
       System.arraycopy(foo, len, actual_tag, 0, tagsize);
       byte[] expected_tag = new byte[tagsize];
-      poly1305.update(foo, s1, len).finish(expected_tag, 0);
+      poly1305.update(foo, s1, len);
+      poly1305.doFinal(expected_tag, 0);
       if(!arraysequals(actual_tag, expected_tag)){
         throw new AEADBadTagException("Tag mismatch");
       }
@@ -117,7 +117,8 @@ public class ChaCha20Poly1305 implements Cipher{
     main_cipher.processBytes(foo, s1+4, len-4, bar, s2+4);
 
     if(this.mode==ENCRYPT_MODE){
-      poly1305.update(bar, s2, len).finish(bar, len);
+      poly1305.update(bar, s2, len);
+      poly1305.doFinal(bar, len);
     }
   }
   @Override
