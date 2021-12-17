@@ -39,7 +39,7 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 public class Algorithms2IT {
 
   // Python can be slow for DH group 18
-  private static final int timeout = 5000;
+  private static final int timeout = 10000;
   private static final DigestUtils sha256sum = new DigestUtils(DigestUtils.getSha256Digest());
   private static final ListAppender<ILoggingEvent> jschAppender = getListAppender(JSch.class);
   private static final ListAppender<ILoggingEvent> sshdAppender =
