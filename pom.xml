@@ -97,6 +97,13 @@
             <artifactId>junit-jupiter</artifactId>
             <version>1.16.2</version>
             <scope>test</scope>
+            <!-- Rely upon jna-jpms brought in above -->
+            <exclusions>
+                <exclusion>
+                    <groupId>net.java.dev.jna</groupId>
+                    <artifactId>jna</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>commons-codec</groupId>
@@ -113,7 +120,7 @@
         <dependency>
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-classic</artifactId>
-            <version>1.2.7</version>
+            <version>1.2.9</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -242,7 +249,7 @@
             <plugin>
                 <groupId>net.alchim31.maven</groupId>
                 <artifactId>scala-maven-plugin</artifactId>
-                <version>4.5.4</version>
+                <version>4.5.6</version>
                 <configuration>
                     <recompileMode>all</recompileMode>
                     <sendJavaToScalac>false</sendJavaToScalac>
