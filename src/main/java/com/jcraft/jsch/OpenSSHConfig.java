@@ -79,8 +79,7 @@ import java.util.stream.Stream;
 public class OpenSSHConfig implements ConfigRepository {
 
   private static final Set<String> keysWithListAdoption = Stream
-      .of("KexAlgorithms", "Ciphers", "HostbasedAcceptedAlgorithms",
-          "HostKeyAlgorithms", "MACs", "PubkeyAcceptedAlgorithms", "CASignatureAlgorithms", "PubkeyAcceptedKeyTypes")
+      .of("KexAlgorithms", "Ciphers","HostKeyAlgorithms", "MACs", "PubkeyAcceptedAlgorithms", "PubkeyAcceptedKeyTypes")
       .map(String::toUpperCase).collect(Collectors.toSet());
 
   /**
