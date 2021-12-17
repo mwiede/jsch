@@ -46,8 +46,8 @@ public class JSch{
     config.put("server_host_key", Util.getSystemProperty("jsch.server_host_key", "ssh-ed25519,ecdsa-sha2-nistp256,ecdsa-sha2-nistp384,ecdsa-sha2-nistp521,rsa-sha2-512,rsa-sha2-256,ssh-rsa"));
     config.put("prefer_known_host_key_types", Util.getSystemProperty("jsch.prefer_known_host_key_types", "yes"));
     config.put("enable_server_sig_algs", Util.getSystemProperty("jsch.enable_server_sig_algs", "yes"));
-    config.put("cipher.s2c", Util.getSystemProperty("jsch.cipher", "aes128-ctr,aes192-ctr,aes256-ctr,aes128-gcm@openssh.com,aes256-gcm@openssh.com,chacha20-poly1305@openssh.com"));
-    config.put("cipher.c2s", Util.getSystemProperty("jsch.cipher", "aes128-ctr,aes192-ctr,aes256-ctr,aes128-gcm@openssh.com,aes256-gcm@openssh.com,chacha20-poly1305@openssh.com"));
+    config.put("cipher.s2c", Util.getSystemProperty("jsch.cipher", "aes128-ctr,aes192-ctr,aes256-ctr,aes128-gcm@openssh.com,aes256-gcm@openssh.com"));
+    config.put("cipher.c2s", Util.getSystemProperty("jsch.cipher", "aes128-ctr,aes192-ctr,aes256-ctr,aes128-gcm@openssh.com,aes256-gcm@openssh.com"));
     config.put("mac.s2c", Util.getSystemProperty("jsch.mac", "hmac-sha2-256-etm@openssh.com,hmac-sha2-512-etm@openssh.com,hmac-sha1-etm@openssh.com,hmac-sha2-256,hmac-sha2-512,hmac-sha1"));
     config.put("mac.c2s", Util.getSystemProperty("jsch.mac", "hmac-sha2-256-etm@openssh.com,hmac-sha2-512-etm@openssh.com,hmac-sha1-etm@openssh.com,hmac-sha2-256,hmac-sha2-512,hmac-sha1"));
     config.put("compression.s2c", Util.getSystemProperty("jsch.compression", "none"));
@@ -172,6 +172,7 @@ public class JSch{
     config.put("aes256-cbc",    "com.jcraft.jsch.jce.AES256CBC");
     config.put("rijndael-cbc@lysator.liu.se",    "com.jcraft.jsch.jce.AES256CBC");
 
+    config.put("chacha20-poly1305@openssh.com", "com.jcraft.jsch.bc.ChaCha20Poly1305");
     config.put("cast128-cbc",    "com.jcraft.jsch.bc.CAST128CBC");
     config.put("cast128-ctr",    "com.jcraft.jsch.bc.CAST128CTR");
     config.put("twofish128-cbc",    "com.jcraft.jsch.bc.Twofish128CBC");
@@ -205,11 +206,9 @@ public class JSch{
     config.put("pbkdf", "com.jcraft.jsch.jce.PBKDF");
 
     if(JavaVersion.getVersion()>=11){
-      config.put("chacha20-poly1305@openssh.com", "com.jcraft.jsch.jce.ChaCha20Poly1305");
       config.put("xdh", "com.jcraft.jsch.jce.XDH");
     }
     else{
-      config.put("chacha20-poly1305@openssh.com", "com.jcraft.jsch.bc.ChaCha20Poly1305");
       config.put("xdh", "com.jcraft.jsch.bc.XDH");
     }
 
