@@ -156,7 +156,7 @@ public class OpenSSHConfig implements ConfigRepository {
    *
    * @return map
    */
-  public static Hashtable<String, String> getKeymap() {
+  static Hashtable<String, String> getKeymap() {
     return keymap;
   }
 
