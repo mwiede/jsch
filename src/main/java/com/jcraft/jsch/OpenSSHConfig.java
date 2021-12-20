@@ -29,16 +29,20 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 package com.jcraft.jsch;
 
-import java.io.InputStream;
-import java.io.Reader;
-import java.io.StringReader;
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.Reader;
+import java.io.StringReader;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.Arrays;
 import java.util.Hashtable;
+import java.util.List;
+import java.util.Set;
 import java.util.Vector;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * This class implements ConfigRepository interface, and parses
@@ -64,7 +68,7 @@ import java.util.Vector;
  *   <li>CompressionLevel</li>
  *   <li>ForwardAgent</li>
  *   <li>RequestTTY</li>
- *   <li>ServerAliveInterval</li>  
+ *   <li>ServerAliveInterval</li>
  *   <li>LocalForward</li>
  *   <li>RemoteForward</li>
  *   <li>ClearAllForwardings</li>
@@ -73,6 +77,10 @@ import java.util.Vector;
  * @see ConfigRepository
  */
 public class OpenSSHConfig implements ConfigRepository {
+
+  private static final Set<String> keysWithListAdoption = Stream
+      .of("KexAlgorithms", "Ciphers","HostKeyAlgorithms", "MACs", "PubkeyAcceptedAlgorithms", "PubkeyAcceptedKeyTypes")
+      .map(String::toUpperCase).collect(Collectors.toSet());
 
   /**
    * Parses the given string, and returns an instance of ConfigRepository.
@@ -143,6 +151,15 @@ public class OpenSSHConfig implements ConfigRepository {
     return new MyConfig(host);
   }
 
+  /**
+   * Returns mapping of jsch config property names to OpenSSH property names.
+   *
+   * @return map
+   */
+  static Hashtable<String, String> getKeymap() {
+    return keymap;
+  }
+
   private static final Hashtable<String, String> keymap = new Hashtable<>();
   static {
     keymap.put("kex", "KexAlgorithms");
@@ -192,6 +209,7 @@ public class OpenSSHConfig implements ConfigRepository {
     }
 
     private String find(String key) {
+      String originalKey=key;
       if(keymap.get(key)!=null) {
         key = keymap.get(key);
       }
@@ -223,6 +241,24 @@ public class OpenSSHConfig implements ConfigRepository {
         }
       }
       */
+
+      if (keysWithListAdoption.contains(key) && value != null && (value.startsWith("+") || value.startsWith("-") || value.startsWith("^"))) {
+
+        String origConfig = JSch.getConfig(originalKey).trim();
+
+        if (value.startsWith("+")) {
+          value=origConfig + "," + value.substring(1).trim();
+        } else if (value.startsWith("-")) {
+          List<String> algList = Arrays.stream(Util.split(origConfig,",")).collect(Collectors.toList());
+          for (String alg : Util.split(value.substring(1).trim(),",")) {
+            algList.remove(alg.trim());
+          }
+          value = String.join(",", algList);
+        } else if (value.startsWith("^")) {
+          value = value.substring(1).trim() + "," + origConfig;
+        }
+      }
+
       return value;
     }
 
@@ -242,7 +278,7 @@ public class OpenSSHConfig implements ConfigRepository {
           }
         }
       }
-      String[] result = new String[value.size()]; 
+      String[] result = new String[value.size()];
       value.toArray(result);
       return result;
     }
