@@ -1,3 +1,5 @@
+* [0.1.72](https://github.com/mwiede/jsch/releases/tag/jsch-0.1.72)
+  * Switch chacha20-poly1305@<!-- -->openssh.com algorithm to a pure [Bouncy Castle](https://www.bouncycastle.org/java.html) based implementation
 * [0.1.71](https://github.com/mwiede/jsch/releases/tag/jsch-0.1.71)
   * Address [#98](https://github.com/mwiede/jsch/issues/98) by restoring JSch.VERSION
 * [0.1.70](https://github.com/mwiede/jsch/releases/tag/jsch-0.1.70)

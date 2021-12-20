@@ -303,51 +303,6 @@ public class AlgorithmsIT {
   @CsvSource(
       value = {
         "chacha20-poly1305@openssh.com,none",
-        "chacha20-poly1305@openssh.com,zlib@openssh.com"
-      })
-  @EnabledForJreRange(min = JAVA_11)
-  public void testJava11Ciphers(String cipher, String compression) throws Exception {
-    JSch ssh = createRSAIdentity();
-    Session session = createSession(ssh);
-    session.setConfig("chacha20-poly1305@openssh.com", "com.jcraft.jsch.jce.ChaCha20Poly1305");
-    session.setConfig("cipher.s2c", cipher);
-    session.setConfig("cipher.c2s", cipher);
-    session.setConfig("compression.s2c", compression);
-    session.setConfig("compression.c2s", compression);
-    doSftp(session, true);
-
-    String expectedS2C = String.format("kex: server->client cipher: %s.*", cipher);
-    String expectedC2S = String.format("kex: client->server cipher: %s.*", cipher);
-    checkLogs(expectedS2C);
-    checkLogs(expectedC2S);
-  }
-
-  @ParameterizedTest
-  @CsvSource(
-      value = {
-        "chacha20-poly1305@openssh.com,none",
-        "chacha20-poly1305@openssh.com,zlib@openssh.com"
-      })
-  public void testBCCiphers(String cipher, String compression) throws Exception {
-    JSch ssh = createRSAIdentity();
-    Session session = createSession(ssh);
-    session.setConfig("chacha20-poly1305@openssh.com", "com.jcraft.jsch.bc.ChaCha20Poly1305");
-    session.setConfig("cipher.s2c", cipher);
-    session.setConfig("cipher.c2s", cipher);
-    session.setConfig("compression.s2c", compression);
-    session.setConfig("compression.c2s", compression);
-    doSftp(session, true);
-
-    String expectedS2C = String.format("kex: server->client cipher: %s.*", cipher);
-    String expectedC2S = String.format("kex: client->server cipher: %s.*", cipher);
-    checkLogs(expectedS2C);
-    checkLogs(expectedC2S);
-  }
-
-  @ParameterizedTest
-  @CsvSource(
-      value = {
-        "chacha20-poly1305@openssh.com,none",
         "chacha20-poly1305@openssh.com,zlib@openssh.com",
         "aes256-gcm@openssh.com,none",
         "aes256-gcm@openssh.com,zlib@openssh.com",
