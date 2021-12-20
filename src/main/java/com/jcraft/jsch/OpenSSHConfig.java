@@ -247,10 +247,10 @@ public class OpenSSHConfig implements ConfigRepository {
         String origConfig = JSch.getConfig(originalKey).trim();
 
         if (value.startsWith("+")) {
-          value=origConfig + "," + value.substring(1);
+          value=origConfig + "," + value.substring(1).trim();
         } else if (value.startsWith("-")) {
           List<String> algList = Arrays.stream(Util.split(origConfig,",")).collect(Collectors.toList());
-          for (String alg : Util.split(value.substring(1),",")) {
+          for (String alg : Util.split(value.substring(1).trim(),",")) {
             algList.remove(alg.trim());
           }
           value = String.join(",", algList);
