@@ -4,7 +4,7 @@
 		"dockerfile": "Dockerfile",
 		"args": {
 			// Update the VARIANT arg to pick a Java version: 11, 14
-			"VARIANT": "15",
+			"VARIANT": "17",
 			// Options
 			"INSTALL_MAVEN": "true",
 			"INSTALL_GRADLE": "false",
@@ -24,7 +24,6 @@
 	},
 	// Set *default* container specific settings.json values on container create.
 	"settings": {
-		"terminal.integrated.shell.linux": "/bin/bash",
 		"java.home": "/docker-java-home",
 		"maven.executable.path": "/usr/local/sdkman/candidates/maven/current/bin/mvn"
 	},
