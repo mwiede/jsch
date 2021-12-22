@@ -31,21 +31,21 @@ class ChangePassphrase{
 
       String passphrase="";
       while(kpair.isEncrypted()){
-	JTextField passphraseField=(JTextField)new JPasswordField(20);
-	Object[] ob={passphraseField};
-	int result=JOptionPane.showConfirmDialog(null, ob, 
-						 "Enter passphrase for "+pkey,
-						 JOptionPane.OK_CANCEL_OPTION);
-	if(result!=JOptionPane.OK_OPTION){
-	  System.exit(-1);
-	}
-	passphrase=passphraseField.getText();
-	if(!kpair.decrypt(passphrase)){
-	  System.out.println("failed to decrypt "+pkey);
-	}
-	else{
-	  System.out.println(pkey+" is decrypted.");
-	}
+        JTextField passphraseField=(JTextField)new JPasswordField(20);
+        Object[] ob={passphraseField};
+        int result=JOptionPane.showConfirmDialog(null, ob, 
+                                                 "Enter passphrase for "+pkey,
+                                                 JOptionPane.OK_CANCEL_OPTION);
+        if(result!=JOptionPane.OK_OPTION){
+          System.exit(-1);
+        }
+        passphrase=passphraseField.getText();
+        if(!kpair.decrypt(passphrase)){
+          System.out.println("failed to decrypt "+pkey);
+        }
+        else{
+          System.out.println(pkey+" is decrypted.");
+        }
       }
 
       passphrase="";
@@ -53,11 +53,11 @@ class ChangePassphrase{
       JTextField passphraseField=(JTextField)new JPasswordField(20);
       Object[] ob={passphraseField};
       int result=JOptionPane.showConfirmDialog(null, ob, 
-					       "Enter new passphrase for "+pkey+
-					       " (empty for no passphrase)",
-					       JOptionPane.OK_CANCEL_OPTION);
+                                               "Enter new passphrase for "+pkey+
+                                               " (empty for no passphrase)",
+                                               JOptionPane.OK_CANCEL_OPTION);
       if(result!=JOptionPane.OK_OPTION){
-	System.exit(-1);
+        System.exit(-1);
       }
       passphrase=passphraseField.getText();
 

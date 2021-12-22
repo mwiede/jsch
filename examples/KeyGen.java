@@ -61,7 +61,7 @@ class KeyGen{
     Object[] ob={passphraseField};
     int result=
       JOptionPane.showConfirmDialog(null, ob, "Enter passphrase (empty for no passphrase)",
-				    JOptionPane.OK_CANCEL_OPTION);
+                                    JOptionPane.OK_CANCEL_OPTION);
     if(result==JOptionPane.OK_OPTION){
       passphrase=passphraseField.getText();
     }

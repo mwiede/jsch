@@ -77,7 +77,7 @@ final class Adler32 implements Checksum {
       int k=NMAX;
       len-=k;
       while(k-->0){
-	s1+=buf[index++]&0xff; s2+=s1;
+        s1+=buf[index++]&0xff; s2+=s1;
       }
       s1%=BASE;
       s2%=BASE;

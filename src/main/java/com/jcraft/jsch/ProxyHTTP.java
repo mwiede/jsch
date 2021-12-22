@@ -48,8 +48,8 @@ public class ProxyHTTP implements Proxy{
     String host=proxy_host;
     if(proxy_host.indexOf(':')!=-1){
       try{
-	host=proxy_host.substring(0, proxy_host.indexOf(':'));
-	port=Integer.parseInt(proxy_host.substring(proxy_host.indexOf(':')+1));
+        host=proxy_host.substring(0, proxy_host.indexOf(':'));
+        port=Integer.parseInt(proxy_host.substring(proxy_host.indexOf(':')+1));
       }
       catch(Exception e){
       }
@@ -86,11 +86,11 @@ public class ProxyHTTP implements Proxy{
       out.write(Util.str2byte("CONNECT "+host+":"+port+" HTTP/1.0\r\n"));
 
       if(user!=null && passwd!=null){
-	byte[] code=Util.str2byte(user+":"+passwd);
-	code=Util.toBase64(code, 0, code.length, true);
-	out.write(Util.str2byte("Proxy-Authorization: Basic "));
-	out.write(code);
-	out.write(Util.str2byte("\r\n"));
+        byte[] code=Util.str2byte(user+":"+passwd);
+        code=Util.toBase64(code, 0, code.length, true);
+        out.write(Util.str2byte("Proxy-Authorization: Basic "));
+        out.write(code);
+        out.write(Util.str2byte("\r\n"));
       }
 
       out.write(Util.str2byte("\r\n"));

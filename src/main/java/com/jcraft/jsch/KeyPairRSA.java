@@ -154,14 +154,14 @@ public class KeyPairRSA extends KeyPair{
       }
 
       if(vendor==VENDOR_FSECURE){
-	if(plain[index]!=0x30){                  // FSecure
-	  Buffer buf=new Buffer(plain);
-	  pub_array=buf.getMPIntBits();
-	  prv_array=buf.getMPIntBits();
-	  n_array=buf.getMPIntBits();
-	  byte[] u_array=buf.getMPIntBits();
-	  p_array=buf.getMPIntBits();
-	  q_array=buf.getMPIntBits();
+        if(plain[index]!=0x30){                  // FSecure
+          Buffer buf=new Buffer(plain);
+          pub_array=buf.getMPIntBits();
+          prv_array=buf.getMPIntBits();
+          n_array=buf.getMPIntBits();
+          byte[] u_array=buf.getMPIntBits();
+          p_array=buf.getMPIntBits();
+          q_array=buf.getMPIntBits();
           if(n_array!=null){
             key_size = (new BigInteger(n_array)).bitLength();
           }
@@ -170,9 +170,9 @@ public class KeyPairRSA extends KeyPair{
           getEQArray();
           getCArray();
 
-	  return true;
-	}
-	return false;
+          return true;
+        }
+        return false;
       }
 
             // OPENSSH Key v1 Format

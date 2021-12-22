@@ -170,12 +170,12 @@ public class KeyPairECDSA extends KeyPair{
 
       if(vendor==VENDOR_FSECURE){
         /*
-	if(plain[0]!=0x30){              // FSecure
-	  return true;
-	}
-	return false;
+        if(plain[0]!=0x30){              // FSecure
+          return true;
+        }
+        return false;
         */
-	return false;
+        return false;
       }
       else if(vendor==VENDOR_PUTTY){
         /*
@@ -192,7 +192,7 @@ public class KeyPairECDSA extends KeyPair{
 
         return true;
         */
-	return false;
+        return false;
       }
 
       // OPENSSH Key v1 Format

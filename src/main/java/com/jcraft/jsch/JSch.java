@@ -65,7 +65,7 @@ public class JSch{
     config.put("diffie-hellman-group-exchange-sha1", 
                                 "com.jcraft.jsch.DHGEX");
     config.put("diffie-hellman-group1-sha1", 
-	                        "com.jcraft.jsch.DHG1");
+                                "com.jcraft.jsch.DHG1");
     config.put("diffie-hellman-group14-sha1", 
                "com.jcraft.jsch.DHG14");
     config.put("diffie-hellman-group-exchange-sha256", 
@@ -401,7 +401,7 @@ public class JSch{
     if(known_hosts==null) known_hosts=new KnownHosts(this);
     if(known_hosts instanceof KnownHosts){
       synchronized(known_hosts){
-	((KnownHosts)known_hosts).setKnownHosts(filename); 
+        ((KnownHosts)known_hosts).setKnownHosts(filename); 
       }
     }
   }
@@ -421,7 +421,7 @@ public class JSch{
     if(known_hosts==null) known_hosts=new KnownHosts(this);
     if(known_hosts instanceof KnownHosts){
       synchronized(known_hosts){
-	((KnownHosts)known_hosts).setKnownHosts(stream); 
+        ((KnownHosts)known_hosts).setKnownHosts(stream); 
       }
     }
   }
@@ -648,9 +648,9 @@ public class JSch{
   public static void setConfig(Hashtable<String, String> newconf){
     synchronized(config){
       for(Enumeration<String> e=newconf.keys() ; e.hasMoreElements() ;) {
-	String newkey=e.nextElement();
-	String key=(newkey.equals("PubkeyAcceptedKeyTypes") ? "PubkeyAcceptedAlgorithms" : newkey);
-	config.put(key, newconf.get(newkey));
+        String newkey=e.nextElement();
+        String key=(newkey.equals("PubkeyAcceptedKeyTypes") ? "PubkeyAcceptedAlgorithms" : newkey);
+        config.put(key, newconf.get(newkey));
       }
     }
   }

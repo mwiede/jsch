@@ -97,8 +97,8 @@ System.err.println("");
 //  System.err.println("buffer.buffer.length="+buffer.buffer.length+" s="+(s));
 
     System.arraycopy(buffer.buffer, 
-		     len+5+9, 
-		     buffer.buffer, s, buffer.index-5-9-len);
+                     len+5+9, 
+                     buffer.buffer, s, buffer.index-5-9-len);
 
     buffer.index=10;
     buffer.putInt(len);
@@ -107,8 +107,8 @@ System.err.println("");
   }
   void unshift(byte command, int recipient, int s, int len){
     System.arraycopy(buffer.buffer, 
-		     s, 
-		     buffer.buffer, 5+9, len);
+                     s, 
+                     buffer.buffer, 5+9, len);
     buffer.buffer[5]=command;
     buffer.index=6;
     buffer.putInt(recipient);

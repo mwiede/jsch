@@ -120,19 +120,19 @@ public class KeyPairDSA extends KeyPair{
     try{
 
       if(vendor==VENDOR_FSECURE){
-	if(plain[0]!=0x30){              // FSecure
-	  Buffer buf=new Buffer(plain);
-	  buf.getInt();
-	  P_array=buf.getMPIntBits();
-	  G_array=buf.getMPIntBits();
-	  Q_array=buf.getMPIntBits();
-	  pub_array=buf.getMPIntBits();
-	  prv_array=buf.getMPIntBits();
+        if(plain[0]!=0x30){              // FSecure
+          Buffer buf=new Buffer(plain);
+          buf.getInt();
+          P_array=buf.getMPIntBits();
+          G_array=buf.getMPIntBits();
+          Q_array=buf.getMPIntBits();
+          pub_array=buf.getMPIntBits();
+          prv_array=buf.getMPIntBits();
           if(P_array!=null)
             key_size = (new BigInteger(P_array)).bitLength();
-	  return true;
-	}
-	return false;
+          return true;
+        }
+        return false;
       }
       else if(vendor==VENDOR_PUTTY){
         Buffer buf=new Buffer(plain);

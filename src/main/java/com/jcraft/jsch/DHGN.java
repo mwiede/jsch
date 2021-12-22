@@ -54,7 +54,7 @@ public abstract class DHGN extends KeyExchange{
 
   @Override
   public void init(Session session,
-		   byte[] V_S, byte[] V_C, byte[] I_S, byte[] I_C) throws Exception{
+                   byte[] V_S, byte[] V_C, byte[] I_S, byte[] I_C) throws Exception{
     this.session=session;
     this.V_S=V_S;      
     this.V_C=V_C;      
@@ -126,8 +126,8 @@ public abstract class DHGN extends KeyExchange{
       j=_buf.getByte();
       j=_buf.getByte();
       if(j!=31){
-	System.err.println("type: must be 31 "+j);
-	return false;
+        System.err.println("type: must be 31 "+j);
+        return false;
       }
 
       K_S=_buf.getString();
@@ -168,7 +168,7 @@ public abstract class DHGN extends KeyExchange{
       i=0;
       j=0;
       j=((K_S[i++]<<24)&0xff000000)|((K_S[i++]<<16)&0x00ff0000)|
-	((K_S[i++]<<8)&0x0000ff00)|((K_S[i++])&0x000000ff);
+        ((K_S[i++]<<8)&0x0000ff00)|((K_S[i++])&0x000000ff);
       String alg=Util.byte2str(K_S, i, j);
       i+=j;
 

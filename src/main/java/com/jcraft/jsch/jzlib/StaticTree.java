@@ -118,15 +118,15 @@ final class StaticTree{
 
   static StaticTree static_l_desc =
     new StaticTree(static_ltree, Tree.extra_lbits,
-		   LITERALS+1, L_CODES, MAX_BITS);
+                   LITERALS+1, L_CODES, MAX_BITS);
 
   static StaticTree static_d_desc =
     new StaticTree(static_dtree, Tree.extra_dbits,
-		   0,  D_CODES, MAX_BITS);
+                   0,  D_CODES, MAX_BITS);
 
   static StaticTree static_bl_desc =
     new StaticTree(null, Tree.extra_blbits,
-		   0, BL_CODES, MAX_BL_BITS);
+                   0, BL_CODES, MAX_BL_BITS);
 
   short[] static_tree;     // static tree or null
   int[] extra_bits;        // extra bits for each code or null

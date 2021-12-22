@@ -82,7 +82,7 @@ public class IO{
     do{
       int completed = in.read(array, begin, length);
       if(completed<0){
-	throw new IOException("End of IO Stream Read");
+        throw new IOException("End of IO Stream Read");
       }
       begin+=completed;
       length-=completed;

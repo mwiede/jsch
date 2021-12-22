@@ -53,8 +53,8 @@ public class ProxySOCKS4 implements Proxy{
     String host=proxy_host;
     if(proxy_host.indexOf(':')!=-1){
       try{
-	host=proxy_host.substring(0, proxy_host.indexOf(':'));
-	port=Integer.parseInt(proxy_host.substring(proxy_host.indexOf(':')+1));
+        host=proxy_host.substring(0, proxy_host.indexOf(':'));
+        port=Integer.parseInt(proxy_host.substring(proxy_host.indexOf(':')+1));
       }
       catch(Exception e){
       }
@@ -176,8 +176,8 @@ public class ProxySOCKS4 implements Proxy{
       }
       if(buf[1]!=90){
         try{ socket.close(); }
-	catch(Exception eee){
-	}
+        catch(Exception eee){
+        }
         String message="ProxySOCKS4: server returns CD "+buf[1];
         throw new JSchException(message);
       }

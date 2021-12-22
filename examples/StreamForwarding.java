@@ -42,12 +42,12 @@ public class StreamForwarding{
       session.connect();
 
       String foo=JOptionPane.showInputDialog("Enter host and port", 
-						 "host:port");
+                                                 "host:port");
       host=foo.substring(0, foo.indexOf(':'));
       port=Integer.parseInt(foo.substring(foo.indexOf(':')+1));
 
       System.out.println("System.{in,out} will be forwarded to "+
-			 host+":"+port+".");
+                         host+":"+port+".");
       Channel channel = session.getStreamForwarder(host, port);
       // InputStream in = channel.getInputStream();
       // OutpuStream out = channel.getOutputStream();
@@ -81,11 +81,11 @@ public class StreamForwarding{
     public boolean promptPassword(String message){
       Object[] ob={passwordField}; 
       int result=
-	  JOptionPane.showConfirmDialog(null, ob, message,
-					JOptionPane.OK_CANCEL_OPTION);
+          JOptionPane.showConfirmDialog(null, ob, message,
+                                        JOptionPane.OK_CANCEL_OPTION);
       if(result==JOptionPane.OK_OPTION){
-	passwd=passwordField.getText();
-	return true;
+        passwd=passwordField.getText();
+        return true;
       }
       else{ return false; }
     }
@@ -143,7 +143,7 @@ public class StreamForwarding{
         for(int i=0; i<prompt.length; i++){
           response[i]=texts[i].getText();
         }
-	return response;
+        return response;
       }
       else{
         return null;  // cancel

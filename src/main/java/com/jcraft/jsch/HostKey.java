@@ -141,7 +141,7 @@ public class HostKey{
        return hosts.regionMatches(true, i, _host, 0, hostlen);
       }
       if(hostlen==(j-i)){
-	if(hosts.regionMatches(true, i, _host, 0, hostlen)) return true;
+        if(hosts.regionMatches(true, i, _host, 0, hostlen)) return true;
       }
       i=j+1;
     }

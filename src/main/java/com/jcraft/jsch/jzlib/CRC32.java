@@ -47,7 +47,7 @@ final class CRC32 implements Checksum {
       int c = n;
       for (int k = 8;  --k >= 0; ) {
         if ((c & 1) != 0)
-	  c = 0xedb88320 ^ (c >>> 1);
+          c = 0xedb88320 ^ (c >>> 1);
         else
           c = c >>> 1;
       }

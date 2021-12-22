@@ -23,10 +23,10 @@ public class UserAuthPubKey{
       int returnVal = chooser.showOpenDialog(null);
       if(returnVal == JFileChooser.APPROVE_OPTION) {
         System.out.println("You chose "+
-			   chooser.getSelectedFile().getAbsolutePath()+".");
+                           chooser.getSelectedFile().getAbsolutePath()+".");
         jsch.addIdentity(chooser.getSelectedFile().getAbsolutePath()
-//			 , "passphrase"
-			 );
+//                         , "passphrase"
+                         );
       }
 
       String host=null;
@@ -81,8 +81,8 @@ public class UserAuthPubKey{
     public boolean promptPassphrase(String message){
       Object[] ob={passphraseField};
       int result=
-	JOptionPane.showConfirmDialog(null, ob, message,
-				      JOptionPane.OK_CANCEL_OPTION);
+        JOptionPane.showConfirmDialog(null, ob, message,
+                                      JOptionPane.OK_CANCEL_OPTION);
       if(result==JOptionPane.OK_OPTION){
         passphrase=passphraseField.getText();
         return true;
@@ -144,7 +144,7 @@ public class UserAuthPubKey{
         for(int i=0; i<prompt.length; i++){
           response[i]=texts[i].getText();
         }
-	return response;
+        return response;
       }
       else{
         return null;  // cancel

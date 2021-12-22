@@ -92,10 +92,10 @@ class PortWatcher implements Runnable{
     Vector<String> foo=new Vector<>();
     synchronized(pool){
       for(int i=0; i<pool.size(); i++){
-	PortWatcher p=pool.elementAt(i);
-	if(p.session==session){
-	  foo.addElement(p.lport+":"+p.host+":"+p.rport);
-	}
+        PortWatcher p=pool.elementAt(i);
+        if(p.session==session){
+          foo.addElement(p.lport+":"+p.host+":"+p.rport);
+        }
       }
     }
     String[] bar=new String[foo.size()];
@@ -114,13 +114,13 @@ class PortWatcher implements Runnable{
     }
     synchronized(pool){
       for(int i=0; i<pool.size(); i++){
-	PortWatcher p=pool.elementAt(i);
-	if(p.session==session && p.lport==lport){
-	  if(/*p.boundaddress.isAnyLocalAddress() ||*/
+        PortWatcher p=pool.elementAt(i);
+        if(p.session==session && p.lport==lport){
+          if(/*p.boundaddress.isAnyLocalAddress() ||*/
              (anyLocalAddress!=null &&  p.boundaddress.equals(anyLocalAddress)) ||
-	     p.boundaddress.equals(addr))
-	  return p;
-	}
+             p.boundaddress.equals(addr))
+          return p;
+        }
       }
       return null;
     }
@@ -157,21 +157,21 @@ class PortWatcher implements Runnable{
       PortWatcher[] foo=new PortWatcher[pool.size()];
       int count=0;
       for(int i=0; i<pool.size(); i++){
-	PortWatcher p=pool.elementAt(i);
-	if(p.session==session) {
-	  p.delete();
-	  foo[count++]=p;
-	}
+        PortWatcher p=pool.elementAt(i);
+        if(p.session==session) {
+          p.delete();
+          foo[count++]=p;
+        }
       }
       for(int i=0; i<count; i++){
-	PortWatcher p=foo[i];
-	pool.removeElement(p);
+        PortWatcher p=foo[i];
+        pool.removeElement(p);
       }
     }
   }
   PortWatcher(Session session,
-	      String address, int lport,
-	      String host, int rport,
+              String address, int lport,
+              String host, int rport,
               ServerSocketFactory factory) throws JSchException{
     this.session=session;
     this.lport=lport;
@@ -196,7 +196,7 @@ class PortWatcher implements Runnable{
     try{
       while(thread!=null){
         Socket socket=ss.accept();
-	socket.setTcpNoDelay(true);
+        socket.setTcpNoDelay(true);
         InputStream in=socket.getInputStream();
         OutputStream out=socket.getOutputStream();
         if(socketPath!=null && socketPath.length()>0){
