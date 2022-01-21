@@ -128,6 +128,11 @@ public class Algorithms3IT {
     Session session = ssh.getSession("root", sshd.getHost(), sshd.getFirstMappedPort());
     session.setConfig("StrictHostKeyChecking", "yes");
     session.setConfig("PreferredAuthentications", "publickey");
+    // Dropbear does not support rsa-sha2-512/rsa-sha2-256, so add ssh-rsa
+    String serverHostKey = session.getConfig("server_host_key") + ",ssh-rsa";
+    String pubkeyAcceptedAlgorithms = session.getConfig("PubkeyAcceptedAlgorithms") + ",ssh-rsa";
+    session.setConfig("server_host_key", serverHostKey);
+    session.setConfig("PubkeyAcceptedAlgorithms", pubkeyAcceptedAlgorithms);
     return session;
   }
 

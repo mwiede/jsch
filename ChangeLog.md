@@ -1,3 +1,5 @@
+* [0.2.0](https://github.com/mwiede/jsch/releases/tag/jsch-0.2.0)
+  * Disable RSA/SHA1 signature algorithm by default [#75](https://github.com/mwiede/jsch/issues/75)
 * [0.1.72](https://github.com/mwiede/jsch/releases/tag/jsch-0.1.72)
   * Switch chacha20-poly1305@<!-- -->openssh.com algorithm to a pure [Bouncy Castle](https://www.bouncycastle.org/java.html) based implementation
   * implement openssh config behavior to handle append, prepend and removal of algorithms [#104](https://github.com/mwiede/jsch/pull/104) 
