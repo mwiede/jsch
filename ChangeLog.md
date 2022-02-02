@@ -5,6 +5,7 @@
     * JplLogger, using [Java 9's JEP 264](https://openjdk.java.net/jeps/264)
     * Log4j2Logger, using [Apache Log4j 2](https://logging.apache.org/log4j/2.x/)
     * Slf4jLogger, using [SLF4J](https://www.slf4j.org/)
+  * Fix client version to be compliant with [RFC 4253 section 4.2](https://datatracker.ietf.org/doc/html/rfc4253#section-4.2) by not including minus sign characters [#115](https://github.com/mwiede/jsch/issues/115)
 * [0.1.72](https://github.com/mwiede/jsch/releases/tag/jsch-0.1.72)
   * Switch chacha20-poly1305@<!-- -->openssh.com algorithm to a pure [Bouncy Castle](https://www.bouncycastle.org/java.html) based implementation
   * implement openssh config behavior to handle append, prepend and removal of algorithms [#104](https://github.com/mwiede/jsch/pull/104) 
