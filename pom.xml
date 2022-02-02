@@ -10,6 +10,7 @@
     <scm>
       <connection>scm:git:https://github.com/mwiede/jsch.git</connection>
       <developerConnection>scm:git:https://github.com/mwiede/jsch.git</developerConnection>
+      <url>https://github.com/mwiede/jsch</url>
       <tag>HEAD</tag>
     </scm>
     <developers>
