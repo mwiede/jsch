@@ -4,25 +4,24 @@ import org.slf4j.LoggerFactory;
 
 public class Slf4jLogger implements com.jcraft.jsch.Logger {
 
-  private static final org.slf4j.Logger log = LoggerFactory.getLogger(JSch.class);
-  private static final com.jcraft.jsch.Logger instance = new Slf4jLogger();
+  private static final org.slf4j.Logger logger = LoggerFactory.getLogger(JSch.class);
 
-  private Slf4jLogger() {}
+  public Slf4jLogger() {}
 
   @Override
   public boolean isEnabled(int level) {
     switch (level) {
       case com.jcraft.jsch.Logger.DEBUG:
-        return log.isDebugEnabled();
+        return logger.isDebugEnabled();
       case com.jcraft.jsch.Logger.INFO:
-        return log.isInfoEnabled();
+        return logger.isInfoEnabled();
       case com.jcraft.jsch.Logger.WARN:
-        return log.isWarnEnabled();
+        return logger.isWarnEnabled();
       case com.jcraft.jsch.Logger.ERROR:
       case com.jcraft.jsch.Logger.FATAL:
-        return log.isErrorEnabled();
+        return logger.isErrorEnabled();
       default:
-        return log.isTraceEnabled();
+        return logger.isTraceEnabled();
     }
   }
 
@@ -30,25 +29,21 @@ public class Slf4jLogger implements com.jcraft.jsch.Logger {
   public void log(int level, String message) {
     switch (level) {
       case com.jcraft.jsch.Logger.DEBUG:
-        log.debug(message);
+        logger.debug(message);
         break;
       case com.jcraft.jsch.Logger.INFO:
-        log.info(message);
+        logger.info(message);
         break;
       case com.jcraft.jsch.Logger.WARN:
-        log.warn(message);
+        logger.warn(message);
         break;
       case com.jcraft.jsch.Logger.ERROR:
       case com.jcraft.jsch.Logger.FATAL:
-        log.error(message);
+        logger.error(message);
         break;
       default:
-        log.trace(message);
+        logger.trace(message);
         break;
     }
-  }
-
-  public static com.jcraft.jsch.Logger getInstance() {
-    return instance;
   }
 }

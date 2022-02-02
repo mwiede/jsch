@@ -24,7 +24,7 @@ class KeyPairTest {
 
     @BeforeAll
     static void init() {
-        JSch.setLogger(Slf4jLogger.getInstance());
+        JSch.setLogger(new Slf4jLogger());
     }
 
     static Stream<Arguments> keyArgs() {

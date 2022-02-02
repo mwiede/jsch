@@ -1,5 +1,10 @@
 * [0.2.0](https://github.com/mwiede/jsch/releases/tag/jsch-0.2.0)
   * Disable RSA/SHA1 signature algorithm by default [#75](https://github.com/mwiede/jsch/issues/75)
+  * Add basic Logger implementations that can be optionally utilized with `JSch.setLogger()`:
+    * JulLogger, using `java.util.logging.Logger`
+    * JplLogger, using [Java 9's JEP 264](https://openjdk.java.net/jeps/264)
+    * Log4j2Logger, using [Apache Log4j 2](https://logging.apache.org/log4j/2.x/)
+    * Slf4jLogger, using [SLF4J](https://www.slf4j.org/)
 * [0.1.72](https://github.com/mwiede/jsch/releases/tag/jsch-0.1.72)
   * Switch chacha20-poly1305@<!-- -->openssh.com algorithm to a pure [Bouncy Castle](https://www.bouncycastle.org/java.html) based implementation
   * implement openssh config behavior to handle append, prepend and removal of algorithms [#104](https://github.com/mwiede/jsch/pull/104) 
