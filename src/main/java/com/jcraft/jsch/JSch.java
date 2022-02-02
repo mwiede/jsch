@@ -682,7 +682,7 @@ public class JSch{
     JSch.logger=logger;
   }
 
-  static Logger getLogger(){
+  public static Logger getLogger(){
     return logger;
   }
 }

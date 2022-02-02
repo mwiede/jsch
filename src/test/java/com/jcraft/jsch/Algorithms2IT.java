@@ -331,6 +331,24 @@ public class Algorithms2IT {
     checkLogs(expectedC2S);
   }
 
+  @ParameterizedTest
+  @ValueSource(strings = {"com.jcraft.jsch.juz.Compression", "com.jcraft.jsch.jzlib.Compression"})
+  public void testCompressionImpls(String impl) throws Exception {
+    JSch ssh = createRSAIdentity();
+    Session session = createSession(ssh);
+    session.setConfig("compression.s2c", "zlib");
+    session.setConfig("compression.c2s", "zlib");
+    session.setConfig("zlib", impl);
+    doSftp(session, true);
+
+    String expectedImpl = String.format("zlib using %s", impl);
+    String expectedS2C = "kex: server->client .* compression: zlib.*";
+    String expectedC2S = "kex: client->server .* compression: zlib.*";
+    checkLogs(expectedImpl);
+    checkLogs(expectedS2C);
+    checkLogs(expectedC2S);
+  }
+
   private JSch createRSAIdentity() throws Exception {
     HostKey hostKey = readHostKey(getResourceFile("docker/ssh_host_rsa_key.pub"));
     JSch ssh = new JSch();
