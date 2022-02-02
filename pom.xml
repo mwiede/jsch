@@ -46,6 +46,8 @@
         </license>
     </licenses>
     <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <skipITs>true</skipITs>
         <junixsocket.version>2.4.0</junixsocket.version>
         <jna.version>5.10.0</jna.version>
@@ -430,9 +432,4 @@
             </build>
         </profile>
     </profiles>
-    <parent>
-        <groupId>org.sonatype.oss</groupId>
-        <artifactId>oss-parent</artifactId>
-        <version>9</version>
-    </parent>
 </project>
