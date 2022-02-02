@@ -44,6 +44,14 @@
             <name>Revised BSD</name>
             <url>https://github.com/mwiede/jsch/blob/master/LICENSE.txt</url>
         </license>
+        <license>
+            <name>BSD</name>
+            <url>https://github.com/mwiede/jsch/blob/master/LICENSE.JZlib.txt</url>
+        </license>
+        <license>
+            <name>ISC</name>
+            <url>https://github.com/mwiede/jsch/blob/master/LICENSE.jBCrypt.txt</url>
+        </license>
     </licenses>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
