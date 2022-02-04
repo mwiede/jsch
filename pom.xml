@@ -436,14 +436,16 @@
                     </execution>
                 </executions>
             </plugin>
-            <!-- https://stackoverflow.com/questions/58836862/jdk-11-and-javadoc-->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-javadoc-plugin</artifactId>
                 <version>3.3.1</version>
                 <configuration>
-                    <detectJavaApiLink>false</detectJavaApiLink>
-                    <sourcepath>src/main/java</sourcepath>
+                    <quiet>true</quiet>
+                    <doclint>none</doclint>
+                    <subpackages>com.jcraft.jsch</subpackages>
+                    <excludePackageNames>com.jcraft.jsch.*</excludePackageNames>
+                    <sourcepath>${project.build.sourceDirectory}:${project.build.directory}/generated-sources/java-templates:${project.basedir}/src/main/java9:${project.basedir}/src/main/java11:${project.basedir}/src/main/java15:${project.basedir}/src/main/java16</sourcepath>
                 </configuration>
                 <executions>
                     <execution>
