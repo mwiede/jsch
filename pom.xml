@@ -8,11 +8,19 @@
     <url>https://github.com/mwiede/jsch</url>
     <description>JSch is a pure Java implementation of SSH2</description>
     <scm>
-      <connection>scm:git:https://github.com/mwiede/jsch.git</connection>
-      <developerConnection>scm:git:https://github.com/mwiede/jsch.git</developerConnection>
-      <url>https://github.com/mwiede/jsch</url>
-      <tag>HEAD</tag>
+        <connection>scm:git:https://github.com/mwiede/jsch.git</connection>
+        <developerConnection>scm:git:https://github.com/mwiede/jsch.git</developerConnection>
+        <url>https://github.com/mwiede/jsch</url>
+        <tag>HEAD</tag>
     </scm>
+    <issueManagement>
+        <system>GitHub</system>
+        <url>https://github.com/mwiede/jsch/issues</url>
+    </issueManagement>
+    <ciManagement>
+        <system>GitHub</system>
+        <url>https://github.com/mwiede/jsch/actions</url>
+    </ciManagement>
     <developers>
         <developer>
             <id>ymnk</id>
@@ -159,7 +167,6 @@
             <scope>test</scope>
         </dependency>
     </dependencies>
-
     <build>
         <plugins>
             <plugin>
