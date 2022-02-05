@@ -74,7 +74,7 @@ class ChannelSession extends Channel{
   }
 
   /**
-   * @deprecated Use {@link #setEnv(String, String)} or {@link #setEnv(byte[], byte[])} instead.
+   * @deprecated Use #setEnv(String, String) or #setEnv(byte[], byte[]) instead.
    * @see #setEnv(String, String)
    * @see #setEnv(byte[], byte[])
    */
