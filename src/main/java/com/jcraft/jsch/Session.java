@@ -193,8 +193,8 @@ public class Session implements Runnable{
     io=new IO();
     if(random==null){
       try{
-	Class<?> c=Class.forName(getConfig("random"));
-        random=(Random)(c.getDeclaredConstructor().newInstance());
+        Class<? extends Random> c=Class.forName(getConfig("random")).asSubclass(Random.class);
+        random=c.getDeclaredConstructor().newInstance();
       }
       catch(Exception e){
         throw new JSchException(e.toString(), e);
@@ -391,8 +391,8 @@ public class Session implements Runnable{
 
       UserAuth ua=null;
       try{
-	Class<?> c=Class.forName(getConfig("userauth.none"));
-        ua=(UserAuth)(c.getDeclaredConstructor().newInstance());
+        Class<? extends UserAuth> c=Class.forName(getConfig("userauth.none")).asSubclass(UserAuth.class);
+        ua=c.getDeclaredConstructor().newInstance();
       }
       catch(Exception e){
         throw new JSchException(e.toString(), e);
@@ -456,10 +456,10 @@ public class Session implements Runnable{
 
 	  ua=null;
           try{
-            Class<?> c=null;
+            Class<? extends UserAuth> c=null;
             if(getConfig("userauth."+method)!=null){
-              c=Class.forName(getConfig("userauth."+method));
-              ua=(UserAuth)(c.getDeclaredConstructor().newInstance());
+              c=Class.forName(getConfig("userauth."+method)).asSubclass(UserAuth.class);
+              ua=c.getDeclaredConstructor().newInstance();
             }
           }
           catch(Exception e){
@@ -608,8 +608,8 @@ public class Session implements Runnable{
 
     KeyExchange kex=null;
     try{
-      Class<?> c=Class.forName(getConfig(guess[KeyExchange.PROPOSAL_KEX_ALGS]));
-      kex=(KeyExchange)(c.getDeclaredConstructor().newInstance());
+      Class<? extends KeyExchange> c=Class.forName(getConfig(guess[KeyExchange.PROPOSAL_KEX_ALGS])).asSubclass(KeyExchange.class);
+      kex=c.getDeclaredConstructor().newInstance();
     }
     catch(Exception | NoClassDefFoundError e){
       throw new JSchException(e.toString(), e);
@@ -1465,12 +1465,13 @@ key_type+" key fingerprint is "+key_fprint+".\n"+
     MACs2c=hash.digest();
 
     try{
-      Class<?> c;
+      Class<? extends Cipher> cc;
+      Class<? extends MAC> cm;
       String method;
 
       method=guess[KeyExchange.PROPOSAL_ENC_ALGS_STOC];
-      c=Class.forName(getConfig(method));
-      s2ccipher=(Cipher)(c.getDeclaredConstructor().newInstance());
+      cc=Class.forName(getConfig(method)).asSubclass(Cipher.class);
+      s2ccipher=cc.getDeclaredConstructor().newInstance();
       while(s2ccipher.getBlockSize()>Es2c.length){
         buf.reset();
         buf.putMPInt(K);
@@ -1488,8 +1489,8 @@ key_type+" key fingerprint is "+key_fprint+".\n"+
 
       if(!s2ccipher.isAEAD()){
         method=guess[KeyExchange.PROPOSAL_MAC_ALGS_STOC];
-        c=Class.forName(getConfig(method));
-        s2cmac=(MAC)(c.getDeclaredConstructor().newInstance());
+        cm=Class.forName(getConfig(method)).asSubclass(MAC.class);
+        s2cmac=cm.getDeclaredConstructor().newInstance();
         MACs2c = expandKey(buf, K, H, MACs2c, hash, s2cmac.getBlockSize());
         s2cmac.init(MACs2c);
         //mac_buf=new byte[s2cmac.getBlockSize()];
@@ -1498,8 +1499,8 @@ key_type+" key fingerprint is "+key_fprint+".\n"+
       }
 
       method=guess[KeyExchange.PROPOSAL_ENC_ALGS_CTOS];
-      c=Class.forName(getConfig(method));
-      c2scipher=(Cipher)(c.getDeclaredConstructor().newInstance());
+      cc=Class.forName(getConfig(method)).asSubclass(Cipher.class);
+      c2scipher=cc.getDeclaredConstructor().newInstance();
       while(c2scipher.getBlockSize()>Ec2s.length){
         buf.reset();
         buf.putMPInt(K);
@@ -1517,8 +1518,8 @@ key_type+" key fingerprint is "+key_fprint+".\n"+
 
       if(!c2scipher.isAEAD()){
         method=guess[KeyExchange.PROPOSAL_MAC_ALGS_CTOS];
-        c=Class.forName(getConfig(method));
-        c2smac=(MAC)(c.getDeclaredConstructor().newInstance());
+        cm=Class.forName(getConfig(method)).asSubclass(MAC.class);
+        c2smac=cm.getDeclaredConstructor().newInstance();
         MACc2s = expandKey(buf, K, H, MACc2s, hash, c2smac.getBlockSize());
         c2smac.init(MACc2s);
       }
@@ -2568,8 +2569,8 @@ break;
       if(method.equals("zlib") ||
          (isAuthed && method.equals("zlib@openssh.com"))){
         try{
-          Class<?> c=Class.forName(foo);
-          deflater=(Compression)(c.getDeclaredConstructor().newInstance());
+          Class<? extends Compression> c=Class.forName(foo).asSubclass(Compression.class);
+          deflater=c.getDeclaredConstructor().newInstance();
           int level=6;
           try{ level=Integer.parseInt(getConfig("compression_level"));}
           catch(Exception ee){ }
@@ -2592,8 +2593,8 @@ break;
       if(method.equals("zlib") ||
          (isAuthed && method.equals("zlib@openssh.com"))){
         try{
-          Class<?> c=Class.forName(foo);
-          inflater=(Compression)(c.getDeclaredConstructor().newInstance());
+          Class<? extends Compression> c=Class.forName(foo).asSubclass(Compression.class);
+          inflater=c.getDeclaredConstructor().newInstance();
           inflater.init(Compression.INFLATER, 0);
         }
         catch(Exception ee){
@@ -2846,8 +2847,8 @@ break;
 
   static boolean checkCipher(String cipher){
     try{
-      Class<?> c=Class.forName(cipher);
-      Cipher _c=(Cipher)(c.getDeclaredConstructor().newInstance());
+      Class<? extends Cipher> c=Class.forName(cipher).asSubclass(Cipher.class);
+      Cipher _c=c.getDeclaredConstructor().newInstance();
       _c.init(Cipher.ENCRYPT_MODE,
               new byte[_c.getBlockSize()],
               new byte[_c.getIVSize()]);
@@ -2897,8 +2898,8 @@ break;
 
   static boolean checkMac(String mac){
     try{
-      Class<?> c=Class.forName(mac);
-      MAC _c=(MAC)(c.getDeclaredConstructor().newInstance());
+      Class<? extends MAC> c=Class.forName(mac).asSubclass(MAC.class);
+      MAC _c=c.getDeclaredConstructor().newInstance();
       _c.init(new byte[_c.getBlockSize()]);
       return true;
     }
@@ -2940,8 +2941,8 @@ break;
 
   static boolean checkKex(Session s, String kex){
     try{
-      Class<?> c=Class.forName(kex);
-      KeyExchange _c=(KeyExchange)(c.getDeclaredConstructor().newInstance());
+      Class<? extends KeyExchange> c=Class.forName(kex).asSubclass(KeyExchange.class);
+      KeyExchange _c=c.getDeclaredConstructor().newInstance();
       _c.init(s ,null, null, null, null);
       return true;
     }
@@ -2961,8 +2962,8 @@ break;
     String[] _sigs=Util.split(sigs, ",");
     for(int i=0; i<_sigs.length; i++){
       try{
-        Class<?> c=Class.forName(JSch.getConfig(_sigs[i]));
-        final Signature sig=(Signature)(c.getDeclaredConstructor().newInstance());
+        Class<? extends Signature> c=Class.forName(JSch.getConfig(_sigs[i])).asSubclass(Signature.class);
+        final Signature sig=c.getDeclaredConstructor().newInstance();
         sig.init();
       }
       catch(Exception | NoClassDefFoundError e){

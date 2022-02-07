@@ -115,8 +115,8 @@ public class HostKey{
     HASH hash=null;
     try{
       String _c=JSch.getConfig("FingerprintHash").toLowerCase();
-      Class<?> c=Class.forName(JSch.getConfig(_c));
-      hash=(HASH)(c.getDeclaredConstructor().newInstance());
+      Class<? extends HASH> c=Class.forName(JSch.getConfig(_c)).asSubclass(HASH.class);
+      hash=c.getDeclaredConstructor().newInstance();
     }
     catch(Exception e){ System.err.println("getFingerPrint: "+e); }
     return Util.getFingerPrint(hash, key, false, true);

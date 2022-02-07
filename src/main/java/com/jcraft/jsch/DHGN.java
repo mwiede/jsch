@@ -62,8 +62,8 @@ public abstract class DHGN extends KeyExchange{
     this.I_C=I_C;      
 
     try{
-      Class<?> c=Class.forName(session.getConfig(sha_name()));
-      sha=(HASH)(c.getDeclaredConstructor().newInstance());
+      Class<? extends HASH> c=Class.forName(session.getConfig(sha_name())).asSubclass(HASH.class);
+      sha=c.getDeclaredConstructor().newInstance();
       sha.init();
     }
     catch(Exception e){
@@ -74,8 +74,8 @@ public abstract class DHGN extends KeyExchange{
     packet=new Packet(buf);
 
     try{
-      Class<?> c=Class.forName(session.getConfig("dh"));
-      dh=(DH)(c.getDeclaredConstructor().newInstance());
+      Class<? extends DH> c=Class.forName(session.getConfig("dh")).asSubclass(DH.class);
+      dh=c.getDeclaredConstructor().newInstance();
       dh.init();
     }
     catch(Exception e){

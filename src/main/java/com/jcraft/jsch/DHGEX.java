@@ -68,8 +68,8 @@ public class DHGEX extends KeyExchange{
     this.I_C=I_C;      
 
     try{
-      Class<?> c=Class.forName(session.getConfig(hash));
-      sha=(HASH)(c.getDeclaredConstructor().newInstance());
+      Class<? extends HASH> c=Class.forName(session.getConfig(hash)).asSubclass(HASH.class);
+      sha=c.getDeclaredConstructor().newInstance();
       sha.init();
     }
     catch(Exception e){
@@ -80,14 +80,14 @@ public class DHGEX extends KeyExchange{
     packet=new Packet(buf);
 
     try{
-      Class<?> c=Class.forName(session.getConfig("dh"));
+      Class<? extends DH> c=Class.forName(session.getConfig("dh")).asSubclass(DH.class);
       min=Integer.parseInt(session.getConfig("dhgex_min"));
       max=Integer.parseInt(session.getConfig("dhgex_max"));
       preferred=Integer.parseInt(session.getConfig("dhgex_preferred"));
       if(checkInvalidSize(min) || checkInvalidSize(max) || checkInvalidSize(preferred) || preferred < min || max < preferred){
         throw new JSchException("Invalid DHGEX sizes: min=" + min + " max=" + max + " preferred=" + preferred);
       }
-      dh=(com.jcraft.jsch.DH)(c.getDeclaredConstructor().newInstance());
+      dh=c.getDeclaredConstructor().newInstance();
       dh.init();
     }
     catch(Exception e){
