@@ -1103,7 +1103,7 @@ key_type+" key fingerprint is "+key_fprint+".\n"+
           if(JSch.getLogger().isEnabled(Logger.FATAL)){
             JSch.getLogger().log(Logger.FATAL, message);
           }
-          start_discard(buf, s2ccipher, s2cmac, j, PACKET_MAX_SIZE-4);
+          start_discard(buf, s2ccipher, s2cmac, j, PACKET_MAX_SIZE-s2ccipher_size);
         }
 
         io.getByte(buf.buffer, buf.index, j);
@@ -1144,7 +1144,7 @@ key_type+" key fingerprint is "+key_fprint+".\n"+
           if(JSch.getLogger().isEnabled(Logger.FATAL)){
             JSch.getLogger().log(Logger.FATAL, message);
           }
-          start_discard(buf, s2ccipher, s2cmac, j, PACKET_MAX_SIZE-4);
+          start_discard(buf, s2ccipher, s2cmac, j, PACKET_MAX_SIZE-s2ccipher_size);
         }
 
         io.getByte(buf.buffer, buf.index, j); buf.index+=(j);
@@ -1365,7 +1365,6 @@ key_type+" key fingerprint is "+key_fprint+".\n"+
   }
 
   private void start_discard(Buffer buf, Cipher cipher, MAC mac,
-
                              int packet_length, int discard) throws JSchException, IOException{
     start_discard(buf, cipher, mac, packet_length, discard, null);
   }
@@ -1374,7 +1373,7 @@ key_type+" key fingerprint is "+key_fprint+".\n"+
                              int packet_length, int discard, Throwable t) throws JSchException, IOException{
     MAC discard_mac = null;
 
-    if(!cipher.isCBC()){
+    if(!cipher.isCBC() || (mac != null && mac.isEtM())){
       if(t!=null){
         throw new JSchException("Packet corrupt", t);
       }
