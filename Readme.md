@@ -71,7 +71,7 @@ As I explained in a [blog post](http://www.matez.de/index.php/2020/06/22/the-fut
   * As of the [0.2.0](https://github.com/mwiede/jsch/releases/tag/jsch-0.2.0) release, the RSA/SHA1 signature algorithm is disabled by default.
     * SHA1 is no longer considered secure by the general cryptographic community and this JSch fork strives to maintain secure choices for default algorithms that it will utilize.
     * This also follows the lead of the OpenSSH project in which they disabled RSA/SHA1 signatures by default as of [OpenSSH release 8.8](https://www.openssh.com/txt/release-8.8).
-  * ssh-rsa type keys continue to function by default with the RSA/SHA256 (rsa-sha2-256) & RSA/SHA512 (rsa-sha2-512) signature algorithms defined by (RFC 8332)[https://datatracker.ietf.org/doc/html/rfc8332].
+  * ssh-rsa type keys continue to function by default with the RSA/SHA256 (rsa-sha2-256) & RSA/SHA512 (rsa-sha2-512) signature algorithms defined by [RFC 8332](https://datatracker.ietf.org/doc/html/rfc8332).
   * If your server only supports RSA/SHA1 signatures and you require their use in your application, then you will need to manually reenable them by one of the following means:
     * Globally by adding "ssh-rsa" to the `jsch.server_host_key` + `jsch.client_pubkey` properties.
     * Globally by executing something similar to `JSch.setConfig("server_host_key", JSch.getConfig("server_host_key") + ",ssh-rsa")` + `JSch.setConfig("PubkeyAcceptedAlgorithms", JSch.getConfig("PubkeyAcceptedAlgorithms") + ",ssh-rsa")`.
