@@ -123,9 +123,9 @@ class Util{
     while(true){
       index=foo.indexOf(split, start);
       if(index>=0){
-	bar.addElement(Util.byte2str(buf, start, index-start));
-	start=index+1;
-	continue;
+        bar.addElement(Util.byte2str(buf, start, index-start));
+        start=index+1;
+        continue;
       }
       bar.addElement(Util.byte2str(buf, start, buf.length-start));
       break;
@@ -140,7 +140,7 @@ class Util{
     return glob0(pattern, 0, name, 0);
   }
   static private boolean glob0(byte[] pattern, int pattern_index,
-			      byte[] name, int name_index){
+                              byte[] name, int name_index){
     if(name.length>0 && name[0]=='.'){
       if(pattern.length>0 && pattern[0]=='.'){
         if(pattern.length==2 && pattern[1]=='*') return true;
@@ -151,7 +151,7 @@ class Util{
     return glob(pattern, pattern_index, name, name_index);
   }
   static private boolean glob(byte[] pattern, int pattern_index,
-			      byte[] name, int name_index){
+                              byte[] name, int name_index){
     //System.err.println("glob: "+new String(pattern)+", "+pattern_index+" "+new String(name)+", "+name_index);
 
     int patternlen=pattern.length;
@@ -164,14 +164,14 @@ class Util{
 
     while(i<patternlen && j<namelen){
       if(pattern[i]=='\\'){
-	if(i+1==patternlen)
-	  return false;
-	i++;
-	if(pattern[i]!=name[j]) 
+        if(i+1==patternlen)
+          return false;
+        i++;
+        if(pattern[i]!=name[j]) 
           return false;
         i+=skipUTF8Char(pattern[i]);
         j+=skipUTF8Char(name[j]);
-	continue;
+        continue;
       }
 
       if(pattern[i]=='*'){
@@ -182,14 +182,14 @@ class Util{
           }
           break;
         }
-	if(patternlen==i)
+        if(patternlen==i)
           return true;
 
-	byte foo=pattern[i];
+        byte foo=pattern[i];
         if(foo=='?'){
           while(j<namelen){
-	    if(glob(pattern, i, name, j)){
-	      return true;
+            if(glob(pattern, i, name, j)){
+              return true;
             }
             j+=skipUTF8Char(name[j]);
           }
@@ -212,21 +212,21 @@ class Util{
           return false;
         }
 
-	while(j<namelen){
-	  if(foo==name[j]){
-	    if(glob(pattern, i, name, j)){
-	      return true;
-	    }
-	  }
+        while(j<namelen){
+          if(foo==name[j]){
+            if(glob(pattern, i, name, j)){
+              return true;
+            }
+          }
           j+=skipUTF8Char(name[j]);
-	}
-	return false;
+        }
+        return false;
       }
 
       if(pattern[i]=='?'){
         i++;
         j+=skipUTF8Char(name[j]);
-	continue;
+        continue;
       }
 
       if(pattern[i]!=name[j])
@@ -237,11 +237,11 @@ class Util{
 
       if(!(j<namelen)){         // name is end
         if(!(i<patternlen)){    // pattern is end
-	  return true;
-	}
-	if(pattern[i]=='*'){    
+          return true;
+        }
+        if(pattern[i]=='*'){    
           break;
-	}
+        }
       }
       continue;
     }

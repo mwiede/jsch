@@ -37,7 +37,7 @@ public class X11Forwarding{
       Session session=jsch.getSession(user, host, 22);
 
       String display=JOptionPane.showInputDialog("Please enter display name", 
-						 xhost+":"+xport);
+                                                 xhost+":"+xport);
       xhost=display.substring(0, display.indexOf(':'));
       xport=Integer.parseInt(display.substring(display.indexOf(':')+1));
 
@@ -84,11 +84,11 @@ public class X11Forwarding{
     public boolean promptPassword(String message){
       Object[] ob={passwordField}; 
       int result=
-	  JOptionPane.showConfirmDialog(null, ob, message,
-					JOptionPane.OK_CANCEL_OPTION);
+          JOptionPane.showConfirmDialog(null, ob, message,
+                                        JOptionPane.OK_CANCEL_OPTION);
       if(result==JOptionPane.OK_OPTION){
-	passwd=passwordField.getText();
-	return true;
+        passwd=passwordField.getText();
+        return true;
       }
       else{ return false; }
     }
@@ -146,7 +146,7 @@ public class X11Forwarding{
         for(int i=0; i<prompt.length; i++){
           response[i]=texts[i].getText();
         }
-	return response;
+        return response;
       }
       else{
         return null;  // cancel

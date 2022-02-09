@@ -115,8 +115,8 @@ public class HostKey{
     HASH hash=null;
     try{
       String _c=JSch.getConfig("FingerprintHash").toLowerCase();
-      Class<?> c=Class.forName(JSch.getConfig(_c));
-      hash=(HASH)(c.getDeclaredConstructor().newInstance());
+      Class<? extends HASH> c=Class.forName(JSch.getConfig(_c)).asSubclass(HASH.class);
+      hash=c.getDeclaredConstructor().newInstance();
     }
     catch(Exception e){ System.err.println("getFingerPrint: "+e); }
     return Util.getFingerPrint(hash, key, false, true);
@@ -141,7 +141,7 @@ public class HostKey{
        return hosts.regionMatches(true, i, _host, 0, hostlen);
       }
       if(hostlen==(j-i)){
-	if(hosts.regionMatches(true, i, _host, 0, hostlen)) return true;
+        if(hosts.regionMatches(true, i, _host, 0, hostlen)) return true;
       }
       i=j+1;
     }

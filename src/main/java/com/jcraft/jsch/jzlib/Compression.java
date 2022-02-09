@@ -36,6 +36,7 @@ public class Compression implements com.jcraft.jsch.Compression {
   private Deflater deflater;
   private Inflater inflater;
   private byte[] tmpbuf=new byte[BUF_SIZE];
+  private byte[] inflated_buf;
 
   public Compression(){
   }
@@ -49,9 +50,11 @@ public class Compression implements com.jcraft.jsch.Compression {
       inflater=new Inflater();
       inflated_buf=new byte[BUF_SIZE];
     }
+    if(JSch.getLogger().isEnabled(Logger.DEBUG)){
+      JSch.getLogger().log(Logger.DEBUG,
+                           "zlib using "+this.getClass().getCanonicalName());
+    }
   }
-
-  private byte[] inflated_buf;
 
   @Override
   public byte[] compress(byte[] buf, int start, int[] len){
@@ -80,7 +83,11 @@ public class Compression implements com.jcraft.jsch.Compression {
           outputlen+=tmp;
           break;
         default:
-	    System.err.println("compress: deflate returnd "+status);
+          if(JSch.getLogger().isEnabled(Logger.WARN)){
+            JSch.getLogger().log(Logger.WARN,
+                                 "compress: deflate returnd "+status);
+          }
+
       }
     }
     while(deflater.avail_out==0);
@@ -104,34 +111,37 @@ public class Compression implements com.jcraft.jsch.Compression {
       int status=inflater.inflate(JZlib.Z_PARTIAL_FLUSH);
       switch(status){
         case JZlib.Z_OK:
-	  if(inflated_buf.length<inflated_end+BUF_SIZE-inflater.avail_out){
+          if(inflated_buf.length<inflated_end+BUF_SIZE-inflater.avail_out){
             int len=inflated_buf.length*2;
             if(len<inflated_end+BUF_SIZE-inflater.avail_out)
               len=inflated_end+BUF_SIZE-inflater.avail_out;
             byte[] foo=new byte[len];
-	    System.arraycopy(inflated_buf, 0, foo, 0, inflated_end);
-	    inflated_buf=foo;
-	  }
-	  System.arraycopy(tmpbuf, 0,
-			   inflated_buf, inflated_end,
-			   BUF_SIZE-inflater.avail_out);
-	  inflated_end+=(BUF_SIZE-inflater.avail_out);
+            System.arraycopy(inflated_buf, 0, foo, 0, inflated_end);
+            inflated_buf=foo;
+          }
+          System.arraycopy(tmpbuf, 0,
+                           inflated_buf, inflated_end,
+                           BUF_SIZE-inflater.avail_out);
+          inflated_end+=(BUF_SIZE-inflater.avail_out);
           length[0]=inflated_end;
-	  break;
+          break;
         case JZlib.Z_BUF_ERROR:
           if(inflated_end>buffer.length-start){
             byte[] foo=new byte[inflated_end+start];
             System.arraycopy(buffer, 0, foo, 0, start);
             System.arraycopy(inflated_buf, 0, foo, start, inflated_end);
-	    buffer=foo;
-	  }
-	  else{
+            buffer=foo;
+          }
+          else{
             System.arraycopy(inflated_buf, 0, buffer, start, inflated_end);
-	  }
+          }
           length[0]=inflated_end;
 	  return buffer;
 	default:
-	  System.err.println("uncompress: inflate returnd "+status);
+          if(JSch.getLogger().isEnabled(Logger.WARN)){
+            JSch.getLogger().log(Logger.WARN,
+                                 "uncompress: inflate returnd "+status);
+          }
           return null;
       }
     }

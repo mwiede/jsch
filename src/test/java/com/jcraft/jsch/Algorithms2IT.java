@@ -80,7 +80,7 @@ public class Algorithms2IT {
 
   @BeforeAll
   public static void beforeAll() {
-    JSch.setLogger(Slf4jLogger.getInstance());
+    JSch.setLogger(new Slf4jLogger());
   }
 
   @BeforeEach
@@ -327,6 +327,24 @@ public class Algorithms2IT {
 
     String expectedS2C = "kex: server->client .* compression: zlib.*";
     String expectedC2S = "kex: client->server .* compression: zlib.*";
+    checkLogs(expectedS2C);
+    checkLogs(expectedC2S);
+  }
+
+  @ParameterizedTest
+  @ValueSource(strings = {"com.jcraft.jsch.juz.Compression", "com.jcraft.jsch.jzlib.Compression"})
+  public void testCompressionImpls(String impl) throws Exception {
+    JSch ssh = createRSAIdentity();
+    Session session = createSession(ssh);
+    session.setConfig("compression.s2c", "zlib");
+    session.setConfig("compression.c2s", "zlib");
+    session.setConfig("zlib", impl);
+    doSftp(session, true);
+
+    String expectedImpl = String.format("zlib using %s", impl);
+    String expectedS2C = "kex: server->client .* compression: zlib.*";
+    String expectedC2S = "kex: client->server .* compression: zlib.*";
+    checkLogs(expectedImpl);
     checkLogs(expectedS2C);
     checkLogs(expectedC2S);
   }

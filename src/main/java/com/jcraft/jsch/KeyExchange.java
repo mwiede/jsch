@@ -68,7 +68,7 @@ public abstract class KeyExchange{
   protected byte[] K_S=null;
 
   public abstract void init(Session session, 
-			    byte[] V_S, byte[] V_C, byte[] I_S, byte[] I_C) throws Exception;
+                            byte[] V_S, byte[] V_C, byte[] I_S, byte[] I_C) throws Exception;
   public abstract boolean next(Buffer buf) throws Exception;
 
   public abstract int getState();
@@ -117,44 +117,44 @@ public abstract class KeyExchange{
 
       loop:
       while(j<cp.length){
-	while(j<cp.length && cp[j]!=',')j++; 
-	if(k==j) return null;
-	String algorithm=Util.byte2str(cp, k, j-k);
-	int l=0;
-	int m=0;
-	while(l<sp.length){
-	  while(l<sp.length && sp[l]!=',')l++; 
-	  if(m==l) return null;
-	  if(algorithm.equals(Util.byte2str(sp, m, l-m))){
-	    guess[i]=algorithm;
-	    break loop;
-	  }
-	  l++;
-	  m=l;
-	}	
-	j++;
-	k=j;
+        while(j<cp.length && cp[j]!=',')j++; 
+        if(k==j) return null;
+        String algorithm=Util.byte2str(cp, k, j-k);
+        int l=0;
+        int m=0;
+        while(l<sp.length){
+          while(l<sp.length && sp[l]!=',')l++; 
+          if(m==l) return null;
+          if(algorithm.equals(Util.byte2str(sp, m, l-m))){
+            guess[i]=algorithm;
+            break loop;
+          }
+          l++;
+          m=l;
+        }
+        j++;
+        k=j;
       }
       if(j==0){
-	guess[i]="";
+        guess[i]="";
       }
       else if(guess[i]==null){
-	return null;
+        return null;
       }
     }
 
     boolean _s2cAEAD=false;
     boolean _c2sAEAD=false;
     try{
-      Class<?> _s2cclazz=Class.forName(session.getConfig(guess[PROPOSAL_ENC_ALGS_STOC]));
-      Cipher _s2ccipher=(Cipher)(_s2cclazz.getDeclaredConstructor().newInstance());
+      Class<? extends Cipher> _s2cclazz=Class.forName(session.getConfig(guess[PROPOSAL_ENC_ALGS_STOC])).asSubclass(Cipher.class);
+      Cipher _s2ccipher=_s2cclazz.getDeclaredConstructor().newInstance();
       _s2cAEAD=_s2ccipher.isAEAD();
       if(_s2cAEAD){
         guess[PROPOSAL_MAC_ALGS_STOC]=null;
       }
 
-      Class<?> _c2sclazz=Class.forName(session.getConfig(guess[PROPOSAL_ENC_ALGS_CTOS]));
-      Cipher _c2scipher=(Cipher)(_c2sclazz.getDeclaredConstructor().newInstance());
+      Class<? extends Cipher> _c2sclazz=Class.forName(session.getConfig(guess[PROPOSAL_ENC_ALGS_CTOS])).asSubclass(Cipher.class);
+      Cipher _c2scipher=_c2sclazz.getDeclaredConstructor().newInstance();
       _c2sAEAD=_c2scipher.isAEAD();
       if(_c2sAEAD){
         guess[PROPOSAL_MAC_ALGS_CTOS]=null;
@@ -188,8 +188,8 @@ public abstract class KeyExchange{
     HASH hash=null;
     try{
       String _c=session.getConfig("FingerprintHash").toLowerCase();
-      Class<?> c=Class.forName(session.getConfig(_c));
-      hash=(HASH)(c.getDeclaredConstructor().newInstance());
+      Class<? extends HASH> c=Class.forName(session.getConfig(_c)).asSubclass(HASH.class);
+      hash=c.getDeclaredConstructor().newInstance();
     }
     catch(Exception e){ System.err.println("getFingerPrint: "+e); }
     return Util.getFingerPrint(hash, getHostKey(), true, false);
@@ -239,13 +239,13 @@ public abstract class KeyExchange{
         ((K_S[i++]<<8)&0x0000ff00)|((K_S[i++])&0x000000ff);
       tmp=new byte[j]; System.arraycopy(K_S, i, tmp, 0, j); i+=j;
       n=tmp;
-	
+
       SignatureRSA sig=null;
       Buffer buf=new Buffer(sig_of_H);
       String foo=Util.byte2str(buf.getString());
       try{
-        Class<?> c=Class.forName(session.getConfig(foo));
-        sig=(SignatureRSA)(c.getDeclaredConstructor().newInstance());
+        Class<? extends SignatureRSA> c=Class.forName(session.getConfig(foo)).asSubclass(SignatureRSA.class);
+        sig=c.getDeclaredConstructor().newInstance();
         sig.init();
       }
       catch(Exception e){
@@ -271,7 +271,7 @@ public abstract class KeyExchange{
       key_alg_name=alg;
 
       j=((K_S[i++]<<24)&0xff000000)|((K_S[i++]<<16)&0x00ff0000)|
-	  ((K_S[i++]<<8)&0x0000ff00)|((K_S[i++])&0x000000ff);
+          ((K_S[i++]<<8)&0x0000ff00)|((K_S[i++])&0x000000ff);
       tmp=new byte[j]; System.arraycopy(K_S, i, tmp, 0, j); i+=j;
       p=tmp;
       j=((K_S[i++]<<24)&0xff000000)|((K_S[i++]<<16)&0x00ff0000)|
@@ -279,7 +279,7 @@ public abstract class KeyExchange{
       tmp=new byte[j]; System.arraycopy(K_S, i, tmp, 0, j); i+=j;
       q=tmp;
       j=((K_S[i++]<<24)&0xff000000)|((K_S[i++]<<16)&0x00ff0000)|
-	  ((K_S[i++]<<8)&0x0000ff00)|((K_S[i++])&0x000000ff);
+          ((K_S[i++]<<8)&0x0000ff00)|((K_S[i++])&0x000000ff);
       tmp=new byte[j]; System.arraycopy(K_S, i, tmp, 0, j); i+=j;
       g=tmp;
       j=((K_S[i++]<<24)&0xff000000)|((K_S[i++]<<16)&0x00ff0000)|
@@ -289,8 +289,8 @@ public abstract class KeyExchange{
 
       SignatureDSA sig=null;
       try{
-        Class<?> c=Class.forName(session.getConfig("signature.dss"));
-        sig=(SignatureDSA)(c.getDeclaredConstructor().newInstance());
+        Class<? extends SignatureDSA> c=Class.forName(session.getConfig("signature.dss")).asSubclass(SignatureDSA.class);
+        sig=c.getDeclaredConstructor().newInstance();
         sig.init();
       }
       catch(Exception e){
@@ -331,8 +331,8 @@ public abstract class KeyExchange{
 
       SignatureECDSA sig=null;
       try{
-        Class<?> c=Class.forName(session.getConfig(alg));
-        sig=(SignatureECDSA)(c.getDeclaredConstructor().newInstance());
+        Class<? extends SignatureECDSA> c=Class.forName(session.getConfig(alg)).asSubclass(SignatureECDSA.class);
+        sig=c.getDeclaredConstructor().newInstance();
         sig.init();
       }
       catch(Exception e){
@@ -364,8 +364,8 @@ public abstract class KeyExchange{
 
       SignatureEdDSA sig=null;
       try{
-        Class<?> c=Class.forName(session.getConfig(alg));
-        sig=(SignatureEdDSA)(c.getDeclaredConstructor().newInstance());
+        Class<? extends SignatureEdDSA> c=Class.forName(session.getConfig(alg)).asSubclass(SignatureEdDSA.class);
+        sig=c.getDeclaredConstructor().newInstance();
         sig.init();
       }
       catch(Exception | NoClassDefFoundError e){
@@ -385,7 +385,7 @@ public abstract class KeyExchange{
     }
     else{
       System.err.println("unknown alg");
-    }	    
+    }
 
     return result;
   }

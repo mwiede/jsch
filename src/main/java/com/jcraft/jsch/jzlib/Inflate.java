@@ -208,7 +208,7 @@ final class Inflate{
       switch (this.mode){
       case HEAD:
         if(wrap==0){
-	  this.mode = BLOCKS;
+          this.mode = BLOCKS;
           break;
         } 
 
@@ -220,7 +220,7 @@ final class Inflate{
           if(wrap == 4){
             wrap = 2;
           }
-	  z.adler=new CRC32();
+          z.adler=new CRC32();
           checksum(2, this.need);
 
           if(gheader==null) 
@@ -265,9 +265,9 @@ final class Inflate{
           this.mode = BAD;
           z.msg="unknown compression method";
           // since zlib 1.2, it is allowted to inflateSync for this case.
-	  /*
+          /*
           this.marker = 5;       // can't try inflateSync
-	  */
+          */
           break;
         }
   
@@ -279,9 +279,9 @@ final class Inflate{
           this.mode = BAD;
           z.msg="invalid window size";
           // since zlib 1.2, it is allowted to inflateSync for this case.
-	  /*
+          /*
           this.marker = 5;       // can't try inflateSync
-	  */
+          */
           break;
         }
 
@@ -390,7 +390,7 @@ final class Inflate{
           this.mode = BAD;
           this.marker = 5;       // can't try inflateSync
           break;
-	  */
+          */
         }
         else if(flags!=0 && gheader!=null){
           gheader.crc = this.need; 
@@ -500,22 +500,22 @@ final class Inflate{
               tmp_string=null;
               if(foo.length == gheader.extra.length){
                 System.arraycopy(foo, 0, gheader.extra, 0, foo.length);
-	      }
+              }
               else{
                 z.msg = "bad extra field length";
                 this.mode = BAD; 
                 break;
-	      }
+              }
             }
           }
           catch(Return e){ return e.r; }
         }
         else if(gheader!=null){
           gheader.extra=null;
-	}
-	this.mode = NAME;
+        }
+        this.mode = NAME;
       case NAME:
-	if ((flags & 0x0800)!=0) {
+        if ((flags & 0x0800)!=0) {
           try { 
             r=readString(r, f);
             if(gheader!=null){
@@ -527,7 +527,7 @@ final class Inflate{
         }
         else if(gheader!=null){
           gheader.name=null;
-	}
+        }
         this.mode = COMMENT;
       case COMMENT:
         if ((flags & 0x1000)!=0) {
@@ -542,10 +542,10 @@ final class Inflate{
         }
         else if(gheader!=null){
           gheader.comment=null;
-	}
+        }
         this.mode = HCRC;
       case HCRC:
-	if ((flags & 0x0200)!=0) {
+        if ((flags & 0x0200)!=0) {
           try { r=readBytes(2, r, f); }
           catch(Return e){ return e.r; }
           if(gheader!=null){
@@ -669,7 +669,7 @@ final class Inflate{
       if(z.avail_in==0){ throw new Return(r); }; r=f;
       z.avail_in--; z.total_in++;
       this.need = this.need | 
-	((z.next_in[z.next_in_index++]&0xff)<<((n-need_bytes)*8));
+        ((z.next_in[z.next_in_index++]&0xff)<<((n-need_bytes)*8));
       need_bytes--;
     }
     if(n==2){
@@ -748,9 +748,9 @@ final class Inflate{
       case NAME:
       case COMMENT:
       case HCRC:
-	return true;
+        return true;
       default:
-	return false;
+        return false;
     }
   }
 }

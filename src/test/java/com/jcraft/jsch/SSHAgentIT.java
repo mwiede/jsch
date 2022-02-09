@@ -93,7 +93,7 @@ public class SSHAgentIT {
 
   @BeforeAll
   public static void beforeAll() throws IOException {
-    JSch.setLogger(Slf4jLogger.getInstance());
+    JSch.setLogger(new Slf4jLogger());
     LibC libc = LibC.INSTANCE;
     testuid = Integer.toString(libc.getuid());
     testgid = Integer.toString(libc.getgid());

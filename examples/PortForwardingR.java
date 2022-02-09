@@ -39,7 +39,7 @@ public class PortForwardingR{
       Session session=jsch.getSession(user, host, 22);
 
       String foo=JOptionPane.showInputDialog("Enter -R port:host:hostport", 
-					     "port:host:hostport");
+                                             "port:host:hostport");
       rport=Integer.parseInt(foo.substring(0, foo.indexOf(':')));
       foo=foo.substring(foo.indexOf(':')+1);
       lhost=foo.substring(0, foo.indexOf(':'));
@@ -84,11 +84,11 @@ public class PortForwardingR{
     public boolean promptPassword(String message){
       Object[] ob={passwordField}; 
       int result=
-	  JOptionPane.showConfirmDialog(null, ob, message,
-					JOptionPane.OK_CANCEL_OPTION);
+          JOptionPane.showConfirmDialog(null, ob, message,
+                                        JOptionPane.OK_CANCEL_OPTION);
       if(result==JOptionPane.OK_OPTION){
-	passwd=passwordField.getText();
-	return true;
+        passwd=passwordField.getText();
+        return true;
       }
       else{ return false; }
     }
@@ -146,7 +146,7 @@ public class PortForwardingR{
         for(int i=0; i<prompt.length; i++){
           response[i]=texts[i].getText();
         }
-	return response;
+        return response;
       }
       else{
         return null;  // cancel

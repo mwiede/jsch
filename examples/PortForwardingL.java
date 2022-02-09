@@ -39,7 +39,7 @@ public class PortForwardingL{
       Session session=jsch.getSession(user, host, 22);
 
       String foo=JOptionPane.showInputDialog("Enter -L port:host:hostport",
-					     "port:host:hostport");
+                                             "port:host:hostport");
       lport=Integer.parseInt(foo.substring(0, foo.indexOf(':')));
       foo=foo.substring(foo.indexOf(':')+1);
       rhost=foo.substring(0, foo.indexOf(':'));
@@ -83,11 +83,11 @@ public class PortForwardingL{
     public boolean promptPassword(String message){
       Object[] ob={passwordField}; 
       int result=
-	  JOptionPane.showConfirmDialog(null, ob, message,
-					JOptionPane.OK_CANCEL_OPTION);
+          JOptionPane.showConfirmDialog(null, ob, message,
+                                        JOptionPane.OK_CANCEL_OPTION);
       if(result==JOptionPane.OK_OPTION){
-	passwd=passwordField.getText();
-	return true;
+        passwd=passwordField.getText();
+        return true;
       }
       else{ return false; }
     }
@@ -145,7 +145,7 @@ public class PortForwardingL{
         for(int i=0; i<prompt.length; i++){
           response[i]=texts[i].getText();
         }
-	return response;
+        return response;
       }
       else{
         return null;  // cancel

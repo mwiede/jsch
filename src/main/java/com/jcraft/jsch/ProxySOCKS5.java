@@ -53,8 +53,8 @@ public class ProxySOCKS5 implements Proxy{
     String host=proxy_host;
     if(proxy_host.indexOf(':')!=-1){
       try{
-	host=proxy_host.substring(0, proxy_host.indexOf(':'));
-	port=Integer.parseInt(proxy_host.substring(proxy_host.indexOf(':')+1));
+        host=proxy_host.substring(0, proxy_host.indexOf(':'));
+        port=Integer.parseInt(proxy_host.substring(proxy_host.indexOf(':')+1));
       }
       catch(Exception e){
       }
@@ -164,11 +164,11 @@ public class ProxySOCKS5 implements Proxy{
           index=0;
           buf[index++]=1;
           buf[index++]=(byte)(user.length());
-	  System.arraycopy(Util.str2byte(user), 0, buf, index, user.length());
-	  index+=user.length();
+          System.arraycopy(Util.str2byte(user), 0, buf, index, user.length());
+          index+=user.length();
           buf[index++]=(byte)(passwd.length());
-	  System.arraycopy(Util.str2byte(passwd), 0, buf, index, passwd.length());
-	  index+=passwd.length();
+          System.arraycopy(Util.str2byte(passwd), 0, buf, index, passwd.length());
+          index+=passwd.length();
 
           out.write(buf, 0, index);
 
@@ -196,8 +196,8 @@ public class ProxySOCKS5 implements Proxy{
 
       if(!check){
         try{ socket.close(); }
-	catch(Exception eee){
-	}
+        catch(Exception eee){
+        }
         throw new JSchException("fail in SOCKS5 proxy");
       }
 
@@ -283,8 +283,8 @@ public class ProxySOCKS5 implements Proxy{
 
       if(buf[1]!=0){
         try{ socket.close(); }
-	catch(Exception eee){
-	}
+        catch(Exception eee){
+        }
         throw new JSchException("ProxySOCKS5: server returns "+buf[1]);
       }
 
@@ -292,13 +292,13 @@ public class ProxySOCKS5 implements Proxy{
         case 1:
           //in.read(buf, 0, 6);
           fill(in, buf, 6);
-	  break;
+          break;
         case 3:
           //in.read(buf, 0, 1);
           fill(in, buf, 1);
           //in.read(buf, 0, buf[0]+2);
           fill(in, buf, (buf[0]&0xff)+2);
-	  break;
+          break;
         case 4:
           //in.read(buf, 0, 18);
           fill(in, buf, 18);

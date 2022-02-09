@@ -75,11 +75,11 @@ public class Compression{
     public boolean promptPassword(String message){
       Object[] ob={passwordField}; 
       int result=
-	  JOptionPane.showConfirmDialog(null, ob, message,
-					JOptionPane.OK_CANCEL_OPTION);
+          JOptionPane.showConfirmDialog(null, ob, message,
+                                        JOptionPane.OK_CANCEL_OPTION);
       if(result==JOptionPane.OK_OPTION){
-	passwd=passwordField.getText();
-	return true;
+        passwd=passwordField.getText();
+        return true;
       }
       else{ return false; }
     }
@@ -137,7 +137,7 @@ public class Compression{
         for(int i=0; i<prompt.length; i++){
           response[i]=texts[i].getText();
         }
-	return response;
+        return response;
       }
       else{
         return null;  // cancel

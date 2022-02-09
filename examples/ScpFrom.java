@@ -61,10 +61,10 @@ public class ScpFrom{
       buf[0]=0; out.write(buf, 0, 1); out.flush();
 
       while(true){
-	int c=checkAck(in);
+        int c=checkAck(in);
         if(c!='C'){
-	  break;
-	}
+          break;
+        }
 
         // read '0644 '
         in.read(buf, 0, 5);
@@ -85,10 +85,10 @@ public class ScpFrom{
           if(buf[i]==(byte)0x0a){
             file=new String(buf, 0, i);
             break;
-  	  }
+            }
         }
 
-	//System.out.println("filesize="+filesize+", file="+file);
+        //System.out.println("filesize="+filesize+", file="+file);
 
         // send '\0'
         buf[0]=0; out.write(buf, 0, 1); out.flush();
@@ -98,7 +98,7 @@ public class ScpFrom{
         int foo;
         while(true){
           if(buf.length<filesize) foo=buf.length;
-	  else foo=(int)filesize;
+          else foo=(int)filesize;
           foo=in.read(buf, 0, foo);
           if(foo<0){
             // error 
@@ -111,9 +111,9 @@ public class ScpFrom{
         fos.close();
         fos=null;
 
-	if(checkAck(in)!=0){
-	  System.exit(0);
-	}
+        if(checkAck(in)!=0){
+          System.exit(0);
+        }
 
         // send '\0'
         buf[0]=0; out.write(buf, 0, 1); out.flush();
@@ -142,15 +142,15 @@ public class ScpFrom{
       StringBuffer sb=new StringBuffer();
       int c;
       do {
-	c=in.read();
-	sb.append((char)c);
+        c=in.read();
+        sb.append((char)c);
       }
       while(c!='\n');
       if(b==1){ // error
-	System.out.print(sb.toString());
+        System.out.print(sb.toString());
       }
       if(b==2){ // fatal error
-	System.out.print(sb.toString());
+        System.out.print(sb.toString());
       }
     }
     return b;
@@ -177,11 +177,11 @@ public class ScpFrom{
     public boolean promptPassword(String message){
       Object[] ob={passwordField}; 
       int result=
-	  JOptionPane.showConfirmDialog(null, ob, message,
-					JOptionPane.OK_CANCEL_OPTION);
+          JOptionPane.showConfirmDialog(null, ob, message,
+                                        JOptionPane.OK_CANCEL_OPTION);
       if(result==JOptionPane.OK_OPTION){
-	passwd=passwordField.getText();
-	return true;
+        passwd=passwordField.getText();
+        return true;
       }
       else{ return false; }
     }
@@ -239,7 +239,7 @@ public class ScpFrom{
         for(int i=0; i<prompt.length; i++){
           response[i]=texts[i].getText();
         }
-	return response;
+        return response;
       }
       else{
         return null;  // cancel

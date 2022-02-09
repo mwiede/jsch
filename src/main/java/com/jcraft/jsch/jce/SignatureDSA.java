@@ -48,20 +48,20 @@ public class SignatureDSA implements com.jcraft.jsch.SignatureDSA{
   @Override
   public void setPubKey(byte[] y, byte[] p, byte[] q, byte[] g) throws Exception{
     DSAPublicKeySpec dsaPubKeySpec = 
-	new DSAPublicKeySpec(new BigInteger(y),
-			     new BigInteger(p),
-			     new BigInteger(q),
-			     new BigInteger(g));
+        new DSAPublicKeySpec(new BigInteger(y),
+                             new BigInteger(p),
+                             new BigInteger(q),
+                             new BigInteger(g));
     PublicKey pubKey=keyFactory.generatePublic(dsaPubKeySpec);
     signature.initVerify(pubKey);
   }
   @Override
   public void setPrvKey(byte[] x, byte[] p, byte[] q, byte[] g) throws Exception{
     DSAPrivateKeySpec dsaPrivKeySpec = 
-	new DSAPrivateKeySpec(new BigInteger(x),
-			      new BigInteger(p),
-			      new BigInteger(q),
-			      new BigInteger(g));
+        new DSAPrivateKeySpec(new BigInteger(x),
+                              new BigInteger(p),
+                              new BigInteger(q),
+                              new BigInteger(g));
     PrivateKey prvKey = keyFactory.generatePrivate(dsaPrivKeySpec);
     signature.initSign(prvKey);
   }
@@ -77,7 +77,7 @@ System.err.println("");
 */
     // sig is in ASN.1
     // SEQUENCE::={ r INTEGER, s INTEGER }
-    int len=0;	
+    int len=0;
     int index=3;
     len=sig[index++]&0xff;
 //System.err.println("! len="+len);
@@ -94,11 +94,11 @@ System.err.println("");
     // result must be 40 bytes, but length of r and s may not be 20 bytes  
 
     System.arraycopy(r, (r.length>20)?1:0,
-		     result, (r.length>20)?0:20-r.length,
-		     (r.length>20)?20:r.length);
+                     result, (r.length>20)?0:20-r.length,
+                     (r.length>20)?20:r.length);
     System.arraycopy(s, (s.length>20)?1:0,
-		     result, (s.length>20)?20:40-s.length,
-		     (s.length>20)?20:s.length);
+                     result, (s.length>20)?20:40-s.length,
+                     (s.length>20)?20:s.length);
  
 //  System.arraycopy(sig, (sig[3]==20?4:5), result, 0, 20);
 //  System.arraycopy(sig, sig.length-20, result, 20, 20);

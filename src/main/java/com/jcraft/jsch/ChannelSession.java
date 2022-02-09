@@ -74,7 +74,7 @@ class ChannelSession extends Channel{
   }
 
   /**
-   * @deprecated Use {@link #setEnv(String, String)} or {@link #setEnv(byte[], byte[])} instead.
+   * @deprecated Use #setEnv(String, String) or #setEnv(byte[], byte[]) instead.
    * @see #setEnv(String, String)
    * @see #setEnv(byte[], byte[])
    */
@@ -242,27 +242,27 @@ class ChannelSession extends Channel{
     int i=-1;
     try{
       while(isConnected() &&
-	    thread!=null && 
+            thread!=null && 
             io!=null && 
             io.in!=null){
         i=io.in.read(buf.buffer, 
                      14,    
                      buf.buffer.length-14
                      -Session.buffer_margin
-		     );
-	if(i==0)continue;
-	if(i==-1){
-	  eof();
-	  break;
-	}
-	if(close)break;
+                     );
+        if(i==0)continue;
+        if(i==-1){
+          eof();
+          break;
+        }
+        if(close)break;
         //System.out.println("write: "+i);
         packet.reset();
         buf.putByte((byte)Session.SSH_MSG_CHANNEL_DATA);
         buf.putInt(recipient);
         buf.putInt(i);
         buf.skip(i);
-	getSession().write(packet, this, i);
+        getSession().write(packet, this, i);
       }
     }
     catch(Exception e){

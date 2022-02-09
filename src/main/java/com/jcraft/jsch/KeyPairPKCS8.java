@@ -323,8 +323,8 @@ or
 
       byte[] key=null;
       try{
-        Class<?> c=Class.forName(JSch.getConfig("pbkdf"));
-        PBKDF tmp=(PBKDF)(c.getDeclaredConstructor().newInstance());
+        Class<? extends PBKDF> c=Class.forName(JSch.getConfig("pbkdf")).asSubclass(PBKDF.class);
+        PBKDF tmp=c.getDeclaredConstructor().newInstance();
         key = tmp.getKey(_passphrase, salt, iterations, cipher.getBlockSize());
       }
       catch(Exception ee){
@@ -366,8 +366,8 @@ or
       else if(Util.array_equals(id, aes256cbc)){
         name="aes256-cbc";
       }
-      Class<?> c=Class.forName(JSch.getConfig(name));
-      cipher=(Cipher)(c.getDeclaredConstructor().newInstance());
+      Class<? extends Cipher> c=Class.forName(JSch.getConfig(name)).asSubclass(Cipher.class);
+      cipher=c.getDeclaredConstructor().newInstance();
     }
     catch(Exception e){
       if(JSch.getLogger().isEnabled(Logger.FATAL)){

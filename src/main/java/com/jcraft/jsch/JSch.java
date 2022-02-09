@@ -43,7 +43,7 @@ public class JSch{
   static Hashtable<String, String> config=new Hashtable<>();
   static{
     config.put("kex", Util.getSystemProperty("jsch.kex", "curve25519-sha256,curve25519-sha256@libssh.org,ecdh-sha2-nistp256,ecdh-sha2-nistp384,ecdh-sha2-nistp521,diffie-hellman-group-exchange-sha256,diffie-hellman-group16-sha512,diffie-hellman-group18-sha512,diffie-hellman-group14-sha256"));
-    config.put("server_host_key", Util.getSystemProperty("jsch.server_host_key", "ssh-ed25519,ecdsa-sha2-nistp256,ecdsa-sha2-nistp384,ecdsa-sha2-nistp521,rsa-sha2-512,rsa-sha2-256,ssh-rsa"));
+    config.put("server_host_key", Util.getSystemProperty("jsch.server_host_key", "ssh-ed25519,ecdsa-sha2-nistp256,ecdsa-sha2-nistp384,ecdsa-sha2-nistp521,rsa-sha2-512,rsa-sha2-256"));
     config.put("prefer_known_host_key_types", Util.getSystemProperty("jsch.prefer_known_host_key_types", "yes"));
     config.put("enable_server_sig_algs", Util.getSystemProperty("jsch.enable_server_sig_algs", "yes"));
     config.put("cipher.s2c", Util.getSystemProperty("jsch.cipher", "aes128-ctr,aes192-ctr,aes256-ctr,aes128-gcm@openssh.com,aes256-gcm@openssh.com"));
@@ -65,7 +65,7 @@ public class JSch{
     config.put("diffie-hellman-group-exchange-sha1", 
                                 "com.jcraft.jsch.DHGEX");
     config.put("diffie-hellman-group1-sha1", 
-	                        "com.jcraft.jsch.DHG1");
+                                "com.jcraft.jsch.DHG1");
     config.put("diffie-hellman-group14-sha1", 
                "com.jcraft.jsch.DHG14");
     config.put("diffie-hellman-group-exchange-sha256", 
@@ -227,7 +227,7 @@ public class JSch{
     config.put("HashKnownHosts",  "no");
 
     config.put("PreferredAuthentications", Util.getSystemProperty("jsch.preferred_authentications", "gssapi-with-mic,publickey,keyboard-interactive,password"));
-    config.put("PubkeyAcceptedAlgorithms", Util.getSystemProperty("jsch.client_pubkey", "ssh-ed25519,ecdsa-sha2-nistp256,ecdsa-sha2-nistp384,ecdsa-sha2-nistp521,rsa-sha2-512,rsa-sha2-256,ssh-rsa"));
+    config.put("PubkeyAcceptedAlgorithms", Util.getSystemProperty("jsch.client_pubkey", "ssh-ed25519,ecdsa-sha2-nistp256,ecdsa-sha2-nistp384,ecdsa-sha2-nistp521,rsa-sha2-512,rsa-sha2-256"));
 
     config.put("CheckCiphers", Util.getSystemProperty("jsch.check_ciphers", "chacha20-poly1305@openssh.com"));
     config.put("CheckMacs", Util.getSystemProperty("jsch.check_macs", ""));
@@ -401,7 +401,7 @@ public class JSch{
     if(known_hosts==null) known_hosts=new KnownHosts(this);
     if(known_hosts instanceof KnownHosts){
       synchronized(known_hosts){
-	((KnownHosts)known_hosts).setKnownHosts(filename); 
+        ((KnownHosts)known_hosts).setKnownHosts(filename); 
       }
     }
   }
@@ -421,7 +421,7 @@ public class JSch{
     if(known_hosts==null) known_hosts=new KnownHosts(this);
     if(known_hosts instanceof KnownHosts){
       synchronized(known_hosts){
-	((KnownHosts)known_hosts).setKnownHosts(stream); 
+        ((KnownHosts)known_hosts).setKnownHosts(stream); 
       }
     }
   }
@@ -648,9 +648,9 @@ public class JSch{
   public static void setConfig(Hashtable<String, String> newconf){
     synchronized(config){
       for(Enumeration<String> e=newconf.keys() ; e.hasMoreElements() ;) {
-	String newkey=e.nextElement();
-	String key=(newkey.equals("PubkeyAcceptedKeyTypes") ? "PubkeyAcceptedAlgorithms" : newkey);
-	config.put(key, newconf.get(newkey));
+        String newkey=e.nextElement();
+        String key=(newkey.equals("PubkeyAcceptedKeyTypes") ? "PubkeyAcceptedAlgorithms" : newkey);
+        config.put(key, newconf.get(newkey));
       }
     }
   }
@@ -682,7 +682,7 @@ public class JSch{
     JSch.logger=logger;
   }
 
-  static Logger getLogger(){
+  public static Logger getLogger(){
     return logger;
   }
 }

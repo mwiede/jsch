@@ -67,6 +67,16 @@ As I explained in a [blog post](http://www.matez.de/index.php/2020/06/22/the-fut
     * In order to use chacha20-poly1305@<!-- -->openssh.com, you must add [Bouncy Castle](https://www.bouncycastle.org/java.html) (bcprov-jdk15on) to the classpath.
   * As of the [0.1.66](https://github.com/mwiede/jsch/releases/tag/jsch-0.1.66) release, these algorithms can now be used with older Java releases if [Bouncy Castle](https://www.bouncycastle.org/java.html) (bcprov-jdk15on) is added to the classpath.
     * As of the [0.1.72](https://github.com/mwiede/jsch/releases/tag/jsch-0.1.72) release, chacha20-poly1305@<!-- -->openssh.com can only be used if [Bouncy Castle](https://www.bouncycastle.org/java.html) (bcprov-jdk15on) is added to the classpath.
+* Why do ssh-rsa type keys not work with this JSch fork and my server?
+  * As of the [0.2.0](https://github.com/mwiede/jsch/releases/tag/jsch-0.2.0) release, the RSA/SHA1 signature algorithm is disabled by default.
+    * SHA1 is no longer considered secure by the general cryptographic community and this JSch fork strives to maintain secure choices for default algorithms that it will utilize.
+    * This also follows the lead of the OpenSSH project in which they disabled RSA/SHA1 signatures by default as of [OpenSSH release 8.8](https://www.openssh.com/txt/release-8.8).
+  * ssh-rsa type keys continue to function by default with the RSA/SHA256 (rsa-sha2-256) & RSA/SHA512 (rsa-sha2-512) signature algorithms defined by (RFC 8332)[https://datatracker.ietf.org/doc/html/rfc8332].
+  * If your server only supports RSA/SHA1 signatures and you require their use in your application, then you will need to manually reenable them by one of the following means:
+    * Globally by adding "ssh-rsa" to the `jsch.server_host_key` + `jsch.client_pubkey` properties.
+    * Globally by executing something similar to `JSch.setConfig("server_host_key", JSch.getConfig("server_host_key") + ",ssh-rsa")` + `JSch.setConfig("PubkeyAcceptedAlgorithms", JSch.getConfig("PubkeyAcceptedAlgorithms") + ",ssh-rsa")`.
+    * On a per-session basis by executing something similar to `session.setConfig("server_host_key", session.getConfig("server_host_key") + ",ssh-rsa")` + `session.setConfig("PubkeyAcceptedAlgorithms", session.getConfig("PubkeyAcceptedAlgorithms") + ",ssh-rsa")`.
+    * Adding "ssh-rsa" to your OpenSSH type config file with the "HostKeyAlgorithms" + "PubkeyAcceptedAlgorithms" keywords & then utilizing the `OpenSSHConfig` class.
 
 ## Changes since fork:
 See [ChangeLog.md](ChangeLog.md)

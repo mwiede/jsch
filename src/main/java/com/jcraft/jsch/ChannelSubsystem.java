@@ -46,8 +46,8 @@ public class ChannelSubsystem extends ChannelSession{
         request.request(_session, this);
       }
       if(pty){
-	request=new RequestPtyReq();
-	request.request(_session, this);
+        request=new RequestPtyReq();
+        request.request(_session, this);
       }
       request=new RequestSubsystem();
       ((RequestSubsystem)request).request(_session, this, subsystem, want_reply);

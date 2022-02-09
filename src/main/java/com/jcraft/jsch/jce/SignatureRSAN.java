@@ -56,16 +56,16 @@ public abstract class SignatureRSAN implements com.jcraft.jsch.SignatureRSA{
   @Override
   public void setPubKey(byte[] e, byte[] n) throws Exception{
     RSAPublicKeySpec rsaPubKeySpec = 
-	new RSAPublicKeySpec(new BigInteger(n),
-			     new BigInteger(e));
+        new RSAPublicKeySpec(new BigInteger(n),
+                             new BigInteger(e));
     PublicKey pubKey=keyFactory.generatePublic(rsaPubKeySpec);
     signature.initVerify(pubKey);
   }
   @Override
   public void setPrvKey(byte[] d, byte[] n) throws Exception{
     RSAPrivateKeySpec rsaPrivKeySpec = 
-	new RSAPrivateKeySpec(new BigInteger(n),
-			      new BigInteger(d));
+        new RSAPrivateKeySpec(new BigInteger(n),
+                              new BigInteger(d));
     PrivateKey prvKey = keyFactory.generatePrivate(rsaPrivKeySpec);
     signature.initSign(prvKey);
   }

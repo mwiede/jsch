@@ -65,8 +65,8 @@ public class KeyPairDSA extends KeyPair{
   void generate(int key_size) throws JSchException{
     this.key_size=key_size;
     try{
-      Class<?> c=Class.forName(JSch.getConfig("keypairgen.dsa"));
-      KeyPairGenDSA keypairgen=(KeyPairGenDSA)(c.getDeclaredConstructor().newInstance());
+      Class<? extends KeyPairGenDSA> c=Class.forName(JSch.getConfig("keypairgen.dsa")).asSubclass(KeyPairGenDSA.class);
+      KeyPairGenDSA keypairgen=c.getDeclaredConstructor().newInstance();
       keypairgen.init(key_size);
       P_array=keypairgen.getP();
       Q_array=keypairgen.getQ();
@@ -120,19 +120,19 @@ public class KeyPairDSA extends KeyPair{
     try{
 
       if(vendor==VENDOR_FSECURE){
-	if(plain[0]!=0x30){              // FSecure
-	  Buffer buf=new Buffer(plain);
-	  buf.getInt();
-	  P_array=buf.getMPIntBits();
-	  G_array=buf.getMPIntBits();
-	  Q_array=buf.getMPIntBits();
-	  pub_array=buf.getMPIntBits();
-	  prv_array=buf.getMPIntBits();
+        if(plain[0]!=0x30){              // FSecure
+          Buffer buf=new Buffer(plain);
+          buf.getInt();
+          P_array=buf.getMPIntBits();
+          G_array=buf.getMPIntBits();
+          Q_array=buf.getMPIntBits();
+          pub_array=buf.getMPIntBits();
+          prv_array=buf.getMPIntBits();
           if(P_array!=null)
             key_size = (new BigInteger(P_array)).bitLength();
-	  return true;
-	}
-	return false;
+          return true;
+        }
+        return false;
       }
       else if(vendor==VENDOR_PUTTY){
         Buffer buf=new Buffer(plain);
@@ -282,8 +282,8 @@ public class KeyPairDSA extends KeyPair{
   @Override
   public byte[] getSignature(byte[] data){
     try{
-      Class<?> c=Class.forName(JSch.getConfig("signature.dss"));
-      SignatureDSA dsa=(SignatureDSA)(c.getDeclaredConstructor().newInstance());
+      Class<? extends SignatureDSA> c=Class.forName(JSch.getConfig("signature.dss")).asSubclass(SignatureDSA.class);
+      SignatureDSA dsa=c.getDeclaredConstructor().newInstance();
       dsa.init();
       dsa.setPrvKey(prv_array, P_array, Q_array, G_array);
 
@@ -308,8 +308,8 @@ public class KeyPairDSA extends KeyPair{
   @Override
   public Signature getVerifier(){
     try{
-      Class<?> c=Class.forName(JSch.getConfig("signature.dss"));
-      SignatureDSA dsa=(SignatureDSA)(c.getDeclaredConstructor().newInstance());
+      Class<? extends SignatureDSA> c=Class.forName(JSch.getConfig("signature.dss")).asSubclass(SignatureDSA.class);
+      SignatureDSA dsa=c.getDeclaredConstructor().newInstance();
       dsa.init();
 
       if(pub_array == null && P_array == null && getPublicKeyBlob()!=null){

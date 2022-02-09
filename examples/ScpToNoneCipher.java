@@ -51,7 +51,7 @@ public class ScpToNoneCipher{
       channel.connect();
 
       if(checkAck(in)!=0){
-	System.exit(0);
+        System.exit(0);
       }
 
       // send "C0644 filesize filename", where filename should not include '/'
@@ -67,7 +67,7 @@ public class ScpToNoneCipher{
       out.write(command.getBytes()); out.flush();
 
       if(checkAck(in)!=0){
-	System.exit(0);
+        System.exit(0);
       }
 
       // send a content of lfile
@@ -75,7 +75,7 @@ public class ScpToNoneCipher{
       byte[] buf=new byte[1024];
       while(true){
         int len=fis.read(buf, 0, buf.length);
-	if(len<=0) break;
+        if(len<=0) break;
         out.write(buf, 0, len); out.flush();
       }
       fis.close();
@@ -85,7 +85,7 @@ public class ScpToNoneCipher{
       buf[0]=0; out.write(buf, 0, 1); out.flush();
 
       if(checkAck(in)!=0){
-	System.exit(0);
+        System.exit(0);
       }
 
       session.disconnect();
@@ -111,15 +111,15 @@ public class ScpToNoneCipher{
       StringBuffer sb=new StringBuffer();
       int c;
       do {
-	c=in.read();
-	sb.append((char)c);
+        c=in.read();
+        sb.append((char)c);
       }
       while(c!='\n');
       if(b==1){ // error
-	System.out.print(sb.toString());
+        System.out.print(sb.toString());
       }
       if(b==2){ // fatal error
-	System.out.print(sb.toString());
+        System.out.print(sb.toString());
       }
     }
     return b;
@@ -146,11 +146,11 @@ public class ScpToNoneCipher{
     public boolean promptPassword(String message){
       Object[] ob={passwordField}; 
       int result=
-	  JOptionPane.showConfirmDialog(null, ob, message,
-					JOptionPane.OK_CANCEL_OPTION);
+          JOptionPane.showConfirmDialog(null, ob, message,
+                                        JOptionPane.OK_CANCEL_OPTION);
       if(result==JOptionPane.OK_OPTION){
-	passwd=passwordField.getText();
-	return true;
+        passwd=passwordField.getText();
+        return true;
       }
       else{ return false; }
     }
@@ -208,7 +208,7 @@ public class ScpToNoneCipher{
         for(int i=0; i<prompt.length; i++){
           response[i]=texts[i].getText();
         }
-	return response;
+        return response;
       }
       else{
         return null;  // cancel
