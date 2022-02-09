@@ -1089,7 +1089,7 @@ key_type+" key fingerprint is "+key_fprint+".\n"+
           ((tmp[3]    )&0x000000ff);
         // RFC 4253 6.1. Maximum Packet Length
         if(j<5 || j>PACKET_MAX_SIZE){
-          start_discard(buf, s2ccipher, s2cmac, j, PACKET_MAX_SIZE);
+          start_discard(buf, s2ccipher, s2cmac, 0, PACKET_MAX_SIZE);
         }
         j+=s2ccipher.getTagSize();
         if((buf.index+j)>buf.buffer.length){
@@ -1103,7 +1103,7 @@ key_type+" key fingerprint is "+key_fprint+".\n"+
           if(JSch.getLogger().isEnabled(Logger.FATAL)){
             JSch.getLogger().log(Logger.FATAL, message);
           }
-          start_discard(buf, s2ccipher, s2cmac, j, PACKET_MAX_SIZE-s2ccipher_size);
+          start_discard(buf, s2ccipher, s2cmac, 0, PACKET_MAX_SIZE-s2ccipher_size);
         }
 
         io.getByte(buf.buffer, buf.index, j);
@@ -1113,8 +1113,7 @@ key_type+" key fingerprint is "+key_fprint+".\n"+
           s2ccipher.doFinal(buf.buffer, 0, j+4, buf.buffer, 0);
         }
         catch(AEADBadTagException e){
-          start_discard(buf, s2ccipher, s2cmac, j, PACKET_MAX_SIZE-j, e);
-          continue;
+          throw new JSchException("Packet corrupt", e);
         }
         // overwrite encrypted packet length field with decrypted version
         System.arraycopy(tmp, 0, buf.buffer, 0, 4);
@@ -1128,7 +1127,7 @@ key_type+" key fingerprint is "+key_fprint+".\n"+
           ((buf.buffer[3]    )&0x000000ff);
         // RFC 4253 6.1. Maximum Packet Length
         if(j<5 || j>PACKET_MAX_SIZE){
-          start_discard(buf, s2ccipher, s2cmac, j, PACKET_MAX_SIZE);
+          start_discard(buf, s2ccipher, s2cmac, 0, PACKET_MAX_SIZE);
         }
         if(isAEAD){
           j+=s2ccipher.getTagSize();
@@ -1144,7 +1143,7 @@ key_type+" key fingerprint is "+key_fprint+".\n"+
           if(JSch.getLogger().isEnabled(Logger.FATAL)){
             JSch.getLogger().log(Logger.FATAL, message);
           }
-          start_discard(buf, s2ccipher, s2cmac, j, PACKET_MAX_SIZE-s2ccipher_size);
+          start_discard(buf, s2ccipher, s2cmac, 0, PACKET_MAX_SIZE-s2ccipher_size);
         }
 
         io.getByte(buf.buffer, buf.index, j); buf.index+=(j);
@@ -1155,8 +1154,7 @@ key_type+" key fingerprint is "+key_fprint+".\n"+
             s2ccipher.doFinal(buf.buffer, 4, j, buf.buffer, 4);
           }
           catch(AEADBadTagException e){
-            start_discard(buf, s2ccipher, s2cmac, j, PACKET_MAX_SIZE-j, e);
-            continue;
+            throw new JSchException("Packet corrupt", e);
           }
           // don't include AEAD tag size in buf so that decompression works below
           buf.index -= s2ccipher.getTagSize();
@@ -1168,8 +1166,7 @@ key_type+" key fingerprint is "+key_fprint+".\n"+
 
           io.getByte(s2cmac_result2, 0, s2cmac_result2.length);
           if(!Util.arraysequals(s2cmac_result1, s2cmac_result2)){
-            start_discard(buf, s2ccipher, s2cmac, j, PACKET_MAX_SIZE-j);
-            continue;
+            throw new JSchException("Packet corrupt");
           }
           s2ccipher.update(buf.buffer, 4, j, buf.buffer, 4);
         }
@@ -1186,7 +1183,7 @@ key_type+" key fingerprint is "+key_fprint+".\n"+
           ((buf.buffer[3]    )&0x000000ff);
         // RFC 4253 6.1. Maximum Packet Length
         if(j<5 || j>PACKET_MAX_SIZE){
-          start_discard(buf, s2ccipher, s2cmac, j, PACKET_MAX_SIZE);
+          start_discard(buf, s2ccipher, s2cmac, 0, PACKET_MAX_SIZE);
         }
         int need = j+4-s2ccipher_size;
         //if(need<0){
@@ -1203,7 +1200,7 @@ key_type+" key fingerprint is "+key_fprint+".\n"+
           if(JSch.getLogger().isEnabled(Logger.FATAL)){
             JSch.getLogger().log(Logger.FATAL, message);
           }
-          start_discard(buf, s2ccipher, s2cmac, j, PACKET_MAX_SIZE-s2ccipher_size);
+          start_discard(buf, s2ccipher, s2cmac, 0, PACKET_MAX_SIZE-s2ccipher_size);
         }
 
         if(need>0){
@@ -1220,10 +1217,10 @@ key_type+" key fingerprint is "+key_fprint+".\n"+
 
           io.getByte(s2cmac_result2, 0, s2cmac_result2.length);
           if(!Util.arraysequals(s2cmac_result1, s2cmac_result2)){
-            if(need > PACKET_MAX_SIZE){
+            if(need+s2ccipher_size > PACKET_MAX_SIZE){
               throw new IOException("MAC Error");
             }
-            start_discard(buf, s2ccipher, s2cmac, j, PACKET_MAX_SIZE-need);
+            start_discard(buf, s2ccipher, s2cmac, buf.index, PACKET_MAX_SIZE-need-s2ccipher_size);
             continue;
           }
         }
@@ -1365,45 +1362,45 @@ key_type+" key fingerprint is "+key_fprint+".\n"+
   }
 
   private void start_discard(Buffer buf, Cipher cipher, MAC mac,
-                             int packet_length, int discard) throws JSchException, IOException{
-    start_discard(buf, cipher, mac, packet_length, discard, null);
-  }
-
-  private void start_discard(Buffer buf, Cipher cipher, MAC mac,
-                             int packet_length, int discard, Throwable t) throws JSchException, IOException{
-    MAC discard_mac = null;
-
+                             int mac_already, int discard) throws JSchException{
     if(!cipher.isCBC() || (mac != null && mac.isEtM())){
-      if(t!=null){
-        throw new JSchException("Packet corrupt", t);
-      }
       throw new JSchException("Packet corrupt");
     }
 
-    if(packet_length!=PACKET_MAX_SIZE && mac != null){
-      discard_mac = mac;
+    if(mac != null){
+      mac.update(seqi);
+      mac.update(buf.buffer, 0, mac_already);
     }
 
-    discard -= buf.index;
-
-    while(discard>0){
-      buf.reset();
-      int len = discard>buf.buffer.length ? buf.buffer.length : discard;
-      io.getByte(buf.buffer, 0, len);
-      if(discard_mac!=null){
-        discard_mac.update(buf.buffer, 0, len);
+    IOException ioe=null;
+    try{
+      while(discard>0){
+        buf.reset();
+        int len = discard>buf.buffer.length ? buf.buffer.length : discard;
+        io.getByte(buf.buffer, 0, len);
+        if(mac!=null){
+          mac.update(buf.buffer, 0, len);
+        }
+        discard -= len;
       }
-      discard -= len;
+    }
+    catch(IOException e){
+      ioe = e;
+      if(JSch.getLogger().isEnabled(Logger.ERROR)){
+        JSch.getLogger().log(Logger.ERROR,
+                             "start_discard finished early due to " + e.getMessage());
+      }
     }
 
-    if(discard_mac!=null){
-      discard_mac.doFinal(buf.buffer, 0);
+    if(mac!=null){
+      mac.doFinal(buf.buffer, 0);
     }
 
-    if(t!=null){
-      throw new JSchException("Packet corrupt", t);
+    JSchException e = new JSchException("Packet corrupt");
+    if(ioe!=null){
+      e.addSuppressed(ioe);
     }
-    throw new JSchException("Packet corrupt");
+    throw e;
   }
 
   byte[] getSessionId(){
