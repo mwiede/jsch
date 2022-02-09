@@ -71,7 +71,7 @@ public class OpenSSH74ServerSigAlgsIT {
 
   @BeforeAll
   public static void beforeAll() {
-    JSch.setLogger(Slf4jLogger.getInstance());
+    JSch.setLogger(new Slf4jLogger());
   }
 
   @BeforeEach

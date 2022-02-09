@@ -94,8 +94,8 @@ public class KeyPairECDSA extends KeyPair{
   void generate(int key_size) throws JSchException{
     this.key_size=key_size;
     try{
-      Class<?> c=Class.forName(JSch.getConfig("keypairgen.ecdsa"));
-      KeyPairGenECDSA keypairgen=(KeyPairGenECDSA)(c.getDeclaredConstructor().newInstance());
+      Class<? extends KeyPairGenECDSA> c=Class.forName(JSch.getConfig("keypairgen.ecdsa")).asSubclass(KeyPairGenECDSA.class);
+      KeyPairGenECDSA keypairgen=c.getDeclaredConstructor().newInstance();
       keypairgen.init(key_size);
       prv_array=keypairgen.getD();
       r_array=keypairgen.getR();
@@ -347,8 +347,8 @@ public class KeyPairECDSA extends KeyPair{
   @Override
   public byte[] getSignature(byte[] data){
     try{
-      Class<?> c=Class.forName(JSch.getConfig("ecdsa-sha2-"+Util.byte2str(name)));
-      SignatureECDSA ecdsa=(SignatureECDSA)(c.getDeclaredConstructor().newInstance());
+      Class<? extends SignatureECDSA> c=Class.forName(JSch.getConfig("ecdsa-sha2-"+Util.byte2str(name))).asSubclass(SignatureECDSA.class);
+      SignatureECDSA ecdsa=c.getDeclaredConstructor().newInstance();
       ecdsa.init();
       ecdsa.setPrvKey(prv_array);
 
@@ -374,8 +374,8 @@ public class KeyPairECDSA extends KeyPair{
   @Override
   public Signature getVerifier(){
     try{
-      Class<?> c=Class.forName(JSch.getConfig("ecdsa-sha2-"+Util.byte2str(name)));
-      final SignatureECDSA ecdsa=(SignatureECDSA)(c.getDeclaredConstructor().newInstance());
+      Class<? extends SignatureECDSA> c=Class.forName(JSch.getConfig("ecdsa-sha2-"+Util.byte2str(name))).asSubclass(SignatureECDSA.class);
+      final SignatureECDSA ecdsa=c.getDeclaredConstructor().newInstance();
       ecdsa.init();
 
       if(r_array == null && s_array == null && getPublicKeyBlob()!=null){

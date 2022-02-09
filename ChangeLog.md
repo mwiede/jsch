@@ -1,3 +1,16 @@
+* [0.2.0](https://github.com/mwiede/jsch/releases/tag/jsch-0.2.0)
+  * Disable RSA/SHA1 signature algorithm by default [#75](https://github.com/mwiede/jsch/issues/75)
+  * Add basic Logger implementations that can be optionally utilized with `JSch.setLogger()`:
+    * JulLogger, using `java.util.logging.Logger`
+    * JplLogger, using [Java 9's JEP 264](https://openjdk.java.net/jeps/264)
+    * Log4j2Logger, using [Apache Log4j 2](https://logging.apache.org/log4j/2.x/)
+    * Slf4jLogger, using [SLF4J](https://www.slf4j.org/)
+  * Fix client version to be compliant with [RFC 4253 section 4.2](https://datatracker.ietf.org/doc/html/rfc4253#section-4.2) by not including minus sign characters [#115](https://github.com/mwiede/jsch/issues/115)
+  * Add `java.util.zip` based compression implementation [#114](https://github.com/mwiede/jsch/issues/114)
+    * This is based upon the [CompressionJUZ implementation](http://www.jcraft.com/jsch/examples/CompressionJUZ.java) posted to the [JSch-users mailing list](https://sourceforge.net/p/jsch/mailman/jsch-users/thread/201202031343.WAA19979%40jcraft.com/#msg28781313) in 2012 by the original JSch author
+    * The existing JZlib implementation remains the default to maintain strict [RFC 4253 section 6.2](https://datatracker.ietf.org/doc/html/rfc4253#section-6.2) compliance
+      * To use the new implementation globally, execute `JSch.setConfig("zlib@openssh.com", "com.jcraft.jsch.juz.Compression")` + `JSch.setConfig("zlib", "com.jcraft.jsch.juz.Compression")`
+      * To use the new implementation per session, execute `session.setConfig("zlib@openssh.com", "com.jcraft.jsch.juz.Compression")` + `session.setConfig("zlib", "com.jcraft.jsch.juz.Compression")`
 * [0.1.72](https://github.com/mwiede/jsch/releases/tag/jsch-0.1.72)
   * Switch chacha20-poly1305@<!-- -->openssh.com algorithm to a pure [Bouncy Castle](https://www.bouncycastle.org/java.html) based implementation
   * implement openssh config behavior to handle append, prepend and removal of algorithms [#104](https://github.com/mwiede/jsch/pull/104) 

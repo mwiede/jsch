@@ -36,6 +36,7 @@ public class Compression implements com.jcraft.jsch.Compression {
   private Deflater deflater;
   private Inflater inflater;
   private byte[] tmpbuf=new byte[BUF_SIZE];
+  private byte[] inflated_buf;
 
   public Compression(){
   }
@@ -49,9 +50,11 @@ public class Compression implements com.jcraft.jsch.Compression {
       inflater=new Inflater();
       inflated_buf=new byte[BUF_SIZE];
     }
+    if(JSch.getLogger().isEnabled(Logger.DEBUG)){
+      JSch.getLogger().log(Logger.DEBUG,
+                           "zlib using "+this.getClass().getCanonicalName());
+    }
   }
-
-  private byte[] inflated_buf;
 
   @Override
   public byte[] compress(byte[] buf, int start, int[] len){
@@ -80,7 +83,11 @@ public class Compression implements com.jcraft.jsch.Compression {
           outputlen+=tmp;
           break;
         default:
-            System.err.println("compress: deflate returnd "+status);
+          if(JSch.getLogger().isEnabled(Logger.WARN)){
+            JSch.getLogger().log(Logger.WARN,
+                                 "compress: deflate returnd "+status);
+          }
+
       }
     }
     while(deflater.avail_out==0);
@@ -129,9 +136,12 @@ public class Compression implements com.jcraft.jsch.Compression {
             System.arraycopy(inflated_buf, 0, buffer, start, inflated_end);
           }
           length[0]=inflated_end;
-          return buffer;
-        default:
-          System.err.println("uncompress: inflate returnd "+status);
+	  return buffer;
+	default:
+          if(JSch.getLogger().isEnabled(Logger.WARN)){
+            JSch.getLogger().log(Logger.WARN,
+                                 "uncompress: inflate returnd "+status);
+          }
           return null;
       }
     }

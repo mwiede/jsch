@@ -49,8 +49,8 @@ public abstract class KeyPairEdDSA extends KeyPair{
   @Override
   void generate(int key_size) throws JSchException{
     try{
-      Class<?> c=Class.forName(JSch.getConfig("keypairgen.eddsa"));
-      KeyPairGenEdDSA keypairgen=(KeyPairGenEdDSA)(c.getDeclaredConstructor().newInstance());
+      Class<? extends KeyPairGenEdDSA> c=Class.forName(JSch.getConfig("keypairgen.eddsa")).asSubclass(KeyPairGenEdDSA.class);
+      KeyPairGenEdDSA keypairgen=c.getDeclaredConstructor().newInstance();
       keypairgen.init(getJceName(), getKeySize());
       pub_array=keypairgen.getPub();
       prv_array=keypairgen.getPrv();
@@ -122,8 +122,8 @@ public abstract class KeyPairEdDSA extends KeyPair{
   @Override
   public byte[] getSignature(byte[] data, String alg){
     try{
-      Class<?> c=Class.forName(JSch.getConfig(alg));
-      SignatureEdDSA eddsa=(SignatureEdDSA)(c.getDeclaredConstructor().newInstance());
+      Class<? extends SignatureEdDSA> c=Class.forName(JSch.getConfig(alg)).asSubclass(SignatureEdDSA.class);
+      SignatureEdDSA eddsa=c.getDeclaredConstructor().newInstance();
       eddsa.init();
       eddsa.setPrvKey(prv_array);
 
@@ -147,8 +147,8 @@ public abstract class KeyPairEdDSA extends KeyPair{
   @Override
   public Signature getVerifier(String alg){
     try{
-      Class<?> c=Class.forName(JSch.getConfig(alg));
-      SignatureEdDSA eddsa=(SignatureEdDSA)(c.getDeclaredConstructor().newInstance());
+      Class<? extends SignatureEdDSA> c=Class.forName(JSch.getConfig(alg)).asSubclass(SignatureEdDSA.class);
+      SignatureEdDSA eddsa=c.getDeclaredConstructor().newInstance();
       eddsa.init();
 
       if(pub_array == null && getPublicKeyBlob()!=null){

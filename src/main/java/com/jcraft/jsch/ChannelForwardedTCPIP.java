@@ -61,8 +61,8 @@ public class ChannelForwardedTCPIP extends Channel{
     try{ 
       if(config instanceof ConfigDaemon){
         ConfigDaemon _config = (ConfigDaemon)config;
-        Class<?> c=Class.forName(_config.target);
-        daemon=(ForwardedTCPIPDaemon)c.getDeclaredConstructor().newInstance();
+        Class<? extends ForwardedTCPIPDaemon> c=Class.forName(_config.target).asSubclass(ForwardedTCPIPDaemon.class);
+        daemon=c.getDeclaredConstructor().newInstance();
 
         PipedOutputStream out=new PipedOutputStream();
         io.setInputStream(new PassiveInputStream(out

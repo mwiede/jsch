@@ -146,15 +146,15 @@ public abstract class KeyExchange{
     boolean _s2cAEAD=false;
     boolean _c2sAEAD=false;
     try{
-      Class<?> _s2cclazz=Class.forName(session.getConfig(guess[PROPOSAL_ENC_ALGS_STOC]));
-      Cipher _s2ccipher=(Cipher)(_s2cclazz.getDeclaredConstructor().newInstance());
+      Class<? extends Cipher> _s2cclazz=Class.forName(session.getConfig(guess[PROPOSAL_ENC_ALGS_STOC])).asSubclass(Cipher.class);
+      Cipher _s2ccipher=_s2cclazz.getDeclaredConstructor().newInstance();
       _s2cAEAD=_s2ccipher.isAEAD();
       if(_s2cAEAD){
         guess[PROPOSAL_MAC_ALGS_STOC]=null;
       }
 
-      Class<?> _c2sclazz=Class.forName(session.getConfig(guess[PROPOSAL_ENC_ALGS_CTOS]));
-      Cipher _c2scipher=(Cipher)(_c2sclazz.getDeclaredConstructor().newInstance());
+      Class<? extends Cipher> _c2sclazz=Class.forName(session.getConfig(guess[PROPOSAL_ENC_ALGS_CTOS])).asSubclass(Cipher.class);
+      Cipher _c2scipher=_c2sclazz.getDeclaredConstructor().newInstance();
       _c2sAEAD=_c2scipher.isAEAD();
       if(_c2sAEAD){
         guess[PROPOSAL_MAC_ALGS_CTOS]=null;
@@ -188,8 +188,8 @@ public abstract class KeyExchange{
     HASH hash=null;
     try{
       String _c=session.getConfig("FingerprintHash").toLowerCase();
-      Class<?> c=Class.forName(session.getConfig(_c));
-      hash=(HASH)(c.getDeclaredConstructor().newInstance());
+      Class<? extends HASH> c=Class.forName(session.getConfig(_c)).asSubclass(HASH.class);
+      hash=c.getDeclaredConstructor().newInstance();
     }
     catch(Exception e){ System.err.println("getFingerPrint: "+e); }
     return Util.getFingerPrint(hash, getHostKey(), true, false);
@@ -244,8 +244,8 @@ public abstract class KeyExchange{
       Buffer buf=new Buffer(sig_of_H);
       String foo=Util.byte2str(buf.getString());
       try{
-        Class<?> c=Class.forName(session.getConfig(foo));
-        sig=(SignatureRSA)(c.getDeclaredConstructor().newInstance());
+        Class<? extends SignatureRSA> c=Class.forName(session.getConfig(foo)).asSubclass(SignatureRSA.class);
+        sig=c.getDeclaredConstructor().newInstance();
         sig.init();
       }
       catch(Exception e){
@@ -289,8 +289,8 @@ public abstract class KeyExchange{
 
       SignatureDSA sig=null;
       try{
-        Class<?> c=Class.forName(session.getConfig("signature.dss"));
-        sig=(SignatureDSA)(c.getDeclaredConstructor().newInstance());
+        Class<? extends SignatureDSA> c=Class.forName(session.getConfig("signature.dss")).asSubclass(SignatureDSA.class);
+        sig=c.getDeclaredConstructor().newInstance();
         sig.init();
       }
       catch(Exception e){
@@ -331,8 +331,8 @@ public abstract class KeyExchange{
 
       SignatureECDSA sig=null;
       try{
-        Class<?> c=Class.forName(session.getConfig(alg));
-        sig=(SignatureECDSA)(c.getDeclaredConstructor().newInstance());
+        Class<? extends SignatureECDSA> c=Class.forName(session.getConfig(alg)).asSubclass(SignatureECDSA.class);
+        sig=c.getDeclaredConstructor().newInstance();
         sig.init();
       }
       catch(Exception e){
@@ -364,8 +364,8 @@ public abstract class KeyExchange{
 
       SignatureEdDSA sig=null;
       try{
-        Class<?> c=Class.forName(session.getConfig(alg));
-        sig=(SignatureEdDSA)(c.getDeclaredConstructor().newInstance());
+        Class<? extends SignatureEdDSA> c=Class.forName(session.getConfig(alg)).asSubclass(SignatureEdDSA.class);
+        sig=c.getDeclaredConstructor().newInstance();
         sig.init();
       }
       catch(Exception | NoClassDefFoundError e){
