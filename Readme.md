@@ -10,7 +10,7 @@ See original [README](README)
 ## Why should you use this library?
 
 As I explained in a [blog post](http://www.matez.de/index.php/2020/06/22/the-future-of-jsch-without-ssh-rsa/) the main points are:
-* OpenSSH will disable ssh-rsa in <strike>the future</strike>  [release 8.8](https://www.openssh.com/txt/release-8.8) per default and you need a library which supports rsa-sha2-256 and rsa-sha2-512.
+* OpenSSH has disabled ssh-rsa in [release 8.8](https://www.openssh.com/txt/release-8.8) per default and you need a library which supports rsa-sha2-256 and rsa-sha2-512.
 * Drop in replacement: just change dependency coordinates and you are good to go.
 * No active maintenance of [JSch at SourceForge](https://sourceforge.net/projects/jsch/).
 * Stay in sync with OpenJDK features so there is no need for additional dependencies.
@@ -72,7 +72,7 @@ As I explained in a [blog post](http://www.matez.de/index.php/2020/06/22/the-fut
     * SHA1 is no longer considered secure by the general cryptographic community and this JSch fork strives to maintain secure choices for default algorithms that it will utilize.
     * This also follows the lead of the OpenSSH project in which they disabled RSA/SHA1 signatures by default as of [OpenSSH release 8.8](https://www.openssh.com/txt/release-8.8).
   * ssh-rsa type keys continue to function by default with the RSA/SHA256 (rsa-sha2-256) & RSA/SHA512 (rsa-sha2-512) signature algorithms defined by [RFC 8332](https://datatracker.ietf.org/doc/html/rfc8332).
-  * If your server only supports RSA/SHA1 signatures and you require their use in your application, then you will need to manually reenable them by one of the following means:
+  * If your server only supports RSA/SHA1 signatures and you require their use in your application, then you will need to manually reenable them by one of the following means (also see wiki page [Jsch-Configuration](https://github.com/mwiede/jsch/wiki/Jsch-Configuration)):
     * Globally by adding "ssh-rsa" to the `jsch.server_host_key` + `jsch.client_pubkey` properties.
     * Globally by executing something similar to `JSch.setConfig("server_host_key", JSch.getConfig("server_host_key") + ",ssh-rsa")` + `JSch.setConfig("PubkeyAcceptedAlgorithms", JSch.getConfig("PubkeyAcceptedAlgorithms") + ",ssh-rsa")`.
     * On a per-session basis by executing something similar to `session.setConfig("server_host_key", session.getConfig("server_host_key") + ",ssh-rsa")` + `session.setConfig("PubkeyAcceptedAlgorithms", session.getConfig("PubkeyAcceptedAlgorithms") + ",ssh-rsa")`.
