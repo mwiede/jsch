@@ -136,8 +136,8 @@ public class Compression implements com.jcraft.jsch.Compression {
             System.arraycopy(inflated_buf, 0, buffer, start, inflated_end);
           }
           length[0]=inflated_end;
-	  return buffer;
-	default:
+          return buffer;
+         default:
           if(JSch.getLogger().isEnabled(Logger.WARN)){
             JSch.getLogger().log(Logger.WARN,
                                  "uncompress: inflate returnd "+status);

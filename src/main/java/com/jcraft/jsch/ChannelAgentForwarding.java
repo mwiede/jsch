@@ -44,7 +44,7 @@ class ChannelAgentForwarding extends Channel{
   static private final byte SSH_AGENT_RSA_RESPONSE = 4;
   static private final byte SSH_AGENT_FAILURE = 5;
   static private final byte SSH_AGENT_SUCCESS = 6;
-  static private final byte SSH_AGENTC_ADD_RSA_IDENTITY	= 7;
+  static private final byte SSH_AGENTC_ADD_RSA_IDENTITY = 7;
   static private final byte SSH_AGENTC_REMOVE_RSA_IDENTITY = 8;
   static private final byte SSH_AGENTC_REMOVE_ALL_RSA_IDENTITIES = 9;
 

@@ -65,9 +65,9 @@ public class TripleDESCTR implements Cipher{
       // The following code does not work on IBM's JDK 1.4.1
       SecretKeySpec skeySpec = new SecretKeySpec(key, "DESede");
       cipher.init((mode==ENCRYPT_MODE?
-		   javax.crypto.Cipher.ENCRYPT_MODE:
-		   javax.crypto.Cipher.DECRYPT_MODE),
-		  skeySpec, new IvParameterSpec(iv));
+                   javax.crypto.Cipher.ENCRYPT_MODE:
+                   javax.crypto.Cipher.DECRYPT_MODE),
+                   skeySpec, new IvParameterSpec(iv));
 */
       DESedeKeySpec keyspec=new DESedeKeySpec(key);
       SecretKeyFactory keyfactory=SecretKeyFactory.getInstance("DESede");

@@ -49,7 +49,7 @@ abstract class HMAC implements MAC {
   public void init(byte[] key) throws Exception {
     if(key.length>bsize){
       byte[] tmp = new byte[bsize];
-      System.arraycopy(key, 0, tmp, 0, bsize);	  
+      System.arraycopy(key, 0, tmp, 0, bsize);
       key = tmp;
     }
     SecretKeySpec skey = new SecretKeySpec(key, algorithm);
