@@ -35,14 +35,14 @@ public class ChannelDirectStreamLocal extends ChannelDirectTCPIP {
         Similar to direct-tcpip, direct-streamlocal is sent by the client
         to request that the server make a connection to a Unix domain socket.
 
-            byte		SSH_MSG_CHANNEL_OPEN
-            string		"direct-streamlocal@openssh.com"
-            uint32		sender channel
-            uint32		initial window size
-            uint32		maximum packet size
-            string		socket path
-            string		reserved
-            uint32		reserved
+            byte      SSH_MSG_CHANNEL_OPEN
+            string    "direct-streamlocal@openssh.com"
+            uint32    sender channel
+            uint32    initial window size
+            uint32    maximum packet size
+            string    socket path
+            string    reserved
+            uint32    reserved
          */
 
         Buffer buf = new Buffer(50 +
