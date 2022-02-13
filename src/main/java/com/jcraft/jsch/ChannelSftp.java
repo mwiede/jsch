@@ -277,7 +277,7 @@ public class ChannelSftp extends ChannelSession{
         fill(buf, length);
         byte[] extension_name=null;
         byte[] extension_data=null;
-        while(length>0){
+        while (length>0){
           extension_name=buf.getString();
           length-=(4+extension_name.length);
           extension_data=buf.getString();
@@ -422,7 +422,7 @@ public class ChannelSftp extends ChannelSession{
                                 "Copying multiple files, but the destination is missing or a file.");
       }
 
-      for(int j=0; j<vsize; j++){
+      for (int j=0; j<vsize; j++){
         String _src=v.elementAt(j);
         String _dst=null;
         if(isRemoteDir){
@@ -621,7 +621,7 @@ public class ChannelSftp extends ChannelSession{
 
       int bulk_requests = rq.size();
 
-      while(true){
+      while (true){
         int nread=0;
         int count=0;
         int s=_s;
@@ -635,14 +635,14 @@ public class ChannelSftp extends ChannelSession{
             count+=nread;
           }
         }
-        while(datalen>0 && nread>0); 
+        while (datalen>0 && nread>0); 
         if(count<=0)break;
 
         int foo=count;
-        while(foo>0){
+        while (foo>0){
           if((seq-1)==startid ||
              ((seq-startid)-ackcount)>=bulk_requests){
-            while(((seq-startid)-ackcount)>=bulk_requests){
+            while (((seq-startid)-ackcount)>=bulk_requests){
               if(checkStatus(ackid, header)){
                 int _ackid = ackid[0];
                 if(startid>_ackid || _ackid>seq-1){
@@ -677,7 +677,7 @@ public class ChannelSftp extends ChannelSession{
         }
       }
       int _ackcount=seq-startid;
-      while(_ackcount>ackcount){
+      while (_ackcount>ackcount){
         if(!checkStatus(null, header)){
           break;
         }
@@ -797,7 +797,7 @@ public class ChannelSftp extends ChannelSession{
 
           try{
             int _len=len;
-            while(_len>0){
+            while (_len>0){
               int sent=sendWRITE(handle, _offset[0], d, s, _len);
               writecount++;
               _offset[0]+=sent;
@@ -805,7 +805,7 @@ public class ChannelSftp extends ChannelSession{
               _len-=sent;
               if((seq-1)==startid ||
                  io_in.available()>=1024){
-                while(io_in.available()>0){
+                while (io_in.available()>0){
                   if(checkStatus(ackid, header)){
                     _ackid=ackid[0];
                     if(startid>_ackid || _ackid>seq-1){
@@ -844,7 +844,7 @@ public class ChannelSftp extends ChannelSession{
 
           if(!init){
             try{
-              while(writecount>ackcount){
+              while (writecount>ackcount){
                 if(!checkStatus(null, header)){
                   break;
                 }
@@ -919,7 +919,7 @@ public class ChannelSftp extends ChannelSession{
                                 "Copying multiple files, but destination is missing or a file.");
       }
 
-      for(int j=0; j<vsize; j++){
+      for (int j=0; j<vsize; j++){
         String _src=v.elementAt(j);
         SftpATTRS attr=_stat(_src);
         if(attr.isDir()){
@@ -1068,9 +1068,9 @@ public class ChannelSftp extends ChannelSession{
       if(server_version==0){ request_len=1024; }
 
       loop:
-      while(true){
+      while (true){
 
-        while(rq.count() < request_max){
+        while (rq.count() < request_max){
           sendREAD(handle, request_offset, request_len, rq);
           request_offset += request_len;
         }
@@ -1120,7 +1120,7 @@ public class ChannelSftp extends ChannelSession{
         int optional_data = length - length_of_data;
 
         int foo = length_of_data;
-        while(foo>0){
+        while (foo>0){
           int bar=foo;
           if(bar>buf.buffer.length){
             bar=buf.buffer.length;
@@ -1195,7 +1195,7 @@ public class ChannelSftp extends ChannelSession{
     int head, count;
     RequestQueue(int size){
       rrq = new Request[size];
-      for(int i=0; i<rrq.length; i++){
+      for (int i=0; i<rrq.length; i++){
         rrq[i]=new Request();
       }
       init();
@@ -1223,7 +1223,7 @@ public class ChannelSftp extends ChannelSession{
       if(rrq[i].id != id){
         long offset = getOffset();
         boolean find = false;
-        for(int j = 0; j<rrq.length; j++){
+        for (int j = 0; j<rrq.length; j++){
           if(rrq[j].id == id){
             find = true;
             rrq[j].id = 0;
@@ -1249,10 +1249,10 @@ public class ChannelSftp extends ChannelSession{
 
     void cancel(Header header, Buffer buf) throws IOException {
       int _count = count;
-      for(int i=0; i<_count; i++){
+      for (int i=0; i<_count; i++){
         header=header(buf, header);
         int length=header.length;
-        for(int j=0; j<rrq.length; j++){
+        for (int j=0; j<rrq.length; j++){
           if(rrq[j].id == header.rid){
             rrq[j].id=0;
             break;
@@ -1266,7 +1266,7 @@ public class ChannelSftp extends ChannelSession{
     long getOffset(){
       long result = Long.MAX_VALUE;
 
-      for(int i=0; i<rrq.length; i++){
+      for (int i=0; i<rrq.length; i++){
         if(rrq[i].id == 0)
           continue;
         if(result>rrq[i].offset)
@@ -1401,7 +1401,7 @@ public class ChannelSftp extends ChannelSession{
                int request_len = buf.buffer.length-13;
                if(server_version==0){ request_len=1024; }
 
-               while(rq.count() < request_max){
+               while (rq.count() < request_max){
                  try{
                    sendREAD(handle, request_offset, request_len, rq);
                  }
@@ -1481,7 +1481,7 @@ public class ChannelSftp extends ChannelSession{
                  int _s=0;
                  int _len=foo;
                  int j;
-                 while(_len>0){
+                 while (_len>0){
                    j=io_in.read(rest_byte, _s, _len);
                    if(j<=0)break;
                    _s+=j;
@@ -1632,7 +1632,7 @@ public class ChannelSftp extends ChannelSession{
        int cancel = LsEntrySelector.CONTINUE;
        byte[] handle=buf.getString();         // handle
 
-       while(cancel==LsEntrySelector.CONTINUE){
+       while (cancel==LsEntrySelector.CONTINUE){
 
          sendREADDIR(handle);
 
@@ -1658,7 +1658,7 @@ public class ChannelSftp extends ChannelSession{
          int flags;
 
          buf.reset();
-         while(count>0){
+         while (count>0){
            if(length>0){
              buf.shift();
              int j=(buf.buffer.length>(buf.index+length)) ? 
@@ -1771,7 +1771,7 @@ public class ChannelSftp extends ChannelSession{
        if(type==SSH_FXP_NAME){
          int count=buf.getInt();       // count
          byte[] filename=null;
-         for(int i=0; i<count; i++){
+         for (int i=0; i<count; i++){
            filename=buf.getString();
            if(server_version<=3){
              byte[] longname=buf.getString();
@@ -1953,7 +1953,7 @@ public class ChannelSftp extends ChannelSession{
 
       Header header=new Header();
 
-      for(int j=0; j<vsize; j++){
+      for (int j=0; j<vsize; j++){
         path=v.elementAt(j);
         sendREMOVE(Util.str2byte(path, fEncoding));
 
@@ -2007,7 +2007,7 @@ public class ChannelSftp extends ChannelSession{
 
       Vector<String> v=glob_remote(path);
       int vsize=v.size();
-      for(int j=0; j<vsize; j++){
+      for (int j=0; j<vsize; j++){
         path=v.elementAt(j);
 
         SftpATTRS attr=_stat(path);
@@ -2031,7 +2031,7 @@ public class ChannelSftp extends ChannelSession{
 
       Vector<String> v=glob_remote(path);
       int vsize=v.size();
-      for(int j=0; j<vsize; j++){
+      for (int j=0; j<vsize; j++){
         path=v.elementAt(j);
 
         SftpATTRS attr=_stat(path);
@@ -2055,7 +2055,7 @@ public class ChannelSftp extends ChannelSession{
 
       Vector<String> v=glob_remote(path);
       int vsize=v.size();
-      for(int j=0; j<vsize; j++){
+      for (int j=0; j<vsize; j++){
         path=v.elementAt(j);
 
         SftpATTRS attr=_stat(path);
@@ -2079,7 +2079,7 @@ public class ChannelSftp extends ChannelSession{
 
       Vector<String> v=glob_remote(path);
       int vsize=v.size();
-      for(int j=0; j<vsize; j++){
+      for (int j=0; j<vsize; j++){
         path=v.elementAt(j);
 
         SftpATTRS attr=_stat(path);
@@ -2106,7 +2106,7 @@ public class ChannelSftp extends ChannelSession{
 
       Header header=new Header();
 
-      for(int j=0; j<vsize; j++){
+      for (int j=0; j<vsize; j++){
         path=v.elementAt(j);
         sendRMDIR(Util.str2byte(path, fEncoding));
 
@@ -2329,7 +2329,7 @@ public class ChannelSftp extends ChannelSession{
     i=buf.getInt();   // count
 
     byte[] str=null;
-    while(i-->0){
+    while (i-->0){
       str=buf.getString();  // absolute path;
       if(server_version<=3){
         byte[] lname=buf.getString();  // long filename
@@ -2347,7 +2347,7 @@ public class ChannelSftp extends ChannelSession{
 
       Vector<String> v=glob_remote(path);
       int vsize=v.size();
-      for(int j=0; j<vsize; j++){
+      for (int j=0; j<vsize; j++){
         path=v.elementAt(j);
         _setStat(path, attr);
       }
@@ -2413,7 +2413,7 @@ public class ChannelSftp extends ChannelSession{
 
   private void read(byte[] buf, int s, int l) throws IOException, SftpException{
     int i=0;
-    while(l>0){
+    while (l>0){
       i=io_in.read(buf, s, l);
       if(i<=0){
         throw new SftpException(SSH_FX_FAILURE, "");
@@ -2677,7 +2677,7 @@ public class ChannelSftp extends ChannelSession{
     byte[] handle=buf.getString();         // filename
     String pdir=null;                      // parent directory
 
-    while(true){
+    while (true){
       sendREADDIR(handle);
       header=header(buf, header);
       length=header.length;
@@ -2699,7 +2699,7 @@ public class ChannelSftp extends ChannelSession{
       int flags;
 
       buf.reset();
-      while(count>0){
+      while (count>0){
         if(length>0){
           buf.shift();
           int j=(buf.buffer.length>(buf.index+length)) ? length : (buf.buffer.length-buf.index);
@@ -2749,7 +2749,7 @@ public class ChannelSftp extends ChannelSession{
   private boolean isPattern(byte[] path){
     int length=path.length;
     int i=0;
-    while(i<length){
+    while (i<length){
       if(path[i]=='*' || path[i]=='?')
         return true;
       if(path[i]=='\\' && (i+1)<length)
@@ -2764,7 +2764,7 @@ public class ChannelSftp extends ChannelSession{
     Vector<String> v=new Vector<>();
     byte[] path=Util.str2byte(_path, StandardCharsets.UTF_8);
     int i=path.length-1;
-    while(i>=0){
+    while (i>=0){
       if(path[i]!='*' && path[i]!='?'){
         i--;
         continue;
@@ -2783,7 +2783,7 @@ public class ChannelSftp extends ChannelSession{
 
     if(i<0){ v.addElement(fs_is_bs ? _path : Util.unquote(_path)); return v;}
 
-    while(i>=0){
+    while (i>=0){
       if(path[i]==file_separatorc ||
          (fs_is_bs && path[i]=='/')){ // On Windows, '/' is also the separator.
         break;
@@ -2807,7 +2807,7 @@ public class ChannelSftp extends ChannelSession{
     try{
       String[] children=(new File(Util.byte2str(dir, StandardCharsets.UTF_8))).list();
       String pdir=Util.byte2str(dir)+file_separator;
-      for(int j=0; j<children.length; j++){
+      for (int j=0; j<children.length; j++){
 //System.err.println("children: "+children[j]);
         if(Util.glob(pattern, Util.str2byte(children[j], StandardCharsets.UTF_8))){
           v.addElement(pdir+children[j]);
@@ -2860,7 +2860,7 @@ public class ChannelSftp extends ChannelSession{
   private int fill(byte[] buf, int s, int len) throws IOException{
     int i=0;
     int foo=s;
-    while(len>0){
+    while (len>0){
       i=io_in.read(buf, s, len);
       if(i<=0){
         throw new IOException("inputstream is closed");
@@ -2872,7 +2872,7 @@ public class ChannelSftp extends ChannelSession{
     return s-foo;
   }
   private void skip(long foo) throws IOException{
-    while(foo>0){
+    while (foo>0){
       long bar=io_in.skip(foo);
       if(bar<=0) 
         break;

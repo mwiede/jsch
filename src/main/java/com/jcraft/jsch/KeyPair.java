@@ -145,7 +145,7 @@ public abstract class KeyPair{
       if(passphrase!=null){
         out.write(header[0]); out.write(cr);
         out.write(header[1]); 
-        for(int i=0; i<iv.length; i++){
+        for (int i=0; i<iv.length; i++){
           out.write(b2a((byte)((iv[i]>>>4)&0x0f)));
           out.write(b2a((byte)(iv[i]&0x0f)));
         }
@@ -153,7 +153,7 @@ public abstract class KeyPair{
         out.write(cr);
       }
       int i=0;
-      while(i<prv.length){
+      while (i<prv.length){
         if(i+64<prv.length){
           out.write(prv, i, 64);
           out.write(cr);
@@ -230,7 +230,7 @@ public abstract class KeyPair{
       out.write(Util.str2byte("---- BEGIN SSH2 PUBLIC KEY ----")); out.write(cr);
       out.write(Util.str2byte("Comment: \""+comment+"\"")); out.write(cr);
       int index=0;
-      while(index<pub.length){
+      while (index<pub.length){
         int len=70;
         if((pub.length-index)<len)len=pub.length-index;
         out.write(pub, index, len); out.write(cr);
@@ -306,7 +306,7 @@ public abstract class KeyPair{
       byte[] foo=new byte[(encoded.length/bsize+1)*bsize];
       System.arraycopy(encoded, 0, foo, 0, encoded.length);
       int padding=bsize-encoded.length%bsize;
-      for(int i=foo.length-1; (foo.length-padding)<=i; i--){
+      for (int i=foo.length-1; (foo.length-padding)<=i; i--){
         foo[i]=(byte)padding;
       }
       encoded=foo;
@@ -373,7 +373,7 @@ public abstract class KeyPair{
   int countLength(int len){
     int i=1;
     if(len<=0x7f) return i;
-    while(len>0){
+    while (len>0){
       len>>>=8;
       i++;
     }
@@ -388,7 +388,7 @@ public abstract class KeyPair{
     }
     data[index++]=(byte)(0x80|i);
     int j=index+i;
-    while(i>0){
+    while (i>0){
       data[index+i-1]=(byte)(len&0xff);
       len>>>=8;
       i--;
@@ -444,7 +444,7 @@ public abstract class KeyPair{
     try{
       byte[] tmp=null;
       if(vendor==VENDOR_OPENSSH){
-        for(int index=0; index+hsize<=hn.length;){
+        for (int index=0; index+hsize<=hn.length;){
           if(tmp!=null){ hash.update(tmp, 0, tmp.length); }
           hash.update(passphrase, 0, passphrase.length);
           hash.update(iv, 0, iv.length > 8 ? 8: iv.length);
@@ -455,7 +455,7 @@ public abstract class KeyPair{
         System.arraycopy(hn, 0, key, 0, key.length); 
       }
       else if(vendor==VENDOR_FSECURE){
-        for(int index=0; index+hsize<=hn.length;){
+        for (int index=0; index+hsize<=hn.length;){
           if(tmp!=null){ hash.update(tmp, 0, tmp.length); }
           hash.update(passphrase, 0, passphrase.length);
           tmp=hash.digest();
@@ -469,7 +469,7 @@ public abstract class KeyPair{
         HASH sha1=c.getDeclaredConstructor().newInstance();
         tmp = new byte[4];
         key = new byte[20*2];
-        for(int i = 0; i < 2; i++){
+        for (int i = 0; i < 2; i++){
           sha1.init();
           tmp[3]=(byte)i;
           sha1.update(tmp, 0, tmp.length);
@@ -643,7 +643,7 @@ public abstract class KeyPair{
       int i=0;
 
       // skip garbage lines.
-      while(i<len){
+      while (i<len){
         if(buf[i] == '-' && i+4<len && 
            buf[i+1] == '-' && buf[i+2] == '-' && 
            buf[i+3] == '-' && buf[i+4] == '-'){
@@ -652,7 +652,7 @@ public abstract class KeyPair{
         i++;
       }
 
-      while(i<len){
+      while (i<len){
         if(buf[i]=='B'&& i+3<len && buf[i+1]=='E'&& buf[i+2]=='G'&& buf[i+3]=='I'){
           i+=6;
           if(i+2 >= len)
@@ -735,7 +735,7 @@ public abstract class KeyPair{
         }
         if(buf[i]=='C'&& i+3<len && buf[i+1]=='B'&& buf[i+2]=='C'&& buf[i+3]==','){
           i+=4;
-          for(int ii=0; ii<iv.length; ii++){
+          for (int ii=0; ii<iv.length; ii++){
             iv[ii]=(byte)(((a2b(buf[i++])<<4)&0xf0)+(a2b(buf[i++])&0xf));
             }
           continue;
@@ -751,7 +751,7 @@ public abstract class KeyPair{
              i+=3; break;
           }
           boolean inheader=false;
-          for(int j=i+1; j<buf.length; j++){
+          for (int j=i+1; j<buf.length; j++){
             if(buf[j]==0x0a) break;
             //if(buf[j]==0x0d) break;
             if(buf[j]==':'){inheader=true; break;}
@@ -773,7 +773,7 @@ public abstract class KeyPair{
         }
 
         int start = i;
-        while(i < len){
+        while (i < len){
           if(buf[i] == '-'){  break; }
           i++;
         }
@@ -791,7 +791,7 @@ public abstract class KeyPair{
         i = 0;
 
         int _len = _buf.length;
-        while(i<_len){
+        while (i<_len){
           if(_buf[i]==0x0a){
             boolean xd=(_buf[i-1]==0x0d);
             // ignore 0x0a (or 0x0d0x0a)
@@ -888,13 +888,13 @@ public abstract class KeyPair{
 
             boolean valid=true;
             i=0;
-            do{i++;}while(buf.length>i && buf[i]!=0x0a);
+            do{i++;}while (buf.length>i && buf[i]!=0x0a);
             if(buf.length<=i) {valid=false;}
 
-            while(valid){
+            while (valid){
               if(buf[i]==0x0a){
                 boolean inheader=false;
-                for(int j=i+1; j<buf.length; j++){
+                for (int j=i+1; j<buf.length; j++){
                   if(buf[j]==0x0a) break;
                   if(buf[j]==':'){inheader=true; break;}
                 }
@@ -908,7 +908,7 @@ public abstract class KeyPair{
             if(buf.length<=i){valid=false;}
 
             int start=i;
-            while(valid && i<len){
+            while (valid && i<len){
               if(buf[i]==0x0a){
                 System.arraycopy(buf, i+1, buf, i, len-i-1);
                 len--;
@@ -935,15 +935,15 @@ public abstract class KeyPair{
                 else if(buf[4]=='e' && buf[6]=='4'){ type=ED448; }
               }
               i=0;
-              while(i<len){ if(buf[i]==' ')break; i++;} i++;
+              while (i<len){ if(buf[i]==' ')break; i++;} i++;
               if(i<len){
                 int start=i;
-                while(i<len){ if(buf[i]==' ')break; i++;}
+                while (i<len){ if(buf[i]==' ')break; i++;}
                 publickeyblob=Util.fromBase64(buf, start, i-start);
               }
               if(i++<len){
                 int start=i;
-                while(i<len){ if(buf[i]=='\n')break; i++;}
+                while (i<len){ if(buf[i]=='\n')break; i++;}
                 if(i>0 && buf[i-1]==0x0d) i--;
                 if(start<i){
                   publicKeyComment = Util.byte2str(buf, start, i-start);
@@ -955,15 +955,15 @@ public abstract class KeyPair{
                type=ECDSA;
               }
               i=0;
-              while(i<len){ if(buf[i]==' ')break; i++;} i++;
+              while (i<len){ if(buf[i]==' ')break; i++;} i++;
               if(i<len){
                 int start=i;
-                while(i<len){ if(buf[i]==' ')break; i++;}
+                while (i<len){ if(buf[i]==' ')break; i++;}
                 publickeyblob=Util.fromBase64(buf, start, i-start);
               }
               if(i++<len){
                 int start=i;
-                while(i<len){ if(buf[i]=='\n')break; i++;}
+                while (i<len){ if(buf[i]=='\n')break; i++;}
                 if(i>0 && buf[i-1]==0x0d) i--;
                 if(start<i){
                   publicKeyComment = Util.byte2str(buf, start, i-start);
@@ -1107,7 +1107,7 @@ public abstract class KeyPair{
     Buffer buffer = new Buffer(buf);
     Hashtable<String, String> v = new Hashtable<>();
 
-    while(true){
+    while (true){
       if(!parseHeader(buffer, v))
         break;
     } 
@@ -1120,7 +1120,7 @@ public abstract class KeyPair{
     lines = Integer.parseInt(v.get("Public-Lines"));
     pubkey = parseLines(buffer, lines); 
 
-    while(true){
+    while (true){
       if(!parseHeader(buffer, v))
         break;
     } 
@@ -1128,7 +1128,7 @@ public abstract class KeyPair{
     lines = Integer.parseInt(v.get("Private-Lines"));
     prvkey = parseLines(buffer, lines); 
 
-    while(true){
+    while (true){
       if(!parseHeader(buffer, v))
         break;
     } 
@@ -1209,8 +1209,8 @@ public abstract class KeyPair{
     byte[] data = null;
 
     int i = index;
-    while(lines-->0){
-      while(buf.length > i){
+    while (lines-->0){
+      while (buf.length > i){
         if(buf[i++] == 0x0d){
           if(data == null){
             data = new byte[i - index - 1];
@@ -1220,7 +1220,7 @@ public abstract class KeyPair{
             byte[] tmp = new byte[data.length + i - index - 1];
             System.arraycopy(data, 0, tmp, 0, data.length);
             System.arraycopy(buf, index, tmp, data.length, i - index -1);
-            for(int j = 0; j < data.length; j++) data[j] = 0; // clear
+            for (int j = 0; j < data.length; j++) data[j] = 0; // clear
             data = tmp;
           } 
           break;
@@ -1242,7 +1242,7 @@ public abstract class KeyPair{
     int index = buffer.index;
     String key = null;
     String value = null;
-    for(int i = index; i < buf.length; i++){
+    for (int i = index; i < buf.length; i++){
       if(buf[i] == 0x0d){
         break;
       }
@@ -1260,7 +1260,7 @@ public abstract class KeyPair{
     if(key == null)
       return false;
 
-    for(int i = index; i < buf.length; i++){
+    for (int i = index; i < buf.length; i++){
       if(buf[i] == 0x0d){
         value = Util.byte2str(buf, index, i - index);
         i++;
@@ -1325,7 +1325,7 @@ public abstract class KeyPair{
       int length=buf[index++]&0xff;
       if((length&0x80)!=0) {
         int foo=length&0x7f; length=0;
-        while(foo-->0){ length=(length<<8)+(buf[index++]&0xff); }
+        while (foo-->0){ length=(length<<8)+(buf[index++]&0xff); }
       }
       indexp[0]=index;
       return length;
@@ -1349,7 +1349,7 @@ public abstract class KeyPair{
       }
       int index=indexp[0];
       Vector<ASN1> values = new Vector<>();
-      while(length>0) {
+      while (length>0) {
         index++; length--;
         int tmp=index;
         indexp[0]=index;
@@ -1361,7 +1361,7 @@ public abstract class KeyPair{
         length-=l;
       }
       ASN1[] result = new ASN1[values.size()];
-      for(int  i = 0; i <values.size(); i++) {
+      for (int  i = 0; i <values.size(); i++) {
         result[i]=values.elementAt(i);
       }
       return result;

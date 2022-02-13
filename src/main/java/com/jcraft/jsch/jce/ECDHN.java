@@ -145,6 +145,6 @@ public class ECDHN implements com.jcraft.jsch.ECDH {
     return tmp;
   }
   private void bzero(byte[] buf){
-    for(int i = 0; i<buf.length; i++) buf[i]=0;
+    for (int i = 0; i<buf.length; i++) buf[i]=0;
   }
 }

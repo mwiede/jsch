@@ -41,7 +41,7 @@ class Util{
   private static final byte[] b64 =Util.str2byte("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=");
   private static byte val(byte foo){
     if(foo == '=') return 0;
-    for(int j=0; j<b64.length; j++){
+    for (int j=0; j<b64.length; j++){
       if(foo==b64[j]) return (byte)j;
     }
     return 0;
@@ -73,7 +73,7 @@ class Util{
     
     int foo=(length/3)*3+start;
     i=0;
-    for(j=start; j<foo; j+=3){
+    for (j=start; j<foo; j+=3){
       k=(buf[j]>>>2)&0x3f;
       tmp[i++]=b64[k];
       k=(buf[j]&0x03)<<4|(buf[j+1]>>>4)&0x0f;
@@ -120,7 +120,7 @@ class Util{
     Vector<String> bar=new Vector<>();
     int start=0;
     int index;
-    while(true){
+    while (true){
       index=foo.indexOf(split, start);
       if(index>=0){
         bar.addElement(Util.byte2str(buf, start, index-start));
@@ -131,7 +131,7 @@ class Util{
       break;
     }
     String[] result=new String[bar.size()];
-    for(int i=0; i<result.length; i++){
+    for (int i=0; i<result.length; i++){
       result[i]=bar.elementAt(i);
     }
     return result;
@@ -162,7 +162,7 @@ class Util{
     int i=pattern_index;
     int j=name_index;
 
-    while(i<patternlen && j<namelen){
+    while (i<patternlen && j<namelen){
       if(pattern[i]=='\\'){
         if(i+1==patternlen)
           return false;
@@ -175,7 +175,7 @@ class Util{
       }
 
       if(pattern[i]=='*'){
-        while(i<patternlen){
+        while (i<patternlen){
           if(pattern[i]=='*'){
             i++;
             continue;
@@ -187,7 +187,7 @@ class Util{
 
         byte foo=pattern[i];
         if(foo=='?'){
-          while(j<namelen){
+          while (j<namelen){
             if(glob(pattern, i, name, j)){
               return true;
             }
@@ -200,7 +200,7 @@ class Util{
             return false;
           i++;
           foo=pattern[i];
-          while(j<namelen){
+          while (j<namelen){
             if(foo==name[j]){
               if(glob(pattern, i+skipUTF8Char(foo),
                       name, j+skipUTF8Char(name[j]))){
@@ -212,7 +212,7 @@ class Util{
           return false;
         }
 
-        while(j<namelen){
+        while (j<namelen){
           if(foo==name[j]){
             if(glob(pattern, i, name, j)){
               return true;
@@ -252,7 +252,7 @@ class Util{
     if(!(j<namelen) &&  // name is end
        pattern[i]=='*'){
       boolean ok=true;
-      while(i<patternlen){
+      while (i<patternlen){
         if(pattern[i++]!='*'){
           ok=false;
           break;
@@ -267,7 +267,7 @@ class Util{
   static String quote(String path){
     byte[] _path=str2byte(path);
     int count=0;
-    for(int i=0;i<_path.length; i++){
+    for (int i=0;i<_path.length; i++){
       byte b=_path[i];
       if(b=='\\' || b=='?' || b=='*')
         count++;
@@ -275,7 +275,7 @@ class Util{
     if(count==0)
       return path;
     byte[] _path2=new byte[_path.length+count];
-    for(int i=0, j=0; i<_path.length; i++){
+    for (int i=0, j=0; i<_path.length; i++){
       byte b=_path[i];
       if(b=='\\' || b=='?' || b=='*'){
         _path2[j++]='\\';
@@ -295,7 +295,7 @@ class Util{
   static byte[] unquote(byte[] path){
     int pathlen=path.length;
     int i=0;
-    while(i<pathlen){
+    while (i<pathlen){
       if(path[i]=='\\'){
         if(i+1==pathlen)
           break;
@@ -328,7 +328,7 @@ class Util{
       }
       if(force_hex || hash.name().equals("MD5")){
         int bar;
-        for(int i=0; i<foo.length;i++){
+        for (int i=0; i<foo.length;i++){
           bar=foo[i]&0xff;
           sb.append(chars[(bar>>>4)&0xf]);
           sb.append(chars[(bar)&0xf]);
@@ -349,8 +349,8 @@ class Util{
   static boolean array_equals(byte[] foo, byte bar[]){
     int i=foo.length;
     if(i!=bar.length) return false;
-    for(int j=0; j<i; j++){ if(foo[j]!=bar[j]) return false; }
-    //try{while(true){i--; if(foo[i]!=bar[i])return false;}}catch(Exception e){}
+    for (int j=0; j<i; j++){ if(foo[j]!=bar[j]) return false; }
+    //try{while (true){i--; if(foo[i]!=bar[i])return false;}}catch(Exception e){}
     return true;
   }
   static Socket createSocket(String host, int port, int timeout) throws JSchException{
@@ -440,7 +440,7 @@ class Util{
 
   static String toHex(byte[] str){
     StringBuilder sb = new StringBuilder();
-    for(int i = 0; i<str.length; i++){
+    for (int i = 0; i<str.length; i++){
       String foo = Integer.toHexString(str[i]&0xff);
       sb.append("0x"+(foo.length() == 1 ? "0" : "")+foo);
       if(i+1<str.length)
@@ -454,12 +454,12 @@ class Util{
   /*
   static byte[] char2byte(char[] foo){
     int len=0;
-    for(int i=0; i<foo.length; i++){
+    for (int i=0; i<foo.length; i++){
       if((foo[i]&0xff00)==0) len++;
       else len+=2;
     }
     byte[] bar=new byte[len];
-    for(int i=0, j=0; i<foo.length; i++){
+    for (int i=0, j=0; i<foo.length; i++){
       if((foo[i]&0xff00)==0){
         bar[j++]=(byte)foo[i];
       }
@@ -474,7 +474,7 @@ class Util{
   static void bzero(byte[] foo){
     if(foo==null)
       return;
-    for(int i=0; i<foo.length; i++)
+    for (int i=0; i<foo.length; i++)
       foo[i]=0;
   }
 
@@ -482,8 +482,8 @@ class Util{
     String[] stra=Util.split(str, ",");
     String result=null;
     loop:
-    for(int i=0; i<stra.length; i++){
-      for(int j=0; j<not_available.length; j++){
+    for (int i=0; i<stra.length; i++){
+      for (int j=0; j<not_available.length; j++){
         if(stra[i].equals(not_available[j])){
           continue loop;
         }
@@ -519,7 +519,7 @@ class Util{
     try {
       byte[] result = new byte[(int)(file.length())];
       int len=0;
-      while(true){
+      while (true){
         int i=fis.read(result, len, result.length-len);
         if(i<=0)
           break;
@@ -537,7 +537,7 @@ class Util{
   static boolean arraysequals(byte[] a, byte[] b){
     if(a.length!=b.length) return false;
     int res=0;
-    for(int i=0; i<a.length; i++){
+    for (int i=0; i<a.length; i++){
       res|=a[i]^b[i];
     }
     return res==0;

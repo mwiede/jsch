@@ -57,7 +57,7 @@ class ChannelX11 extends Channel{
   private Socket socket = null;
 
   static int revtable(byte foo){
-    for(int i=0; i<table.length; i++){
+    for (int i=0; i<table.length; i++){
       if(table[i]==foo)return i;
     }
     return 0;
@@ -65,7 +65,7 @@ class ChannelX11 extends Channel{
   static void setCookie(String foo){
     cookie_hex=Util.str2byte(foo); 
     cookie=new byte[16];
-    for(int i=0; i<16; i++){
+    for (int i=0; i<16; i++){
         cookie[i]=(byte)(((revtable(cookie_hex[i*2])<<4)&0xf0) |
                          ((revtable(cookie_hex[i*2+1]))&0xf));
     }
@@ -83,14 +83,14 @@ class ChannelX11 extends Channel{
         }
 /*
 System.err.print("faked_cookie: ");
-for(int i=0; i<foo.length; i++){
+for (int i=0; i<foo.length; i++){
     System.err.print(Integer.toHexString(foo[i]&0xff)+":");
 }
 System.err.println("");
 */
         faked_cookie_pool.put(session, foo);
         byte[] bar=new byte[32];
-        for(int i=0; i<16; i++){
+        for (int i=0; i<16; i++){
           bar[2*i]=table[(foo[i]>>>4)&0xf];
           bar[2*i+1]=table[(foo[i])&0xf];
         }
@@ -155,7 +155,7 @@ System.err.println("");
     Packet packet=new Packet(buf);
     int i=0;
     try{
-      while(thread!=null &&
+      while (thread!=null &&
             io!=null &&
             io.in!=null){
         i=io.in.read(buf.buffer, 
@@ -237,12 +237,12 @@ System.err.println("");
 
       /*
 System.err.print("faked_cookie: ");
-for(int i=0; i<faked_cookie.length; i++){
+for (int i=0; i<faked_cookie.length; i++){
     System.err.print(Integer.toHexString(faked_cookie[i]&0xff)+":");
 }
 System.err.println("");
 System.err.print("bar: ");
-for(int i=0; i<bar.length; i++){
+for (int i=0; i<bar.length; i++){
     System.err.print(Integer.toHexString(bar[i]&0xff)+":");
 }
 System.err.println("");
@@ -269,7 +269,7 @@ System.err.println("");
 
   private static boolean equals(byte[] foo, byte[] bar){
     if(foo.length!=bar.length)return false;
-    for(int i=0; i<foo.length; i++){
+    for (int i=0; i<foo.length; i++){
       if(foo[i]!=bar[i])return false;
     }
     return true;

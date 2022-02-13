@@ -87,7 +87,7 @@ public class Buffer{
     index+=n;
   }
   void putPad(int n) {
-    while(n>0){
+    while (n>0){
       buffer[index++]=(byte)0;
       n--;
     }
@@ -225,7 +225,7 @@ public class Buffer{
 
   byte[][] getBytes(int n, String msg) throws JSchException {
     byte[][] tmp = new byte[n][];
-    for(int i = 0; i < n; i++){
+    for (int i = 0; i < n; i++){
       int j = getInt();
       if(getLength() < j){
         throw new JSchException(msg);
@@ -239,11 +239,11 @@ public class Buffer{
   /*
   static Buffer fromBytes(byte[]... args){
     int length = args.length*4;
-    for(int i = 0; i < args.length; i++){
+    for (int i = 0; i < args.length; i++){
       length += args[i].length;
     }
     Buffer buf = new Buffer(length);
-    for(int i = 0; i < args.length; i++){
+    for (int i = 0; i < args.length; i++){
       buf.putString(args[i]);
     }
     return buf;
@@ -252,11 +252,11 @@ public class Buffer{
 
   static Buffer fromBytes(byte[][] args){
     int length = args.length*4;
-    for(int i = 0; i < args.length; i++){
+    for (int i = 0; i < args.length; i++){
       length += args[i].length;
     }
     Buffer buf = new Buffer(length);
-    for(int i = 0; i < args.length; i++){
+    for (int i = 0; i < args.length; i++){
       buf.putString(args[i]);
     }
     return buf;
@@ -269,7 +269,7 @@ public class Buffer{
   };
   static void dump_buffer(){
     int foo;
-    for(int i=0; i<tmp_buffer_index; i++){
+    for (int i=0; i<tmp_buffer_index; i++){
         foo=tmp_buffer[i]&0xff;
         System.err.print(chars[(foo>>>4)&0xf]);
         System.err.print(chars[foo&0xf]);
@@ -287,7 +287,7 @@ public class Buffer{
     dump(b, 0, b.length);
   }
   static void dump(byte[] b, int s, int l){
-    for(int i=s; i<s+l; i++){
+    for (int i=s; i<s+l; i++){
       System.err.print(Integer.toHexString(b[i]&0xff)+":");
     }
     System.err.println("");

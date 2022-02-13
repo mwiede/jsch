@@ -127,7 +127,7 @@ public class KeyPairPKCS8 extends KeyPair {
       byte[] privateKeyAlgorithmID = contents[0].getContent();
       contents = contents[1].getContents();
       if(contents.length>0){
-        for(int i = 0; i < contents.length; i++){
+        for (int i = 0; i < contents.length; i++){
           values.addElement(contents[i].getContent());
         }
       }
@@ -156,7 +156,7 @@ public class KeyPairPKCS8 extends KeyPair {
           contents = asn1.getContents();
           byte[] bar = contents[1].getContent();
           contents = contents[0].getContents();
-          for(int i = 0; i < contents.length; i++){
+          for (int i = 0; i < contents.length; i++){
             values.addElement(contents[i].getContent());
           }
           values.addElement(bar);

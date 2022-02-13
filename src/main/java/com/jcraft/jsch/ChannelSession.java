@@ -215,7 +215,7 @@ class ChannelSession extends Channel{
     }
 
     if(env!=null){
-      for(Enumeration<byte[]> _env=env.keys(); _env.hasMoreElements();){
+      for (Enumeration<byte[]> _env=env.keys(); _env.hasMoreElements();){
         byte[] name=_env.nextElement();
         byte[] value=env.get(name);
         request=new RequestEnv();
@@ -241,7 +241,7 @@ class ChannelSession extends Channel{
     Packet packet=new Packet(buf);
     int i=-1;
     try{
-      while(isConnected() &&
+      while (isConnected() &&
             thread!=null && 
             io!=null && 
             io.in!=null){

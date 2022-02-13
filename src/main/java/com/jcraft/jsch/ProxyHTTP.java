@@ -99,7 +99,7 @@ public class ProxyHTTP implements Proxy{
       int foo=0;
 
       StringBuilder sb=new StringBuilder();
-      while(foo>=0){
+      while (foo>=0){
         foo=in.read(); if(foo!=13){sb.append((char)foo);  continue;}
         foo=in.read(); if(foo!=10){continue;}
         break;
@@ -124,7 +124,7 @@ public class ProxyHTTP implements Proxy{
       }
 
       /*
-      while(foo>=0){
+      while (foo>=0){
         foo=in.read(); if(foo!=13) continue;
         foo=in.read(); if(foo!=10) continue;
         foo=in.read(); if(foo!=13) continue;      
@@ -134,9 +134,9 @@ public class ProxyHTTP implements Proxy{
       */
 
       int count=0;
-      while(true){
+      while (true){
         count=0;
-        while(foo>=0){
+        while (foo>=0){
           foo=in.read(); if(foo!=13){count++;  continue;}
           foo=in.read(); if(foo!=10){continue;}
           break;

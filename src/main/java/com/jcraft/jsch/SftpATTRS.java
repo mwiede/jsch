@@ -164,7 +164,7 @@ public class SftpATTRS {
       int count=buf.getInt();
       if(count>0){
         attr.extended=new String[count*2];
-        for(int i=0; i<count; i++){
+        for (int i=0; i<count; i++){
           attr.extended[i*2]=Util.byte2str(buf.getString());
           attr.extended[i*2+1]=Util.byte2str(buf.getString());
         }
@@ -184,7 +184,7 @@ public class SftpATTRS {
       len+=4;
       int count=extended.length/2;
       if(count>0){
-        for(int i=0; i<count; i++){
+        for (int i=0; i<count; i++){
           len+=4; len+=extended[i*2].length();
           len+=4; len+=extended[i*2+1].length();
         }
@@ -207,7 +207,7 @@ public class SftpATTRS {
     if((flags&SSH_FILEXFER_ATTR_EXTENDED)!=0){
       int count=extended.length/2;
       if(count>0){
-        for(int i=0; i<count; i++){
+        for (int i=0; i<count; i++){
           buf.putString(Util.str2byte(extended[i*2]));
           buf.putString(Util.str2byte(extended[i*2+1]));
         }

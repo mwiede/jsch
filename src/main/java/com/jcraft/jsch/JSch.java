@@ -576,7 +576,7 @@ public class JSch{
   @Deprecated
   public void removeIdentity(String name) throws JSchException{
     Vector<Identity> identities = identityRepository.getIdentities();
-    for(int i=0; i<identities.size(); i++){
+    for (int i=0; i<identities.size(); i++){
       Identity identity=identities.elementAt(i);
       if(!identity.getName().equals(name))
         continue;
@@ -609,7 +609,7 @@ public class JSch{
   public Vector<String> getIdentityNames() throws JSchException{
     Vector<String> foo=new Vector<>();
     Vector<Identity> identities = identityRepository.getIdentities();
-    for(int i=0; i<identities.size(); i++){
+    for (int i=0; i<identities.size(); i++){
       Identity identity=identities.elementAt(i);
       foo.addElement(identity.getName());
     }
@@ -647,7 +647,7 @@ public class JSch{
    */
   public static void setConfig(Hashtable<String, String> newconf){
     synchronized(config){
-      for(Enumeration<String> e=newconf.keys() ; e.hasMoreElements() ;) {
+      for (Enumeration<String> e=newconf.keys() ; e.hasMoreElements() ;) {
         String newkey=e.nextElement();
         String key=(newkey.equals("PubkeyAcceptedKeyTypes") ? "PubkeyAcceptedAlgorithms" : newkey);
         config.put(key, newconf.get(newkey));

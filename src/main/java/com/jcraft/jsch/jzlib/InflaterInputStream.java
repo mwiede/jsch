@@ -103,7 +103,7 @@ final class InflaterInputStream extends FilterInputStream {
 
     int n = 0;
     inflater.setOutput(b, off, len);
-    while(!eof) {
+    while (!eof) {
       if(inflater.avail_in==0)
         fill();
       int err = inflater.inflate(JZlib.Z_NO_FLUSH);
@@ -246,7 +246,7 @@ final class InflaterInputStream extends FilterInputStream {
       if(err!=0/*Z_OK*/)
         throw new IOException(inflater.msg);
     }
-    while(inflater.istate.inParsingHeader());
+    while (inflater.istate.inParsingHeader());
   }
 
   Inflater getInflater(){

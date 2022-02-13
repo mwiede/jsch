@@ -49,7 +49,7 @@ class UserAuthKeyboardInteractive extends UserAuth{
     byte[] _username=null;
     _username=Util.str2byte(username);
 
-    while(true){
+    while (true){
 
       if(session.auth_failures >= session.max_auth_tries){
         return false;
@@ -74,7 +74,7 @@ class UserAuthKeyboardInteractive extends UserAuth{
 
       boolean firsttime=true;
       loop:
-      while(true){
+      while (true){
         buf=session.read(buf);
         int command=buf.getCommand()&0xff;
 
@@ -119,7 +119,7 @@ class UserAuthKeyboardInteractive extends UserAuth{
           int num=buf.getInt();
           String[] prompt=new String[num];
           boolean[] echo=new boolean[num];
-          for(int i=0; i<num; i++){
+          for (int i=0; i<num; i++){
             prompt[i]=Util.byte2str(buf.getString());
             echo[i]=(buf.getByte()!=0);
           }
@@ -146,7 +146,7 @@ class UserAuthKeyboardInteractive extends UserAuth{
                                                                echo);
               if(_response!=null){
                 response=new byte[_response.length][];
-                for(int i=0; i<_response.length; i++){
+                for (int i=0; i<_response.length; i++){
                   response[i]=Util.str2byte(_response[i]);
                 }
               }
@@ -167,7 +167,7 @@ class UserAuthKeyboardInteractive extends UserAuth{
             if(response==null){  
               // working around the bug in OpenSSH ;-<
               buf.putInt(num);
-              for(int i=0; i<num; i++){
+              for (int i=0; i<num; i++){
                 buf.putString(Util.empty);
               }
             }
@@ -180,7 +180,7 @@ class UserAuthKeyboardInteractive extends UserAuth{
           }
           else{
             buf.putInt(num);
-            for(int i=0; i<num; i++){
+            for (int i=0; i<num; i++){
               buf.putString(response[i]);
             }
           }

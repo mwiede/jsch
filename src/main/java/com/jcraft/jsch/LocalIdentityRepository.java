@@ -55,7 +55,7 @@ class LocalIdentityRepository implements IdentityRepository {
   public synchronized Vector<Identity> getIdentities() {
     removeDupulicates();
     Vector<Identity> v = new Vector<>();
-    for(int i=0; i<identities.size(); i++){
+    for (int i=0; i<identities.size(); i++){
       v.addElement(identities.elementAt(i));
     }
     return v;
@@ -68,7 +68,7 @@ class LocalIdentityRepository implements IdentityRepository {
         identities.addElement(identity);
         return;
       }
-      for(int i = 0; i<identities.size(); i++){
+      for (int i = 0; i<identities.size(); i++){
         byte[] blob2 = identities.elementAt(i).getPublicKeyBlob();
         if(blob2 != null && Util.array_equals(blob1, blob2)){
           if(!identity.isEncrypted() && 
@@ -110,7 +110,7 @@ class LocalIdentityRepository implements IdentityRepository {
   @Override
   public synchronized boolean remove(byte[] blob) {
     if(blob == null) return false;
-    for(int i=0; i<identities.size(); i++) {
+    for (int i=0; i<identities.size(); i++) {
       Identity _identity = identities.elementAt(i);
       byte[] _blob = _identity.getPublicKeyBlob();
       if(_blob == null || !Util.array_equals(blob, _blob))
@@ -124,7 +124,7 @@ class LocalIdentityRepository implements IdentityRepository {
 
   @Override
   public synchronized void removeAll() {
-    for(int i=0; i<identities.size(); i++) {
+    for (int i=0; i<identities.size(); i++) {
       Identity identity=identities.elementAt(i);
       identity.clear();
     }
@@ -135,11 +135,11 @@ class LocalIdentityRepository implements IdentityRepository {
     Vector<byte[]> v = new Vector<>();
     int len = identities.size();
     if(len == 0) return;
-    for(int i=0; i<len; i++){
+    for (int i=0; i<len; i++){
       Identity foo = identities.elementAt(i);
       byte[] foo_blob = foo.getPublicKeyBlob();
       if(foo_blob == null) continue;
-      for(int j=i+1; j<len; j++){
+      for (int j=i+1; j<len; j++){
         Identity bar = identities.elementAt(j);
         byte[] bar_blob = bar.getPublicKeyBlob();
         if(bar_blob == null) continue;
@@ -150,7 +150,7 @@ class LocalIdentityRepository implements IdentityRepository {
         }
       }
     }
-    for(int i=0; i<v.size(); i++){
+    for (int i=0; i<v.size(); i++){
       remove(v.elementAt(i));
     }
   }

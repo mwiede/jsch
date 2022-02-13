@@ -148,11 +148,11 @@ final class InfBlocks{
     {q=write;m=(q<read?read-q-1:end-q);}
 
     // process input based on current state
-    while(true){
+    while (true){
       switch (mode){
       case TYPE:
 
-        while(k<(3)){
+        while (k<(3)){
           if(n!=0){
             r=Z_OK;
           }
@@ -207,7 +207,7 @@ final class InfBlocks{
         break;
       case LENS:
 
-        while(k<(32)){
+        while (k<(32)){
           if(n!=0){
             r=Z_OK;
           }
@@ -278,7 +278,7 @@ final class InfBlocks{
         break;
       case TABLE:
 
-        while(k<(14)){
+        while (k<(14)){
           if(n!=0){
             r=Z_OK;
           }
@@ -311,7 +311,7 @@ final class InfBlocks{
           blens=new int[t];
         }
         else{
-          for(int i=0; i<t; i++){blens[i]=0;}
+          for (int i=0; i<t; i++){blens[i]=0;}
         }
 
         {b>>>=(14);k-=(14);}
@@ -320,7 +320,7 @@ final class InfBlocks{
         mode = BTREE;
       case BTREE:
         while (index < 4 + (table >>> 10)){
-          while(k<(3)){
+          while (k<(3)){
             if(n!=0){
               r=Z_OK;
             }
@@ -341,7 +341,7 @@ final class InfBlocks{
           {b>>>=(3);k-=(3);}
         }
 
-        while(index < 19){
+        while (index < 19){
           blens[border[index++]] = 0;
         }
 
@@ -374,7 +374,7 @@ final class InfBlocks{
 
           t = bb[0];
 
-          while(k<(t)){
+          while (k<(t)){
             if(n!=0){
               r=Z_OK;
             }
@@ -405,7 +405,7 @@ final class InfBlocks{
             i = c == 18 ? 7 : c - 14;
             j = c == 18 ? 11 : 3;
 
-            while(k<(t+i)){
+            while (k<(t+i)){
               if(n!=0){
                 r=Z_OK;
               }

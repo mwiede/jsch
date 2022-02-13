@@ -60,7 +60,7 @@ public class ARCFOUR128 implements Cipher{
                    javax.crypto.Cipher.DECRYPT_MODE),
                   _key);
       byte[] foo=new byte[1];
-      for(int i=0; i<skip; i++){
+      for (int i=0; i<skip; i++){
         cipher.update(foo, 0, 1, foo, 0);
       }
     }

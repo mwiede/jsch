@@ -80,7 +80,7 @@ public abstract class Channel implements Runnable{
   }
   static Channel getChannel(int id, Session session){
     synchronized(pool){
-      for(int i=0; i<pool.size(); i++){
+      for (int i=0; i<pool.size(); i++){
         Channel c=pool.elementAt(i);
         if(c.id==id && c.session==session) return c;
       }
@@ -260,7 +260,7 @@ public abstract class Channel implements Runnable{
 
           byte[] _buf=buffer.buffer;
           int _bufl=_buf.length;
-          while(l>0){
+          while (l>0){
             int _l=l;
             if(l>_bufl-(14+dataLen)-Session.buffer_margin){
               _l=_bufl-(14+dataLen)-Session.buffer_margin;
@@ -381,7 +381,7 @@ public abstract class Channel implements Runnable{
       if(size<len){
         int datasize=buffer.length-size;
         int foo = buffer.length;
-        while((foo - datasize) < len){
+        while ((foo - datasize) < len){
           foo*=2;
         }
 
@@ -549,7 +549,7 @@ public abstract class Channel implements Runnable{
     int count=0;
     synchronized(pool){
       channels=new Channel[pool.size()];
-      for(int i=0; i<pool.size(); i++){
+      for (int i=0; i<pool.size(); i++){
         try{
           Channel c=pool.elementAt(i);
           if(c.session==session){
@@ -560,7 +560,7 @@ public abstract class Channel implements Runnable{
         }
       } 
     }
-    for(int i=0; i<count; i++){
+    for (int i=0; i<count; i++){
       channels[i].disconnect();
     }
   }
@@ -743,7 +743,7 @@ public abstract class Channel implements Runnable{
     long timeout=connectTimeout;
     if(timeout!=0L) retry = 1;
     synchronized(this){
-      while(this.getRecipient()==-1 &&
+      while (this.getRecipient()==-1 &&
             _session.isConnected() &&
              retry>0){
         if(timeout>0L){

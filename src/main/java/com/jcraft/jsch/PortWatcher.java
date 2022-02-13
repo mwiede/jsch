@@ -91,7 +91,7 @@ class PortWatcher implements Runnable{
   static String[] getPortForwarding(Session session){
     Vector<String> foo=new Vector<>();
     synchronized(pool){
-      for(int i=0; i<pool.size(); i++){
+      for (int i=0; i<pool.size(); i++){
         PortWatcher p=pool.elementAt(i);
         if(p.session==session){
           foo.addElement(p.lport+":"+p.host+":"+p.rport);
@@ -99,7 +99,7 @@ class PortWatcher implements Runnable{
       }
     }
     String[] bar=new String[foo.size()];
-    for(int i=0; i<foo.size(); i++){
+    for (int i=0; i<foo.size(); i++){
       bar[i]=foo.elementAt(i);
     }
     return bar;
@@ -113,7 +113,7 @@ class PortWatcher implements Runnable{
       throw new JSchException("PortForwardingL: invalid address "+address+" specified.", uhe);
     }
     synchronized(pool){
-      for(int i=0; i<pool.size(); i++){
+      for (int i=0; i<pool.size(); i++){
         PortWatcher p=pool.elementAt(i);
         if(p.session==session && p.lport==lport){
           if(/*p.boundaddress.isAnyLocalAddress() ||*/
@@ -156,14 +156,14 @@ class PortWatcher implements Runnable{
     synchronized(pool){
       PortWatcher[] foo=new PortWatcher[pool.size()];
       int count=0;
-      for(int i=0; i<pool.size(); i++){
+      for (int i=0; i<pool.size(); i++){
         PortWatcher p=pool.elementAt(i);
         if(p.session==session) {
           p.delete();
           foo[count++]=p;
         }
       }
-      for(int i=0; i<count; i++){
+      for (int i=0; i<count; i++){
         PortWatcher p=foo[i];
         pool.removeElement(p);
       }
@@ -194,7 +194,7 @@ class PortWatcher implements Runnable{
   public void run(){
     thread=this;
     try{
-      while(thread!=null){
+      while (thread!=null){
         Socket socket=ss.accept();
         socket.setTcpNoDelay(true);
         InputStream in=socket.getInputStream();

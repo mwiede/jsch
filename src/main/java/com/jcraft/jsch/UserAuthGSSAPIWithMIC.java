@@ -67,14 +67,14 @@ class UserAuthGSSAPIWithMIC extends UserAuth {
     buf.putString(Util.str2byte("ssh-connection"));
     buf.putString(Util.str2byte("gssapi-with-mic"));
     buf.putInt(supported_oid.length);
-    for(int i=0; i<supported_oid.length; i++){
+    for (int i=0; i<supported_oid.length; i++){
       buf.putString(supported_oid[i]);
     }
     session.write(packet);
 
     String method=null;
     int command;
-    while(true){
+    while (true){
       buf=session.read(buf);
       command=buf.getCommand()&0xff;
 
@@ -86,7 +86,7 @@ class UserAuthGSSAPIWithMIC extends UserAuth {
         buf.getInt(); buf.getByte(); buf.getByte();
         byte[] message=buf.getString();
 
-        for(int i=0; i<supported_oid.length; i++){
+        for (int i=0; i<supported_oid.length; i++){
           if(Util.array_equals(message, supported_oid[i])){
             method=supported_method[i];
             break;
@@ -131,7 +131,7 @@ class UserAuthGSSAPIWithMIC extends UserAuth {
 
     byte[] token=new byte[0];
 
-    while(!context.isEstablished()){
+    while (!context.isEstablished()){
       try{
         token=context.init(token, 0, token.length);
       }

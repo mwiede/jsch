@@ -75,9 +75,9 @@ class KnownHosts implements HostKeyRepository{
       byte[] buf=new byte[1024];
       int bufl=0;
 loop:
-      while(true){
+      while (true){
         bufl=0;
-        while(true){
+        while (true){
           j=fis.read();
           if(j==-1){
             if(bufl==0){ break loop; }
@@ -95,7 +95,7 @@ loop:
         }
 
         j=0;
-        while(j<bufl){
+        while (j<bufl){
           i=buf[j];
           if(i==' '||i=='\t'){ j++; continue; }
           if(i=='#'){
@@ -110,7 +110,7 @@ loop:
         }
 
         sb.setLength(0);
-        while(j<bufl){
+        while (j<bufl){
           i=buf[j++];
           if(i==0x20 || i=='\t'){ break; }
           sb.append((char)i);
@@ -121,7 +121,7 @@ loop:
           continue loop; 
         }
 
-        while(j<bufl){
+        while (j<bufl){
           i=buf[j];
           if(i==' '||i=='\t'){ j++; continue; }
           break;
@@ -132,7 +132,7 @@ loop:
           marker = host;
 
           sb.setLength(0);
-          while(j<bufl){
+          while (j<bufl){
             i=buf[j++];
             if(i==0x20 || i=='\t'){ break; }
             sb.append((char)i);
@@ -143,7 +143,7 @@ loop:
             continue loop; 
           }
 
-          while(j<bufl){
+          while (j<bufl){
             i=buf[j];
             if(i==' '||i=='\t'){ j++; continue; }
             break;
@@ -152,7 +152,7 @@ loop:
 
         sb.setLength(0);
         type=-1;
-        while(j<bufl){
+        while (j<bufl){
           i=buf[j++];
           if(i==0x20 || i=='\t'){ break; }
           sb.append((char)i);
@@ -167,14 +167,14 @@ loop:
           continue loop; 
         }
 
-        while(j<bufl){
+        while (j<bufl){
           i=buf[j];
           if(i==' '||i=='\t'){ j++; continue; }
           break;
         }
 
         sb.setLength(0);
-        while(j<bufl){
+        while (j<bufl){
           i=buf[j++];
           if(i==0x0d){ continue; }
           if(i==0x0a){ break; }
@@ -187,7 +187,7 @@ loop:
           continue loop; 
         }
 
-        while(j<bufl){
+        while (j<bufl){
           i=buf[j];
           if(i==' '||i=='\t'){ j++; continue; }
           break;
@@ -206,7 +206,7 @@ loop:
         String comment=null;
         if(j<bufl){
           sb.setLength(0);
-          while(j<bufl){
+          while (j<bufl){
             i=buf[j++];
             if(i==0x0d){ continue; }
             if(i==0x0a){ break; }
@@ -264,7 +264,7 @@ loop:
     }
 
     synchronized(pool){
-      for(int i=0; i<pool.size(); i++){
+      for (int i=0; i<pool.size(); i++){
         HostKey _hk=pool.elementAt(i);
         if(_hk.isMatched(host) && _hk.type==hk.type){
           if(Util.array_equals(_hk.key, key)){
@@ -295,7 +295,7 @@ loop:
 
     HostKey hk=null;
     synchronized(pool){
-      for(int i=0; i<pool.size(); i++){
+      for (int i=0; i<pool.size(); i++){
         hk=pool.elementAt(i);
         if(hk.isMatched(host) && hk.type==type){
 /*
@@ -362,7 +362,7 @@ loop:
   public HostKey[] getHostKey(String host, String type){
     synchronized(pool){
       List<HostKey> v = new ArrayList<>();
-      for(int i=0; i<pool.size(); i++){
+      for (int i=0; i<pool.size(); i++){
         HostKey hk=pool.elementAt(i);
         if(hk.type==HostKey.UNKNOWN) continue;
         if(host==null || 
@@ -372,7 +372,7 @@ loop:
         }
       }
       HostKey[] foo = new HostKey[v.size()];
-      for(int i=0; i<v.size(); i++){
+      for (int i=0; i<v.size(); i++){
         foo[i] = v.get(i);
       }
       if(host != null && host.startsWith("[") && host.indexOf("]:")>1){
@@ -396,7 +396,7 @@ loop:
   public void remove(String host, String type, byte[] key){
     boolean sync=false;
     synchronized(pool){
-    for(int i=0; i<pool.size(); i++){
+    for (int i=0; i<pool.size(); i++){
       HostKey hk=pool.elementAt(i);
       if(host==null ||
          (hk.isMatched(host) && 
@@ -437,7 +437,7 @@ loop:
     try{
       HostKey hk;
       synchronized(pool){
-      for(int i=0; i<pool.size(); i++){
+      for (int i=0; i<pool.size(); i++){
         hk=pool.elementAt(i);
         //hk.dump(out);
         String marker=hk.getMarker();
@@ -476,7 +476,7 @@ loop:
     int hostlen=host.length();
     int hostslen=hosts.length();
     int j;
-    while(i<hostslen){
+    while (i<hostslen){
       j=hosts.indexOf(',', i);
       if(j==-1) break;
       if(!host.equals(hosts.substring(i, j))){

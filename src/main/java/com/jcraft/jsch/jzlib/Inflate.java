@@ -665,7 +665,7 @@ final class Inflate{
       need_bytes=n;
       this.need=0;
     }
-    while(need_bytes>0){
+    while (need_bytes>0){
       if(z.avail_in==0){ throw new Return(r); }; r=f;
       z.avail_in--; z.total_in++;
       this.need = this.need | 
@@ -700,7 +700,7 @@ final class Inflate{
       if(b!=0) tmp_string.write(z.next_in, z.next_in_index, 1);
       z.adler.update(z.next_in, z.next_in_index, 1);
       z.next_in_index++;
-    }while(b!=0);
+    }while (b!=0);
     return r;
   }
 
@@ -709,7 +709,7 @@ final class Inflate{
       tmp_string=new ByteArrayOutputStream();
     }
     int b=0; 
-    while(this.need>0){
+    while (this.need>0){
       if(z.avail_in==0){ throw new Return(r); }; r=f;
       z.avail_in--; z.total_in++;
       b = z.next_in[z.next_in_index];
@@ -722,7 +722,7 @@ final class Inflate{
   }
 
   private void checksum(int n, long v){
-    for(int i=0; i<n; i++){
+    for (int i=0; i<n; i++){
       crcbuf[i]=(byte)(v&0xff);
       v>>=8;
     }

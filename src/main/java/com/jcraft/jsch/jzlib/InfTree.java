@@ -265,7 +265,7 @@ final class InfTree{
     p = 0; i = n;
     do {
       c[b[bindex+p]]++; p++; i--;   // assume all entries <= BMAX
-    }while(i!=0);
+    }while (i!=0);
 
     if(c[0] == n){                // null input--all zero length codes
       t[0] = -1;
@@ -509,9 +509,9 @@ final class InfTree{
       x=new int[BMAX+1];
     }
     if(v.length<vsize){ v=new int[vsize]; }
-    for(int i=0; i<vsize; i++){v[i]=0;}
-    for(int i=0; i<BMAX+1; i++){c[i]=0;}
-    for(int i=0; i<3; i++){r[i]=0;}
+    for (int i=0; i<vsize; i++){v[i]=0;}
+    for (int i=0; i<BMAX+1; i++){c[i]=0;}
+    for (int i=0; i<3; i++){r[i]=0;}
     System.arraycopy(c, 0, u, 0, BMAX);
     System.arraycopy(c, 0, x, 0, BMAX+1);
   }

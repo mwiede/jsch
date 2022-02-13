@@ -136,13 +136,13 @@ class ChannelAgentForwarding extends Channel{
       Vector<Identity> identities = irepo.getIdentities();
       synchronized(identities){
         int count=0;
-        for(int i=0; i<identities.size(); i++){
+        for (int i=0; i<identities.size(); i++){
           Identity identity=identities.elementAt(i);
           if(identity.getPublicKeyBlob()!=null)
             count++;
         }
         mbuf.putInt(count);
-        for(int i=0; i<identities.size(); i++){
+        for (int i=0; i<identities.size(); i++){
           Identity identity=identities.elementAt(i);
           byte[] pubkeyblob=identity.getPublicKeyBlob();
           if(pubkeyblob==null)
@@ -168,7 +168,7 @@ class ChannelAgentForwarding extends Channel{
       Vector<Identity> identities = irepo.getIdentities();
       Identity identity = null;
       synchronized(identities){
-        for(int i=0; i<identities.size(); i++){
+        for (int i=0; i<identities.size(); i++){
           Identity _identity=identities.elementAt(i);
           if(_identity.getPublicKeyBlob()==null)
             continue;
@@ -178,7 +178,7 @@ class ChannelAgentForwarding extends Channel{
           if(_identity.isEncrypted()){
             if(userinfo==null)
               continue;
-            while(_identity.isEncrypted()){
+            while (_identity.isEncrypted()){
               if(!userinfo.promptPassphrase("Passphrase for "+_identity.getName())){
                 break;
               }

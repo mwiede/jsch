@@ -217,7 +217,7 @@ public class KeyPairRSA extends KeyPair{
       length=plain[index++]&0xff;
       if((length&0x80)!=0){
         int foo=length&0x7f; length=0;
-        while(foo-->0){ length=(length<<8)+(plain[index++]&0xff); }
+        while (foo-->0){ length=(length<<8)+(plain[index++]&0xff); }
       }
 
       if(plain[index]!=0x02)return false;
@@ -225,7 +225,7 @@ public class KeyPairRSA extends KeyPair{
       length=plain[index++]&0xff;
       if((length&0x80)!=0){
         int foo=length&0x7f; length=0;
-        while(foo-->0){ length=(length<<8)+(plain[index++]&0xff); }
+        while (foo-->0){ length=(length<<8)+(plain[index++]&0xff); }
       }
       index+=length;
 
@@ -233,7 +233,7 @@ public class KeyPairRSA extends KeyPair{
       length=plain[index++]&0xff;
       if((length&0x80)!=0){
         int foo=length&0x7f; length=0;
-        while(foo-->0){ length=(length<<8)+(plain[index++]&0xff); }
+        while (foo-->0){ length=(length<<8)+(plain[index++]&0xff); }
       }
       n_array=new byte[length];
       System.arraycopy(plain, index, n_array, 0, length);
@@ -243,7 +243,7 @@ public class KeyPairRSA extends KeyPair{
       length=plain[index++]&0xff;
       if((length&0x80)!=0){
         int foo=length&0x7f; length=0;
-        while(foo-->0){ length=(length<<8)+(plain[index++]&0xff); }
+        while (foo-->0){ length=(length<<8)+(plain[index++]&0xff); }
       }
       pub_array=new byte[length];
       System.arraycopy(plain, index, pub_array, 0, length);
@@ -253,7 +253,7 @@ public class KeyPairRSA extends KeyPair{
       length=plain[index++]&0xff;
       if((length&0x80)!=0){
         int foo=length&0x7f; length=0;
-        while(foo-->0){ length=(length<<8)+(plain[index++]&0xff); }
+        while (foo-->0){ length=(length<<8)+(plain[index++]&0xff); }
       }
       prv_array=new byte[length];
       System.arraycopy(plain, index, prv_array, 0, length);
@@ -263,7 +263,7 @@ public class KeyPairRSA extends KeyPair{
       length=plain[index++]&0xff;
       if((length&0x80)!=0){
         int foo=length&0x7f; length=0;
-        while(foo-->0){ length=(length<<8)+(plain[index++]&0xff); }
+        while (foo-->0){ length=(length<<8)+(plain[index++]&0xff); }
       }
       p_array=new byte[length];
       System.arraycopy(plain, index, p_array, 0, length);
@@ -273,7 +273,7 @@ public class KeyPairRSA extends KeyPair{
       length=plain[index++]&0xff;
       if((length&0x80)!=0){
         int foo=length&0x7f; length=0;
-        while(foo-->0){ length=(length<<8)+(plain[index++]&0xff); }
+        while (foo-->0){ length=(length<<8)+(plain[index++]&0xff); }
       }
       q_array=new byte[length];
       System.arraycopy(plain, index, q_array, 0, length);
@@ -283,7 +283,7 @@ public class KeyPairRSA extends KeyPair{
       length=plain[index++]&0xff;
       if((length&0x80)!=0){
         int foo=length&0x7f; length=0;
-        while(foo-->0){ length=(length<<8)+(plain[index++]&0xff); }
+        while (foo-->0){ length=(length<<8)+(plain[index++]&0xff); }
       }
       ep_array=new byte[length];
       System.arraycopy(plain, index, ep_array, 0, length);
@@ -293,7 +293,7 @@ public class KeyPairRSA extends KeyPair{
       length=plain[index++]&0xff;
       if((length&0x80)!=0){
         int foo=length&0x7f; length=0;
-        while(foo-->0){ length=(length<<8)+(plain[index++]&0xff); }
+        while (foo-->0){ length=(length<<8)+(plain[index++]&0xff); }
       }
       eq_array=new byte[length];
       System.arraycopy(plain, index, eq_array, 0, length);
@@ -303,7 +303,7 @@ public class KeyPairRSA extends KeyPair{
       length=plain[index++]&0xff;
       if((length&0x80)!=0){
         int foo=length&0x7f; length=0;
-        while(foo-->0){ length=(length<<8)+(plain[index++]&0xff); }
+        while (foo-->0){ length=(length<<8)+(plain[index++]&0xff); }
       }
       c_array=new byte[length];
       System.arraycopy(plain, index, c_array, 0, length);

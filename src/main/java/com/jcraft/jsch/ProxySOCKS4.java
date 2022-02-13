@@ -164,7 +164,7 @@ public class ProxySOCKS4 implements Proxy{
 
       int len=8;
       int s=0;
-      while(s<len){
+      while (s<len){
         int i=in.read(buf, s, len-s);
         if(i<=0){
           throw new JSchException("ProxySOCKS4: stream is closed");

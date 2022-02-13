@@ -158,7 +158,7 @@ final class InfCodes{
       case LEN:           // i: get length/literal/eob next
         j = need;
 
-        while(k<(j)){
+        while (k<(j)){
           if(n!=0)r=Z_OK;
           else{
 
@@ -211,7 +211,7 @@ final class InfCodes{
       case LENEXT:        // i: getting length extra (have base)
         j = get;
 
-        while(k<(j)){
+        while (k<(j)){
           if(n!=0)r=Z_OK;
           else{
 
@@ -236,7 +236,7 @@ final class InfCodes{
       case DIST:          // i: get distance next
         j = need;
 
-        while(k<(j)){
+        while (k<(j)){
           if(n!=0)r=Z_OK;
           else{
 
@@ -278,7 +278,7 @@ final class InfCodes{
       case DISTEXT:       // i: getting distance extra
         j = get;
 
-        while(k<(j)){
+        while (k<(j)){
           if(n!=0)r=Z_OK;
           else{
 
@@ -299,7 +299,7 @@ final class InfCodes{
         mode = COPY;
       case COPY:          // o: copying bytes in window, waiting for space
         f = q - dist;
-        while(f < 0){     // modulo window size-"while" instead
+        while (f < 0){     // modulo window size-"while" instead
           f += s.end;     // of "if" handles invalid distances
         }
         while (len!=0){
@@ -437,7 +437,7 @@ final class InfCodes{
     // do until not enough input or output space for fast loop
     do {                          // assume called with m >= 258 && n >= 10
       // get literal/length code
-      while(k<(20)){              // max bits for literal/length code
+      while (k<(20)){              // max bits for literal/length code
         n--;
         b|=(z.next_in[p++]&0xff)<<k;k+=8;
       }
@@ -464,7 +464,7 @@ final class InfCodes{
           b>>=e; k-=e;
 
           // decode distance base of block to copy
-          while(k<(15)){           // max bits for distance code
+          while (k<(15)){           // max bits for distance code
             n--;
             b|=(z.next_in[p++]&0xff)<<k;k+=8;
           }
@@ -482,7 +482,7 @@ final class InfCodes{
             if((e&16)!=0){
               // get extra bits to add to distance base
               e &= 15;
-              while(k<(e)){         // get extra bits (up to 13)
+              while (k<(e)){         // get extra bits (up to 13)
                 n--;
                 b|=(z.next_in[p++]&0xff)<<k;k+=8;
               }
@@ -510,13 +510,13 @@ final class InfCodes{
                 r=q-d;
                 do{
                   r+=s.end;          // force pointer in window
-                }while(r<0);         // covers invalid distances
+                }while (r<0);         // covers invalid distances
                 e=s.end-r;
                 if(c>e){             // if source crosses,
                   c-=e;              // wrapped copy
                   if(q-r>0 && e>(q-r)){           
                     do{s.window[q++] = s.window[r++];}
-                    while(--e!=0);
+                    while (--e!=0);
                   }
                   else{
                     System.arraycopy(s.window, r, s.window, q, e);
@@ -530,7 +530,7 @@ final class InfCodes{
               // copy all or what's left
               if(q-r>0 && c>(q-r)){           
                 do{s.window[q++] = s.window[r++];}
-                while(--c!=0);
+                while (--c!=0);
               }
               else{
                 System.arraycopy(s.window, r, s.window, q, c);
@@ -556,7 +556,7 @@ final class InfCodes{
               return Z_DATA_ERROR;
             }
           }
-          while(true);
+          while (true);
           break;
         }
 
@@ -595,9 +595,9 @@ final class InfCodes{
           return Z_DATA_ERROR;
         }
       } 
-      while(true);
+      while (true);
     } 
-    while(m>=258 && n>= 10);
+    while (m>=258 && n>= 10);
 
     // not enough input or output--restore pointers and return
     c=z.avail_in-n;c=(k>>3)<c?k>>3:c;n+=c;p-=c;k-=c<<3;

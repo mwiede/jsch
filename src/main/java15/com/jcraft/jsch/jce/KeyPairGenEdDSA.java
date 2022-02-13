@@ -63,7 +63,7 @@ public class KeyPairGenEdDSA implements com.jcraft.jsch.KeyPairGenEdDSA{
     int len = in.length;
     byte[] out = new byte[len];
 
-    for(int i = 0; i < len; i++){
+    for (int i = 0; i < len; i++){
       out[i] = in[len - i - 1];
     }
 

@@ -74,7 +74,7 @@ public class Compression implements com.jcraft.jsch.Compression {
       System.arraycopy(tmpbuf, 0, obuf, obuflen, result);
       obuflen+=result;
     }
-    while(!deflater.needsInput());
+    while (!deflater.needsInput());
 
     end[0] = obuflen;
     return obuf;
@@ -96,7 +96,7 @@ public class Compression implements com.jcraft.jsch.Compression {
         System.arraycopy(tmpbuf, 0, inflated_buf, inflated_end, result);
         inflated_end +=result;
       }
-      while(inflater.getRemaining()>0);
+      while (inflater.getRemaining()>0);
     }
     catch(java.util.zip.DataFormatException e){
       if(JSch.getLogger().isEnabled(Logger.WARN)){

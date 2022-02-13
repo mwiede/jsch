@@ -70,7 +70,7 @@ public class SignatureDSA implements com.jcraft.jsch.SignatureDSA{
     byte[] sig=signature.sign();      
 /*
 System.err.print("sign["+sig.length+"] ");
-for(int i=0; i<sig.length;i++){
+for (int i=0; i<sig.length;i++){
 System.err.print(Integer.toHexString(sig[i]&0xff)+":");
 }
 System.err.println("");

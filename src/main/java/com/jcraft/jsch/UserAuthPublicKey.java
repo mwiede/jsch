@@ -70,9 +70,9 @@ class UserAuthPublicKey extends UserAuth{
       if(server_sig_algs!=null && server_sig_algs.length>0){
         List<String> _known=new ArrayList<>();
         List<String> _unknown=new ArrayList<>();
-        for(String pkmethod : pkmethods){
+        for (String pkmethod : pkmethods){
           boolean add=false;
-          for(String server_sig_alg : server_sig_algs){
+          for (String server_sig_alg : server_sig_algs){
             if(pkmethod.equals(server_sig_alg)){
               add=true;
               break;
@@ -127,7 +127,7 @@ class UserAuthPublicKey extends UserAuth{
 
     List<String> rsamethods=new ArrayList<>();
     List<String> nonrsamethods=new ArrayList<>();
-    for(String pkmethod : pkmethods){
+    for (String pkmethod : pkmethods){
       if(pkmethod.equals("ssh-rsa") || pkmethod.equals("rsa-sha2-256") || pkmethod.equals("rsa-sha2-512") ||
          pkmethod.equals("ssh-rsa-sha224@ssh.com") || pkmethod.equals("ssh-rsa-sha256@ssh.com") ||
          pkmethod.equals("ssh-rsa-sha384@ssh.com") || pkmethod.equals("ssh-rsa-sha512@ssh.com")){
@@ -143,7 +143,7 @@ class UserAuthPublicKey extends UserAuth{
     int command;
 
     iloop:
-    for(Identity identity : identities){
+    for (Identity identity : identities){
 
       if(session.auth_failures >= session.max_auth_tries){
         return false;
@@ -175,7 +175,7 @@ class UserAuthPublicKey extends UserAuth{
       if(pubkeyblob!=null){
         command=SSH_MSG_USERAUTH_FAILURE;
         loop3:
-        for(String ipkmethod : ipkmethods){
+        for (String ipkmethod : ipkmethods){
           if(not_available_pks.contains(ipkmethod) && !(identity instanceof AgentIdentity)){
             if(JSch.getLogger().isEnabled(Logger.DEBUG)){
               JSch.getLogger().log(Logger.DEBUG,
@@ -203,7 +203,7 @@ class UserAuthPublicKey extends UserAuth{
           session.write(packet);
 
           loop1:
-          while(true){
+          while (true){
             buf=session.read(buf);
             command=buf.getCommand()&0xff;
 
@@ -260,7 +260,7 @@ class UserAuthPublicKey extends UserAuth{
       if(pkmethodsuccesses==null) pkmethodsuccesses=ipkmethods;
 
       loop4:
-      for(String pkmethodsuccess : pkmethodsuccesses){
+      for (String pkmethodsuccess : pkmethodsuccesses){
         if(not_available_pks.contains(pkmethodsuccess) && !(identity instanceof AgentIdentity)){
           if(JSch.getLogger().isEnabled(Logger.DEBUG)){
             JSch.getLogger().log(Logger.DEBUG,
@@ -312,7 +312,7 @@ class UserAuthPublicKey extends UserAuth{
         session.write(packet);
 
         loop2:
-        while(true){
+        while (true){
           buf=session.read(buf);
           command=buf.getCommand()&0xff;
 
@@ -365,7 +365,7 @@ class UserAuthPublicKey extends UserAuth{
   private void decryptKey(Session session, Identity identity) throws JSchException {
     byte[] passphrase=null;
     int count=5;
-    while(true){
+    while (true){
       if((identity.isEncrypted() && passphrase==null)){
         if(userinfo==null) throw new JSchException("USERAUTH fail");
         if(identity.isEncrypted() &&

@@ -341,7 +341,7 @@ public class ProxySOCKS5 implements Proxy{
   }
   private void fill(InputStream in, byte[] buf, int len) throws JSchException, IOException{
     int s=0;
-    while(s<len){
+    while (s<len){
       int i=in.read(buf, s, len-s);
       if(i<=0){
         throw new JSchException("ProxySOCKS5: stream is closed");

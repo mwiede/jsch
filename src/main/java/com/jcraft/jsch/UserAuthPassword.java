@@ -44,7 +44,7 @@ class UserAuthPassword extends UserAuth{
 
     try{
 
-    while(true){
+    while (true){
 
       if(session.auth_failures >= session.max_auth_tries){
         return false;
@@ -88,7 +88,7 @@ class UserAuthPassword extends UserAuth{
       session.write(packet);
 
       loop:
-      while(true){
+      while (true){
         buf=session.read(buf);
         int command=buf.getCommand()&0xff;
 

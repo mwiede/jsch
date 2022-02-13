@@ -67,7 +67,7 @@ public class Packet{
     buffer.skip(pad);
     //buffer.putPad(pad);
 /*
-for(int i=0; i<buffer.index; i++){
+for (int i=0; i<buffer.index; i++){
 System.err.print(Integer.toHexString(buffer.buffer[i]&0xff)+":");
 }
 System.err.println("");

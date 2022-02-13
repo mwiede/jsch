@@ -331,7 +331,7 @@ final class Deflate implements Cloneable {
     window_size=2*w_size;
 
     head[hash_size-1]=0;
-    for(int i=0; i<hash_size-1; i++){
+    for (int i=0; i<hash_size-1; i++){
       head[i]=0;
     }
 
@@ -371,9 +371,9 @@ final class Deflate implements Cloneable {
 
   void init_block(){
     // Initialize the trees.
-    for(int i = 0; i < L_CODES; i++) dyn_ltree[i*2] = 0;
-    for(int i= 0; i < D_CODES; i++) dyn_dtree[i*2] = 0;
-    for(int i= 0; i < BL_CODES; i++) bl_tree[i*2] = 0;
+    for (int i = 0; i < L_CODES; i++) dyn_ltree[i*2] = 0;
+    for (int i= 0; i < D_CODES; i++) dyn_dtree[i*2] = 0;
+    for (int i= 0; i < BL_CODES; i++) bl_tree[i*2] = 0;
 
     dyn_ltree[END_BLOCK*2] = 1;
     opt_len = static_len = 0;
@@ -429,7 +429,7 @@ final class Deflate implements Cloneable {
     if (nextlen == 0){ max_count = 138; min_count = 3; }
     tree[(max_code+1)*2+1] = (short)0xffff; // guard
 
-    for(n = 0; n <= max_code; n++) {
+    for (n = 0; n <= max_code; n++) {
       curlen = nextlen; nextlen = tree[(n+1)*2+1];
       if(++count < max_count && curlen == nextlen) {
         continue;
@@ -719,9 +719,9 @@ final class Deflate implements Cloneable {
     int n = 0;
     int  ascii_freq = 0;
     int  bin_freq = 0;
-    while(n<7){ bin_freq += dyn_ltree[n*2]; n++;}
-    while(n<128){ ascii_freq += dyn_ltree[n*2]; n++;}
-    while(n<LITERALS){ bin_freq += dyn_ltree[n*2]; n++;}
+    while (n<7){ bin_freq += dyn_ltree[n*2]; n++;}
+    while (n<128){ ascii_freq += dyn_ltree[n*2]; n++;}
+    while (n<LITERALS){ bin_freq += dyn_ltree[n*2]; n++;}
     data_type=(byte)(bin_freq > (ascii_freq >>> 2) ? Z_BINARY : Z_ASCII);
   }
 
@@ -765,7 +765,7 @@ final class Deflate implements Cloneable {
       put_short((short)~len);
     }
 
-    //  while(len--!=0) {
+    //  while (len--!=0) {
     //    put_byte(window[buf+index]);
     //    index++;
     //  }
@@ -799,7 +799,7 @@ final class Deflate implements Cloneable {
     }
 
     // Copy as much as possible from input to output:
-    while(true){
+    while (true){
       // Fill the window as much as possible:
       if(lookahead<=1){
         fill_window();
@@ -1008,7 +1008,7 @@ final class Deflate implements Cloneable {
     int hash_head = 0; // head of the hash chain
     boolean bflush;      // set if current block must be flushed
 
-    while(true){
+    while (true){
       // Make sure that we always have enough lookahead, except
       // at the end of the input file. We need MAX_MATCH bytes
       // for the next match, plus MIN_MATCH bytes to insert the
@@ -1114,7 +1114,7 @@ final class Deflate implements Cloneable {
     boolean bflush;         // set if current block must be flushed
 
     // Process the input block.
-    while(true){
+    while (true){
       // Make sure that we always have enough lookahead, except
       // at the end of the input file. We need MAX_MATCH bytes
       // for the next match, plus MIN_MATCH bytes to insert the
@@ -1190,7 +1190,7 @@ final class Deflate implements Cloneable {
             head[ins_h]=(short)strstart;
           }
         }
-        while(--prev_length != 0);
+        while (--prev_length != 0);
         match_available = 0;
         match_length = MIN_MATCH-1;
         strstart++;
@@ -1483,7 +1483,7 @@ final class Deflate implements Cloneable {
     ins_h = window[0]&0xff;
     ins_h=(((ins_h)<<hash_shift)^(window[1]&0xff))&hash_mask;
 
-    for(int n=0; n<=length-MIN_MATCH; n++){
+    for (int n=0; n<=length-MIN_MATCH; n++){
       ins_h=(((ins_h)<<hash_shift)^(window[(n)+(MIN_MATCH-1)]&0xff))&hash_mask;
       prev[n&w_mask]=head[ins_h];
       head[ins_h]=(short)n;
@@ -1614,7 +1614,7 @@ final class Deflate implements Cloneable {
           // as a special marker by inflate_sync().
           if(flush == Z_FULL_FLUSH) {
             //state.head[s.hash_size-1]=0;
-            for(int i=0; i<hash_size/*-1*/; i++)  // forget history
+            for (int i=0; i<hash_size/*-1*/; i++)  // forget history
               head[i]=0;
           }
         }

@@ -50,7 +50,7 @@ abstract class Request{
     if(reply){
       long start=System.currentTimeMillis();
       long timeout=channel.connectTimeout;
-      while(channel.isConnected() && channel.reply==-1){
+      while (channel.isConnected() && channel.reply==-1){
         try{Thread.sleep(10);}
         catch(Exception ee){
         }

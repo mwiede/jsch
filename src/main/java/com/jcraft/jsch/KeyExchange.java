@@ -97,11 +97,11 @@ public abstract class KeyExchange{
     Buffer cb=new Buffer(I_C); cb.setOffSet(17);
 
     if(JSch.getLogger().isEnabled(Logger.INFO)){
-      for(int i=0; i<PROPOSAL_MAX; i++){
+      for (int i=0; i<PROPOSAL_MAX; i++){
         JSch.getLogger().log(Logger.INFO,
                              "kex: server: "+Util.byte2str(sb.getString()));
       }
-      for(int i=0; i<PROPOSAL_MAX; i++){
+      for (int i=0; i<PROPOSAL_MAX; i++){
         JSch.getLogger().log(Logger.INFO,
                              "kex: client: "+Util.byte2str(cb.getString()));
       }
@@ -109,21 +109,21 @@ public abstract class KeyExchange{
       cb.setOffSet(17);
     }
 
-    for(int i=0; i<PROPOSAL_MAX; i++){
+    for (int i=0; i<PROPOSAL_MAX; i++){
       byte[] sp=sb.getString();  // server proposal
       byte[] cp=cb.getString();  // client proposal
       int j=0;
       int k=0;
 
       loop:
-      while(j<cp.length){
-        while(j<cp.length && cp[j]!=',')j++; 
+      while (j<cp.length){
+        while (j<cp.length && cp[j]!=',')j++; 
         if(k==j) return null;
         String algorithm=Util.byte2str(cp, k, j-k);
         int l=0;
         int m=0;
-        while(l<sp.length){
-          while(l<sp.length && sp[l]!=',')l++; 
+        while (l<sp.length){
+          while (l<sp.length && sp[l]!=',')l++; 
           if(m==l) return null;
           if(algorithm.equals(Util.byte2str(sp, m, l-m))){
             guess[i]=algorithm;

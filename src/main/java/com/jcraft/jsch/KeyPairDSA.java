@@ -180,7 +180,7 @@ public class KeyPairDSA extends KeyPair{
       length=plain[index++]&0xff;
       if((length&0x80)!=0){
         int foo=length&0x7f; length=0;
-        while(foo-->0){ length=(length<<8)+(plain[index++]&0xff); }
+        while (foo-->0){ length=(length<<8)+(plain[index++]&0xff); }
       }
 
       if(plain[index]!=0x02)return false;
@@ -188,7 +188,7 @@ public class KeyPairDSA extends KeyPair{
       length=plain[index++]&0xff;
       if((length&0x80)!=0){
         int foo=length&0x7f; length=0;
-        while(foo-->0){ length=(length<<8)+(plain[index++]&0xff); }
+        while (foo-->0){ length=(length<<8)+(plain[index++]&0xff); }
       }
       index+=length;
 
@@ -196,7 +196,7 @@ public class KeyPairDSA extends KeyPair{
       length=plain[index++]&0xff;
       if((length&0x80)!=0){
         int foo=length&0x7f; length=0;
-        while(foo-->0){ length=(length<<8)+(plain[index++]&0xff); }
+        while (foo-->0){ length=(length<<8)+(plain[index++]&0xff); }
       }
       P_array=new byte[length];
       System.arraycopy(plain, index, P_array, 0, length);
@@ -206,7 +206,7 @@ public class KeyPairDSA extends KeyPair{
       length=plain[index++]&0xff;
       if((length&0x80)!=0){
         int foo=length&0x7f; length=0;
-        while(foo-->0){ length=(length<<8)+(plain[index++]&0xff); }
+        while (foo-->0){ length=(length<<8)+(plain[index++]&0xff); }
       }
       Q_array=new byte[length];
       System.arraycopy(plain, index, Q_array, 0, length);
@@ -216,7 +216,7 @@ public class KeyPairDSA extends KeyPair{
       length=plain[index++]&0xff;
       if((length&0x80)!=0){
         int foo=length&0x7f; length=0;
-        while(foo-->0){ length=(length<<8)+(plain[index++]&0xff); }
+        while (foo-->0){ length=(length<<8)+(plain[index++]&0xff); }
       }
       G_array=new byte[length];
       System.arraycopy(plain, index, G_array, 0, length);
@@ -226,7 +226,7 @@ public class KeyPairDSA extends KeyPair{
       length=plain[index++]&0xff;
       if((length&0x80)!=0){
         int foo=length&0x7f; length=0;
-        while(foo-->0){ length=(length<<8)+(plain[index++]&0xff); }
+        while (foo-->0){ length=(length<<8)+(plain[index++]&0xff); }
       }
       pub_array=new byte[length];
       System.arraycopy(plain, index, pub_array, 0, length);
@@ -236,7 +236,7 @@ public class KeyPairDSA extends KeyPair{
       length=plain[index++]&0xff;
       if((length&0x80)!=0){
         int foo=length&0x7f; length=0;
-        while(foo-->0){ length=(length<<8)+(plain[index++]&0xff); }
+        while (foo-->0){ length=(length<<8)+(plain[index++]&0xff); }
       }
       prv_array=new byte[length];
       System.arraycopy(plain, index, prv_array, 0, length);

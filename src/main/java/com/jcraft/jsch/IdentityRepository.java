@@ -84,12 +84,12 @@ public interface IdentityRepository {
     @Override
     public Vector<Identity> getIdentities() {
       Vector<Identity> result = new Vector<>();
-      for(int i = 0; i< cache.size(); i++){
+      for (int i = 0; i< cache.size(); i++){
         Identity identity = cache.elementAt(i);
         result.add(identity);
       }
       Vector<Identity> tmp = ir.getIdentities();
-      for(int i = 0; i< tmp.size(); i++){
+      for (int i = 0; i< tmp.size(); i++){
         result.add(tmp.elementAt(i));
       }
       return result;
@@ -110,7 +110,7 @@ public interface IdentityRepository {
     void check() {
       if(cache.size() > 0){
         Object[] identities = cache.toArray();
-        for(int i = 0; i < identities.length; i++){
+        for (int i = 0; i < identities.length; i++){
           Identity identity = (Identity)(identities[i]);
           cache.removeElement(identity);
           add(identity);

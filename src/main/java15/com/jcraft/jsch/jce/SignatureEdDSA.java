@@ -130,7 +130,7 @@ public abstract class SignatureEdDSA implements com.jcraft.jsch.SignatureEdDSA {
     int len = in.length;
     byte[] out = new byte[len];
 
-    for(int i = 0; i < len; i++){
+    for (int i = 0; i < len; i++){
       out[i] = in[len - i - 1];
     }
 

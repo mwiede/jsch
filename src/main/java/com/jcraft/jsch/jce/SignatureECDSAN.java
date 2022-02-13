@@ -192,14 +192,14 @@ public abstract class SignatureECDSAN implements com.jcraft.jsch.SignatureECDSA 
   }
 
   private static void bzero(byte[] buf){
-    for(int i = 0; i<buf.length; i++) buf[i]=0;
+    for (int i = 0; i<buf.length; i++) buf[i]=0;
   }
 
   private static byte[] trimLeadingZeros(byte[] buf){
     if(buf.length<2) return buf;
 
     int i=0;
-    while(i<buf.length-1){
+    while (i<buf.length-1){
       if(buf[i] == 0 && (buf[i+1] & 0x80) == 0) i++;
       else break;
     }

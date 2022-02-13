@@ -239,7 +239,7 @@ public class KeyPairECDSA extends KeyPair{
       length=plain[index++]&0xff;
       if((length&0x80)!=0){
         int foo=length&0x7f; length=0;
-        while(foo-->0){ length=(length<<8)+(plain[index++]&0xff); }
+        while (foo-->0){ length=(length<<8)+(plain[index++]&0xff); }
       }
 
       if(plain[index]!=0x02)return false;
@@ -248,7 +248,7 @@ public class KeyPairECDSA extends KeyPair{
       length=plain[index++]&0xff;
       if((length&0x80)!=0){
         int foo=length&0x7f; length=0;
-        while(foo-->0){ length=(length<<8)+(plain[index++]&0xff); }
+        while (foo-->0){ length=(length<<8)+(plain[index++]&0xff); }
       }
 
       index+=length;
@@ -257,7 +257,7 @@ public class KeyPairECDSA extends KeyPair{
       length=plain[index++]&0xff;
       if((length&0x80)!=0){
         int foo=length&0x7f; length=0;
-        while(foo-->0){ length=(length<<8)+(plain[index++]&0xff); }
+        while (foo-->0){ length=(length<<8)+(plain[index++]&0xff); }
       }
 
       prv_array=new byte[length];
@@ -270,14 +270,14 @@ public class KeyPairECDSA extends KeyPair{
       length=plain[index++]&0xff;
       if((length&0x80)!=0){
         int foo=length&0x7f; length=0;
-        while(foo-->0){ length=(length<<8)+(plain[index++]&0xff); }
+        while (foo-->0){ length=(length<<8)+(plain[index++]&0xff); }
       }
 
       byte[] oid_array=new byte[length];
       System.arraycopy(plain, index, oid_array, 0, length);
       index+=length;
 
-      for(int i = 0; i<oids.length; i++){
+      for (int i = 0; i<oids.length; i++){
         if(Util.array_equals(oids[i], oid_array)){
           name = Util.str2byte(names[i]);
           break;
@@ -289,7 +289,7 @@ public class KeyPairECDSA extends KeyPair{
       length=plain[index++]&0xff;
       if((length&0x80)!=0){
         int foo=length&0x7f; length=0;
-        while(foo-->0){ length=(length<<8)+(plain[index++]&0xff); }
+        while (foo-->0){ length=(length<<8)+(plain[index++]&0xff); }
       }
 
       byte[] Q_array=new byte[length];
@@ -445,7 +445,7 @@ public class KeyPairECDSA extends KeyPair{
 
   static byte[][] fromPoint(byte[] point) {
     int i = 0;
-    while(point[i]!=4) i++;
+    while (point[i]!=4) i++;
     i++;
     byte[][] tmp = new byte[2][];
     byte[] r_array = new byte[(point.length-i)/2];

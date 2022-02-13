@@ -259,10 +259,10 @@ public class Session implements Runnable{
         io.put(foo, 0, foo.length);
       }
 
-      while(true){
+      while (true){
         i=0;
         j=0;
-        while(i<buf.buffer.length){
+        while (i<buf.buffer.length){
           j=io.getByte();
           if(j<0)break;
           buf.buffer[i]=(byte)j; i++;
@@ -324,7 +324,7 @@ public class Session implements Runnable{
 
       KeyExchange kex=receive_kexinit(buf);
 
-      while(true){
+      while (true){
         buf=read(buf);
         if(kex.getState()==buf.getCommand()){
           kex_start_time=System.currentTimeMillis();
@@ -422,14 +422,14 @@ public class Session implements Runnable{
       int methodi=0;
 
       loop:
-      while(true){
+      while (true){
 
-        while(!auth &&
+        while (!auth &&
               cmethoda!=null && methodi<cmethoda.length){
 
           String method=cmethoda[methodi++];
           boolean acceptable=false;
-          for(int k=0; k<smethoda.length; k++){
+          for (int k=0; k<smethoda.length; k++){
             if(smethoda[k].equals(method)){
               acceptable=true;
               break;
@@ -443,7 +443,7 @@ public class Session implements Runnable{
 
           if(JSch.getLogger().isEnabled(Logger.INFO)){
             String str="Authentications that can continue: ";
-            for(int k=methodi-1; k<cmethoda.length; k++){
+            for (int k=methodi-1; k<cmethoda.length; k++){
               str+=cmethoda[k];
               if(k+1<cmethoda.length)
                 str+=",";
@@ -748,7 +748,7 @@ public class Session implements Runnable{
         List<String> pref_shks=new ArrayList<>();
         List<String> shks=new ArrayList<>(Arrays.asList(Util.split(server_host_key, ",")));
         Iterator<String> it=shks.iterator();
-        while(it.hasNext()){
+        while (it.hasNext()){
           String algo=it.next();
           String type=algo;
           if(type.equals("rsa-sha2-256") || type.equals("rsa-sha2-512") ||
@@ -756,7 +756,7 @@ public class Session implements Runnable{
              type.equals("ssh-rsa-sha384@ssh.com") || type.equals("ssh-rsa-sha512@ssh.com")){
             type="ssh-rsa";
           }
-          for(HostKey hk : hks){
+          for (HostKey hk : hks){
             if(hk.getType().equals(type)){
               pref_shks.add(algo);
               it.remove();
@@ -944,7 +944,7 @@ key_type+" key fingerprint is "+key_fprint+".\n"+
       HostKey[] keys =
         hkr.getHostKey(chost, kex.getKeyAlgorithName());
       String _key= Util.byte2str(Util.toBase64(K_S, 0, K_S.length, true));
-      for(int j=0; j< keys.length; j++){
+      for (int j=0; j< keys.length; j++){
         if(keys[j].getKey().equals(_key) &&
            keys[j].getMarker().equals("@revoked")){
           if(userinfo!=null){
@@ -1072,7 +1072,7 @@ key_type+" key fingerprint is "+key_fprint+".\n"+
     boolean isChaCha20=(s2ccipher!=null && s2ccipher.isChaCha20());
     boolean isAEAD=(s2ccipher!=null && s2ccipher.isAEAD());
     boolean isEtM=(!isChaCha20 && !isAEAD && s2ccipher!=null && s2cmac!=null && s2cmac.isEtM());
-    while(true){
+    while (true){
       buf.reset();
       if(isChaCha20){
         //read encrypted packet length field
@@ -1319,7 +1319,7 @@ key_type+" key fingerprint is "+key_fprint+".\n"+
           }
         }
         long num_extensions=buf.getUInt();
-        for(long i=0; i<num_extensions; i++){
+        for (long i=0; i<num_extensions; i++){
           byte[] ext_name=buf.getString();
           byte[] ext_value=buf.getString();
           if(!ignore && Util.byte2str(ext_name).equals("server-sig-algs")){
@@ -1374,7 +1374,7 @@ key_type+" key fingerprint is "+key_fprint+".\n"+
 
     IOException ioe=null;
     try{
-      while(discard>0){
+      while (discard>0){
         buf.reset();
         int len = discard>buf.buffer.length ? buf.buffer.length : discard;
         io.getByte(buf.buffer, 0, len);
@@ -1468,7 +1468,7 @@ key_type+" key fingerprint is "+key_fprint+".\n"+
       method=guess[KeyExchange.PROPOSAL_ENC_ALGS_STOC];
       cc=Class.forName(getConfig(method)).asSubclass(Cipher.class);
       s2ccipher=cc.getDeclaredConstructor().newInstance();
-      while(s2ccipher.getBlockSize()>Es2c.length){
+      while (s2ccipher.getBlockSize()>Es2c.length){
         buf.reset();
         buf.putMPInt(K);
         buf.putByte(H);
@@ -1497,7 +1497,7 @@ key_type+" key fingerprint is "+key_fprint+".\n"+
       method=guess[KeyExchange.PROPOSAL_ENC_ALGS_CTOS];
       cc=Class.forName(getConfig(method)).asSubclass(Cipher.class);
       c2scipher=cc.getDeclaredConstructor().newInstance();
-      while(c2scipher.getBlockSize()>Ec2s.length){
+      while (c2scipher.getBlockSize()>Ec2s.length){
         buf.reset();
         buf.putMPInt(K);
         buf.putByte(H);
@@ -1553,7 +1553,7 @@ key_type+" key fingerprint is "+key_fprint+".\n"+
                            HASH hash, int required_length) throws Exception {
     byte[] result = key;
     int size = hash.getBlockSize();
-    while(result.length < required_length){
+    while (result.length < required_length){
       buf.reset();
       buf.putMPInt(K);
       buf.putByte(H);
@@ -1570,7 +1570,7 @@ key_type+" key fingerprint is "+key_fprint+".\n"+
 
   /*public*/ /*synchronized*/ void write(Packet packet, Channel c, int length) throws Exception{
     long t = getTimeout();
-    while(true){
+    while (true){
       if(in_kex){
         if(t>0L && (System.currentTimeMillis()-kex_start_time)>t){
           throw new JSchException("timeout in waiting for rekeying process.");
@@ -1664,7 +1664,7 @@ key_type+" key fingerprint is "+key_fprint+".\n"+
   public void write(Packet packet) throws Exception{
     // System.err.println("in_kex="+in_kex+" "+(packet.buffer.getCommand()));
     long t = getTimeout();
-    while(in_kex){
+    while (in_kex){
       if(t>0L &&
          (System.currentTimeMillis()-kex_start_time)>t &&
          !in_prompt
@@ -1716,7 +1716,7 @@ key_type+" key fingerprint is "+key_fprint+".\n"+
 
     int stimeout=0;
     try{
-      while(isConnected &&
+      while (isConnected &&
             thread!=null){
         try{
           buf=read(buf);
@@ -2041,7 +2041,7 @@ break;
                            "Disconnecting from "+host+" port "+port);
     }
     /*
-    for(int i=0; i<Channel.pool.size(); i++){
+    for (int i=0; i<Channel.pool.size(); i++){
       try{
         Channel c=((Channel)(Channel.pool.elementAt(i)));
         if(c.session==this) c.eof();
@@ -2369,12 +2369,12 @@ break;
     String[] tmp = conf.split(" ");
     if(tmp.length>1){   // "[bind_address:]port host:hostport"
       Vector<String> foo = new Vector<>();
-      for(int i=0; i<tmp.length; i++){
+      for (int i=0; i<tmp.length; i++){
         if(tmp[i].length()==0) continue;
         foo.addElement(tmp[i].trim());
       }
       StringBuilder sb = new StringBuilder(); // join
-      for(int i=0; i<foo.size(); i++){
+      for (int i=0; i<foo.size(); i++){
         sb.append(foo.elementAt(i));
         if(i+1<foo.size())
           sb.append(":");
@@ -2518,7 +2518,7 @@ break;
 
     int count = 0;
     int reply = grr.getReply();
-    while(count < 10 && reply == -1){
+    while (count < 10 && reply == -1){
       try{ Thread.sleep(1000); }
       catch(Exception e){
       }
@@ -2630,7 +2630,7 @@ break;
 
   public void setConfig(Properties newconf){
     Hashtable<String, String> foo=new Hashtable<>();
-    for(String key : newconf.stringPropertyNames()){
+    for (String key : newconf.stringPropertyNames()){
       foo.put(key, newconf.getProperty(key));
     }
     setConfig(foo);
@@ -2640,7 +2640,7 @@ break;
     synchronized(lock){
       if(config==null)
         config=new Hashtable<>();
-      for(Enumeration<String> e=newconf.keys() ; e.hasMoreElements() ;) {
+      for (Enumeration<String> e=newconf.keys() ; e.hasMoreElements() ;) {
         String newkey=e.nextElement();
         String key=(newkey.equals("PubkeyAcceptedKeyTypes") ? "PubkeyAcceptedAlgorithms" : newkey);
         String value=newconf.get(newkey);
@@ -2818,7 +2818,7 @@ break;
 
     Vector<String> result=new Vector<>();
     String[] _ciphers=Util.split(ciphers, ",");
-    for(int i=0; i<_ciphers.length; i++){
+    for (int i=0; i<_ciphers.length; i++){
       String cipher=_ciphers[i];
       if(ciphers2c.indexOf(cipher) == -1 && cipherc2s.indexOf(cipher) == -1)
         continue;
@@ -2832,7 +2832,7 @@ break;
     System.arraycopy(result.toArray(), 0, foo, 0, result.size());
 
     if(JSch.getLogger().isEnabled(Logger.INFO)){
-      for(int i=0; i<foo.length; i++){
+      for (int i=0; i<foo.length; i++){
         JSch.getLogger().log(Logger.INFO,
                              foo[i]+" is not available.");
       }
@@ -2869,7 +2869,7 @@ break;
 
     Vector<String> result=new Vector<>();
     String[] _macs=Util.split(macs, ",");
-    for(int i=0; i<_macs.length; i++){
+    for (int i=0; i<_macs.length; i++){
       String mac=_macs[i];
       if(macs2c.indexOf(mac) == -1 && macc2s.indexOf(mac) == -1)
         continue;
@@ -2883,7 +2883,7 @@ break;
     System.arraycopy(result.toArray(), 0, foo, 0, result.size());
 
     if(JSch.getLogger().isEnabled(Logger.INFO)){
-      for(int i=0; i<foo.length; i++){
+      for (int i=0; i<foo.length; i++){
         JSch.getLogger().log(Logger.INFO,
                              foo[i]+" is not available.");
       }
@@ -2915,7 +2915,7 @@ break;
 
     Vector<String> result=new Vector<>();
     String[] _kexes=Util.split(kexes, ",");
-    for(int i=0; i<_kexes.length; i++){
+    for (int i=0; i<_kexes.length; i++){
       if(!checkKex(this, getConfig(_kexes[i]))){
         result.addElement(_kexes[i]);
       }
@@ -2926,7 +2926,7 @@ break;
     System.arraycopy(result.toArray(), 0, foo, 0, result.size());
 
     if(JSch.getLogger().isEnabled(Logger.INFO)){
-      for(int i=0; i<foo.length; i++){
+      for (int i=0; i<foo.length; i++){
         JSch.getLogger().log(Logger.INFO,
                              foo[i]+" is not available.");
       }
@@ -2956,7 +2956,7 @@ break;
 
     Vector<String> result=new Vector<>();
     String[] _sigs=Util.split(sigs, ",");
-    for(int i=0; i<_sigs.length; i++){
+    for (int i=0; i<_sigs.length; i++){
       try{
         Class<? extends Signature> c=Class.forName(JSch.getConfig(_sigs[i])).asSubclass(Signature.class);
         final Signature sig=c.getDeclaredConstructor().newInstance();
@@ -2971,7 +2971,7 @@ break;
    String[] foo=new String[result.size()];
     System.arraycopy(result.toArray(), 0, foo, 0, result.size());
     if(JSch.getLogger().isEnabled(Logger.INFO)){
-      for(int i=0; i<foo.length; i++){
+      for (int i=0; i<foo.length; i++){
         JSch.getLogger().log(Logger.INFO,
                              foo[i]+" is not available.");
       }
@@ -3127,7 +3127,7 @@ break;
       String[] global =
         configRepository.getConfig("").getValues("IdentityFile");
       if(global != null){
-        for(int i = 0; i < global.length; i++){
+        for (int i = 0; i < global.length; i++){
           jsch.addIdentity(global[i]);
         }
       }
@@ -3137,9 +3137,9 @@ break;
       if(values.length - global.length > 0){
         IdentityRepository.Wrapper ir =
           new IdentityRepository.Wrapper(jsch.getIdentityRepository(), true);
-        for(int i = 0; i < values.length; i++){
+        for (int i = 0; i < values.length; i++){
           String ifile = values[i];
-          for(int j = 0; j < global.length; j++){
+          for (int j = 0; j < global.length; j++){
             if(!ifile.equals(global[j]))
               continue;
             ifile = null;
@@ -3222,14 +3222,14 @@ break;
 
     String[] values = config.getValues("LocalForward");
     if(values != null){
-      for(int i = 0; i < values.length; i++) {
+      for (int i = 0; i < values.length; i++) {
         setPortForwardingL(values[i]);
       }
     }
 
     values = config.getValues("RemoteForward");
     if(values != null){
-      for(int i = 0; i < values.length; i++) {
+      for (int i = 0; i < values.length; i++) {
         setPortForwardingR(values[i]);
       }
     }

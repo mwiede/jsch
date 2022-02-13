@@ -97,7 +97,7 @@ public class ChannelForwardedTCPIP extends Channel{
     int i=0;
     try{
       Session _session = getSession();
-      while(thread!=null && 
+      while (thread!=null && 
             io!=null && 
             io.in!=null){
         i=io.in.read(buf.buffer, 
@@ -168,7 +168,7 @@ public class ChannelForwardedTCPIP extends Channel{
 
   private static Config getPort(Session session, String address_to_bind, int rport){
     synchronized(pool){
-      for(int i=0; i<pool.size(); i++){
+      for (int i=0; i<pool.size(); i++){
         Config bar = pool.elementAt(i);
         if(bar.session != session) continue;
         if(bar.rport != rport) {
@@ -186,7 +186,7 @@ public class ChannelForwardedTCPIP extends Channel{
   static String[] getPortForwarding(Session session){
     Vector<String> foo = new Vector<>();
     synchronized(pool){
-      for(int i=0; i<pool.size(); i++){
+      for (int i=0; i<pool.size(); i++){
         Config config = pool.elementAt(i);
         if(config.session==session){
           if(config instanceof ConfigDaemon)
@@ -197,7 +197,7 @@ public class ChannelForwardedTCPIP extends Channel{
       }
     }
     String[] bar=new String[foo.size()];
-    for(int i=0; i<foo.size(); i++){
+    for (int i=0; i<foo.size(); i++){
       bar[i]=foo.elementAt(i);
     }
     return bar;
@@ -299,14 +299,14 @@ public class ChannelForwardedTCPIP extends Channel{
     int count=0;
     synchronized(pool){
       rport=new int[pool.size()];
-      for(int i=0; i<pool.size(); i++){
+      for (int i=0; i<pool.size(); i++){
         Config config = pool.elementAt(i);
         if(config.session == session) {
           rport[count++]=config.rport; // ((Integer)bar[1]).intValue();
         }
       }
     }
-    for(int i=0; i<count; i++){
+    for (int i=0; i<count; i++){
       delPort(session, rport[i]);
     }
   }

@@ -129,7 +129,7 @@ public class SSHAgentConnector implements AgentConnector {
   private static int readFull(SocketChannel sock, Buffer buffer, int s, int len) throws IOException {
     ByteBuffer bb = ByteBuffer.wrap(buffer.buffer, s, len);
     int _len = len;
-    while(len>0){
+    while (len>0){
       int j = sock.read(bb);
       if(j<0)
         return -1;
@@ -143,7 +143,7 @@ public class SSHAgentConnector implements AgentConnector {
   private static int writeFull(SocketChannel sock, Buffer buffer, int s, int len) throws IOException {
     ByteBuffer bb = ByteBuffer.wrap(buffer.buffer, s, len);
     int _len = len;
-    while(len>0){
+    while (len>0){
       int j = sock.write(bb);
       if(j<0)
         return -1;

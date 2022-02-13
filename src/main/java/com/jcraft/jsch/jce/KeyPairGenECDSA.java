@@ -49,7 +49,7 @@ public class KeyPairGenECDSA implements com.jcraft.jsch.KeyPairGenECDSA {
     else if(key_size==521) name="secp521r1";
     else throw new JSchException("unsupported key size: "+key_size);
 
-    for(int i = 0; i<1000; i++) {
+    for (int i = 0; i<1000; i++) {
       KeyPairGenerator kpg = KeyPairGenerator.getInstance("EC");
       ECGenParameterSpec ecsp = new ECGenParameterSpec(name);
       kpg.initialize(ecsp);
@@ -95,6 +95,6 @@ public class KeyPairGenECDSA implements com.jcraft.jsch.KeyPairGenECDSA {
     return tmp;
   }
   private void bzero(byte[] buf){
-    for(int i = 0; i<buf.length; i++) buf[i]=0;
+    for (int i = 0; i<buf.length; i++) buf[i]=0;
   }
 }

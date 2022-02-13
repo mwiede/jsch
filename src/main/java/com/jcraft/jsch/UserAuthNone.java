@@ -82,7 +82,7 @@ class UserAuthNone extends UserAuth{
     session.write(packet);
 
     loop:
-    while(true){
+    while (true){
       buf=session.read(buf);
       command=buf.getCommand()&0xff;
 

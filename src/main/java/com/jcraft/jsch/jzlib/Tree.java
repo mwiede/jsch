@@ -180,7 +180,7 @@ final class Tree{
     // overflow in the case of the bit length tree).
     tree[s.heap[s.heap_max]*2+1] = 0; // root of the heap
 
-    for(h=s.heap_max+1; h<HEAP_SIZE; h++){
+    for (h=s.heap_max+1; h<HEAP_SIZE; h++){
       n = s.heap[h];
       bits = tree[tree[n*2+1]*2+1] + 1;
       if (bits > max_length){ bits = max_length; overflow++; }
@@ -202,7 +202,7 @@ final class Tree{
     // Find the first bit length which could increase:
     do {
       bits = max_length-1;
-      while(s.bl_count[bits]==0) bits--;
+      while (s.bl_count[bits]==0) bits--;
       s.bl_count[bits]--;      // move one leaf down the tree
       s.bl_count[bits+1]+=2;   // move one overflow item as its brother
       s.bl_count[max_length]--;
@@ -246,7 +246,7 @@ final class Tree{
     s.heap_len = 0;
     s.heap_max = HEAP_SIZE;
 
-    for(n=0; n<elems; n++) {
+    for (n=0; n<elems; n++) {
       if(tree[n*2] != 0) {
         s.heap[++s.heap_len] = max_code = n;
         s.depth[n] = 0;
@@ -272,7 +272,7 @@ final class Tree{
     // The elements heap[heap_len/2+1 .. heap_len] are leaves of the tree,
     // establish sub-heaps of increasing lengths:
 
-    for(n=s.heap_len/2;n>=1; n--)
+    for (n=s.heap_len/2;n>=1; n--)
       s.pqdownheap(tree, n);
 
     // Construct the Huffman tree by repeatedly combining the least two
@@ -298,7 +298,7 @@ final class Tree{
       s.heap[1] = node++;
       s.pqdownheap(tree, 1);
     }
-    while(s.heap_len>=2);
+    while (s.heap_len>=2);
 
     s.heap[--s.heap_max] = s.heap[1];
 
@@ -360,7 +360,7 @@ final class Tree{
       code>>>=1;
       res<<=1;
     } 
-    while(--len>0);
+    while (--len>0);
     return res>>>1;
   }
 }

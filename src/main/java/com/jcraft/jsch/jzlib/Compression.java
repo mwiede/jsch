@@ -90,7 +90,7 @@ public class Compression implements com.jcraft.jsch.Compression {
 
       }
     }
-    while(deflater.avail_out==0);
+    while (deflater.avail_out==0);
 
     len[0]=outputlen;
     return outputbuf;
@@ -104,7 +104,7 @@ public class Compression implements com.jcraft.jsch.Compression {
     inflater.next_in_index=start;
     inflater.avail_in=length[0];
 
-    while(true){
+    while (true){
       inflater.next_out=tmpbuf;
       inflater.next_out_index=0;
       inflater.avail_out=BUF_SIZE;

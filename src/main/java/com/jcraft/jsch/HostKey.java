@@ -101,7 +101,7 @@ public class HostKey{
     return "UNKNOWN";
   }
   protected static int name2type(String name){
-    for(int i = 0; i < names.length; i++){
+    for (int i = 0; i < names.length; i++){
       if(Util.byte2str(names[i]).equals(name)){
         return i + 1;
       }
@@ -134,7 +134,7 @@ public class HostKey{
     int hostslen=hosts.length();
     int hostlen=_host.length();
     int j;
-    while(i<hostslen){
+    while (i<hostslen){
       j=hosts.indexOf(',', i);
       if(j==-1){
        if(hostlen!=hostslen-i) return false;

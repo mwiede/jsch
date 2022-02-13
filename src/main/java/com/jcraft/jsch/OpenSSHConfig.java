@@ -120,13 +120,13 @@ public class OpenSSHConfig implements ConfigRepository {
     Vector<String[]> kv = new Vector<>();
     String l = null;
 
-    while((l = br.readLine()) != null){
+    while ((l = br.readLine()) != null){
       l = l.trim();
       if(l.length() == 0 || l.startsWith("#"))
         continue;
 
       String[] key_value = l.split("[= \t]", 2);
-      for(int i = 0; i < key_value.length; i++)
+      for (int i = 0; i < key_value.length; i++)
         key_value[i] = key_value[i].trim();
 
       if(key_value.length <= 1)
@@ -186,9 +186,9 @@ public class OpenSSHConfig implements ConfigRepository {
 
       byte[] _host = Util.str2byte(host);
       if(hosts.size() > 1){
-        for(int i = 1; i < hosts.size(); i++){
+        for (int i = 1; i < hosts.size(); i++){
           String patterns[] = hosts.elementAt(i).split("[ \t]");
-          for(int j = 0; j < patterns.length; j++){
+          for (int j = 0; j < patterns.length; j++){
             boolean negate = false;
             String foo = patterns[j].trim();
             if(foo.startsWith("!")){
@@ -215,9 +215,9 @@ public class OpenSSHConfig implements ConfigRepository {
       }
       key = key.toUpperCase();
       String value = null;
-      for(int i = 0; i < _configs.size(); i++) {
+      for (int i = 0; i < _configs.size(); i++) {
         Vector<String[]> v = _configs.elementAt(i);
-        for(int j = 0; j < v.size(); j++) {
+        for (int j = 0; j < v.size(); j++) {
           String[] kv = v.elementAt(j);
           if(kv[0].toUpperCase().equals(key)) {
             value = kv[1];
@@ -265,9 +265,9 @@ public class OpenSSHConfig implements ConfigRepository {
     private String[] multiFind(String key) {
       key = key.toUpperCase();
       Vector<String> value = new Vector<>();
-      for(int i = 0; i < _configs.size(); i++) {
+      for (int i = 0; i < _configs.size(); i++) {
         Vector<String[]> v = _configs.elementAt(i);
-        for(int j = 0; j < v.size(); j++) {
+        for (int j = 0; j < v.size(); j++) {
           String[] kv = v.elementAt(j);
           if(kv[0].toUpperCase().equals(key)) {
             String foo = kv[1];

@@ -97,7 +97,7 @@ public class ChannelDirectTCPIP extends Channel{
       Session _session=getSession();
       int i=0;
 
-      while(isConnected() &&
+      while (isConnected() &&
             thread!=null && 
             io!=null && 
             io.in!=null){
