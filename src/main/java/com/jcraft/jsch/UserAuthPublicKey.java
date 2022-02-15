@@ -383,8 +383,8 @@ class UserAuthPublicKey extends UserAuth{
       if(!identity.isEncrypted() || passphrase!=null){
         if(identity.setPassphrase(passphrase)){
           if(passphrase!=null &&
-             (session.getIdentityRepository() instanceof IdentityRepository.Wrapper)){
-            ((IdentityRepository.Wrapper)session.getIdentityRepository()).check();
+             (session.getIdentityRepository() instanceof IdentityRepositoryWrapper)){
+            ((IdentityRepositoryWrapper)session.getIdentityRepository()).check();
           }
           break;
         }

@@ -562,11 +562,11 @@ public class JSch{
     }
     else {
       synchronized(this){
-        if(!(identityRepository instanceof IdentityRepository.Wrapper)){
-          setIdentityRepository(new IdentityRepository.Wrapper(identityRepository));
+        if(!(identityRepository instanceof IdentityRepositoryWrapper)){
+          setIdentityRepository(new IdentityRepositoryWrapper(identityRepository));
         }
       }
-      ((IdentityRepository.Wrapper)identityRepository).add(identity);
+      ((IdentityRepositoryWrapper)identityRepository).add(identity);
     }
   }
 

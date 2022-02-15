@@ -3135,8 +3135,8 @@ break;
         global = new String[0];
       }
       if(values.length - global.length > 0){
-        IdentityRepository.Wrapper ir =
-          new IdentityRepository.Wrapper(jsch.getIdentityRepository(), true);
+        IdentityRepositoryWrapper ir =
+          new IdentityRepositoryWrapper(jsch.getIdentityRepository(), true);
         for(int i = 0; i < values.length; i++){
           String ifile = values[i];
           for(int j = 0; j < global.length; j++){
