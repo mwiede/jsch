@@ -29,10 +29,6 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 package com.jcraft.jsch;
 
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
-import java.util.Arrays;
-
 public abstract class DHXEC extends KeyExchange{
 
   private static final int SSH_MSG_KEX_ECDH_INIT =                 30;
