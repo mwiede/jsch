@@ -36,7 +36,7 @@ import java.security.spec.*;
 import java.util.Arrays;
 import com.jcraft.jsch.Buffer;
 
-public abstract class SignatureEdDSA implements com.jcraft.jsch.SignatureEdDSA {
+abstract class SignatureEdDSA implements com.jcraft.jsch.SignatureEdDSA {
 
   Signature signature;
   KeyFactory keyFactory;

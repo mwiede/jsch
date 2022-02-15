@@ -37,7 +37,7 @@ import org.bouncycastle.crypto.params.*;
 import org.bouncycastle.crypto.signers.*;
 import com.jcraft.jsch.Buffer;
 
-public abstract class SignatureEdDSA implements com.jcraft.jsch.SignatureEdDSA {
+abstract class SignatureEdDSA implements com.jcraft.jsch.SignatureEdDSA {
 
   Signer signature;
 

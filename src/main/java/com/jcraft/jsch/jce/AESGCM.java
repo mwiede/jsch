@@ -33,7 +33,7 @@ import com.jcraft.jsch.Cipher;
 import java.nio.ByteBuffer;
 import javax.crypto.spec.*;
 
-public abstract class AESGCM implements Cipher{
+abstract class AESGCM implements Cipher{
   //Actually the block size, not IV size
   private static final int ivsize=16;
   private static final int tagsize=16;

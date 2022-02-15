@@ -35,7 +35,7 @@ import org.bouncycastle.crypto.engines.TwofishEngine;
 import org.bouncycastle.crypto.modes.CBCBlockCipher;
 import org.bouncycastle.crypto.params.*;
 
-public abstract class TwofishCBC implements Cipher{
+abstract class TwofishCBC implements Cipher{
   private static final int ivsize=16;
   private BufferedBlockCipher cipher;
   @Override

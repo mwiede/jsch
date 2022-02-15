@@ -35,7 +35,7 @@ import java.security.*;
 import java.security.spec.*;
 import com.jcraft.jsch.Buffer;
 
-public abstract class SignatureRSAN implements com.jcraft.jsch.SignatureRSA{
+abstract class SignatureRSAN implements com.jcraft.jsch.SignatureRSA{
 
   java.security.Signature signature;
   KeyFactory keyFactory;

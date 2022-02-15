@@ -34,7 +34,7 @@ import org.bouncycastle.crypto.engines.TwofishEngine;
 import org.bouncycastle.crypto.modes.SICBlockCipher;
 import org.bouncycastle.crypto.params.*;
 
-public abstract class TwofishCTR implements Cipher{
+abstract class TwofishCTR implements Cipher{
   private static final int ivsize=16;
   private SICBlockCipher cipher;
   @Override

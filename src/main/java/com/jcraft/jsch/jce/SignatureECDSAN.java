@@ -34,7 +34,7 @@ import java.security.*;
 import java.security.spec.*;
 import com.jcraft.jsch.Buffer;
 
-public abstract class SignatureECDSAN implements com.jcraft.jsch.SignatureECDSA {
+abstract class SignatureECDSAN implements com.jcraft.jsch.SignatureECDSA {
 
   Signature signature;
   KeyFactory keyFactory;
