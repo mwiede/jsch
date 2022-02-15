@@ -29,7 +29,7 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 package com.jcraft.jsch;
 
-public class DHG14224 extends DHG14N{
+class DHG14224 extends DHG14N{
 
   @Override
   String sha_name(){ return "sha-224"; }

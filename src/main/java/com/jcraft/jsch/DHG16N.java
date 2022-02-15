@@ -29,7 +29,7 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 package com.jcraft.jsch;
 
-public abstract class DHG16N extends DHGN{
+abstract class DHG16N extends DHGN{
 
   static final byte[] g={ 2 };
   static final byte[] p={

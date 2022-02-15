@@ -29,7 +29,7 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 package com.jcraft.jsch;
 
-public class DHGEX384 extends DHGEX {
+class DHGEX384 extends DHGEX {
   DHGEX384(){
     hash="sha-384";
   }

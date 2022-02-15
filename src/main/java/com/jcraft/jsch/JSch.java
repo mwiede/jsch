@@ -63,7 +63,7 @@ public class JSch{
     config.put("compression_level", Util.getSystemProperty("jsch.compression_level", "6"));
 
     config.put("diffie-hellman-group-exchange-sha1", 
-                                "com.jcraft.jsch.DHGEX");
+                                "com.jcraft.jsch.DHGEX1");
     config.put("diffie-hellman-group1-sha1", 
                                 "com.jcraft.jsch.DHG1");
     config.put("diffie-hellman-group14-sha1", 

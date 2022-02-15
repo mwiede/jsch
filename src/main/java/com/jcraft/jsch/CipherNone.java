@@ -29,7 +29,7 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 package com.jcraft.jsch;
 
-public class CipherNone implements Cipher{
+class CipherNone implements Cipher{
   private static final int ivsize=8;
   private static final int bsize=16;
   @Override

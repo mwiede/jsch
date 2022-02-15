@@ -29,7 +29,7 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 package com.jcraft.jsch;
 
-public class DHGEX extends KeyExchange{
+public abstract class DHGEX extends KeyExchange{
 
   private static final int SSH_MSG_KEX_DH_GEX_GROUP=               31;
   private static final int SSH_MSG_KEX_DH_GEX_INIT=                32;
@@ -56,7 +56,7 @@ public class DHGEX extends KeyExchange{
   private byte[] g;
   private byte[] e;
 
-  protected String hash="sha-1";
+  protected String hash;
 
   @Override
   public void init(Session session,

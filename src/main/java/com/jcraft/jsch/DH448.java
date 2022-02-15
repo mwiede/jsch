@@ -29,7 +29,7 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 package com.jcraft.jsch;
 
-public class DH448 extends DHXEC {
+class DH448 extends DHXEC {
   public DH448(){
     sha_name="sha-512";
     curve_name="X448";
