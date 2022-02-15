@@ -1003,7 +1003,7 @@ key_type+" key fingerprint is "+key_fprint+".\n"+
   }
 
   // encode will bin invoked in write with synchronization.
-  public void encode(Packet packet) throws Exception{
+  void encode(Packet packet) throws Exception{
 //System.err.println("encode: "+packet.buffer.getCommand());
 //System.err.println("        "+packet.buffer.index);
 //if(packet.buffer.getCommand()==96){
