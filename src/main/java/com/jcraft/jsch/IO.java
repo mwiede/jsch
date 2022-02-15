@@ -32,7 +32,7 @@ package com.jcraft.jsch;
 import java.io.*;
 import java.net.SocketException;
 
-public class IO{
+class IO{
   InputStream in;
   OutputStream out;
   OutputStream out_ext;
@@ -57,7 +57,7 @@ public class IO{
     setInputStream(in);
   }
 
-  public void put(Packet p) throws IOException, SocketException {
+  void put(Packet p) throws IOException, SocketException {
     out.write(p.buffer.buffer, 0, p.buffer.index);
     out.flush();
   }
@@ -98,7 +98,7 @@ public class IO{
     catch(Exception ee){}
   }
 
-  public void close(){
+  void close(){
     try{
       if(in!=null && !in_dontclose) in.close();
       in=null;
@@ -115,7 +115,7 @@ public class IO{
   }
 
   /*
-  public void finalize() throws Throwable{
+  void finalize() throws Throwable{
     try{
       if(in!=null) in.close();
     }
