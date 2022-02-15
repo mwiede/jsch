@@ -40,23 +40,8 @@ public class CipherNone implements Cipher{
   public void init(int mode, byte[] key, byte[] iv) throws Exception{
   }
   @Override
-  public void update(int foo) throws Exception{
-  }
-  @Override
   public void update(byte[] foo, int s1, int len, byte[] bar, int s2) throws Exception{
   }
   @Override
-  public void updateAAD(byte[] foo, int s1, int len) throws Exception{
-  }
-  @Override
-  public void doFinal(byte[] foo, int s1, int len, byte[] bar, int s2) throws Exception{
-  }
-  @Override
   public boolean isCBC(){return false; }
-  @Override
-  public boolean isAEAD(){return false; }
-  @Override
-  public boolean isChaCha20(){return false; }
-  @Override
-  public int getTagSize(){return 0;}
 }

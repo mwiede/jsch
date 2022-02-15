@@ -99,9 +99,6 @@ public class ChaCha20Poly1305 implements Cipher{
     header_cipher.processBytes(foo, s1, len, bar, s2);
   }
   @Override
-  public void updateAAD(byte[] foo, int s1, int len) throws Exception{
-  }
-  @Override
   public void doFinal(byte[] foo, int s1, int len, byte[] bar, int s2) throws Exception{
     if(this.mode==DECRYPT_MODE){
       byte[] actual_tag = new byte[tagsize];

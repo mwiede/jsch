@@ -41,8 +41,6 @@ public abstract class TwofishCBC implements Cipher{
   @Override
   public int getIVSize(){return ivsize;}
   @Override
-  public int getTagSize(){return 0;}
-  @Override
   public void init(int mode, byte[] key, byte[] iv) throws Exception{
     byte[] tmp;
     if(iv.length>ivsize){
@@ -68,22 +66,9 @@ public abstract class TwofishCBC implements Cipher{
     }
   }
   @Override
-  public void update(int foo) throws Exception{
-  }
-  @Override
   public void update(byte[] foo, int s1, int len, byte[] bar, int s2) throws Exception{
     cipher.processBytes(foo, s1, len, bar, s2);
   }
   @Override
-  public void updateAAD(byte[] foo, int s1, int len) throws Exception{
-  }
-  @Override
-  public void doFinal(byte[] foo, int s1, int len, byte[] bar, int s2) throws Exception{
-  }
-  @Override
   public boolean isCBC(){return true; }
-  @Override
-  public boolean isAEAD(){return false; }
-  @Override
-  public boolean isChaCha20(){return false; }
 }

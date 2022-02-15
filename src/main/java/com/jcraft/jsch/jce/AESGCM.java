@@ -79,9 +79,6 @@ public abstract class AESGCM implements Cipher{
     }
   }
   @Override
-  public void update(int foo) throws Exception{
-  }
-  @Override
   public void update(byte[] foo, int s1, int len, byte[] bar, int s2) throws Exception{
     cipher.update(foo, s1, len, bar, s2);
   }
@@ -103,6 +100,4 @@ public abstract class AESGCM implements Cipher{
   public boolean isCBC(){return false; }
   @Override
   public boolean isAEAD(){return true; }
-  @Override
-  public boolean isChaCha20(){return false; }
 }

@@ -29,6 +29,7 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 package com.jcraft.jsch.jzlib;
 import com.jcraft.jsch.*;
+import java.io.UncheckedIOException;
 
 public class Compression implements com.jcraft.jsch.Compression {
   static private final int BUF_SIZE=4096;
@@ -42,9 +43,14 @@ public class Compression implements com.jcraft.jsch.Compression {
   }
 
   @Override
-  public void init(int type, int level) throws Exception{
+  public void init(int type, int level) throws UncheckedIOException{
     if(type==DEFLATER){
-      deflater=new Deflater(level);
+      try{
+        deflater=new Deflater(level);
+      }
+      catch(GZIPException e){
+        throw new UncheckedIOException(e);
+      }
     }
     else if(type==INFLATER){
       inflater=new Inflater();

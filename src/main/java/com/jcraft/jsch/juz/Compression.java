@@ -34,7 +34,7 @@ public class Compression implements com.jcraft.jsch.Compression {
   }
 
   @Override
-  public void init(int type, int level) throws Exception{
+  public void init(int type, int level){
     if(type==DEFLATER){
       deflater=new Deflater(level);
     }
