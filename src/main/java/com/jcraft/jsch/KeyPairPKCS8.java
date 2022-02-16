@@ -32,7 +32,7 @@ package com.jcraft.jsch;
 import java.util.Vector;
 import java.math.BigInteger;
 
-public class KeyPairPKCS8 extends KeyPair {
+class KeyPairPKCS8 extends KeyPair {
   private static final byte[] rsaEncryption = {
     (byte)0x2a, (byte)0x86, (byte)0x48, (byte)0x86,
     (byte)0xf7, (byte)0x0d, (byte)0x01, (byte)0x01, (byte)0x01
@@ -75,7 +75,7 @@ public class KeyPairPKCS8 extends KeyPair {
 
   private KeyPair kpair = null;
 
-  public KeyPairPKCS8(JSch jsch){
+  KeyPairPKCS8(JSch jsch){
     super(jsch);
   }
 

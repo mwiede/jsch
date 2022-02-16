@@ -31,15 +31,15 @@ package com.jcraft.jsch;
 
 import java.util.Arrays;
 
-public class KeyPairEd25519 extends KeyPairEdDSA{
+class KeyPairEd25519 extends KeyPairEdDSA{
 
   private static int keySize = 32;
 
-  public KeyPairEd25519(JSch jsch){
+  KeyPairEd25519(JSch jsch){
     this(jsch, null, null);
   }
 
-  public KeyPairEd25519(JSch jsch,
+  KeyPairEd25519(JSch jsch,
                     byte[] pub_array,
                     byte[] prv_array){
     super(jsch, pub_array, prv_array);

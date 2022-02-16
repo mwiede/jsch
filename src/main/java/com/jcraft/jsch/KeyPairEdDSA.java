@@ -31,11 +31,11 @@ package com.jcraft.jsch;
 
 import java.util.Arrays;
 
-public abstract class KeyPairEdDSA extends KeyPair{
+abstract class KeyPairEdDSA extends KeyPair{
   private byte[] pub_array;
   private byte[] prv_array;
 
-  public KeyPairEdDSA(JSch jsch,
+  KeyPairEdDSA(JSch jsch,
                     byte[] pub_array,
                     byte[] prv_array){
     super(jsch);

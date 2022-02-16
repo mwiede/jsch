@@ -31,7 +31,7 @@ package com.jcraft.jsch;
 
 import java.math.BigInteger;
 
-public class KeyPairDSA extends KeyPair{
+class KeyPairDSA extends KeyPair{
   private byte[] P_array;
   private byte[] Q_array;
   private byte[] G_array;
@@ -41,11 +41,11 @@ public class KeyPairDSA extends KeyPair{
   //private int key_size=0;
   private int key_size=1024;
 
-  public KeyPairDSA(JSch jsch){
+  KeyPairDSA(JSch jsch){
     this(jsch, null, null, null, null, null);
   }
 
-  public KeyPairDSA(JSch jsch,
+  KeyPairDSA(JSch jsch,
                     byte[] P_array,
                     byte[] Q_array,
                     byte[] G_array,

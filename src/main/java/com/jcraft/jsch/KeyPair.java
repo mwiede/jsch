@@ -76,7 +76,7 @@ public abstract class KeyPair{
 
   abstract byte[] getBegin();
   abstract byte[] getEnd();
-  abstract int getKeySize();
+  public abstract int getKeySize();
 
   public abstract byte[] getSignature(byte[] data);
   public abstract byte[] getSignature(byte[] data, String alg);

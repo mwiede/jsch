@@ -31,7 +31,7 @@ package com.jcraft.jsch;
 
 import java.util.Arrays;
 
-public class KeyPairECDSA extends KeyPair{
+class KeyPairECDSA extends KeyPair{
 
   private static byte[][] oids = {
     {(byte)0x06, (byte)0x08, (byte)0x2a, (byte)0x86, (byte)0x48, // 256
@@ -53,11 +53,11 @@ public class KeyPairECDSA extends KeyPair{
 
   private int key_size=256;
 
-  public KeyPairECDSA(JSch jsch){
+  KeyPairECDSA(JSch jsch){
     this(jsch, null, null, null, null);
   }
 
-  public KeyPairECDSA(JSch jsch , byte[] pubkey){
+  KeyPairECDSA(JSch jsch , byte[] pubkey){
     this(jsch, null, null, null, null);
 
     if(pubkey!=null){
@@ -74,7 +74,7 @@ public class KeyPairECDSA extends KeyPair{
     }
   }
 
-  public KeyPairECDSA(JSch jsch,
+  KeyPairECDSA(JSch jsch,
                       byte[] name,
                       byte[] r_array,
                       byte[] s_array,
