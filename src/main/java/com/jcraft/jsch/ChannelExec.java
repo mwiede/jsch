@@ -50,7 +50,7 @@ public class ChannelExec extends ChannelSession{
     }
 
     if(io.in!=null){
-      thread=new Thread(this);
+      thread=new Thread(this::run);
       thread.setName("Exec thread "+_session.getHost());
       if(_session.daemon_thread){
         thread.setDaemon(_session.daemon_thread);

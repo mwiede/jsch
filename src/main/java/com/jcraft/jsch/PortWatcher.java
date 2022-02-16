@@ -37,7 +37,7 @@ import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.Vector;
 
-class PortWatcher implements Runnable{
+class PortWatcher{
   private static Vector<PortWatcher> pool=new Vector<>();
   private static InetAddress anyLocalAddress=null;
   static{
@@ -190,9 +190,8 @@ class PortWatcher implements Runnable{
     return pw;
   }
 
-  @Override
-  public void run(){
-    thread=this;
+  void run(){
+    thread=this::run;
     try{
       while(thread!=null){
         Socket socket=ss.accept();

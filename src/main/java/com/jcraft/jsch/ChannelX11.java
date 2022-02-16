@@ -133,7 +133,7 @@ System.err.println("");
   }
 
   @Override
-  public void run(){
+  void run(){
 
     try{ 
       socket=Util.createSocket(host, port, TIMEOUT);

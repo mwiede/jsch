@@ -37,7 +37,7 @@ import java.net.Socket;
 import java.util.*;
 import javax.crypto.AEADBadTagException;
 
-public class Session implements Runnable{
+public class Session{
 
   // http://ietf.org/internet-drafts/draft-ietf-secsh-assignednumbers-01.txt
   static final int SSH_MSG_DISCONNECT=                      1;
@@ -532,7 +532,7 @@ public class Session implements Runnable{
 
       synchronized(lock){
         if(isConnected){
-          connectThread=new Thread(this);
+          connectThread=new Thread(this::run);
           connectThread.setName("Connect thread "+host+" session");
           if(daemon_thread){
             connectThread.setDaemon(daemon_thread);
@@ -1701,9 +1701,8 @@ key_type+" key fingerprint is "+key_fprint+".\n"+
   }
 
   Runnable thread;
-  @Override
-  public void run(){
-    thread=this;
+  void run(){
+    thread=this::run;
 
     byte[] foo;
     Buffer buf=new Buffer();
@@ -1951,7 +1950,7 @@ break;
             channel.getData(buf);
             channel.init();
 
-            Thread tmp=new Thread(channel);
+            Thread tmp=new Thread(channel::run);
             tmp.setName("Channel "+ctyp+" "+host);
             if(daemon_thread){
               tmp.setDaemon(daemon_thread);
@@ -2165,7 +2164,7 @@ break;
   public int setPortForwardingL(String bind_address, int lport, String host, int rport, ServerSocketFactory ssf, int connectTimeout) throws JSchException{
     PortWatcher pw=PortWatcher.addPort(this, bind_address, lport, host, rport, ssf);
     pw.setConnectTimeout(connectTimeout);
-    Thread tmp=new Thread(pw);
+    Thread tmp=new Thread(pw::run);
     tmp.setName("PortWatcher Thread for "+host);
     if(daemon_thread){
       tmp.setDaemon(daemon_thread);
@@ -2177,7 +2176,7 @@ break;
   public int setSocketForwardingL(String bindAddress, int lport, String socketPath, ServerSocketFactory ssf, int connectTimeout) throws JSchException {
     PortWatcher pw=PortWatcher.addSocket(this, bindAddress, lport, socketPath, ssf);
     pw.setConnectTimeout(connectTimeout);
-    Thread tmp=new Thread(pw);
+    Thread tmp=new Thread(pw::run);
     tmp.setName("PortWatcher Thread for "+host);
     if(daemon_thread){
       tmp.setDaemon(daemon_thread);

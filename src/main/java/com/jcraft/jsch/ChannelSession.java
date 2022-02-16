@@ -234,7 +234,7 @@ class ChannelSession extends Channel{
   }
 
   @Override
-  public void run(){
+  void run(){
     //System.err.println(this+":run >");
 
     Buffer buf=new Buffer(rmpsize);

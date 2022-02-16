@@ -83,7 +83,7 @@ class ChannelAgentForwarding extends Channel{
   }
 
   @Override
-  public void run(){
+  void run(){
     try{
       sendOpenConfirmation();
     }

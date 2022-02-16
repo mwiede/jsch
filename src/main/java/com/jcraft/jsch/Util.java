@@ -370,9 +370,7 @@ class Util{
     final Socket[] sockp=new Socket[1];
     final Exception[] ee=new Exception[1];
     String message="";
-    Thread tmp=new Thread(new Runnable(){
-        @Override
-        public void run(){
+    Thread tmp=new Thread(() -> {
           sockp[0]=null;
           try{
             sockp[0]=new Socket(_host, _port);
@@ -387,7 +385,6 @@ class Util{
             }
             sockp[0]=null;
           }
-        }
       });
     tmp.setName("Opening Socket "+host);
     tmp.start();

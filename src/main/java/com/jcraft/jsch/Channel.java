@@ -32,7 +32,7 @@ package com.jcraft.jsch;
 import java.io.*;
 import java.util.Vector;
 
-public abstract class Channel implements Runnable{
+public abstract class Channel{
 
   static final int SSH_MSG_CHANNEL_OPEN_CONFIRMATION=      91;
   static final int SSH_MSG_CHANNEL_OPEN_FAILURE=           92;
@@ -430,9 +430,7 @@ public abstract class Channel implements Runnable{
   }
   void setRemotePacketSize(int foo){ this.rmpsize=foo; }
 
-  @Override
-  public void run(){
-  }
+  abstract void run();
 
   void write(byte[] foo) throws IOException {
     write(foo, 0, foo.length);
