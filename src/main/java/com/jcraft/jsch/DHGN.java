@@ -29,7 +29,7 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 package com.jcraft.jsch;
 
-public abstract class DHGN extends KeyExchange{
+abstract class DHGN extends KeyExchange{
 
   private static final int SSH_MSG_KEXDH_INIT=                     30;
   private static final int SSH_MSG_KEXDH_REPLY=                    31;

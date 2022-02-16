@@ -29,7 +29,7 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 package com.jcraft.jsch;
 
-public abstract class DHECN extends KeyExchange{
+abstract class DHECN extends KeyExchange{
 
   private static final int SSH_MSG_KEX_ECDH_INIT =                 30;
   private static final int SSH_MSG_KEX_ECDH_REPLY=                 31;
