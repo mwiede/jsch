@@ -34,7 +34,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Vector;
 
-public
 class KnownHosts implements HostKeyRepository{
   private static final String _known_hosts="known_hosts";
 
@@ -420,11 +419,11 @@ loop:
     }
   }
 
-  protected void sync() throws IOException { 
+  void sync() throws IOException { 
     if(known_hosts!=null)
       sync(known_hosts); 
   }
-  protected synchronized void sync(String foo) throws IOException {
+  synchronized void sync(String foo) throws IOException {
     if(foo==null) return;
     FileOutputStream fos=new FileOutputStream(Util.checkTilde(foo));
     dump(fos);
