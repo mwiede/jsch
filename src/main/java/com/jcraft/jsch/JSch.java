@@ -280,13 +280,14 @@ public class JSch{
 
   private HostKeyRepository known_hosts=null;
 
-  private static final Logger DEVNULL=new Logger(){
+  static final Logger DEVNULL=new Logger(){
       @Override
       public boolean isEnabled(int level){return false;}
       @Override
       public void log(int level, String message){}
     };
   static Logger logger=DEVNULL;
+  private Logger instLogger;
 
   public JSch(){
   }
@@ -673,7 +674,8 @@ public class JSch{
   /**
    * Sets the logger
    *
-   * @param logger logger
+   * @param logger logger or <code>null</code> if no logging
+   * should take place
    *
    * @see com.jcraft.jsch.Logger
    */
@@ -681,7 +683,33 @@ public class JSch{
     if(logger==null) logger=DEVNULL;
     JSch.logger=logger;
   }
-
+  
+  /**
+   * Returns  a logger to be used for this particular instance of JSch
+   * @return The logger that is used by this instance. If no particular
+   * logger has been set, the statically set logger is returned.
+   */
+  public Logger getInstanceLogger() {
+      if (this.instLogger == null) {
+          return logger;
+      }
+      return instLogger;
+  }
+  
+  /**
+   * Sets a logger to be used for this particular instance of JSch
+   * @param logger The logger to be used or <code>null</code> if
+   * the statically set logger should be used
+   */
+  public void setInstanceLogger(Logger logger) {
+      this.instLogger = logger;
+  }
+  
+  /**
+   * Returns the statically set logger, i.e. the logger being
+   * used by all JSch instances without explicitly set logger.
+   * @return The logger
+   */
   public static Logger getLogger(){
     return logger;
   }

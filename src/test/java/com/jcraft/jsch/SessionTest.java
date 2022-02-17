@@ -5,6 +5,8 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
+import com.jcraft.jsch.JSchTest.TestLogger;
+
 import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -53,5 +55,25 @@ class SessionTest {
         session.setConfig("PubkeyAcceptedKeyTypes", "SessionTest222");
         assertEquals("SessionTest222", session.getConfig("PubkeyAcceptedKeyTypes"));
         assertEquals("SessionTest222", session.getConfig("PubkeyAcceptedAlgorithms"));
+    }
+    
+    @Test
+    void checkLoggerFunctionality() throws Exception {
+        TestLogger staticLogger = new TestLogger();
+        TestLogger jschInstanceLogger = new TestLogger();
+        TestLogger sessionLogger = new TestLogger();
+        
+        Session session = new Session(jsch, null, null, 0);
+        
+        assertSame(JSch.DEVNULL, session.getLogger(), "DEVNULL logger expected after creation");
+        
+        JSch.setLogger(staticLogger);
+        assertSame(staticLogger, session.getLogger(), "static logger expected after setting static logger");
+        
+        jsch.setInstanceLogger(jschInstanceLogger);
+        assertSame(jschInstanceLogger, session.getLogger(), "static logger expected after setting instance logger");
+        
+        session.setLogger(sessionLogger);
+        assertSame(sessionLogger, session.getLogger(), "static logger expected after setting session logger");
     }
 }

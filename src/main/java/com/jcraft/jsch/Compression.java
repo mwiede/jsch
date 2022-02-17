@@ -33,6 +33,9 @@ public interface Compression{
   static public final int INFLATER=0;
   static public final int DEFLATER=1;
   void init(int type, int level) throws Exception;
+  default void init(int type, int level, Session session) throws Exception {
+      init(type, level);
+  }
   byte[] compress(byte[] buf, int start, int[] len);
   byte[] uncompress(byte[] buf, int start, int[] len);
 }
