@@ -2572,8 +2572,7 @@ break;
           int level=6;
           try{ level=Integer.parseInt(getConfig("compression_level"));}
           catch(Exception ee){ }
-          deflater.setSession(this);
-          deflater.init(Compression.DEFLATER, level);
+          deflater.init(Compression.DEFLATER, level, this);
         }
         catch(Exception ee){
           throw new JSchException(ee.toString(), ee);
@@ -2594,8 +2593,7 @@ break;
         try{
           Class<? extends Compression> c=Class.forName(foo).asSubclass(Compression.class);
           inflater=c.getDeclaredConstructor().newInstance();
-          inflater.setSession(this);
-          inflater.init(Compression.INFLATER, 0);
+          inflater.init(Compression.INFLATER, 0, this);
         }
         catch(Exception ee){
           throw new JSchException(ee.toString(), ee);
@@ -3245,17 +3243,6 @@ break;
       value = config.getValue("PubkeyAcceptedKeyTypes");
     if(value != null)
       this.setConfig(key, value);
-  }
-
-  public static void logMessage(Session session, int level, Supplier<String> message) {
-      Logger logger = JSch.getLogger();
-      if (session != null) {
-          logger = session.getLogger();
-      }
-      if (!logger.isEnabled(level)) {
-          return;
-      }
-      logger.log(level, message.get());
   }
   
   public Logger getLogger() {

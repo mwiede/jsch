@@ -28,9 +28,9 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
 package com.jcraft.jsch.jzlib;
-import java.util.function.Supplier;
-
-import com.jcraft.jsch.*;
+import com.jcraft.jsch.JSch;
+import com.jcraft.jsch.Logger;
+import com.jcraft.jsch.Session;
 
 public class Compression implements com.jcraft.jsch.Compression {
   static private final int BUF_SIZE=4096;
@@ -44,8 +44,18 @@ public class Compression implements com.jcraft.jsch.Compression {
   public Compression() {
   }
 
+  private void logMessage(int level, String message) {
+    Logger logger = session == null ? JSch.getLogger() : session.getLogger();
+    logger.log(level, message);
+  }
+
   @Override
-  public void init(int type, int level) throws Exception{
+  public void init(int type, int level, Session session) throws Exception{
+    this.session = session;
+    init(type, level);
+  }
+
+  public void init(int type, int level) throws GZIPException {
     if(type==DEFLATER){
       deflater=new Deflater(level);
     }
@@ -53,7 +63,7 @@ public class Compression implements com.jcraft.jsch.Compression {
       inflater=new Inflater();
       inflated_buf=new byte[BUF_SIZE];
     }
-    Session.logMessage(session, Logger.DEBUG, () -> "zlib using "+this.getClass().getCanonicalName());
+    logMessage(Logger.DEBUG, "zlib using "+this.getClass().getCanonicalName());
   }
 
   @Override
@@ -82,7 +92,7 @@ public class Compression implements com.jcraft.jsch.Compression {
           outputlen+=tmp;
           break;
         default:
-          Session.logMessage(session, Logger.WARN, () -> "compress: deflate returnd "+status);
+          logMessage(Logger.WARN, "compress: deflate returnd "+status);
       }
     }
     while(deflater.avail_out==0);
@@ -133,7 +143,7 @@ public class Compression implements com.jcraft.jsch.Compression {
           length[0]=inflated_end;
           return buffer;
          default:
-           Session.logMessage(session, Logger.WARN, () -> "compress: deflate returnd "+status);
+           logMessage(Logger.WARN, "compress: deflate returnd "+status);
            return null;
       }
     }
