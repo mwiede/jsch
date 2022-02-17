@@ -214,7 +214,6 @@ class PortWatcher implements Runnable{
           ChannelDirectTCPIP channel = new ChannelDirectTCPIP();
           channel.setSession(session);
           channel.init();
-          channel.setSession(session);
           channel.setInputStream(in);
           channel.setOutputStream(out);
           session.addChannel(channel);

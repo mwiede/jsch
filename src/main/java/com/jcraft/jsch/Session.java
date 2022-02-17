@@ -35,6 +35,8 @@ import java.io.InterruptedIOException;
 import java.io.OutputStream;
 import java.net.Socket;
 import java.util.*;
+import java.util.function.Supplier;
+
 import javax.crypto.AEADBadTagException;
 
 public class Session implements Runnable{
@@ -2573,7 +2575,8 @@ break;
           int level=6;
           try{ level=Integer.parseInt(getConfig("compression_level"));}
           catch(Exception ee){ }
-          deflater.init(this, Compression.DEFLATER, level);
+          deflater.setSession(this);
+          deflater.init(Compression.DEFLATER, level);
         }
         catch(Exception ee){
           throw new JSchException(ee.toString(), ee);
@@ -2594,7 +2597,8 @@ break;
         try{
           Class<? extends Compression> c=Class.forName(foo).asSubclass(Compression.class);
           inflater=c.getDeclaredConstructor().newInstance();
-          inflater.init(this, Compression.INFLATER, 0);
+          inflater.setSession(this);
+          inflater.init(Compression.INFLATER, 0);
         }
         catch(Exception ee){
           throw new JSchException(ee.toString(), ee);
@@ -3246,6 +3250,17 @@ break;
       this.setConfig(key, value);
   }
 
+  public static void logMessage(Session session, int level, Supplier<String> message) {
+      Logger logger = JSch.getLogger();
+      if (session != null) {
+          logger = session.getLogger();
+      }
+      if (!logger.isEnabled(level)) {
+          return;
+      }
+      logger.log(level, message.get());
+  }
+  
   public Logger getLogger() {
     return jsch.getInstanceLogger();
   }

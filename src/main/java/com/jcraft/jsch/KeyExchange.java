@@ -69,7 +69,7 @@ public abstract class KeyExchange{
 
   public abstract void init(Session session, 
                             byte[] V_S, byte[] V_C, byte[] I_S, byte[] I_C) throws Exception;
-  public void doInit(Session session, 
+  void doInit(Session session, 
                             byte[] V_S, byte[] V_C, byte[] I_S, byte[] I_C) throws Exception {
     this.session = session;
     init(session, V_S, V_C, I_S, I_C);
