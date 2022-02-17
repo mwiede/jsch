@@ -175,15 +175,6 @@ public abstract class KeyPair{
 
   abstract byte[] getKeyTypeName();
   public abstract int getKeyType();
-  
-  public String getKeyTypeName(String encoding) {
-      try {
-          return new String(getKeyTypeName(), encoding);
-      }
-      catch(UnsupportedEncodingException uee) {
-          return null;
-      }
-  }
 
   /**
    * Returns the blob of the public key.
