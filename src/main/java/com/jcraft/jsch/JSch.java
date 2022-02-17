@@ -694,7 +694,7 @@ public class JSch{
       this.instLogger = logger;
   }
   
-//  public static Logger getLogger(){
-//    return logger;
-//  }
+  public static Logger getLogger(){
+    return logger;
+  }
 }
