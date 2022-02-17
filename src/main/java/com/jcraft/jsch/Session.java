@@ -524,10 +524,6 @@ public class Session implements Runnable{
         throw new JSchException((auth_cancel ? "Auth cancel"
                 : "Auth fail")
                 + " for methods '" + smethods + "'");
-//        if(auth_cancel)
-//          throw new JSchException("Auth cancel");
-//        throw new JSchException("Auth fail");
-      }
 
       if(socket!=null && (connectTimeout>0 || timeout>0)){
         socket.setSoTimeout(timeout);
