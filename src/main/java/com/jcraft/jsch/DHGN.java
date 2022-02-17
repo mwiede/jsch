@@ -55,7 +55,6 @@ public abstract class DHGN extends KeyExchange{
   @Override
   public void init(Session session,
                    byte[] V_S, byte[] V_C, byte[] I_S, byte[] I_C) throws Exception{
-    this.session=session;
     this.V_S=V_S;      
     this.V_C=V_C;      
     this.I_S=I_S;      
@@ -101,10 +100,10 @@ public abstract class DHGN extends KeyExchange{
 
     session.write(packet);
 
-    if(JSch.getLogger().isEnabled(Logger.INFO)){
-      JSch.getLogger().log(Logger.INFO, 
+    if(session.getLogger().isEnabled(Logger.INFO)){
+      session.getLogger().log(Logger.INFO, 
                            "SSH_MSG_KEXDH_INIT sent");
-      JSch.getLogger().log(Logger.INFO, 
+      session.getLogger().log(Logger.INFO, 
                            "expecting SSH_MSG_KEXDH_REPLY");
     }
 

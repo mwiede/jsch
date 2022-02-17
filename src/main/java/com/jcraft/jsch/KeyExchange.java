@@ -69,6 +69,11 @@ public abstract class KeyExchange{
 
   public abstract void init(Session session, 
                             byte[] V_S, byte[] V_C, byte[] I_S, byte[] I_C) throws Exception;
+  public void doInit(Session session, 
+                            byte[] V_S, byte[] V_C, byte[] I_S, byte[] I_C) throws Exception {
+    this.session = session;
+    init(session, V_S, V_C, I_S, I_C);
+  }
   public abstract boolean next(Buffer buf) throws Exception;
 
   public abstract int getState();
@@ -96,13 +101,13 @@ public abstract class KeyExchange{
     Buffer sb=new Buffer(I_S); sb.setOffSet(17);
     Buffer cb=new Buffer(I_C); cb.setOffSet(17);
 
-    if(JSch.getLogger().isEnabled(Logger.INFO)){
+    if(session.getLogger().isEnabled(Logger.INFO)){
       for(int i=0; i<PROPOSAL_MAX; i++){
-        JSch.getLogger().log(Logger.INFO,
+        session.getLogger().log(Logger.INFO,
                              "kex: server: "+Util.byte2str(sb.getString()));
       }
       for(int i=0; i<PROPOSAL_MAX; i++){
-        JSch.getLogger().log(Logger.INFO,
+        session.getLogger().log(Logger.INFO,
                              "kex: client: "+Util.byte2str(cb.getString()));
       }
       sb.setOffSet(17);
@@ -164,17 +169,17 @@ public abstract class KeyExchange{
       throw new JSchException(e.toString(), e);
     }
 
-    if(JSch.getLogger().isEnabled(Logger.INFO)){
-      JSch.getLogger().log(Logger.INFO, 
+    if(session.getLogger().isEnabled(Logger.INFO)){
+      session.getLogger().log(Logger.INFO, 
                            "kex: algorithm: "+guess[PROPOSAL_KEX_ALGS]);
-      JSch.getLogger().log(Logger.INFO, 
+      session.getLogger().log(Logger.INFO, 
                            "kex: host key algorithm: "+guess[PROPOSAL_SERVER_HOST_KEY_ALGS]);
-      JSch.getLogger().log(Logger.INFO, 
+      session.getLogger().log(Logger.INFO, 
                            "kex: server->client"+
                            " cipher: "+guess[PROPOSAL_ENC_ALGS_STOC]+
                            " MAC: "+(_s2cAEAD?("<implicit>"):(guess[PROPOSAL_MAC_ALGS_STOC]))+
                            " compression: "+guess[PROPOSAL_COMP_ALGS_STOC]);
-      JSch.getLogger().log(Logger.INFO, 
+      session.getLogger().log(Logger.INFO, 
                            "kex: client->server"+
                            " cipher: "+guess[PROPOSAL_ENC_ALGS_CTOS]+
                            " MAC: "+(_c2sAEAD?("<implicit>"):(guess[PROPOSAL_MAC_ALGS_CTOS]))+
@@ -255,8 +260,8 @@ public abstract class KeyExchange{
       sig.update(H);
       result=sig.verify(sig_of_H);
 
-      if(JSch.getLogger().isEnabled(Logger.INFO)){
-        JSch.getLogger().log(Logger.INFO, 
+      if(session.getLogger().isEnabled(Logger.INFO)){
+        session.getLogger().log(Logger.INFO, 
                              "ssh_rsa_verify: "+foo+" signature "+result);
       }
     }
@@ -300,8 +305,8 @@ public abstract class KeyExchange{
       sig.update(H);
       result=sig.verify(sig_of_H);
 
-      if(JSch.getLogger().isEnabled(Logger.INFO)){
-        JSch.getLogger().log(Logger.INFO, 
+      if(session.getLogger().isEnabled(Logger.INFO)){
+        session.getLogger().log(Logger.INFO, 
                              "ssh_dss_verify: signature "+result);
       }
     }
@@ -345,8 +350,8 @@ public abstract class KeyExchange{
 
       result=sig.verify(sig_of_H);
 
-      if(JSch.getLogger().isEnabled(Logger.INFO)){
-        JSch.getLogger().log(Logger.INFO, 
+      if(session.getLogger().isEnabled(Logger.INFO)){
+        session.getLogger().log(Logger.INFO, 
                              "ssh_ecdsa_verify: "+alg+" signature "+result);
       }
     }
@@ -378,8 +383,8 @@ public abstract class KeyExchange{
 
       result=sig.verify(sig_of_H);
 
-      if(JSch.getLogger().isEnabled(Logger.INFO)){
-        JSch.getLogger().log(Logger.INFO,
+      if(session.getLogger().isEnabled(Logger.INFO)){
+        session.getLogger().log(Logger.INFO,
                              "ssh_eddsa_verify: "+alg+" signature "+result);
       }
     }

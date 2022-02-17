@@ -37,12 +37,14 @@ public class Compression implements com.jcraft.jsch.Compression {
   private Inflater inflater;
   private byte[] tmpbuf=new byte[BUF_SIZE];
   private byte[] inflated_buf;
+  private Session session;
 
   public Compression(){
   }
 
   @Override
-  public void init(int type, int level) throws Exception{
+  public void init(Session session, int type, int level) throws Exception{
+    this.session = session;
     if(type==DEFLATER){
       deflater=new Deflater(level);
     }
@@ -50,8 +52,8 @@ public class Compression implements com.jcraft.jsch.Compression {
       inflater=new Inflater();
       inflated_buf=new byte[BUF_SIZE];
     }
-    if(JSch.getLogger().isEnabled(Logger.DEBUG)){
-      JSch.getLogger().log(Logger.DEBUG,
+    if(session.getLogger().isEnabled(Logger.DEBUG)){
+      session.getLogger().log(Logger.DEBUG,
                            "zlib using "+this.getClass().getCanonicalName());
     }
   }
@@ -83,8 +85,8 @@ public class Compression implements com.jcraft.jsch.Compression {
           outputlen+=tmp;
           break;
         default:
-          if(JSch.getLogger().isEnabled(Logger.WARN)){
-            JSch.getLogger().log(Logger.WARN,
+          if(session.getLogger().isEnabled(Logger.WARN)){
+            session.getLogger().log(Logger.WARN,
                                  "compress: deflate returnd "+status);
           }
 
@@ -138,8 +140,8 @@ public class Compression implements com.jcraft.jsch.Compression {
           length[0]=inflated_end;
           return buffer;
          default:
-          if(JSch.getLogger().isEnabled(Logger.WARN)){
-            JSch.getLogger().log(Logger.WARN,
+          if(session.getLogger().isEnabled(Logger.WARN)){
+            session.getLogger().log(Logger.WARN,
                                  "uncompress: inflate returnd "+status);
           }
           return null;
