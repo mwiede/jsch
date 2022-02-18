@@ -167,7 +167,6 @@ public class Session implements Runnable{
   Session(JSch jsch, String username, String host, int port) throws JSchException{
     super();
     this.jsch=jsch;
-    logger = getLogger();
     buf=new Buffer();
     packet=new Packet(buf);
     this.username = username;
@@ -3248,6 +3247,9 @@ break;
   }
   
   public Logger getLogger() {
+    if (logger != null) {
+        return logger;
+    }
     return jsch.getInstanceLogger();
   }
   
