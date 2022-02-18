@@ -34,8 +34,14 @@ import java.io.InputStream;
 import java.io.InterruptedIOException;
 import java.io.OutputStream;
 import java.net.Socket;
-import java.util.*;
-import java.util.function.Supplier;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Enumeration;
+import java.util.Hashtable;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Properties;
+import java.util.Vector;
 
 import javax.crypto.AEADBadTagException;
 
@@ -3246,6 +3252,12 @@ break;
       this.setConfig(key, value);
   }
   
+  /**
+   * Returns the logger being used by this instance of Session. If no
+   * particular logger has been set, the instance logger of the
+   * jsch instance is returned this session belongs to. 
+   * @return The logger
+   */
   public Logger getLogger() {
     if (logger != null) {
         return logger;
@@ -3253,6 +3265,11 @@ break;
     return jsch.getInstanceLogger();
   }
   
+  /**
+   * Sets the logger being used by this instance of Session
+   * @param logger The logger or <code>null</code> if the instance logger
+   * of this instance's jsch instance should be used
+   */
   public void setLogger(Logger logger) {
     this.logger = logger;
   }
