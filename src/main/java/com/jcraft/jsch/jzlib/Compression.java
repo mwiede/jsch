@@ -41,7 +41,7 @@ public class Compression implements com.jcraft.jsch.Compression {
   private byte[] inflated_buf;
   private Session session;
 
-  public Compression() {
+  public Compression(){
   }
 
   private void logMessage(int level, String message) {
