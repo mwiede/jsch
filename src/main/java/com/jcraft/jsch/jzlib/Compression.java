@@ -28,6 +28,7 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
 package com.jcraft.jsch.jzlib;
+import java.util.function.Supplier;
 import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.Logger;
 import com.jcraft.jsch.Session;
@@ -44,9 +45,12 @@ public class Compression implements com.jcraft.jsch.Compression {
   public Compression(){
   }
 
-  private void logMessage(int level, String message) {
+  private void logMessage(int level, Supplier<String> message) {
     Logger logger = session == null ? JSch.getLogger() : session.getLogger();
-    logger.log(level, message);
+    if (!logger.isEnabled(level)) {
+      return;
+    }
+    logger.log(level, message.get());
   }
 
   @Override
@@ -63,7 +67,7 @@ public class Compression implements com.jcraft.jsch.Compression {
       inflater=new Inflater();
       inflated_buf=new byte[BUF_SIZE];
     }
-    logMessage(Logger.DEBUG, "zlib using "+this.getClass().getCanonicalName());
+    logMessage(Logger.DEBUG, () -> "zlib using "+this.getClass().getCanonicalName());
   }
 
   @Override
@@ -92,7 +96,7 @@ public class Compression implements com.jcraft.jsch.Compression {
           outputlen+=tmp;
           break;
         default:
-          logMessage(Logger.WARN, "compress: deflate returnd "+status);
+          logMessage(Logger.WARN, () -> "compress: deflate returnd "+status);
       }
     }
     while(deflater.avail_out==0);
@@ -143,7 +147,7 @@ public class Compression implements com.jcraft.jsch.Compression {
           length[0]=inflated_end;
           return buffer;
          default:
-           logMessage(Logger.WARN, "compress: deflate returnd "+status);
+           logMessage(Logger.WARN, () -> "compress: deflate returnd "+status);
            return null;
       }
     }
