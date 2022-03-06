@@ -59,6 +59,7 @@ class SessionTest {
     
     @Test
     void checkLoggerFunctionality() throws Exception {
+        JSch.setLogger(null);
         TestLogger staticLogger = new TestLogger();
         TestLogger jschInstanceLogger = new TestLogger();
         TestLogger sessionLogger = new TestLogger();
