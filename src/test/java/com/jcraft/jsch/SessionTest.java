@@ -59,6 +59,8 @@ class SessionTest {
     
     @Test
     void checkLoggerFunctionality() throws Exception {
+      Logger orgLogger = JSch.getLogger();
+      try {
         JSch.setLogger(null);
         TestLogger staticLogger = new TestLogger();
         TestLogger jschInstanceLogger = new TestLogger();
@@ -76,5 +78,9 @@ class SessionTest {
         
         session.setLogger(sessionLogger);
         assertSame(sessionLogger, session.getLogger(), "static logger expected after setting session logger");
+      }
+      finally {
+        JSch.setLogger(orgLogger);
+      }
     }
 }
