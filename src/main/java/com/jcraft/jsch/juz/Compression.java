@@ -2,6 +2,7 @@
 package com.jcraft.jsch.juz;
 
 import com.jcraft.jsch.*;
+import java.util.function.Supplier;
 import java.util.zip.Deflater;
 import java.util.zip.Inflater;
 
@@ -29,8 +30,23 @@ public class Compression implements com.jcraft.jsch.Compression {
   private Inflater inflater;
   private byte[] tmpbuf=new byte[BUF_SIZE];
   private byte[] inflated_buf;
+  private Session session;
 
   public Compression(){
+  }
+
+  private void logMessage(int level, Supplier<String> message) {
+    Logger logger = session == null ? JSch.getLogger() : session.getLogger();
+    if (!logger.isEnabled(level)) {
+      return;
+    }
+    logger.log(level, message.get());
+  }
+
+  @Override
+  public void init(int type, int level, Session session) throws Exception{
+    this.session = session;
+    init(type, level);
   }
 
   @Override
@@ -42,10 +58,7 @@ public class Compression implements com.jcraft.jsch.Compression {
       inflater=new Inflater();
       inflated_buf=new byte[BUF_SIZE];
     }
-    if(JSch.getLogger().isEnabled(Logger.DEBUG)){
-      JSch.getLogger().log(Logger.DEBUG,
-                           "zlib using "+this.getClass().getCanonicalName());
-    }
+    logMessage(Logger.DEBUG, () -> "zlib using "+this.getClass().getCanonicalName());
   }
 
   @Override
@@ -99,10 +112,7 @@ public class Compression implements com.jcraft.jsch.Compression {
       while(inflater.getRemaining()>0);
     }
     catch(java.util.zip.DataFormatException e){
-      if(JSch.getLogger().isEnabled(Logger.WARN)){
-        JSch.getLogger().log(Logger.WARN,
-                             "an exception during uncompress\n"+e.toString());
-      }
+      logMessage(Logger.WARN, () -> "an exception during uncompress\n"+e.toString());
     }
 
     if(buf.length<inflated_buf.length+start){

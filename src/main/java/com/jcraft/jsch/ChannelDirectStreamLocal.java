@@ -27,7 +27,7 @@ public class ChannelDirectStreamLocal extends ChannelDirectTCPIP {
     protected Packet genChannelOpenPacket() {
 
         if (socketPath == null) {
-            JSch.getLogger().log(Logger.FATAL, "socketPath must be set");
+            session.getLogger().log(Logger.FATAL, "socketPath must be set");
             throw new RuntimeException("socketPath must be set");
         }
 
