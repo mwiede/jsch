@@ -44,7 +44,7 @@ public class Compression implements com.jcraft.jsch.Compression {
   }
 
   @Override
-  public void init(int type, int level, Session session) throws Exception{
+  public void init(int type, int level, Session session){
     this.session = session;
     init(type, level);
   }
