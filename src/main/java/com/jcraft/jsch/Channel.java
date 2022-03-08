@@ -45,38 +45,43 @@ public abstract class Channel{
 
   static int index=0; 
   private static Vector<Channel> pool=new Vector<>();
-  static Channel getChannel(String type){
+  static Channel getChannel(String type, Session session){
+    Channel ret = null;
     if(type.equals("session")){
-      return new ChannelSession();
+      ret = new ChannelSession();
     }
     if(type.equals("shell")){
-      return new ChannelShell();
+      ret = new ChannelShell();
     }
     if(type.equals("exec")){
-      return new ChannelExec();
+      ret = new ChannelExec();
     }
     if(type.equals("x11")){
-      return new ChannelX11();
+      ret = new ChannelX11();
     }
     if(type.equals("auth-agent@openssh.com")){
-      return new ChannelAgentForwarding();
+      ret = new ChannelAgentForwarding();
     }
     if(type.equals("direct-tcpip")){
-      return new ChannelDirectTCPIP();
+      ret = new ChannelDirectTCPIP();
     }
     if(type.equals("forwarded-tcpip")){
-      return new ChannelForwardedTCPIP();
+      ret = new ChannelForwardedTCPIP();
     }
     if(type.equals("sftp")){
-      return new ChannelSftp();
+      ret = new ChannelSftp();
     }
     if(type.equals("subsystem")){
-      return new ChannelSubsystem();
+      ret = new ChannelSubsystem();
     }
     if(type.equals("direct-streamlocal@openssh.com")){
-      return new ChannelDirectStreamLocal();
+      ret = new ChannelDirectStreamLocal();
     }
-    return null;
+    if (ret == null) {
+        return null;
+    }
+    ret.setSession(session);
+    return ret;
   }
   static Channel getChannel(int id, Session session){
     synchronized(pool){
@@ -118,7 +123,7 @@ public abstract class Channel{
   volatile int reply=0; 
   volatile int connectTimeout=0;
 
-  private Session session;
+  protected Session session;
 
   int notifyme=0; 
 

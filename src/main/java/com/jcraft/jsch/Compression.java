@@ -32,6 +32,11 @@ package com.jcraft.jsch;
 public interface Compression{
   static public final int INFLATER=0;
   static public final int DEFLATER=1;
+  
+  default void init(int type, int level, Session session) {
+    init(type, level);
+  }
+
   void init(int type, int level);
   byte[] compress(byte[] buf, int start, int[] len);
   byte[] uncompress(byte[] buf, int start, int[] len);

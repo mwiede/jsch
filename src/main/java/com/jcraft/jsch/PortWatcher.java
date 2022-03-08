@@ -200,6 +200,7 @@ class PortWatcher{
         OutputStream out=socket.getOutputStream();
         if(socketPath!=null && socketPath.length()>0){
           ChannelDirectStreamLocal channel = new ChannelDirectStreamLocal();
+          channel.setSession(session);
           channel.init();
           channel.setInputStream(in);
           channel.setOutputStream(out);
@@ -210,6 +211,7 @@ class PortWatcher{
           channel.connect(connectTimeout);
         } else {
           ChannelDirectTCPIP channel = new ChannelDirectTCPIP();
+          channel.setSession(session);
           channel.init();
           channel.setInputStream(in);
           channel.setOutputStream(out);

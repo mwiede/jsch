@@ -45,8 +45,8 @@ class UserAuthPublicKey extends UserAuth{
       }
 
       String pkmethodstr=session.getConfig("PubkeyAcceptedAlgorithms");
-      if(JSch.getLogger().isEnabled(Logger.DEBUG)){
-        JSch.getLogger().log(Logger.DEBUG, 
+      if(session.getLogger().isEnabled(Logger.DEBUG)){
+        session.getLogger().log(Logger.DEBUG, 
                              "PubkeyAcceptedAlgorithms = " + pkmethodstr);
       }
 
@@ -55,8 +55,8 @@ class UserAuthPublicKey extends UserAuth{
                                       Arrays.asList(not_available_pka) :
                                       Collections.emptyList());
       if(!not_available_pks.isEmpty()){
-        if(JSch.getLogger().isEnabled(Logger.DEBUG)){
-          JSch.getLogger().log(Logger.DEBUG, 
+        if(session.getLogger().isEnabled(Logger.DEBUG)){
+          session.getLogger().log(Logger.DEBUG, 
                                "Signature algorithms unavailable for non-agent identities = " + not_available_pks);
         }
       }
@@ -88,15 +88,15 @@ class UserAuthPublicKey extends UserAuth{
         }
 
         if(!_known.isEmpty()){
-          if(JSch.getLogger().isEnabled(Logger.DEBUG)){
-            JSch.getLogger().log(Logger.DEBUG, 
+          if(session.getLogger().isEnabled(Logger.DEBUG)){
+            session.getLogger().log(Logger.DEBUG, 
                                  "PubkeyAcceptedAlgorithms in server-sig-algs = " + _known);
           }
         }
 
         if(!_unknown.isEmpty()){
-          if(JSch.getLogger().isEnabled(Logger.DEBUG)){
-            JSch.getLogger().log(Logger.DEBUG, 
+          if(session.getLogger().isEnabled(Logger.DEBUG)){
+            session.getLogger().log(Logger.DEBUG, 
                                  "PubkeyAcceptedAlgorithms not in server-sig-algs = " + _unknown);
           }
         }
@@ -111,8 +111,8 @@ class UserAuthPublicKey extends UserAuth{
         }
       }
       else{
-        if(JSch.getLogger().isEnabled(Logger.DEBUG)){
-          JSch.getLogger().log(Logger.DEBUG, "No server-sig-algs found, using PubkeyAcceptedAlgorithms = " + pkmethods);
+        if(session.getLogger().isEnabled(Logger.DEBUG)){
+          session.getLogger().log(Logger.DEBUG, "No server-sig-algs found, using PubkeyAcceptedAlgorithms = " + pkmethods);
         }
       }
 
@@ -162,8 +162,8 @@ class UserAuthPublicKey extends UserAuth{
         ipkmethods=Collections.singletonList(_ipkmethod);
       }
       if(ipkmethods==null) {
-        if(JSch.getLogger().isEnabled(Logger.DEBUG)){
-          JSch.getLogger().log(Logger.DEBUG,
+        if(session.getLogger().isEnabled(Logger.DEBUG)){
+          session.getLogger().log(Logger.DEBUG,
                   _ipkmethod+" cannot be used as public key type for identity "+identity.getName());
         }
         continue;
@@ -177,8 +177,8 @@ class UserAuthPublicKey extends UserAuth{
         loop3:
         for(String ipkmethod : ipkmethods){
           if(not_available_pks.contains(ipkmethod) && !(identity instanceof AgentIdentity)){
-            if(JSch.getLogger().isEnabled(Logger.DEBUG)){
-              JSch.getLogger().log(Logger.DEBUG,
+            if(session.getLogger().isEnabled(Logger.DEBUG)){
+              session.getLogger().log(Logger.DEBUG,
                       ipkmethod+" not available for identity "+identity.getName());
             }
             continue loop3;
@@ -208,16 +208,16 @@ class UserAuthPublicKey extends UserAuth{
             command=buf.getCommand()&0xff;
 
             if(command==SSH_MSG_USERAUTH_PK_OK){
-              if(JSch.getLogger().isEnabled(Logger.DEBUG)){
-                JSch.getLogger().log(Logger.DEBUG,
+              if(session.getLogger().isEnabled(Logger.DEBUG)){
+                session.getLogger().log(Logger.DEBUG,
                                      ipkmethod + " preauth success");
               }
               pkmethodsuccesses=Collections.singletonList(ipkmethod);
               break loop3;
             }
             else if(command==SSH_MSG_USERAUTH_FAILURE){
-              if(JSch.getLogger().isEnabled(Logger.DEBUG)){
-                JSch.getLogger().log(Logger.DEBUG,
+              if(session.getLogger().isEnabled(Logger.DEBUG)){
+                session.getLogger().log(Logger.DEBUG,
                                      ipkmethod + " preauth failure");
               }
               continue loop3;
@@ -235,8 +235,8 @@ class UserAuthPublicKey extends UserAuth{
             else{
             //System.err.println("USERAUTH fail ("+command+")");
             //throw new JSchException("USERAUTH fail ("+command+")");
-              if(JSch.getLogger().isEnabled(Logger.DEBUG)){
-                JSch.getLogger().log(Logger.DEBUG,
+              if(session.getLogger().isEnabled(Logger.DEBUG)){
+                session.getLogger().log(Logger.DEBUG,
                                      ipkmethod + " preauth failure command (" + command + ")");
               }
               continue loop3;
@@ -262,8 +262,8 @@ class UserAuthPublicKey extends UserAuth{
       loop4:
       for(String pkmethodsuccess : pkmethodsuccesses){
         if(not_available_pks.contains(pkmethodsuccess) && !(identity instanceof AgentIdentity)){
-          if(JSch.getLogger().isEnabled(Logger.DEBUG)){
-            JSch.getLogger().log(Logger.DEBUG,
+          if(session.getLogger().isEnabled(Logger.DEBUG)){
+            session.getLogger().log(Logger.DEBUG,
                     pkmethodsuccess+" not available for identity "+identity.getName());
           }
           continue loop4;
@@ -302,8 +302,8 @@ class UserAuthPublicKey extends UserAuth{
         System.arraycopy(buf.buffer, 5, tmp, 4+sidlen, buf.index-5);
         byte[] signature=identity.getSignature(tmp, pkmethodsuccess);
         if(signature==null){  // for example, too long key length.
-          if(JSch.getLogger().isEnabled(Logger.DEBUG)){
-            JSch.getLogger().log(Logger.DEBUG,
+          if(session.getLogger().isEnabled(Logger.DEBUG)){
+            session.getLogger().log(Logger.DEBUG,
                                  pkmethodsuccess + " signature failure");
           }
           continue loop4;
@@ -317,8 +317,8 @@ class UserAuthPublicKey extends UserAuth{
           command=buf.getCommand()&0xff;
 
           if(command==SSH_MSG_USERAUTH_SUCCESS){
-            if(JSch.getLogger().isEnabled(Logger.DEBUG)){
-              JSch.getLogger().log(Logger.DEBUG,
+            if(session.getLogger().isEnabled(Logger.DEBUG)){
+              session.getLogger().log(Logger.DEBUG,
                                    pkmethodsuccess + " auth success");
             }
             return true;
@@ -343,16 +343,16 @@ class UserAuthPublicKey extends UserAuth{
               throw new JSchPartialAuthException(Util.byte2str(foo));
             }
             session.auth_failures++;
-            if(JSch.getLogger().isEnabled(Logger.DEBUG)){
-              JSch.getLogger().log(Logger.DEBUG,
+            if(session.getLogger().isEnabled(Logger.DEBUG)){
+              session.getLogger().log(Logger.DEBUG,
                                    pkmethodsuccess + " auth failure");
             }
             break loop2;
           }
           //System.err.println("USERAUTH fail ("+command+")");
           //throw new JSchException("USERAUTH fail ("+command+")");
-          if(JSch.getLogger().isEnabled(Logger.DEBUG)){
-            JSch.getLogger().log(Logger.DEBUG,
+          if(session.getLogger().isEnabled(Logger.DEBUG)){
+            session.getLogger().log(Logger.DEBUG,
                                  pkmethodsuccess + " auth failure command (" + command +")");
           }
           break loop2;

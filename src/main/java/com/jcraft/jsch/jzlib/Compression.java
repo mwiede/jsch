@@ -28,7 +28,11 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
 package com.jcraft.jsch.jzlib;
-import com.jcraft.jsch.*;
+
+import java.util.function.Supplier;
+import com.jcraft.jsch.JSch;
+import com.jcraft.jsch.Logger;
+import com.jcraft.jsch.Session;
 import java.io.UncheckedIOException;
 
 public class Compression implements com.jcraft.jsch.Compression {
@@ -38,12 +42,26 @@ public class Compression implements com.jcraft.jsch.Compression {
   private Inflater inflater;
   private byte[] tmpbuf=new byte[BUF_SIZE];
   private byte[] inflated_buf;
+  private Session session;
 
   public Compression(){
   }
 
+  private void logMessage(int level, Supplier<String> message) {
+    Logger logger = session == null ? JSch.getLogger() : session.getLogger();
+    if (!logger.isEnabled(level)) {
+      return;
+    }
+    logger.log(level, message.get());
+  }
+
   @Override
-  public void init(int type, int level) throws UncheckedIOException{
+  public void init(int type, int level, Session session) {
+    this.session = session;
+    init(type, level);
+  }
+
+  public void init(int type, int level) throws UncheckedIOException {
     if(type==DEFLATER){
       try{
         deflater=new Deflater(level);
@@ -56,10 +74,7 @@ public class Compression implements com.jcraft.jsch.Compression {
       inflater=new Inflater();
       inflated_buf=new byte[BUF_SIZE];
     }
-    if(JSch.getLogger().isEnabled(Logger.DEBUG)){
-      JSch.getLogger().log(Logger.DEBUG,
-                           "zlib using "+this.getClass().getCanonicalName());
-    }
+    logMessage(Logger.DEBUG, () -> "zlib using "+this.getClass().getCanonicalName());
   }
 
   @Override
@@ -67,7 +82,6 @@ public class Compression implements com.jcraft.jsch.Compression {
     deflater.next_in=buf;
     deflater.next_in_index=start;
     deflater.avail_in=len[0]-start;
-    int status;
     int outputlen=start;
     byte[] outputbuf=buf;
     int tmp=0;
@@ -76,7 +90,7 @@ public class Compression implements com.jcraft.jsch.Compression {
       deflater.next_out=tmpbuf;
       deflater.next_out_index=0;
       deflater.avail_out=BUF_SIZE;
-      status=deflater.deflate(JZlib.Z_PARTIAL_FLUSH);
+      int status=deflater.deflate(JZlib.Z_PARTIAL_FLUSH);
       switch(status){
         case JZlib.Z_OK:
           tmp=BUF_SIZE-deflater.avail_out;
@@ -89,11 +103,7 @@ public class Compression implements com.jcraft.jsch.Compression {
           outputlen+=tmp;
           break;
         default:
-          if(JSch.getLogger().isEnabled(Logger.WARN)){
-            JSch.getLogger().log(Logger.WARN,
-                                 "compress: deflate returnd "+status);
-          }
-
+          logMessage(Logger.WARN, () -> "compress: deflate returnd "+status);
       }
     }
     while(deflater.avail_out==0);
@@ -144,11 +154,8 @@ public class Compression implements com.jcraft.jsch.Compression {
           length[0]=inflated_end;
           return buffer;
          default:
-          if(JSch.getLogger().isEnabled(Logger.WARN)){
-            JSch.getLogger().log(Logger.WARN,
-                                 "uncompress: inflate returnd "+status);
-          }
-          return null;
+           logMessage(Logger.WARN, () -> "compress: deflate returnd "+status);
+           return null;
       }
     }
   }

@@ -370,7 +370,7 @@ or
       cipher=c.getDeclaredConstructor().newInstance();
     }
     catch(Exception e){
-      if(JSch.getLogger().isEnabled(Logger.FATAL)){
+      if(jsch.getInstanceLogger().isEnabled(Logger.FATAL)){
         String message="";
         if(name==null){
           message="unknown oid: "+Util.toHex(id);
@@ -378,7 +378,7 @@ or
         else {
           message="function "+name+" is not supported";
         }
-        JSch.getLogger().log(Logger.FATAL, "PKCS8: "+message);
+        jsch.getInstanceLogger().log(Logger.FATAL, "PKCS8: "+message);
       }
     }
     return cipher;
