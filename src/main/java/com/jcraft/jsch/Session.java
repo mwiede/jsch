@@ -81,7 +81,7 @@ public class Session{
   private static final int PACKET_MAX_SIZE = 256 * 1024;
 
   private byte[] V_S;                                 // server version
-  private byte[] V_C; //=Util.str2byte("SSH-2.0-JSCH_"+Version.getVersion()); // client version
+  private String V_C; //=Util.str2byte("SSH-2.0-JSCH_"+Version.getVersion()); // client version
 
   private byte[] I_C; // the payload of the client's SSH_MSG_KEXINIT
   private byte[] I_S; // the payload of the server's SSH_MSG_KEXINIT
@@ -259,10 +259,11 @@ public class Session{
 
       jsch.addSession(this);
 
+      byte[] clientVersion = Util.str2byte(getClientVersion());
       {
         // Some Cisco devices will miss to read '\n' if it is sent separately.
-        byte[] foo=new byte[V_C.length+2];
-        System.arraycopy(V_C, 0, foo, 0, V_C.length);
+        byte[] foo=new byte[clientVersion.length+2];
+        System.arraycopy(clientVersion, 0, foo, 0, clientVersion.length);
         foo[foo.length-2]=(byte)'\r';
         foo[foo.length-1]=(byte)'\n';
         io.put(foo, 0, foo.length);
@@ -315,7 +316,7 @@ public class Session{
         getLogger().log(Logger.INFO,
                              "Remote version string: "+_v_s);
         getLogger().log(Logger.INFO,
-                             "Local version string: "+Util.byte2str(V_C));
+                             "Local version string: "+Util.byte2str(clientVersion));
       }
 
       send_kexinit();
@@ -624,7 +625,7 @@ public class Session{
       throw new JSchException(e.toString(), e);
     }
 
-    kex.doInit(this, V_S, V_C, I_S, I_C);
+    kex.doInit(this, V_S, Util.str2byte(getClientVersion()), I_S, I_C);
     return kex;
   }
 
@@ -2716,14 +2717,14 @@ break;
     return Util.byte2str(V_S);
   }
   public String getClientVersion(){
-    return V_C == null ? jsch.getClientVersion() : Util.byte2str(V_C);
+    return V_C == null ? jsch.getClientVersion() : V_C;
   }
   public void setClientVersion(String cv){
     V_C = null;
     if (cv == null) {
       return;
     }
-    V_C=Util.str2byte(cv);
+    V_C=cv;
   }
 
   public void sendIgnore() throws Exception{
