@@ -211,14 +211,14 @@ public class JSch{
 
     config.put("pbkdf", "com.jcraft.jsch.jce.PBKDF");
 
-    if(JavaVersion.getVersion()>=11){
+    if(javaVersion>=11){
       config.put("xdh", "com.jcraft.jsch.jce.XDH");
     }
     else{
       config.put("xdh", "com.jcraft.jsch.bc.XDH");
     }
 
-    if(JavaVersion.getVersion()>=15){
+    if(javaVersion>=15){
       config.put("keypairgen.eddsa", "com.jcraft.jsch.jce.KeyPairGenEdDSA");
       config.put("ssh-ed25519", "com.jcraft.jsch.jce.SignatureEd25519");
       config.put("ssh-ed448", "com.jcraft.jsch.jce.SignatureEd448");
