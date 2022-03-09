@@ -2105,6 +2105,7 @@ break;
 //    }
 
     jsch.removeSession(this);
+    clientVersion = null;
 
     //System.gc();
   }
@@ -2718,15 +2719,45 @@ break;
   public String getServerVersion(){
     return Util.byte2str(V_S);
   }
+  
+  /**
+   * Returns the client version string used during an active connection.
+   * If no connection is active <code>null</code> is returned.
+   * @return The used version string or <code>null</code> if no
+   * connection is active.
+   */
+  public String getUsedClientVersion() {
+    if (V_C == null) {
+      return null;
+    }
+    return Util.byte2str(V_C);
+  }
+  
+  /**
+   * Returns the client version that is used for the next connection.
+   * This value might be different from the version string used in a
+   * currently active connection if <code>setClientVersion</code> has
+   * been called since then.
+   * @return The version string
+   */
   public String getClientVersion(){
     return clientVersion == null ? jsch.getClientVersion() : clientVersion;
   }
+  
+  /**
+   * Sets the client version that is used for the next connection.
+   * If a connection is already active this has no effect on the
+   * current connection (e.g. during a rekeying process). If
+   * <code>null</code> is set, the value of the JSch-instance the
+   * session belongs to is used.
+   * @param cv The version string or <code>null</code> if JSch's
+   * value should be used.
+   */
   public void setClientVersion(String cv){
-    clientVersion = null;
+    clientVersion = cv;
     if (cv == null) {
       return;
     }
-    clientVersion=cv;
   }
 
   public void sendIgnore() throws Exception{
