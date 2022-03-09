@@ -3,9 +3,9 @@ package com.jcraft.jsch;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
+import java.util.HashMap;
 import java.util.Hashtable;
-
+import java.util.Properties;
 import static org.junit.jupiter.api.Assertions.*;
 
 class JSchTest {
@@ -95,6 +95,44 @@ class JSchTest {
         JSch.setLogger(null);
         assertSame(JSch.DEVNULL, JSch.logger, "static logger should be DEVNULL");
         assertSame(JSch.DEVNULL, jsch.getInstanceLogger(), "instance logger should be DEVNULL");
+    }
+    
+    @Test
+    void checkFillConfig() throws Exception {
+      // TODO add more tests, this rudimentary implementation shows the
+      // reason for the javaVersion-parameter discussed in #130
+      
+      Properties orgProps = System.getProperties();
+      Properties props = new Properties();
+      try {
+        System.setProperties(props);
+        
+        HashMap<String, String> map = new HashMap<>();
+        
+        JSch.fillConfig(map, 10);
+        assertEquals("com.jcraft.jsch.bc.XDH", map.get("xdh"), "check of xdh failed");
+        JSch.fillConfig(map, 11);
+        assertEquals("com.jcraft.jsch.jce.XDH", map.get("xdh"), "check of xdh failed");
+        JSch.fillConfig(map, 12);
+        assertEquals("com.jcraft.jsch.jce.XDH", map.get("xdh"), "check of xdh failed");
+        
+        JSch.fillConfig(map, 14);
+        assertEquals("com.jcraft.jsch.bc.KeyPairGenEdDSA", map.get("keypairgen.eddsa"), "check of keypairgen.eddsa failed");
+        assertEquals("com.jcraft.jsch.bc.SignatureEd25519", map.get("ssh-ed25519"), "check of ssh-ed25519 failed");
+        assertEquals("com.jcraft.jsch.bc.SignatureEd448", map.get("ssh-ed448"), "check of ssh-ed448 failed");
+        JSch.fillConfig(map, 15);
+        assertEquals("com.jcraft.jsch.jce.KeyPairGenEdDSA", map.get("keypairgen.eddsa"), "check of keypairgen.eddsa failed");
+        assertEquals("com.jcraft.jsch.jce.SignatureEd25519", map.get("ssh-ed25519"), "check of ssh-ed25519 failed");
+        assertEquals("com.jcraft.jsch.jce.SignatureEd448", map.get("ssh-ed448"), "check of ssh-ed448 failed");
+        JSch.fillConfig(map, 16);
+        assertEquals("com.jcraft.jsch.jce.KeyPairGenEdDSA", map.get("keypairgen.eddsa"), "check of keypairgen.eddsa failed");
+        assertEquals("com.jcraft.jsch.jce.SignatureEd25519", map.get("ssh-ed25519"), "check of ssh-ed25519 failed");
+        assertEquals("com.jcraft.jsch.jce.SignatureEd448", map.get("ssh-ed448"), "check of ssh-ed448 failed");
+      }
+      finally {
+        System.setProperties(orgProps);
+      }
+      
     }
     
     final static class TestLogger implements Logger {
