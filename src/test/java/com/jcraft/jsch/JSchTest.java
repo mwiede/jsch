@@ -13,9 +13,8 @@ class JSchTest {
     private Logger orgLogger;
 
     @BeforeEach
-    @SuppressWarnings("unchecked")
     void resetJsch() {
-      orgConfig = (Hashtable<String, String>) JSch.config.clone();
+      orgConfig = new Hashtable<>(JSch.config);
       orgLogger = JSch.getLogger();
       JSch.setLogger(null);
     }
@@ -100,7 +99,7 @@ class JSchTest {
     @Test
     void checkFillConfig() throws Exception {
       // TODO add more tests, this rudimentary implementation shows the
-      // reason for the javaVersion-parameter discussed in #130
+      // reason for the javaVersion-parameter discussed in PR #130
       
       Properties orgProps = System.getProperties();
       Properties props = new Properties();
