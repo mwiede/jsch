@@ -58,6 +58,26 @@ class SessionTest {
     }
     
     @Test
+    void setClientVersion() throws Exception {
+      JSch jsch = new JSch();
+      
+      Session session1 = new Session(jsch, null, null, 0);
+      Session session2 = new Session(jsch, null, null, 0);
+      String jschClientVersion = jsch.getClientVersion();
+      
+      assertEquals(jschClientVersion, session1.getClientVersion(), "client version should be equal to JSch's instance");
+      session1.setClientVersion("Session_Client");
+      assertEquals(jschClientVersion, jsch.getClientVersion(), "client version in jsch changed when setting in session");
+      assertEquals("Session_Client", session1.getClientVersion(), "Unexpected version in session");
+      
+      assertEquals(jschClientVersion, session2.getClientVersion(), "Version of session2 changed without setting it");
+      jsch.setClientVersion("New_Client_Version");
+      assertEquals("New_Client_Version", session2.getClientVersion(), "Change of version in jsch not 'copied' in session");
+      session1.setClientVersion(null);
+      assertEquals("New_Client_Version", session1.getClientVersion(), "Change of version in jsch not 'copied' in session");
+    }
+    
+    @Test
     void checkLoggerFunctionality() throws Exception {
       Logger orgLogger = JSch.getLogger();
       try {

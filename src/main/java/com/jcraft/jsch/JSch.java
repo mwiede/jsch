@@ -32,6 +32,7 @@ package com.jcraft.jsch;
 import java.io.InputStream;
 import java.util.Enumeration;
 import java.util.Hashtable;
+import java.util.Map;
 import java.util.Vector;
 
 public class JSch{
@@ -42,7 +43,12 @@ public class JSch{
 
   static Hashtable<String, String> config=new Hashtable<>();
   static{
+    fillConfig(config, JavaVersion.getVersion());
+  }
+
+  static void fillConfig(Map<String, String> config, int javaVersion) {
     config.put("kex", Util.getSystemProperty("jsch.kex", "curve25519-sha256,curve25519-sha256@libssh.org,ecdh-sha2-nistp256,ecdh-sha2-nistp384,ecdh-sha2-nistp521,diffie-hellman-group-exchange-sha256,diffie-hellman-group16-sha512,diffie-hellman-group18-sha512,diffie-hellman-group14-sha256"));
+    config.put("client_version", Util.getSystemProperty("jsch.client_version", "SSH-2.0-JSCH_" + VERSION));
     config.put("server_host_key", Util.getSystemProperty("jsch.server_host_key", "ssh-ed25519,ecdsa-sha2-nistp256,ecdsa-sha2-nistp384,ecdsa-sha2-nistp521,rsa-sha2-512,rsa-sha2-256"));
     config.put("prefer_known_host_key_types", Util.getSystemProperty("jsch.prefer_known_host_key_types", "yes"));
     config.put("enable_server_sig_algs", Util.getSystemProperty("jsch.enable_server_sig_algs", "yes"));
@@ -286,6 +292,7 @@ public class JSch{
       @Override
       public void log(int level, String message){}
     };
+  String clientVersion;
   static Logger logger=DEVNULL;
   private Logger instLogger;
 
@@ -712,5 +719,26 @@ public class JSch{
    */
   public static Logger getLogger(){
     return logger;
+  }
+
+  /**
+   * Returns the client version to be used when connecting to a peer
+   * @return the client version
+   */
+  public String getClientVersion() {
+    return clientVersion == null ? getConfig("client_version") : clientVersion;
+  }
+
+  /**
+   * Sets the client version to be used when connecting to a peer. If
+   * <code>null</code> is provided, the version string being set with the
+   * system property <code>jsch.client_version</code> is used. If that
+   * isn't set the default text <code>SSH-2.0-JSCH_[version]</code>
+   * is used. The set text is used as is, i.e. no <code>SSH-2.0-</code>
+   * is prefixed if that part is missing.
+   * @param clientVersion the client version to set
+   */
+  public void setClientVersion(String clientVersion) {
+    this.clientVersion = clientVersion;
   }
 }

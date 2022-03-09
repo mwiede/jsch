@@ -81,7 +81,7 @@ public class Session{
   private static final int PACKET_MAX_SIZE = 256 * 1024;
 
   private byte[] V_S;                                 // server version
-  private byte[] V_C=Util.str2byte("SSH-2.0-JSCH_"+JSch.VERSION); // client version
+  private byte[] V_C; //=Util.str2byte("SSH-2.0-JSCH_"+Version.getVersion()); // client version
 
   private byte[] I_C; // the payload of the client's SSH_MSG_KEXINIT
   private byte[] I_S; // the payload of the server's SSH_MSG_KEXINIT
@@ -2716,9 +2716,13 @@ break;
     return Util.byte2str(V_S);
   }
   public String getClientVersion(){
-    return Util.byte2str(V_C);
+    return V_C == null ? jsch.getClientVersion() : Util.byte2str(V_C);
   }
   public void setClientVersion(String cv){
+    V_C = null;
+    if (cv == null) {
+      return;
+    }
     V_C=Util.str2byte(cv);
   }
 

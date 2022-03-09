@@ -1,5 +1,6 @@
 package com.jcraft.jsch;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -8,10 +9,21 @@ import java.util.Hashtable;
 import static org.junit.jupiter.api.Assertions.*;
 
 class JSchTest {
+    private Hashtable<String, String> orgConfig;
+    private Logger orgLogger;
 
     @BeforeEach
+    @SuppressWarnings("unchecked")
     void resetJsch() {
-        JSch.setLogger(null);
+      orgConfig = (Hashtable<String, String>) JSch.config.clone();
+      orgLogger = JSch.getLogger();
+      JSch.setLogger(null);
+    }
+
+    @AfterEach
+    void restoreConfig() {
+      JSch.setConfig(orgConfig);
+      JSch.setLogger(orgLogger);
     }
     
     @Test
@@ -35,6 +47,27 @@ class JSchTest {
         JSch.setConfig(newconf);
         assertEquals("JSchTest333", JSch.getConfig("PubkeyAcceptedKeyTypes"));
         assertEquals("JSchTest333", JSch.getConfig("PubkeyAcceptedAlgorithms"));
+    }
+    
+    @Test
+    void clientVersionSetting() throws Exception {
+      String orgConfig = JSch.getConfig("client_version");
+      assertEquals("SSH-2.0-JSCH_" + Version.getVersion(), orgConfig, "client version in Config differs");
+      
+      System.setProperty("jsch.client_version", "My personal client version");
+      Hashtable<String, String> map = new Hashtable<>();
+      JSch.fillConfig(map, 1);
+      System.getProperties().remove("jsch.client_version");
+      JSch.setConfig(map);
+      assertEquals("My personal client version", JSch.getConfig("client_version"), "client version in Config differs");
+      
+      JSch jsch = new JSch();
+      assertEquals("My personal client version", jsch.getClientVersion(), "client version in Config differs");
+      jsch.setClientVersion("SSH-2.0-JSCH_OpenSSH_notreally_client");
+      assertEquals("SSH-2.0-JSCH_OpenSSH_notreally_client", jsch.getClientVersion(), "client version in Config differs");
+      assertEquals("My personal client version", new JSch().getClientVersion(), "expected global client for new instance");
+      jsch.setClientVersion(null);
+      assertEquals("My personal client version", jsch.getClientVersion(), "client version in Config differs");
     }
     
     @Test
