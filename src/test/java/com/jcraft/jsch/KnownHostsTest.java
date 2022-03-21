@@ -752,13 +752,21 @@ class KnownHostsTest {
   @Test
   public void testCheck() throws Exception {
     KnownHosts kh = new KnownHosts(jsch);
+    String expectedExceptionMessage = "";
+    try {
+      new HostKey("host.example.com", HostKey.GUESS, new byte[0]);
+      fail("exception expected");
+    }
+    catch(Exception e) {
+      expectedExceptionMessage = e.getMessage();
+    }
     
     assertEquals(KnownHosts.NOT_INCLUDED, kh.check(null, new byte[0]), "null host should return NOT_INCLUDED");
     assertEquals(0, messages.size(), "no messages expected: " + messages.stream().collect(Collectors.joining("\r\n")));
     assertEquals(KnownHosts.NOT_INCLUDED, kh.check("host.example.com", new byte[0]), "empty key should return NOT_INCLUDED");
     assertEquals(1, messages.size(), "only one message: " + messages.stream().collect(Collectors.joining("\r\n")));
     assertEquals("M(0): exception while trying to read key while checking host 'host.example.com'\r\n" + 
-        "  java.lang.ArrayIndexOutOfBoundsException: Index 8 out of bounds for length 0", messages.removeFirst(), "unexpected message");
+        "  java.lang.ArrayIndexOutOfBoundsException: " + expectedExceptionMessage, messages.removeFirst(), "unexpected message");
     
     addHosts(kh);
     assertEquals(KnownHosts.NOT_INCLUDED, kh.check("host.example.com", dsaKeyBytes), "type mismatch should return NOT_INCLUDED");
