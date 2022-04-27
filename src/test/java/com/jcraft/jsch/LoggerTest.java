@@ -26,12 +26,7 @@ class LoggerTest {
     
     Exception ex = new Exception("dummy exception");
     StringWriter sw = new StringWriter();
-    PrintWriter pw = new PrintWriter(sw) {
-      @Override
-      public void println() {
-        print("\r\n");
-      }
-    };
+    PrintWriter pw = new PrintWriter(sw);
     ex.printStackTrace(pw);
     String expectedTrace = sw.toString();
     
@@ -44,7 +39,7 @@ class LoggerTest {
     logger.log(Logger.ERROR, "some message with trace", ex);
     assertEquals(
         Logger.ERROR + ":some message\r\n" + 
-        Logger.ERROR + ":some message with trace\r\n" + 
+        Logger.ERROR + ":some message with trace" + System.lineSeparator() + 
         expectedTrace +
         "", getMessageLines(messages), "message mismatch");
   }
