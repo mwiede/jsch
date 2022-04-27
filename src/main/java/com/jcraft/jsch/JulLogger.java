@@ -6,7 +6,7 @@ import java.util.logging.Logger;
 public class JulLogger implements com.jcraft.jsch.Logger {
 
   private static final java.util.logging.Logger stlogger = java.util.logging.Logger.getLogger(JSch.class.getName());
-  private java.util.logging.Logger logger;
+  private final java.util.logging.Logger logger;
   
   public JulLogger() {
     this(stlogger);

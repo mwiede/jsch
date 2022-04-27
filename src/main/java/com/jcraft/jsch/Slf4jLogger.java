@@ -2,13 +2,11 @@ package com.jcraft.jsch;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.slf4j.event.Level;
-import org.slf4j.spi.LoggingEventBuilder;
 
 public class Slf4jLogger implements com.jcraft.jsch.Logger {
 
   private static final Logger stlogger = LoggerFactory.getLogger(JSch.class);
-  private Logger logger;
+  private final Logger logger;
 
   public Slf4jLogger() {
     this(stlogger);
@@ -20,7 +18,18 @@ public class Slf4jLogger implements com.jcraft.jsch.Logger {
 
   @Override
   public boolean isEnabled(int level) {
-    return logger.isEnabledForLevel(getLevel(level));
+    switch(level) {
+        case com.jcraft.jsch.Logger.DEBUG:
+            return logger.isDebugEnabled();
+        case com.jcraft.jsch.Logger.ERROR:
+        case com.jcraft.jsch.Logger.FATAL:
+            return logger.isErrorEnabled();
+        case com.jcraft.jsch.Logger.INFO:
+            return logger.isInfoEnabled();
+        case com.jcraft.jsch.Logger.WARN:
+            return logger.isWarnEnabled();
+    }
+    return logger.isTraceEnabled();
   }
 
   @Override
@@ -33,26 +42,23 @@ public class Slf4jLogger implements com.jcraft.jsch.Logger {
     if (!isEnabled(level)) {
       return;
     }
-    LoggingEventBuilder builder = logger.makeLoggingEventBuilder(getLevel(level));
-    if (cause != null) {
-      builder.setCause(cause);
-    }
-    builder.log(message);
-  }
-
-  private static Level getLevel(int level) {
     switch (level) {
       case com.jcraft.jsch.Logger.DEBUG:
-        return Level.DEBUG;
-      case com.jcraft.jsch.Logger.INFO:
-        return Level.INFO;
-      case com.jcraft.jsch.Logger.WARN:
-        return Level.WARN;
+        logger.debug(message, cause);
+        break;
       case com.jcraft.jsch.Logger.ERROR:
       case com.jcraft.jsch.Logger.FATAL:
-        return Level.ERROR;
+        logger.error(message, cause);
+        break;
+      case com.jcraft.jsch.Logger.INFO:
+        logger.info(message, cause);
+        break;
+      case com.jcraft.jsch.Logger.WARN:
+        logger.warn(message, cause);
+        break;
       default:
-        return Level.TRACE;
+        logger.trace(message, cause);
+        break;
     }
   }
 }

@@ -1,6 +1,8 @@
 package com.jcraft.jsch;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.logging.Handler;
@@ -10,9 +12,6 @@ import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.slf4j.LoggerFactory;
-import com.jcraft.jsch.Slf4jLoggerTest.TestAppender;
-import ch.qos.logback.classic.LoggerContext;
 
 class JulLoggerTest {
   private LinkedList<String> messages;
