@@ -76,13 +76,13 @@
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <skipITs>true</skipITs>
         <junixsocket.version>2.4.0</junixsocket.version>
-        <jna.version>5.10.0</jna.version>
+        <jna.version>5.11.0</jna.version>
     </properties>
     <dependencies>
         <dependency>
             <groupId>org.bouncycastle</groupId>
-            <artifactId>bcprov-jdk15on</artifactId>
-            <version>1.70</version>
+            <artifactId>bcprov-jdk18on</artifactId>
+            <version>1.71</version>
             <optional>true</optional>
         </dependency>
         <dependency>
@@ -118,7 +118,7 @@
         <dependency>
             <groupId>org.apache.logging.log4j</groupId>
             <artifactId>log4j-api</artifactId>
-            <version>2.17.1</version>
+            <version>2.17.2</version>
             <optional>true</optional>
             <exclusions>
                 <exclusion>
@@ -130,7 +130,7 @@
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
-            <version>2.0.0-alpha6</version>
+            <version>2.0.0-alpha7</version>
             <optional>true</optional>
         </dependency>
         <dependency>
@@ -142,7 +142,7 @@
         <dependency>
             <groupId>org.testcontainers</groupId>
             <artifactId>junit-jupiter</artifactId>
-            <version>1.16.3</version>
+            <version>1.17.1</version>
             <scope>test</scope>
             <!-- Rely upon jna-jpms brought in above -->
             <exclusions>
@@ -151,8 +151,8 @@
                     <artifactId>jna</artifactId>
                 </exclusion>
                 <exclusion>
-                    <artifactId>slf4j-api</artifactId>
                     <groupId>org.slf4j</groupId>
+                    <artifactId>slf4j-api</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>
@@ -169,8 +169,8 @@
             <scope>test</scope>
             <exclusions>
                 <exclusion>
-                    <artifactId>slf4j-api</artifactId>
                     <groupId>org.slf4j</groupId>
+                    <artifactId>slf4j-api</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>
@@ -183,8 +183,14 @@
         <dependency>
             <groupId>org.scalatest</groupId>
             <artifactId>scalatest_2.13</artifactId>
-            <version>3.2.11</version>
+            <version>3.2.12</version>
             <scope>test</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.scala-lang</groupId>
+                    <artifactId>scala-library</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>co.helmethair</groupId>
@@ -275,7 +281,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.10.0</version>
+                <version>3.10.1</version>
                 <configuration>
                     <fork>true</fork>
                     <release>8</release>
@@ -344,7 +350,7 @@
             <plugin>
                 <groupId>net.alchim31.maven</groupId>
                 <artifactId>scala-maven-plugin</artifactId>
-                <version>4.5.6</version>
+                <version>4.6.1</version>
                 <configuration>
                     <recompileMode>all</recompileMode>
                     <sendJavaToScalac>false</sendJavaToScalac>
@@ -390,7 +396,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-clean-plugin</artifactId>
-                <version>3.1.0</version>
+                <version>3.2.0</version>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -456,7 +462,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-javadoc-plugin</artifactId>
-                <version>3.3.2</version>
+                <version>3.4.0</version>
                 <configuration>
                     <quiet>true</quiet>
                     <doclint>none</doclint>
@@ -495,12 +501,12 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-site-plugin</artifactId>
-                <version>3.10.0</version>
+                <version>3.11.0</version>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-dependency-plugin</artifactId>
-                <version>3.2.0</version>
+                <version>3.3.0</version>
             </plugin>
         </plugins>
     </build>
@@ -533,7 +539,7 @@
                     <plugin>
                         <groupId>org.jacoco</groupId>
                         <artifactId>jacoco-maven-plugin</artifactId>
-                        <version>0.8.7</version>
+                        <version>0.8.8</version>
                         <configuration>
                             <excludes>
                                 <exclude>com/jcraft/jsch/JavaVersion.class</exclude>
@@ -583,7 +589,7 @@
                                 <path>
                                     <groupId>com.google.errorprone</groupId>
                                     <artifactId>error_prone_core</artifactId>
-                                    <version>2.11.0</version>
+                                    <version>2.13.1</version>
                                 </path>
                             </annotationProcessorPaths>
                         </configuration>

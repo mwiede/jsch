@@ -65,11 +65,11 @@ As I explained in a [blog post](http://www.matez.de/index.php/2020/06/22/the-fut
       * analogous to `JSch.setConfig("MaxAuthTries", "...")`
 * Are ssh-ed25519, ssh-ed448, curve25519-sha256, curve448-sha512 & chacha20-poly1305@<!-- -->openssh.com supported?
   * This library is a Multi-Release-jar, which means that you can only use certain features when a more recent Java version is used.
-    * In order to use ssh-ed25519 & ssh-ed448, you must use at least Java 15 or add [Bouncy Castle](https://www.bouncycastle.org/java.html) (bcprov-jdk15on) to the classpath.
-    * In order to use curve25519-sha256 & curve448-sha512, you must use at least Java 11 or add [Bouncy Castle](https://www.bouncycastle.org/java.html) (bcprov-jdk15on) to the classpath.
-    * In order to use chacha20-poly1305@<!-- -->openssh.com, you must add [Bouncy Castle](https://www.bouncycastle.org/java.html) (bcprov-jdk15on) to the classpath.
-  * As of the [0.1.66](https://github.com/mwiede/jsch/releases/tag/jsch-0.1.66) release, these algorithms can now be used with older Java releases if [Bouncy Castle](https://www.bouncycastle.org/java.html) (bcprov-jdk15on) is added to the classpath.
-    * As of the [0.1.72](https://github.com/mwiede/jsch/releases/tag/jsch-0.1.72) release, chacha20-poly1305@<!-- -->openssh.com can only be used if [Bouncy Castle](https://www.bouncycastle.org/java.html) (bcprov-jdk15on) is added to the classpath.
+    * In order to use ssh-ed25519 & ssh-ed448, you must use at least Java 15 or add [Bouncy Castle](https://www.bouncycastle.org/java.html) (bcprov-jdk18on) to the classpath.
+    * In order to use curve25519-sha256 & curve448-sha512, you must use at least Java 11 or add [Bouncy Castle](https://www.bouncycastle.org/java.html) (bcprov-jdk18on) to the classpath.
+    * In order to use chacha20-poly1305@<!-- -->openssh.com, you must add [Bouncy Castle](https://www.bouncycastle.org/java.html) (bcprov-jdk18on) to the classpath.
+  * As of the [0.1.66](https://github.com/mwiede/jsch/releases/tag/jsch-0.1.66) release, these algorithms can now be used with older Java releases if [Bouncy Castle](https://www.bouncycastle.org/java.html) (bcprov-jdk18on) is added to the classpath.
+    * As of the [0.1.72](https://github.com/mwiede/jsch/releases/tag/jsch-0.1.72) release, chacha20-poly1305@<!-- -->openssh.com can only be used if [Bouncy Castle](https://www.bouncycastle.org/java.html) (bcprov-jdk18on) is added to the classpath.
 * Why do ssh-rsa type keys not work with this JSch fork and my server?
   * As of the [0.2.0](https://github.com/mwiede/jsch/releases/tag/jsch-0.2.0) release, the RSA/SHA1 signature algorithm is disabled by default.
     * SHA1 is no longer considered secure by the general cryptographic community and this JSch fork strives to maintain secure choices for default algorithms that it will utilize.
