@@ -53,9 +53,9 @@ public interface Logger{
       try (PrintWriter pw = new PrintWriter(sw, true)) {
         cause.printStackTrace(pw);
       }
-      message += "\r\n" + sw.toString();
-      log(level, message);
+      message += System.lineSeparator() + sw.toString();
     }
+    log(level, message);
   }
 
   /*

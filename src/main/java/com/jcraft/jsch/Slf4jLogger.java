@@ -1,49 +1,58 @@
 package com.jcraft.jsch;
 
+import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.event.Level;
+import org.slf4j.spi.LoggingEventBuilder;
 
 public class Slf4jLogger implements com.jcraft.jsch.Logger {
 
-  private static final org.slf4j.Logger logger = LoggerFactory.getLogger(JSch.class);
+  private static final Logger stlogger = LoggerFactory.getLogger(JSch.class);
+  private Logger logger;
 
-  public Slf4jLogger() {}
+  public Slf4jLogger() {
+    this(stlogger);
+  }
+
+  Slf4jLogger(Logger logger) {
+    this.logger = logger;
+  }
 
   @Override
   public boolean isEnabled(int level) {
-    switch (level) {
-      case com.jcraft.jsch.Logger.DEBUG:
-        return logger.isDebugEnabled();
-      case com.jcraft.jsch.Logger.INFO:
-        return logger.isInfoEnabled();
-      case com.jcraft.jsch.Logger.WARN:
-        return logger.isWarnEnabled();
-      case com.jcraft.jsch.Logger.ERROR:
-      case com.jcraft.jsch.Logger.FATAL:
-        return logger.isErrorEnabled();
-      default:
-        return logger.isTraceEnabled();
-    }
+    return logger.isEnabledForLevel(getLevel(level));
   }
 
   @Override
   public void log(int level, String message) {
+    log (level, message, null);
+  }
+
+  @Override
+  public void log(int level, String message, Throwable cause) {
+    if (!isEnabled(level)) {
+      return;
+    }
+    LoggingEventBuilder builder = logger.makeLoggingEventBuilder(getLevel(level));
+    if (cause != null) {
+      builder.setCause(cause);
+    }
+    builder.log(message);
+  }
+
+  private static Level getLevel(int level) {
     switch (level) {
       case com.jcraft.jsch.Logger.DEBUG:
-        logger.debug(message);
-        break;
+        return Level.DEBUG;
       case com.jcraft.jsch.Logger.INFO:
-        logger.info(message);
-        break;
+        return Level.INFO;
       case com.jcraft.jsch.Logger.WARN:
-        logger.warn(message);
-        break;
+        return Level.WARN;
       case com.jcraft.jsch.Logger.ERROR:
       case com.jcraft.jsch.Logger.FATAL:
-        logger.error(message);
-        break;
+        return Level.ERROR;
       default:
-        logger.trace(message);
-        break;
+        return Level.TRACE;
     }
   }
 }
