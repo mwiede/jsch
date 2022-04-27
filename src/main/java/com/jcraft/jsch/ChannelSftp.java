@@ -2940,13 +2940,7 @@ public class ChannelSftp extends ChannelSession{
     }
   }
 
-  public void setFilenameEncoding(Charset encoding) throws SftpException{
-    int sversion=getServerVersion();
-    if(3 <= sversion && sversion <= 5 &&
-       !encoding.equals(StandardCharsets.UTF_8)){
-      throw new SftpException(SSH_FX_FAILURE,
-                              "The encoding can not be changed for this sftp server.");
-    }
+  public void setFilenameEncoding(Charset encoding){
     fEncoding=encoding;
     fEncoding_is_utf8=fEncoding.equals(StandardCharsets.UTF_8);
   }
