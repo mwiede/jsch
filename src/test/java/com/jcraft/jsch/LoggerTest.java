@@ -47,6 +47,7 @@ class LoggerTest {
   static String getMessageLines(LinkedList<String> messages) {
     try {
       return messages.stream()
+          .map(line -> line.replaceAll("\\r?\\n", "\r\n"))
           .collect(Collectors.joining("\r\n"));
     }
     finally {
