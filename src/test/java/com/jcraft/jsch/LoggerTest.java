@@ -26,7 +26,12 @@ class LoggerTest {
     
     Exception ex = new Exception("dummy exception");
     StringWriter sw = new StringWriter();
-    PrintWriter pw = new PrintWriter(sw);
+    PrintWriter pw = new PrintWriter(sw) {
+      @Override
+      public void println() {
+        print("\r\n");
+      }
+    };
     ex.printStackTrace(pw);
     String expectedTrace = sw.toString();
     
@@ -47,7 +52,6 @@ class LoggerTest {
   static String getMessageLines(LinkedList<String> messages) {
     try {
       return messages.stream()
-          .map(line -> line.replaceAll("\\r?\\n", "\r\n"))
           .collect(Collectors.joining("\r\n"));
     }
     finally {
