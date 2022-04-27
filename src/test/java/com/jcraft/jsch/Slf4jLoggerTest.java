@@ -146,7 +146,6 @@ class Slf4jLoggerTest {
         IThrowableProxy thp = eventObject.getThrowableProxy();
           
         messages.add(eventObject.getLevel()+ ": " + eventObject.getMessage() + (thp == null ? " (without cause)" : " (with cause " + thp.getClassName() + ", " + thp.getMessage() + ")"));
-        System.out.println(messages.getLast());
       }
       catch(Exception e) {
         e.printStackTrace();
