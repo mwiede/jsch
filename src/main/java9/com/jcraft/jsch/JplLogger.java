@@ -18,6 +18,15 @@ public class JplLogger implements com.jcraft.jsch.Logger {
     logger.log(getLevel(level), message);
   }
 
+  @Override
+  public void log(int level, String message, Throwable cause) {
+    if (cause == null) {
+      logger.log(getLevel(level), message);
+      return;
+    }
+    logger.log(getLevel(level), message, cause);
+  }
+
   private static Level getLevel(int level) {
     switch (level) {
       case com.jcraft.jsch.Logger.DEBUG:
