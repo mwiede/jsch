@@ -30,7 +30,6 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 package com.jcraft.jsch.jce;
 
 import java.math.BigInteger;
-import java.nio.charset.StandardCharsets;
 import java.security.*;
 import java.security.spec.*;
 import java.util.Arrays;
@@ -114,7 +113,7 @@ abstract class SignatureEdDSA implements com.jcraft.jsch.SignatureEdDSA {
     byte[] tmp;
     Buffer buf = new Buffer(sig);
 
-    String foo = new String(buf.getString(), StandardCharsets.UTF_8);
+    String foo = new String(buf.getString(), CharsetUtil.UTF_8);
     if(foo.equals(getName())){
       j = buf.getInt();
       i = buf.getOffSet();

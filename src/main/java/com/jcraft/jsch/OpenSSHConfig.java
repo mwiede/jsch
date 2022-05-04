@@ -33,7 +33,6 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Arrays;
@@ -103,7 +102,7 @@ public class OpenSSHConfig implements ConfigRepository {
    * @return an instanceof OpenSSHConfig
    */
   public static OpenSSHConfig parseFile(String file) throws IOException {
-    try(BufferedReader br = Files.newBufferedReader(Paths.get(Util.checkTilde(file)), StandardCharsets.UTF_8)) {
+    try(BufferedReader br = Files.newBufferedReader(Paths.get(Util.checkTilde(file)), CharsetUtil.UTF_8)) {
       return new OpenSSHConfig(br);
     }
   }

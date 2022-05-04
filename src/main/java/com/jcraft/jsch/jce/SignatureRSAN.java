@@ -30,10 +30,10 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 package com.jcraft.jsch.jce;
 
 import java.math.BigInteger;
-import java.nio.charset.StandardCharsets;
 import java.security.*;
 import java.security.spec.*;
 import com.jcraft.jsch.Buffer;
+import com.jcraft.jsch.CharsetUtil;
 
 abstract class SignatureRSAN implements com.jcraft.jsch.SignatureRSA{
 
@@ -85,7 +85,7 @@ abstract class SignatureRSAN implements com.jcraft.jsch.SignatureRSA{
     byte[] tmp;
     Buffer buf=new Buffer(sig);
 
-    String foo=new String(buf.getString(), StandardCharsets.UTF_8);
+    String foo=new String(buf.getString(), CharsetUtil.UTF_8);
     if(foo.equals("ssh-rsa") || foo.equals("rsa-sha2-256") || foo.equals("rsa-sha2-512") ||
        foo.equals("ssh-rsa-sha224@ssh.com") || foo.equals("ssh-rsa-sha256@ssh.com") ||
        foo.equals("ssh-rsa-sha384@ssh.com") || foo.equals("ssh-rsa-sha512@ssh.com")){

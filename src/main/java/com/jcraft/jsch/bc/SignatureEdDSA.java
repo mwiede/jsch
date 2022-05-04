@@ -29,9 +29,9 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 package com.jcraft.jsch.bc;
 
-import java.nio.charset.StandardCharsets;
 import java.security.*;
-import java.util.Arrays;
+
+import com.jcraft.jsch.CharsetUtil;
 import org.bouncycastle.crypto.Signer;
 import org.bouncycastle.crypto.params.*;
 import org.bouncycastle.crypto.signers.*;
@@ -120,7 +120,7 @@ abstract class SignatureEdDSA implements com.jcraft.jsch.SignatureEdDSA {
     byte[] tmp;
     Buffer buf = new Buffer(sig);
 
-    String foo = new String(buf.getString(), StandardCharsets.UTF_8);
+    String foo = new String(buf.getString(), CharsetUtil.UTF_8);
     if(foo.equals(getName())){
       j = buf.getInt();
       i = buf.getOffSet();
