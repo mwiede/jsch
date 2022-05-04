@@ -33,7 +33,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
 import java.util.Vector;
 
 class Util{
@@ -416,7 +415,7 @@ class Util{
   }
 
   static byte[] str2byte(String str){
-    return str2byte(str, StandardCharsets.UTF_8);
+    return str2byte(str, CharsetUtil.UTF_8);
   }
 
   static String byte2str(byte[] str, Charset encoding){
@@ -428,11 +427,11 @@ class Util{
   }
 
   static String byte2str(byte[] str){
-    return byte2str(str, 0, str.length, StandardCharsets.UTF_8);
+    return byte2str(str, 0, str.length, CharsetUtil.UTF_8);
   }
 
   static String byte2str(byte[] str, int s, int l){
-    return byte2str(str, s, l, StandardCharsets.UTF_8);
+    return byte2str(str, s, l, CharsetUtil.UTF_8);
   }
 
   static String toHex(byte[] str){

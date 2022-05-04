@@ -1,6 +1,6 @@
 package com.jcraft.jsch;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
+import static com.jcraft.jsch.CharsetUtil.UTF_8;
 import static org.apache.commons.codec.binary.Base64.decodeBase64;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;

@@ -14,7 +14,8 @@
 
 package com.jcraft.jsch.jbcrypt;
 
-import java.nio.charset.StandardCharsets;
+import com.jcraft.jsch.CharsetUtil;
+
 import java.security.DigestException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -764,7 +765,7 @@ public class BCrypt {
         rounds = Integer.parseInt(salt.substring(off, off + 2));
 
         real_salt = salt.substring(off + 3, off + 25);
-        passwordb = (password + (minor >= 'a' ? "\000" : "")).getBytes(StandardCharsets.UTF_8);
+        passwordb = (password + (minor >= 'a' ? "\000" : "")).getBytes(CharsetUtil.UTF_8);
 
         saltb = decode_base64(real_salt, BCRYPT_SALT_LEN);
 
@@ -847,8 +848,8 @@ public class BCrypt {
      */
     public static boolean checkpw(String plaintext, String hashed) {
         String try_pw = hashpw(plaintext, hashed);
-        byte hashed_bytes[] = hashed.getBytes(StandardCharsets.UTF_8);
-        byte try_bytes[] = try_pw.getBytes(StandardCharsets.UTF_8);
+        byte hashed_bytes[] = hashed.getBytes(CharsetUtil.UTF_8);
+        byte try_bytes[] = try_pw.getBytes(CharsetUtil.UTF_8);
         if (hashed_bytes.length != try_bytes.length)
             return false;
         byte ret = 0;

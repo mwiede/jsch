@@ -14,7 +14,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.stream.Stream;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
+import static com.jcraft.jsch.CharsetUtil.UTF_8;
 import static org.junit.jupiter.api.Assertions.*;
 
 class KeyPairTest {
