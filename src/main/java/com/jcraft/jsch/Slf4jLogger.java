@@ -27,15 +27,16 @@ public class Slf4jLogger implements com.jcraft.jsch.Logger {
     switch (level) {
       case com.jcraft.jsch.Logger.DEBUG:
         return logger.isDebugEnabled();
-      case com.jcraft.jsch.Logger.ERROR:
-      case com.jcraft.jsch.Logger.FATAL:
-        return logger.isErrorEnabled();
       case com.jcraft.jsch.Logger.INFO:
         return logger.isInfoEnabled();
       case com.jcraft.jsch.Logger.WARN:
         return logger.isWarnEnabled();
+      case com.jcraft.jsch.Logger.ERROR:
+      case com.jcraft.jsch.Logger.FATAL:
+        return logger.isErrorEnabled();
+      default:
+        return logger.isTraceEnabled();
     }
-    return logger.isTraceEnabled();
   }
 
   @Override
@@ -52,15 +53,15 @@ public class Slf4jLogger implements com.jcraft.jsch.Logger {
       case com.jcraft.jsch.Logger.DEBUG:
         logger.debug(message, cause);
         break;
-      case com.jcraft.jsch.Logger.ERROR:
-      case com.jcraft.jsch.Logger.FATAL:
-        logger.error(message, cause);
-        break;
       case com.jcraft.jsch.Logger.INFO:
         logger.info(message, cause);
         break;
       case com.jcraft.jsch.Logger.WARN:
         logger.warn(message, cause);
+        break;
+      case com.jcraft.jsch.Logger.ERROR:
+      case com.jcraft.jsch.Logger.FATAL:
+        logger.error(message, cause);
         break;
       default:
         logger.trace(message, cause);
