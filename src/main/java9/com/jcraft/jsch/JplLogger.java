@@ -1,10 +1,11 @@
 package com.jcraft.jsch;
 
+import java.lang.System.Logger;
 import java.lang.System.Logger.Level;
 
 public class JplLogger implements com.jcraft.jsch.Logger {
 
-  private static final System.Logger logger = System.getLogger(JSch.class.getName());
+  private static final Logger logger = System.getLogger(JSch.class.getName());
 
   public JplLogger() {}
 
