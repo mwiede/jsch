@@ -440,15 +440,8 @@ loop:
   }
   synchronized void sync(String foo) throws IOException {
     if(foo==null) return;
-    FileOutputStream fos=null;
-    try {
-      fos=new FileOutputStream(Util.checkTilde(foo));
+    try (FileOutputStream fos = new FileOutputStream(Util.checkTilde(foo))) {
       dump(fos);
-    }
-    finally {
-      if (fos != null) {
-        fos.close();
-      }
     }
   }
 

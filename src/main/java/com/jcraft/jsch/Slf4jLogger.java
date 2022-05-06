@@ -41,7 +41,7 @@ public class Slf4jLogger implements com.jcraft.jsch.Logger {
 
   @Override
   public void log(int level, String message) {
-    log (level, message, null);
+    log(level, message, null);
   }
 
   @Override
