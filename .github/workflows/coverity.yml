@@ -1,0 +1,23 @@
+name: Coverity Scan
+
+# We only want to run this on demand at the moment
+on: workflow_dispatch
+
+jobs:
+  coverity:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: Set up build JDK
+      uses: actions/setup-java@v3
+      with:
+        distribution: 'zulu'
+        java-version: '17'
+        check-latest: true    
+        cache: 'maven'
+    - uses: vapier/coverity-scan-action@v1
+      with:
+        email: ${{ secrets.COVERITY_SCAN_EMAIL }}
+        token: ${{ secrets.COVERITY_SCAN_TOKEN }}
+        build_language: 'java'
+        command: 'mvn -DskipTests=true compile'
