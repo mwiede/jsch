@@ -1,3 +1,7 @@
+* [0.2.1](https://github.com/mwiede/jsch/releases/tag/jsch-0.2.1)
+  * Allow to set a Logger per JSch-instance rather than a VM-wide one [#128](https://github.com/mwiede/jsch/pull/128)
+  * Preliminary changes prior to Javadoc work [#126](https://github.com/mwiede/jsch/pull/126)
+  * Remove check to allow setting any filename encoding with any server version [#137](https://github.com/mwiede/jsch/issues/137) [#142](https://github.com/mwiede/jsch/pull/142)
 * [0.2.0](https://github.com/mwiede/jsch/releases/tag/jsch-0.2.0)
   * Disable RSA/SHA1 signature algorithm by default [#75](https://github.com/mwiede/jsch/issues/75)
   * Add basic Logger implementations that can be optionally utilized with `JSch.setLogger()`:
