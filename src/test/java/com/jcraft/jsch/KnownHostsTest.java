@@ -30,6 +30,7 @@ import javax.crypto.ShortBufferException;
 import javax.crypto.spec.SecretKeySpec;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import com.jcraft.jsch.KnownHosts.HashedHostKey;
@@ -317,9 +318,14 @@ class KnownHostsTest {
       
       kh = new KnownHosts(jsch) {
         @Override
-        void dump(OutputStream out) throws IOException {
+        void dump(OutputStream out) {
           messages.add("stream based dump called with stream: " + out.getClass().getName());
-          out.write("some dump data".getBytes("8859_1"));
+          try {
+            out.write("some dump data".getBytes("8859_1"));
+          }
+          catch(IOException ioe) {
+            Assertions.fail("exception occurred while trying to write dump to tream", ioe);
+          }
         }
       };
       kh.sync(null);
