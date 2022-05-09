@@ -1076,7 +1076,7 @@ key_type+" key fingerprint is "+key_fprint+".\n"+
 
   private int s2ccipher_size=8;
   private int c2scipher_size=8;
-  public Buffer read(Buffer buf) throws Exception{
+  Buffer read(Buffer buf) throws Exception{
     int j=0;
     boolean isChaCha20=(s2ccipher!=null && s2ccipher.isChaCha20());
     boolean isAEAD=(s2ccipher!=null && s2ccipher.isAEAD());
@@ -1577,7 +1577,7 @@ key_type+" key fingerprint is "+key_fprint+".\n"+
     return result;
   }
 
-  /*public*/ /*synchronized*/ void write(Packet packet, Channel c, int length) throws Exception{
+    /*synchronized*/ void write(Packet packet, Channel c, int length) throws Exception{
     long t = getTimeout();
     while(true){
       if(in_kex){
@@ -1670,7 +1670,7 @@ key_type+" key fingerprint is "+key_fprint+".\n"+
     _write(packet);
   }
 
-  public void write(Packet packet) throws Exception{
+  void write(Packet packet) throws Exception{
     // System.err.println("in_kex="+in_kex+" "+(packet.buffer.getCommand()));
     long t = getTimeout();
     while(in_kex){
