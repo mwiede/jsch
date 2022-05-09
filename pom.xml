@@ -307,6 +307,19 @@
                         </configuration>
                     </execution>
                     <execution>
+                        <id>default-compile-10</id>
+                        <goals>
+                            <goal>compile</goal>
+                        </goals>
+                        <configuration>
+                            <compileSourceRoots>
+                                <compileSourceRoot>${project.basedir}/src/main/java10</compileSourceRoot>
+                            </compileSourceRoots>
+                            <multiReleaseOutput>true</multiReleaseOutput>
+                            <release>10</release>
+                        </configuration>
+                    </execution>
+                    <execution>
                         <id>default-compile-11</id>
                         <goals>
                             <goal>compile</goal>
@@ -544,6 +557,8 @@
                             <excludes>
                                 <exclude>com/jcraft/jsch/JavaVersion.class</exclude>
                                 <exclude>com/jcraft/jsch/UnixDomainSocketFactory.class</exclude>
+                                <exclude>META-INF/versions/9/com/jcraft/jsch/JavaVersion.class</exclude>
+                                <exclude>META-INF/versions/10/com/jcraft/jsch/JavaVersion.class</exclude>
                             </excludes>
                         </configuration>
                         <executions>

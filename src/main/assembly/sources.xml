@@ -34,6 +34,13 @@
       </includes>
     </fileSet>
     <fileSet>
+      <directory>${project.basedir}/src/main/java10</directory>
+      <outputDirectory>META-INF/versions/10</outputDirectory>
+      <includes>
+        <include>**/*.java</include>
+      </includes>
+    </fileSet>
+    <fileSet>
       <directory>${project.basedir}/src/main/java11</directory>
       <outputDirectory>META-INF/versions/11</outputDirectory>
       <includes>
