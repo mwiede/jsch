@@ -448,7 +448,6 @@ loop:
   private static final byte[] space={(byte)0x20};
   private static final byte[] lf=Util.str2byte("\n");
   
-  @SuppressWarnings("unused") // to keep the method's signature without warning
   void dump(OutputStream out) {
     try{
       HostKey hk;
