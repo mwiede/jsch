@@ -29,17 +29,17 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 package com.jcraft.jsch;
 
-public class Packet{
+class Packet{
 
   private static Random random=null;
   static void setRandom(Random foo){ random=foo;}
 
   Buffer buffer;
   byte[] ba4=new byte[4]; 
-  public Packet(Buffer buffer){
+  Packet(Buffer buffer){
     this.buffer=buffer;
   }
-  public void reset(){
+  void reset(){
     buffer.index=5;
   }
   void padding(int bsize, boolean includePktLen){
