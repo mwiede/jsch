@@ -158,16 +158,29 @@ class KnownHostsTest {
     );
     messages.clear();
     
-    kh = new KnownHosts(jsch);
-    assertNotNull(kh.hmacsha1, "hmac instance should not be null");
-    assertSame(kh.hmacsha1, kh.getHMACSHA1(), "instance shouldn't change");
-    assertEquals(HMACSHA1.class.getName(), kh.hmacsha1.getClass().getName(), "hmac class mismatch");
+    try {
+      new KnownHosts(jsch);
+      fail("exception expected");
+    }
+    catch(IllegalArgumentException iae) {
+      assertEquals("instantiation of my.hmac.sha1.class.Name lead to an error", iae.getMessage(), "check exception message");
+      Throwable cause = iae.getCause();
+      assertNotNull(cause, "cause should not be null");
+      assertEquals(ClassNotFoundException.class.getName(), cause.getClass().getName(), "unexpected cause");
+    }
     assertEquals(
-        "M(3): unable to instantiate HMAC-class my.hmac.sha1.class.Name, using SHA-1 as fallback\r\n" + 
+        "M(3): unable to instantiate HMAC-class my.hmac.sha1.class.Name\r\n" + 
         "  java.lang.ClassNotFoundException: my.hmac.sha1.class.Name",
         messages.stream().collect(Collectors.joining("\r\n"))
     );
     messages.clear();
+
+    // it's not SHA-1 but for this test any hashing class will do
+    JSch.setConfig("hmac-sha1", HMACSHA256.class.getName());
+    kh = new KnownHosts(jsch);
+    assertNotNull(kh.hmacsha1, "hmac instance should not be null");
+    assertSame(kh.hmacsha1, kh.getHMACSHA1(), "instance shouldn't change");
+    assertEquals(HMACSHA256.class.getName(), kh.hmacsha1.getClass().getName(), "hmac class mismatch");
     
     MAC currentMAC = kh.hmacsha1;
     JSch.setConfig("hmac-sha1", HMACSHA512.class.getName());

@@ -50,7 +50,7 @@ class KnownHosts implements HostKeyRepository{
 
   MAC hmacsha1;
 
-  KnownHosts(JSch jsch){
+  KnownHosts(JSch jsch) {
     super();
     this.jsch=jsch;
     getHMACSHA1();
@@ -510,7 +510,7 @@ loop:
     return hosts;
   }
 
-  MAC getHMACSHA1(){
+  MAC getHMACSHA1() throws IllegalArgumentException {
     if (hmacsha1 == null){
       hmacsha1 = createHMAC(JSch.getConfig("hmac-sha1"));
     }
@@ -518,14 +518,14 @@ loop:
     return hmacsha1;
   }
   
-  MAC createHMAC(String hmacClassname) {
+  MAC createHMAC(String hmacClassname) throws IllegalArgumentException {
     try{
       Class<? extends MAC> c=Class.forName(hmacClassname).asSubclass(MAC.class);
       return c.getDeclaredConstructor().newInstance();
     }
-    catch(Exception e){ 
-      jsch.getInstanceLogger().log(Logger.ERROR, "unable to instantiate HMAC-class " + hmacClassname + ", using SHA-1 as fallback", e);
-      return new HMACSHA1(); // the default in config
+    catch(Exception e){
+      jsch.getInstanceLogger().log(Logger.ERROR, "unable to instantiate HMAC-class " + hmacClassname, e);
+      throw new IllegalArgumentException("instantiation of " + hmacClassname + " lead to an error", e);
     }
   }
 
