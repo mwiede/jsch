@@ -39,10 +39,9 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Vector;
-import com.jcraft.jsch.jce.HMACSHA1;
 
 class KnownHosts implements HostKeyRepository{
-  private static final String _known_hosts="known_hosts";
+//  private static final String _known_hosts="known_hosts";
 
   private JSch jsch=null;
   private String known_hosts=null;
@@ -87,7 +86,7 @@ loop:
           j=fis.read();
           if(j==-1){
             if(bufl==0){ break loop; }
-            else{ break; }
+            break;
           }
           if(j==0x0d){ continue; }
           if(j==0x0a){ break; }
@@ -296,7 +295,7 @@ loop:
   public void add(HostKey hostkey, UserInfo userinfo){
     int type=hostkey.type;
     String host=hostkey.getHost();
-    byte[] key=hostkey.key;
+//    byte[] key=hostkey.key;
 
     HostKey hk=null;
     synchronized(pool){
