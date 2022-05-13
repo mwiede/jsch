@@ -41,8 +41,6 @@ import java.util.List;
 import java.util.Vector;
 
 class KnownHosts implements HostKeyRepository{
-//  private static final String _known_hosts="known_hosts";
-
   private JSch jsch=null;
   private String known_hosts=null;
   private Vector<HostKey> pool=null;
