@@ -42,7 +42,7 @@ jobs:
         check-latest: true
     - name: Test with Maven
       run: mvn -B -P coverage verify -Denforcer.skip=true -Dmaven.resources.skip=true -Dmaven.main.skip=true -Dassembly.skipAssembly=true -Dmaven.javadoc.skip=true -DskipITs=false --file pom.xml
-    - uses: actions/upload-artifact@v2
+    - uses: actions/upload-artifact@v3
       with:
         name: java-${{ matrix.java }}-testresults
         path: |
