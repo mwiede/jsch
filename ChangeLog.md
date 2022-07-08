@@ -1,3 +1,6 @@
+* [0.2.2](https://github.com/mwiede/jsch/releases/tag/jsch-0.2.2)
+  * misc improvements by @norrisjeremy in https://github.com/mwiede/jsch/pull/152
+  * Fixing Issue #131 by @kimmerin in https://github.com/mwiede/jsch/pull/134
 * [0.2.1](https://github.com/mwiede/jsch/releases/tag/jsch-0.2.1)
   * Allow to set a Logger per JSch-instance rather than a VM-wide one [#128](https://github.com/mwiede/jsch/pull/128)
   * Preliminary changes prior to Javadoc work [#126](https://github.com/mwiede/jsch/pull/126)
