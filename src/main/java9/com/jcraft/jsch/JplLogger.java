@@ -1,10 +1,11 @@
 package com.jcraft.jsch;
 
+import java.lang.System.Logger;
 import java.lang.System.Logger.Level;
 
 public class JplLogger implements com.jcraft.jsch.Logger {
 
-  private static final System.Logger logger = System.getLogger(JSch.class.getName());
+  private static final Logger logger = System.getLogger(JSch.class.getName());
 
   public JplLogger() {}
 
@@ -16,6 +17,15 @@ public class JplLogger implements com.jcraft.jsch.Logger {
   @Override
   public void log(int level, String message) {
     logger.log(getLevel(level), message);
+  }
+
+  @Override
+  public void log(int level, String message, Throwable cause) {
+    if (cause == null) {
+      logger.log(getLevel(level), message);
+      return;
+    }
+    logger.log(getLevel(level), message, cause);
   }
 
   private static Level getLevel(int level) {

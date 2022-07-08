@@ -1,12 +1,20 @@
 package com.jcraft.jsch;
 
 import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class JulLogger implements com.jcraft.jsch.Logger {
 
-  private static final java.util.logging.Logger logger = java.util.logging.Logger.getLogger(JSch.class.getName());
+  private static final Logger stlogger = Logger.getLogger(JSch.class.getName());
+  private final Logger logger;
+  
+  public JulLogger() {
+    this(stlogger);
+  }
 
-  public JulLogger() {}
+  JulLogger(Logger logger) {
+    this.logger = logger;
+  }
 
   @Override
   public boolean isEnabled(int level) {
@@ -15,10 +23,19 @@ public class JulLogger implements com.jcraft.jsch.Logger {
 
   @Override
   public void log(int level, String message) {
-    logger.log(getLevel(level), message);
+    log(level, message, null);
   }
 
-  private static Level getLevel(int level) {
+  @Override
+  public void log(int level, String message, Throwable cause) {
+    if (cause == null) {
+      logger.log(getLevel(level), message);
+      return;
+    }
+    logger.log(getLevel(level), message, cause);
+  }
+
+  static Level getLevel(int level) {
     switch (level) {
       case com.jcraft.jsch.Logger.DEBUG:
         return Level.FINE;
