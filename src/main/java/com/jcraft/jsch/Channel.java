@@ -30,7 +30,8 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 package com.jcraft.jsch;
 
 import java.io.*;
-import java.util.Vector;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public abstract class Channel{
 
@@ -43,8 +44,8 @@ public abstract class Channel{
   static final int SSH_OPEN_UNKNOWN_CHANNEL_TYPE=           3;
   static final int SSH_OPEN_RESOURCE_SHORTAGE=              4;
 
-  static int index=0; 
-  private static Vector<Channel> pool=new Vector<>();
+  private static AtomicInteger index = new AtomicInteger(0);
+  private static ConcurrentHashMap<Integer, Channel> pool = new ConcurrentHashMap<>(16, 0.75f, 1);
   static Channel getChannel(String type, Session session){
     Channel ret = null;
     if(type.equals("session")){
@@ -84,21 +85,17 @@ public abstract class Channel{
     return ret;
   }
   static Channel getChannel(int id, Session session){
-    synchronized(pool){
-      for(int i=0; i<pool.size(); i++){
-        Channel c=pool.elementAt(i);
-        if(c.id==id && c.session==session) return c;
-      }
+    Channel c = pool.get(id);
+    if (c!=null && c.session==session) {
+      return c;
     }
     return null;
   }
   static void del(Channel c){
-    synchronized(pool){
-      pool.removeElement(c);
-    }
+    pool.remove(c.id);
   }
 
-  int id;
+  final int id;
   volatile int recipient=-1;
   protected byte[] type=Util.str2byte("foo");
   volatile int lwsize_max=0x100000;
@@ -128,10 +125,8 @@ public abstract class Channel{
   int notifyme=0; 
 
   Channel(){
-    synchronized(pool){
-      id=index++;
-      pool.addElement(this);
-    }
+    id=index.incrementAndGet();
+    pool.put(id, this);
   }
   synchronized void setRecipient(int foo){
     this.recipient=foo;
@@ -550,18 +545,11 @@ public abstract class Channel{
   static void disconnect(Session session){
     Channel[] channels=null;
     int count=0;
-    synchronized(pool){
-      channels=new Channel[pool.size()];
-      for(int i=0; i<pool.size(); i++){
-        try{
-          Channel c=pool.elementAt(i);
-          if(c.session==session){
-            channels[count++]=c;
-          }
-        }
-        catch(Exception e){
-        }
-      } 
+    channels=new Channel[pool.size()];
+    for (Channel c : pool.values()) {
+      if(c.session==session) {
+        channels[count++]=c;
+      }
     }
     for(int i=0; i<count; i++){
       channels[i].disconnect();
