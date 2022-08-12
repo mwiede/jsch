@@ -599,7 +599,8 @@ public abstract class KeyPair{
        prvkey!=null && 
        (prvkey.length>11 &&
         prvkey[0]==0 && prvkey[1]==0 && prvkey[2]==0 &&
-        (prvkey[3]==7 || prvkey[3]==19))){
+        // length of key type string
+        (prvkey[3]==7 || prvkey[3]==9 || prvkey[3]==11 || prvkey[3]==19))){
 
       Buffer buf=new Buffer(prvkey);
       buf.skip(prvkey.length);  // for using Buffer#available()
