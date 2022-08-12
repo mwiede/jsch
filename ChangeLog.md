@@ -1,3 +1,5 @@
+* [0.2.3](https://github.com/mwiede/jsch/releases/tag/jsch-0.2.3)
+  * #188 fix private key length checks for ssh-ed25519 & ssh-ed448. by @norrisjeremy in https://github.com/mwiede/jsch/pull/189
 * [0.2.2](https://github.com/mwiede/jsch/releases/tag/jsch-0.2.2)
   * misc improvements by @norrisjeremy in https://github.com/mwiede/jsch/pull/152
   * Fixing Issue #131 by @kimmerin in https://github.com/mwiede/jsch/pull/134
