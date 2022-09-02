@@ -1,3 +1,6 @@
+* [0.2.4](https://github.com/mwiede/jsch/releases/tag/jsch-0.2.4)
+  * When connections fail due to an algorithm negotiation failure, throw a `JSchAlgoNegoFailException` that extends `JSchException`.
+    * The new `JSchAlgoNegoFailException` details which specific algorithm negotiation failed, along with what both JSch and the server proposed.
 * [0.2.3](https://github.com/mwiede/jsch/releases/tag/jsch-0.2.3)
   * #188 fix private key length checks for ssh-ed25519 & ssh-ed448. by @norrisjeremy in https://github.com/mwiede/jsch/pull/189
 * [0.2.2](https://github.com/mwiede/jsch/releases/tag/jsch-0.2.2)
