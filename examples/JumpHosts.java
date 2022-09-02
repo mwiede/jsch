@@ -79,35 +79,35 @@ public class JumpHosts {
     public String getPassword(){ return passwd; }
     public boolean promptYesNo(String str){
       Object[] options={ "yes", "no" };
-      int foo=JOptionPane.showOptionDialog(null, 
+      int foo=JOptionPane.showOptionDialog(null,
              str,
-             "Warning", 
-             JOptionPane.DEFAULT_OPTION, 
+             "Warning",
+             JOptionPane.DEFAULT_OPTION,
              JOptionPane.WARNING_MESSAGE,
              null, options, options[0]);
        return foo==0;
     }
-  
+
     String passwd;
     JTextField passwordField=(JTextField)new JPasswordField(20);
 
     public String getPassphrase(){ return null; }
     public boolean promptPassphrase(String message){ return true; }
     public boolean promptPassword(String message){
-      Object[] ob={passwordField}; 
+      Object[] ob={passwordField};
       int result=
-	  JOptionPane.showConfirmDialog(null, ob, message,
-					JOptionPane.OK_CANCEL_OPTION);
+          JOptionPane.showConfirmDialog(null, ob, message,
+                                        JOptionPane.OK_CANCEL_OPTION);
       if(result==JOptionPane.OK_OPTION){
-	passwd=passwordField.getText();
-	return true;
+        passwd=passwordField.getText();
+        return true;
       }
       else{ return false; }
     }
     public void showMessage(String message){
       JOptionPane.showMessageDialog(null, message);
     }
-    final GridBagConstraints gbc = 
+    final GridBagConstraints gbc =
       new GridBagConstraints(0,0,1,1,1,1,
                              GridBagConstraints.NORTHWEST,
                              GridBagConstraints.NONE,
@@ -149,7 +149,7 @@ public class JumpHosts {
         gbc.gridy++;
       }
 
-      if(JOptionPane.showConfirmDialog(null, panel, 
+      if(JOptionPane.showConfirmDialog(null, panel,
                                        destination+": "+name,
                                        JOptionPane.OK_CANCEL_OPTION,
                                        JOptionPane.QUESTION_MESSAGE)
@@ -158,7 +158,7 @@ public class JumpHosts {
         for(int i=0; i<prompt.length; i++){
           response[i]=texts[i].getText();
         }
-	return response;
+        return response;
       }
       else{
         return null;  // cancel
