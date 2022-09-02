@@ -600,9 +600,6 @@ public class Session{
    }
 
     guess=KeyExchange.guess(this, I_S, I_C);
-    if(guess==null){
-      throw new JSchException("Algorithm negotiation fail");
-    }
 
     if(guess[KeyExchange.PROPOSAL_KEX_ALGS].equals("ext-info-c") ||
        guess[KeyExchange.PROPOSAL_KEX_ALGS].equals("ext-info-s")){

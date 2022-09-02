@@ -123,13 +123,13 @@ public abstract class KeyExchange{
       loop:
       while(j<cp.length){
         while(j<cp.length && cp[j]!=',')j++; 
-        if(k==j) return null;
+        if(k==j) throw new JSchAlgoNegoFailException(i, Util.byte2str(cp), Util.byte2str(sp));
         String algorithm=Util.byte2str(cp, k, j-k);
         int l=0;
         int m=0;
         while(l<sp.length){
           while(l<sp.length && sp[l]!=',')l++; 
-          if(m==l) return null;
+          if(m==l) throw new JSchAlgoNegoFailException(i, Util.byte2str(cp), Util.byte2str(sp));
           if(algorithm.equals(Util.byte2str(sp, m, l-m))){
             guess[i]=algorithm;
             break loop;
@@ -144,7 +144,7 @@ public abstract class KeyExchange{
         guess[i]="";
       }
       else if(guess[i]==null){
-        return null;
+        throw new JSchAlgoNegoFailException(i, Util.byte2str(cp), Util.byte2str(sp));
       }
     }
 
