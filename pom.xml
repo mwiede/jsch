@@ -189,7 +189,7 @@
         <dependency>
             <groupId>co.helmethair</groupId>
             <artifactId>scalatest-junit-runner</artifactId>
-            <version>0.1.11</version>
+            <version>0.2.0</version>
             <scope>test</scope>
         </dependency>
     </dependencies>
