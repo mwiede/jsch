@@ -82,7 +82,7 @@
         <dependency>
             <groupId>org.bouncycastle</groupId>
             <artifactId>bcprov-jdk18on</artifactId>
-            <version>1.71.1</version>
+            <version>1.72</version>
             <optional>true</optional>
         </dependency>
         <dependency>
