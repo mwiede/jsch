@@ -60,6 +60,9 @@ When you have an artifact `foo:bar`, which contains `com.jcraft:jsch` as a trans
       </exclusions> 
 </dependency>
 ```
+
+*Addition*: You can further exclude any of `com.jcraft:jsch.agentproxy.jsch`, `com.jcraft:jsch.agentproxy.core` or `com.jcraft:jsch.agentproxy.pageant`, because these modules where integrated in this fork (see release notes of [0.1.66](https://github.com/mwiede/jsch/releases/tag/jsch-0.1.66)).
+
 ## FAQ
 ### Are ssh-ed25519, ssh-ed448, curve25519-sha256, curve448-sha512 & chacha20-poly1305@<!-- -->openssh.com supported?
   * This library is a Multi-Release-jar, which means that you can only use certain features when a more recent Java version is used.
