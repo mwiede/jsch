@@ -2561,8 +2561,12 @@ break;
   }
 
   private void initDeflater(String method) throws JSchException{
+    Compression odeflater=deflater;
     if(method.equals("none")){
       deflater=null;
+      if(odeflater!=null){
+        odeflater.end();
+      }
       return;
     }
     String foo=getConfig(method);
@@ -2581,12 +2585,21 @@ break;
           throw new JSchException(ee.toString(), ee);
           //System.err.println(foo+" isn't accessible.");
         }
+        finally{
+          if(odeflater!=null){
+            odeflater.end();
+          }
+        }
       }
     }
   }
   private void initInflater(String method) throws JSchException{
+    Compression oinflater=inflater;
     if(method.equals("none")){
       inflater=null;
+      if(oinflater!=null){
+        oinflater.end();
+      }
       return;
     }
     String foo=getConfig(method);
@@ -2601,6 +2614,11 @@ break;
         catch(Exception ee){
           throw new JSchException(ee.toString(), ee);
             //System.err.println(foo+" isn't accessible.");
+        }
+        finally{
+          if(oinflater!=null){
+            oinflater.end();
+          }
         }
       }
     }

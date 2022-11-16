@@ -1,3 +1,5 @@
+* [0.2.5](https://github.com/mwiede/jsch/releases/tag/jsch-0.2.5)
+  * Explictly free resources in `Compression` implementations.
 * [0.2.4](https://github.com/mwiede/jsch/releases/tag/jsch-0.2.4)
   * When connections fail due to an algorithm negotiation failure, throw a `JSchAlgoNegoFailException` that extends `JSchException`.
     * The new `JSchAlgoNegoFailException` details which specific algorithm negotiation failed, along with what both JSch and the server proposed.

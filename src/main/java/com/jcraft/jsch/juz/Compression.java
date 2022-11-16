@@ -44,6 +44,20 @@ public class Compression implements com.jcraft.jsch.Compression {
   }
 
   @Override
+  public void end() {
+    inflated_buf=null;
+    if(inflater!=null){
+      inflater.end();
+      inflater=null;
+    }
+    if(deflater!=null){
+      deflater.end();
+      deflater=null;
+    }
+    session=null;
+  }
+
+  @Override
   public void init(int type, int level, Session session){
     this.session = session;
     init(type, level);
