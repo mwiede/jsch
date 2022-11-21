@@ -41,9 +41,12 @@ public abstract class KeyPair{
   public static final int DSA=1;
   public static final int RSA=2;
   public static final int ECDSA=3;
-  public static final int UNKNOWN=4;
   public static final int ED25519=5;
   public static final int ED448=6;
+  public static final int DSA_CERT = 7;
+  public static final int RSA_CERT = 8;
+  public static final int ECDSA_CERT = 9;
+  public static final int UNKNOWN=10;
  
   static final int VENDOR_OPENSSH=0;
   static final int VENDOR_FSECURE=1;
@@ -66,6 +69,9 @@ public abstract class KeyPair{
     else if(type==ECDSA){ kpair=new KeyPairECDSA(jsch); }
     else if(type==ED25519){ kpair=new KeyPairEd25519(jsch); }
     else if(type==ED448){ kpair=new KeyPairEd448(jsch); }
+    else if(type==RSA_CERT){ kpair=new OpenSSHUserCertRSA(jsch); }
+    else if(type==DSA_CERT){ kpair=new OpenSSHUserCertDSA(jsch); }
+    else if(type==ECDSA_CERT){ kpair=new OpenSSHUserCertECDSA(jsch); }
     if(kpair!=null){
       kpair.generate(key_size);
     }
@@ -930,8 +936,19 @@ public abstract class KeyPair{
             if(buf[0]=='s'&& buf[1]=='s'&& buf[2]=='h' && buf[3]=='-'){
               if(prvkey==null &&
                  buf.length>7){
-                if(buf[4]=='d'){ type=DSA; }
-                else if(buf[4]=='r'){ type=RSA; }
+                  if (buf[4] == 'd') {
+                    if (buf.length >= 12 && buf[8] == 'c' && buf[9] == 'e' && buf[10] == 'r' && buf[11] == 't') {
+                        type = DSA_CERT;
+                    } else {
+                        type = DSA;
+                    }
+                  } else if (buf[4] == 'r') {
+                    if (buf.length >= 12 && buf[8] == 'c' && buf[9] == 'e' && buf[10] == 'r' && buf[11] == 't') {
+                        type = RSA_CERT;
+                    } else {
+                        type = RSA;
+                    }
+                }
                 else if(buf[4]=='e' && buf[6]=='2'){ type=ED25519; }
                 else if(buf[4]=='e' && buf[6]=='4'){ type=ED448; }
               }
@@ -950,11 +967,18 @@ public abstract class KeyPair{
                   publicKeyComment = Util.byte2str(buf, start, i-start);
                 }
               } 
+          } else if (buf[0] == 'e' && buf[1] == 'c' && buf[2] == 'd' && buf[3] == 's') {
+            if (buf.length > 7) {
+                if (buf.length > 24 &&
+                        buf[6] == 's' && buf[7] == 'h' && buf[8] == 'a' && buf[9] == '2' &&
+                        buf[11] == 'n' && buf[12] == 'i' && buf[13] == 's' && buf[14] == 't' && buf[15] == 'p' &&
+                        buf[16] == '2' && buf[17] == '5' && buf[18] == '6' &&
+                        buf[20] == 'c' && buf[21] == 'e' && buf[22] == 'r' && buf[23] == 't') {
+                    type = ECDSA_CERT;
+                } else {
+                    type = ECDSA;
+                }
             }
-            else if(buf[0]=='e'&& buf[1]=='c'&& buf[2]=='d' && buf[3]=='s'){
-              if(prvkey==null && buf.length>7){
-               type=ECDSA;
-              }
               i=0;
               while(i<len){ if(buf[i]==' ')break; i++;} i++;
               if(i<len){
@@ -992,6 +1016,9 @@ public abstract class KeyPair{
       else if(type==ECDSA){ kpair=new KeyPairECDSA(jsch, pubkey); }
       else if(type==ED25519){ kpair=new KeyPairEd25519(jsch, pubkey, prvkey); }
       else if(type==ED448){ kpair=new KeyPairEd448(jsch, pubkey, prvkey); }
+      else if(type==RSA_CERT){ kpair=new OpenSSHUserCertRSA (jsch); }
+      else if(type==DSA_CERT){ kpair=new OpenSSHUserCertDSA(jsch); }
+      else if(type==ECDSA_CERT){ kpair=new OpenSSHUserCertECDSA(jsch); }
       else if(vendor==VENDOR_PKCS8){ kpair = new KeyPairPKCS8(jsch); }
       else if (type == DEFERRED) { kpair = new KeyPairDeferred(jsch); }
 
