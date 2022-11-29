@@ -632,6 +632,17 @@
                         <configuration>
                             <configFile>${project.basedir}/eclipse-java-google-style.xml</configFile>
                             <encoding>UTF-8</encoding>
+                            <directories>
+                                <directory>${project.build.sourceDirectory}</directory>
+                                <directory>${project.build.testSourceDirectory}</directory>
+                                <directory>${project.basedir}/examples</directory>
+                                <directory>${project.basedir}/src/main/java9</directory>
+                                <directory>${project.basedir}/src/main/java10</directory>
+                                <directory>${project.basedir}/src/main/java11</directory>
+                                <directory>${project.basedir}/src/main/java15</directory>
+                                <directory>${project.basedir}/src/main/java16</directory>
+                                <directory>${project.basedir}/src/main/java-templates</directory>
+                            </directories>
                         </configuration>
                         <executions>
                             <execution>
