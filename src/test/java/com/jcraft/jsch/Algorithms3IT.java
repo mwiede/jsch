@@ -39,20 +39,18 @@ public class Algorithms3IT {
   private static final ListAppender<ILoggingEvent> sshdAppender =
       getListAppender(AlgorithmsIT.class);
 
-  @TempDir public Path tmpDir;
+  @TempDir
+  public Path tmpDir;
   private Path in;
   private Path out;
   private String hash;
   private Slf4jLogConsumer sshdLogConsumer;
 
   @Container
-  public GenericContainer<?> sshd =
-      new GenericContainer<>(
-              new ImageFromDockerfile()
-                  .withFileFromClasspath("dropbear_rsa_host_key", "docker/dropbear_rsa_host_key")
-                  .withFileFromClasspath("authorized_keys", "docker/authorized_keys")
-                  .withFileFromClasspath("Dockerfile", "docker/Dockerfile.dropbear"))
-          .withExposedPorts(22);
+  public GenericContainer<?> sshd = new GenericContainer<>(new ImageFromDockerfile()
+      .withFileFromClasspath("dropbear_rsa_host_key", "docker/dropbear_rsa_host_key")
+      .withFileFromClasspath("authorized_keys", "docker/authorized_keys")
+      .withFileFromClasspath("Dockerfile", "docker/Dockerfile.dropbear")).withExposedPorts(22);
 
   @BeforeAll
   public static void beforeAll() {
@@ -170,11 +168,8 @@ public class Algorithms3IT {
   }
 
   private static void checkLogs(String expected) {
-    Optional<String> actualJsch =
-        jschAppender.list.stream()
-            .map(ILoggingEvent::getFormattedMessage)
-            .filter(msg -> msg.matches(expected))
-            .findFirst();
+    Optional<String> actualJsch = jschAppender.list.stream().map(ILoggingEvent::getFormattedMessage)
+        .filter(msg -> msg.matches(expected)).findFirst();
     try {
       assertTrue(actualJsch.isPresent(), () -> "JSch: " + expected);
     } catch (AssertionError e) {

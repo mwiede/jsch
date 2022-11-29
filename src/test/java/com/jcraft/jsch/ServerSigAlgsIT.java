@@ -38,36 +38,30 @@ public class ServerSigAlgsIT {
   private static final ListAppender<ILoggingEvent> sshdAppender =
       getListAppender(ServerSigAlgsIT.class);
 
-  @TempDir public Path tmpDir;
+  @TempDir
+  public Path tmpDir;
   private Path in;
   private Path out;
   private String hash;
   private Slf4jLogConsumer sshdLogConsumer;
 
   @Container
-  public GenericContainer<?> sshd =
-      new GenericContainer<>(
-              new ImageFromDockerfile()
-                  .withFileFromClasspath("ssh_host_rsa_key", "docker/ssh_host_rsa_key")
-                  .withFileFromClasspath("ssh_host_rsa_key.pub", "docker/ssh_host_rsa_key.pub")
-                  .withFileFromClasspath("ssh_host_ecdsa256_key", "docker/ssh_host_ecdsa256_key")
-                  .withFileFromClasspath(
-                      "ssh_host_ecdsa256_key.pub", "docker/ssh_host_ecdsa256_key.pub")
-                  .withFileFromClasspath("ssh_host_ecdsa384_key", "docker/ssh_host_ecdsa384_key")
-                  .withFileFromClasspath(
-                      "ssh_host_ecdsa384_key.pub", "docker/ssh_host_ecdsa384_key.pub")
-                  .withFileFromClasspath("ssh_host_ecdsa521_key", "docker/ssh_host_ecdsa521_key")
-                  .withFileFromClasspath(
-                      "ssh_host_ecdsa521_key.pub", "docker/ssh_host_ecdsa521_key.pub")
-                  .withFileFromClasspath("ssh_host_ed25519_key", "docker/ssh_host_ed25519_key")
-                  .withFileFromClasspath(
-                      "ssh_host_ed25519_key.pub", "docker/ssh_host_ed25519_key.pub")
-                  .withFileFromClasspath("ssh_host_dsa_key", "docker/ssh_host_dsa_key")
-                  .withFileFromClasspath("ssh_host_dsa_key.pub", "docker/ssh_host_dsa_key.pub")
-                  .withFileFromClasspath("sshd_config", "docker/sshd_config")
-                  .withFileFromClasspath("authorized_keys", "docker/authorized_keys")
-                  .withFileFromClasspath("Dockerfile", "docker/Dockerfile"))
-          .withExposedPorts(22);
+  public GenericContainer<?> sshd = new GenericContainer<>(
+      new ImageFromDockerfile().withFileFromClasspath("ssh_host_rsa_key", "docker/ssh_host_rsa_key")
+          .withFileFromClasspath("ssh_host_rsa_key.pub", "docker/ssh_host_rsa_key.pub")
+          .withFileFromClasspath("ssh_host_ecdsa256_key", "docker/ssh_host_ecdsa256_key")
+          .withFileFromClasspath("ssh_host_ecdsa256_key.pub", "docker/ssh_host_ecdsa256_key.pub")
+          .withFileFromClasspath("ssh_host_ecdsa384_key", "docker/ssh_host_ecdsa384_key")
+          .withFileFromClasspath("ssh_host_ecdsa384_key.pub", "docker/ssh_host_ecdsa384_key.pub")
+          .withFileFromClasspath("ssh_host_ecdsa521_key", "docker/ssh_host_ecdsa521_key")
+          .withFileFromClasspath("ssh_host_ecdsa521_key.pub", "docker/ssh_host_ecdsa521_key.pub")
+          .withFileFromClasspath("ssh_host_ed25519_key", "docker/ssh_host_ed25519_key")
+          .withFileFromClasspath("ssh_host_ed25519_key.pub", "docker/ssh_host_ed25519_key.pub")
+          .withFileFromClasspath("ssh_host_dsa_key", "docker/ssh_host_dsa_key")
+          .withFileFromClasspath("ssh_host_dsa_key.pub", "docker/ssh_host_dsa_key.pub")
+          .withFileFromClasspath("sshd_config", "docker/sshd_config")
+          .withFileFromClasspath("authorized_keys", "docker/authorized_keys")
+          .withFileFromClasspath("Dockerfile", "docker/Dockerfile")).withExposedPorts(22);
 
   @BeforeAll
   public static void beforeAll() {
@@ -109,7 +103,8 @@ public class ServerSigAlgsIT {
 
   @Test
   public void testServerSigAlgs() throws Exception {
-    String algos = "ssh-rsa-sha512@ssh.com,ssh-rsa-sha384@ssh.com,ssh-rsa-sha256@ssh.com,ssh-rsa-sha224@ssh.com,rsa-sha2-512,rsa-sha2-256,ssh-rsa";
+    String algos =
+        "ssh-rsa-sha512@ssh.com,ssh-rsa-sha384@ssh.com,ssh-rsa-sha256@ssh.com,ssh-rsa-sha224@ssh.com,rsa-sha2-512,rsa-sha2-256,ssh-rsa";
     JSch ssh = createRSAIdentity();
     Session session = createSession(ssh);
     session.setConfig("PubkeyAcceptedAlgorithms", algos);
@@ -118,9 +113,12 @@ public class ServerSigAlgsIT {
 
     String expectedKex = "kex: host key algorithm: rsa-sha2-512";
     String expectedExtInfo = "SSH_MSG_EXT_INFO received";
-    String expectedServerSigAlgs = "server-sig-algs=<ssh-ed25519,ssh-rsa,rsa-sha2-256,rsa-sha2-512,ssh-dss,ecdsa-sha2-nistp256,ecdsa-sha2-nistp384,ecdsa-sha2-nistp521>";
-    String expectedPubkeysKnown = "PubkeyAcceptedAlgorithms in server-sig-algs = \\[rsa-sha2-512, rsa-sha2-256, ssh-rsa\\]";
-    String expectedPubkeysUnknown = "PubkeyAcceptedAlgorithms not in server-sig-algs = \\[ssh-rsa-sha512@ssh.com, ssh-rsa-sha384@ssh.com, ssh-rsa-sha256@ssh.com, ssh-rsa-sha224@ssh.com\\]";
+    String expectedServerSigAlgs =
+        "server-sig-algs=<ssh-ed25519,ssh-rsa,rsa-sha2-256,rsa-sha2-512,ssh-dss,ecdsa-sha2-nistp256,ecdsa-sha2-nistp384,ecdsa-sha2-nistp521>";
+    String expectedPubkeysKnown =
+        "PubkeyAcceptedAlgorithms in server-sig-algs = \\[rsa-sha2-512, rsa-sha2-256, ssh-rsa\\]";
+    String expectedPubkeysUnknown =
+        "PubkeyAcceptedAlgorithms not in server-sig-algs = \\[ssh-rsa-sha512@ssh.com, ssh-rsa-sha384@ssh.com, ssh-rsa-sha256@ssh.com, ssh-rsa-sha224@ssh.com\\]";
     String expectedPreauth = "rsa-sha2-512 preauth success";
     String expectedAuth = "rsa-sha2-512 auth success";
     checkLogs(expectedKex);
@@ -134,7 +132,8 @@ public class ServerSigAlgsIT {
 
   @Test
   public void testNoServerSigAlgs() throws Exception {
-    String algos = "ssh-rsa-sha512@ssh.com,ssh-rsa-sha384@ssh.com,ssh-rsa-sha256@ssh.com,ssh-rsa-sha224@ssh.com,rsa-sha2-512,rsa-sha2-256,ssh-rsa";
+    String algos =
+        "ssh-rsa-sha512@ssh.com,ssh-rsa-sha384@ssh.com,ssh-rsa-sha256@ssh.com,ssh-rsa-sha224@ssh.com,rsa-sha2-512,rsa-sha2-256,ssh-rsa";
     JSch ssh = createRSAIdentity();
     Session session = createSession(ssh);
     session.setConfig("enable_server_sig_algs", "no");
@@ -143,7 +142,8 @@ public class ServerSigAlgsIT {
     doSftp(session, true);
 
     String expectedKex = "kex: host key algorithm: rsa-sha2-512";
-    String expectedPubkeysNoServerSigs = String.format("No server-sig-algs found, using PubkeyAcceptedAlgorithms = %s", algos);
+    String expectedPubkeysNoServerSigs =
+        String.format("No server-sig-algs found, using PubkeyAcceptedAlgorithms = %s", algos);
     String expectedPreauthFail1 = "ssh-rsa-sha512@ssh.com preauth failure";
     String expectedPreauthFail2 = "ssh-rsa-sha384@ssh.com preauth failure";
     String expectedPreauthFail3 = "ssh-rsa-sha256@ssh.com preauth failure";
@@ -215,11 +215,8 @@ public class ServerSigAlgsIT {
   }
 
   private static void checkLogs(String expected) {
-    Optional<String> actualJsch =
-        jschAppender.list.stream()
-            .map(ILoggingEvent::getFormattedMessage)
-            .filter(msg -> msg.matches(expected))
-            .findFirst();
+    Optional<String> actualJsch = jschAppender.list.stream().map(ILoggingEvent::getFormattedMessage)
+        .filter(msg -> msg.matches(expected)).findFirst();
     try {
       assertTrue(actualJsch.isPresent(), () -> "JSch: " + expected);
     } catch (AssertionError e) {

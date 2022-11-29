@@ -45,8 +45,10 @@ public class SSHAgentIT {
   private static final DigestUtils sha256sum = new DigestUtils(DigestUtils.getSha256Digest());
   private static final ListAppender<ILoggingEvent> jschAppender = getListAppender(JSch.class);
   private static final ListAppender<ILoggingEvent> sshdAppender = getListAppender(SSHAgentIT.class);
-  private static final ListAppender<ILoggingEvent> sshAgentAppender = getListAppender(AgentProxy.class);
-  @TempDir public static Path tmpDir;
+  private static final ListAppender<ILoggingEvent> sshAgentAppender =
+      getListAppender(AgentProxy.class);
+  @TempDir
+  public static Path tmpDir;
   private static String testuid;
   private static String testgid;
   private static Path sshAgentSock;
@@ -58,38 +60,28 @@ public class SSHAgentIT {
   private Slf4jLogConsumer sshAgentLogConsumer;
 
   @Container
-  public GenericContainer<?> sshd =
-      new GenericContainer<>(
-              new ImageFromDockerfile()
-                  .withFileFromClasspath("ssh_host_rsa_key", "docker/ssh_host_rsa_key")
-                  .withFileFromClasspath("ssh_host_rsa_key.pub", "docker/ssh_host_rsa_key.pub")
-                  .withFileFromClasspath("ssh_host_ecdsa256_key", "docker/ssh_host_ecdsa256_key")
-                  .withFileFromClasspath(
-                      "ssh_host_ecdsa256_key.pub", "docker/ssh_host_ecdsa256_key.pub")
-                  .withFileFromClasspath("ssh_host_ecdsa384_key", "docker/ssh_host_ecdsa384_key")
-                  .withFileFromClasspath(
-                      "ssh_host_ecdsa384_key.pub", "docker/ssh_host_ecdsa384_key.pub")
-                  .withFileFromClasspath("ssh_host_ecdsa521_key", "docker/ssh_host_ecdsa521_key")
-                  .withFileFromClasspath(
-                      "ssh_host_ecdsa521_key.pub", "docker/ssh_host_ecdsa521_key.pub")
-                  .withFileFromClasspath("ssh_host_ed25519_key", "docker/ssh_host_ed25519_key")
-                  .withFileFromClasspath(
-                      "ssh_host_ed25519_key.pub", "docker/ssh_host_ed25519_key.pub")
-                  .withFileFromClasspath("ssh_host_dsa_key", "docker/ssh_host_dsa_key")
-                  .withFileFromClasspath("ssh_host_dsa_key.pub", "docker/ssh_host_dsa_key.pub")
-                  .withFileFromClasspath("sshd_config", "docker/sshd_config")
-                  .withFileFromClasspath("authorized_keys", "docker/authorized_keys")
-                  .withFileFromClasspath("Dockerfile", "docker/Dockerfile"))
-          .withExposedPorts(22);
+  public GenericContainer<?> sshd = new GenericContainer<>(
+      new ImageFromDockerfile().withFileFromClasspath("ssh_host_rsa_key", "docker/ssh_host_rsa_key")
+          .withFileFromClasspath("ssh_host_rsa_key.pub", "docker/ssh_host_rsa_key.pub")
+          .withFileFromClasspath("ssh_host_ecdsa256_key", "docker/ssh_host_ecdsa256_key")
+          .withFileFromClasspath("ssh_host_ecdsa256_key.pub", "docker/ssh_host_ecdsa256_key.pub")
+          .withFileFromClasspath("ssh_host_ecdsa384_key", "docker/ssh_host_ecdsa384_key")
+          .withFileFromClasspath("ssh_host_ecdsa384_key.pub", "docker/ssh_host_ecdsa384_key.pub")
+          .withFileFromClasspath("ssh_host_ecdsa521_key", "docker/ssh_host_ecdsa521_key")
+          .withFileFromClasspath("ssh_host_ecdsa521_key.pub", "docker/ssh_host_ecdsa521_key.pub")
+          .withFileFromClasspath("ssh_host_ed25519_key", "docker/ssh_host_ed25519_key")
+          .withFileFromClasspath("ssh_host_ed25519_key.pub", "docker/ssh_host_ed25519_key.pub")
+          .withFileFromClasspath("ssh_host_dsa_key", "docker/ssh_host_dsa_key")
+          .withFileFromClasspath("ssh_host_dsa_key.pub", "docker/ssh_host_dsa_key.pub")
+          .withFileFromClasspath("sshd_config", "docker/sshd_config")
+          .withFileFromClasspath("authorized_keys", "docker/authorized_keys")
+          .withFileFromClasspath("Dockerfile", "docker/Dockerfile")).withExposedPorts(22);
 
   @Container
-  public GenericContainer<?> sshAgent =
-      new GenericContainer<>(
-              new ImageFromDockerfile()
-                  .withBuildArg("testuid", testuid)
-                  .withBuildArg("testgid", testgid)
-                  .withFileFromClasspath("Dockerfile", "docker/Dockerfile.sshagent"))
-          .withFileSystemBind(sshAgentSock.getParent().toString(), "/testuser", READ_WRITE);
+  public GenericContainer<?> sshAgent = new GenericContainer<>(
+      new ImageFromDockerfile().withBuildArg("testuid", testuid).withBuildArg("testgid", testgid)
+          .withFileFromClasspath("Dockerfile", "docker/Dockerfile.sshagent"))
+              .withFileSystemBind(sshAgentSock.getParent().toString(), "/testuser", READ_WRITE);
 
   @BeforeAll
   public static void beforeAll() throws IOException {
@@ -277,7 +269,8 @@ public class SSHAgentIT {
   }
 
   private JSch createRSAIdentity(USocketFactory factory) throws Exception {
-    IdentityRepository ir = new AgentIdentityRepository(new SSHAgentConnector(factory, sshAgentSock));
+    IdentityRepository ir =
+        new AgentIdentityRepository(new SSHAgentConnector(factory, sshAgentSock));
     assertTrue(ir.getIdentities().isEmpty(), "ssh-agent empty");
 
     HostKey hostKey = readHostKey(getResourceFile("docker/ssh_host_rsa_key.pub"));
@@ -290,48 +283,52 @@ public class SSHAgentIT {
   }
 
   private JSch createECDSA256Identity(USocketFactory factory) throws Exception {
-    IdentityRepository ir = new AgentIdentityRepository(new SSHAgentConnector(factory, sshAgentSock));
+    IdentityRepository ir =
+        new AgentIdentityRepository(new SSHAgentConnector(factory, sshAgentSock));
     assertTrue(ir.getIdentities().isEmpty(), "ssh-agent empty");
 
     HostKey hostKey = readHostKey(getResourceFile("docker/ssh_host_rsa_key.pub"));
     JSch ssh = new JSch();
     ssh.setIdentityRepository(ir);
-    ssh.addIdentity(
-        getResourceFile("docker/id_ecdsa256"), getResourceFile("docker/id_ecdsa256.pub"), null);
+    ssh.addIdentity(getResourceFile("docker/id_ecdsa256"),
+        getResourceFile("docker/id_ecdsa256.pub"), null);
     ssh.getHostKeyRepository().add(hostKey, null);
     return ssh;
   }
 
   private JSch createECDSA384Identity(USocketFactory factory) throws Exception {
-    IdentityRepository ir = new AgentIdentityRepository(new SSHAgentConnector(factory, sshAgentSock));
+    IdentityRepository ir =
+        new AgentIdentityRepository(new SSHAgentConnector(factory, sshAgentSock));
     assertTrue(ir.getIdentities().isEmpty(), "ssh-agent empty");
 
     HostKey hostKey = readHostKey(getResourceFile("docker/ssh_host_rsa_key.pub"));
     JSch ssh = new JSch();
     ssh.setIdentityRepository(ir);
-    ssh.addIdentity(
-        getResourceFile("docker/id_ecdsa384"), getResourceFile("docker/id_ecdsa384.pub"), null);
+    ssh.addIdentity(getResourceFile("docker/id_ecdsa384"),
+        getResourceFile("docker/id_ecdsa384.pub"), null);
     assertEquals(1, ir.getIdentities().size());
     ssh.getHostKeyRepository().add(hostKey, null);
     return ssh;
   }
 
   private JSch createECDSA521Identity(USocketFactory factory) throws Exception {
-    IdentityRepository ir = new AgentIdentityRepository(new SSHAgentConnector(factory, sshAgentSock));
+    IdentityRepository ir =
+        new AgentIdentityRepository(new SSHAgentConnector(factory, sshAgentSock));
     assertTrue(ir.getIdentities().isEmpty(), "ssh-agent empty");
 
     HostKey hostKey = readHostKey(getResourceFile("docker/ssh_host_rsa_key.pub"));
     JSch ssh = new JSch();
     ssh.setIdentityRepository(ir);
-    ssh.addIdentity(
-        getResourceFile("docker/id_ecdsa521"), getResourceFile("docker/id_ecdsa521.pub"), null);
+    ssh.addIdentity(getResourceFile("docker/id_ecdsa521"),
+        getResourceFile("docker/id_ecdsa521.pub"), null);
     assertEquals(1, ir.getIdentities().size());
     ssh.getHostKeyRepository().add(hostKey, null);
     return ssh;
   }
 
   private JSch createDSAIdentity(USocketFactory factory) throws Exception {
-    IdentityRepository ir = new AgentIdentityRepository(new SSHAgentConnector(factory, sshAgentSock));
+    IdentityRepository ir =
+        new AgentIdentityRepository(new SSHAgentConnector(factory, sshAgentSock));
     assertTrue(ir.getIdentities().isEmpty(), "ssh-agent empty");
 
     HostKey hostKey = readHostKey(getResourceFile("docker/ssh_host_rsa_key.pub"));
@@ -344,14 +341,15 @@ public class SSHAgentIT {
   }
 
   private JSch createEd25519Identity(USocketFactory factory) throws Exception {
-    IdentityRepository ir = new AgentIdentityRepository(new SSHAgentConnector(factory, sshAgentSock));
+    IdentityRepository ir =
+        new AgentIdentityRepository(new SSHAgentConnector(factory, sshAgentSock));
     assertTrue(ir.getIdentities().isEmpty(), "ssh-agent empty");
 
     HostKey hostKey = readHostKey(getResourceFile("docker/ssh_host_rsa_key.pub"));
     JSch ssh = new JSch();
     ssh.setIdentityRepository(ir);
-    ssh.addIdentity(
-        getResourceFile("docker/id_ed25519"), getResourceFile("docker/id_ed25519.pub"), null);
+    ssh.addIdentity(getResourceFile("docker/id_ed25519"), getResourceFile("docker/id_ed25519.pub"),
+        null);
     assertEquals(1, ir.getIdentities().size());
     ssh.getHostKeyRepository().add(hostKey, null);
     return ssh;
@@ -401,7 +399,8 @@ public class SSHAgentIT {
     sshAgentAppender.stop();
     jschAppender.list.stream().map(ILoggingEvent::getFormattedMessage).forEach(System.out::println);
     sshdAppender.list.stream().map(ILoggingEvent::getFormattedMessage).forEach(System.out::println);
-    sshAgentAppender.list.stream().map(ILoggingEvent::getFormattedMessage).forEach(System.out::println);
+    sshAgentAppender.list.stream().map(ILoggingEvent::getFormattedMessage)
+        .forEach(System.out::println);
     System.out.println("");
     System.out.println("");
     System.out.println("");

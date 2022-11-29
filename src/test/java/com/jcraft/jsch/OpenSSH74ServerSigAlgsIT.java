@@ -40,36 +40,30 @@ public class OpenSSH74ServerSigAlgsIT {
   private static final ListAppender<ILoggingEvent> sshdAppender =
       getListAppender(OpenSSH74ServerSigAlgsIT.class);
 
-  @TempDir public Path tmpDir;
+  @TempDir
+  public Path tmpDir;
   private Path in;
   private Path out;
   private String hash;
   private Slf4jLogConsumer sshdLogConsumer;
 
   @Container
-  public GenericContainer<?> sshd =
-      new GenericContainer<>(
-              new ImageFromDockerfile()
-                  .withFileFromClasspath("ssh_host_rsa_key", "docker/ssh_host_rsa_key")
-                  .withFileFromClasspath("ssh_host_rsa_key.pub", "docker/ssh_host_rsa_key.pub")
-                  .withFileFromClasspath("ssh_host_ecdsa256_key", "docker/ssh_host_ecdsa256_key")
-                  .withFileFromClasspath(
-                      "ssh_host_ecdsa256_key.pub", "docker/ssh_host_ecdsa256_key.pub")
-                  .withFileFromClasspath("ssh_host_ecdsa384_key", "docker/ssh_host_ecdsa384_key")
-                  .withFileFromClasspath(
-                      "ssh_host_ecdsa384_key.pub", "docker/ssh_host_ecdsa384_key.pub")
-                  .withFileFromClasspath("ssh_host_ecdsa521_key", "docker/ssh_host_ecdsa521_key")
-                  .withFileFromClasspath(
-                      "ssh_host_ecdsa521_key.pub", "docker/ssh_host_ecdsa521_key.pub")
-                  .withFileFromClasspath("ssh_host_ed25519_key", "docker/ssh_host_ed25519_key")
-                  .withFileFromClasspath(
-                      "ssh_host_ed25519_key.pub", "docker/ssh_host_ed25519_key.pub")
-                  .withFileFromClasspath("ssh_host_dsa_key", "docker/ssh_host_dsa_key")
-                  .withFileFromClasspath("ssh_host_dsa_key.pub", "docker/ssh_host_dsa_key.pub")
-                  .withFileFromClasspath("sshd_config", "docker/sshd_config")
-                  .withFileFromClasspath("authorized_keys", "docker/authorized_keys")
-                  .withFileFromClasspath("Dockerfile", "docker/Dockerfile.openssh74"))
-          .withExposedPorts(22);
+  public GenericContainer<?> sshd = new GenericContainer<>(
+      new ImageFromDockerfile().withFileFromClasspath("ssh_host_rsa_key", "docker/ssh_host_rsa_key")
+          .withFileFromClasspath("ssh_host_rsa_key.pub", "docker/ssh_host_rsa_key.pub")
+          .withFileFromClasspath("ssh_host_ecdsa256_key", "docker/ssh_host_ecdsa256_key")
+          .withFileFromClasspath("ssh_host_ecdsa256_key.pub", "docker/ssh_host_ecdsa256_key.pub")
+          .withFileFromClasspath("ssh_host_ecdsa384_key", "docker/ssh_host_ecdsa384_key")
+          .withFileFromClasspath("ssh_host_ecdsa384_key.pub", "docker/ssh_host_ecdsa384_key.pub")
+          .withFileFromClasspath("ssh_host_ecdsa521_key", "docker/ssh_host_ecdsa521_key")
+          .withFileFromClasspath("ssh_host_ecdsa521_key.pub", "docker/ssh_host_ecdsa521_key.pub")
+          .withFileFromClasspath("ssh_host_ed25519_key", "docker/ssh_host_ed25519_key")
+          .withFileFromClasspath("ssh_host_ed25519_key.pub", "docker/ssh_host_ed25519_key.pub")
+          .withFileFromClasspath("ssh_host_dsa_key", "docker/ssh_host_dsa_key")
+          .withFileFromClasspath("ssh_host_dsa_key.pub", "docker/ssh_host_dsa_key.pub")
+          .withFileFromClasspath("sshd_config", "docker/sshd_config")
+          .withFileFromClasspath("authorized_keys", "docker/authorized_keys")
+          .withFileFromClasspath("Dockerfile", "docker/Dockerfile.openssh74")).withExposedPorts(22);
 
   @BeforeAll
   public static void beforeAll() {
@@ -79,7 +73,8 @@ public class OpenSSH74ServerSigAlgsIT {
   @BeforeEach
   public void beforeEach() throws IOException {
     if (sshdLogConsumer == null) {
-      sshdLogConsumer = new Slf4jLogConsumer(LoggerFactory.getLogger(OpenSSH74ServerSigAlgsIT.class));
+      sshdLogConsumer =
+          new Slf4jLogConsumer(LoggerFactory.getLogger(OpenSSH74ServerSigAlgsIT.class));
       sshd.followOutput(sshdLogConsumer);
     }
 
@@ -111,7 +106,8 @@ public class OpenSSH74ServerSigAlgsIT {
 
   @Test
   public void testServerSigAlgs() throws Exception {
-    String algos = "ssh-rsa-sha512@ssh.com,ssh-rsa-sha384@ssh.com,ssh-rsa-sha256@ssh.com,ssh-rsa-sha224@ssh.com,rsa-sha2-512,rsa-sha2-256,ssh-rsa";
+    String algos =
+        "ssh-rsa-sha512@ssh.com,ssh-rsa-sha384@ssh.com,ssh-rsa-sha256@ssh.com,ssh-rsa-sha224@ssh.com,rsa-sha2-512,rsa-sha2-256,ssh-rsa";
     JSch ssh = createRSAIdentity();
     Session session = createSession(ssh);
     session.setConfig("PubkeyAcceptedAlgorithms", algos);
@@ -120,10 +116,14 @@ public class OpenSSH74ServerSigAlgsIT {
 
     String expectedKex = "kex: host key algorithm: rsa-sha2-512";
     String expectedExtInfo = "SSH_MSG_EXT_INFO received";
-    String expectedServerSigAlgs = "server-sig-algs=<ssh-ed25519,ssh-rsa,ssh-dss,ecdsa-sha2-nistp256,ecdsa-sha2-nistp384,ecdsa-sha2-nistp521>";
-    String expectedOpenSSH74Bug = "OpenSSH 7.4 detected: adding rsa-sha2-256 & rsa-sha2-512 to server-sig-algs";
-    String expectedPubkeysKnown = "PubkeyAcceptedAlgorithms in server-sig-algs = \\[rsa-sha2-512, rsa-sha2-256, ssh-rsa\\]";
-    String expectedPubkeysUnknown = "PubkeyAcceptedAlgorithms not in server-sig-algs = \\[ssh-rsa-sha512@ssh.com, ssh-rsa-sha384@ssh.com, ssh-rsa-sha256@ssh.com, ssh-rsa-sha224@ssh.com\\]";
+    String expectedServerSigAlgs =
+        "server-sig-algs=<ssh-ed25519,ssh-rsa,ssh-dss,ecdsa-sha2-nistp256,ecdsa-sha2-nistp384,ecdsa-sha2-nistp521>";
+    String expectedOpenSSH74Bug =
+        "OpenSSH 7.4 detected: adding rsa-sha2-256 & rsa-sha2-512 to server-sig-algs";
+    String expectedPubkeysKnown =
+        "PubkeyAcceptedAlgorithms in server-sig-algs = \\[rsa-sha2-512, rsa-sha2-256, ssh-rsa\\]";
+    String expectedPubkeysUnknown =
+        "PubkeyAcceptedAlgorithms not in server-sig-algs = \\[ssh-rsa-sha512@ssh.com, ssh-rsa-sha384@ssh.com, ssh-rsa-sha256@ssh.com, ssh-rsa-sha224@ssh.com\\]";
     String expectedPreauth = "rsa-sha2-512 preauth success";
     String expectedAuth = "rsa-sha2-512 auth success";
     checkLogs(expectedKex);
@@ -192,11 +192,8 @@ public class OpenSSH74ServerSigAlgsIT {
   }
 
   private static void checkLogs(String expected) {
-    Optional<String> actualJsch =
-        jschAppender.list.stream()
-            .map(ILoggingEvent::getFormattedMessage)
-            .filter(msg -> msg.matches(expected))
-            .findFirst();
+    Optional<String> actualJsch = jschAppender.list.stream().map(ILoggingEvent::getFormattedMessage)
+        .filter(msg -> msg.matches(expected)).findFirst();
     try {
       assertTrue(actualJsch.isPresent(), () -> "JSch: " + expected);
     } catch (AssertionError e) {

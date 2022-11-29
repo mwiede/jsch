@@ -8,7 +8,7 @@ import java.util.stream.Collectors;
 import org.junit.jupiter.api.Test;
 
 class LoggerTest {
-  
+
   @Test
   void testLogWithCause() {
     LinkedList<String> messages = new LinkedList<>();
@@ -18,38 +18,36 @@ class LoggerTest {
       public void log(int level, String message) {
         messages.add(level + ":" + message);
       }
+
       @Override
       public boolean isEnabled(int level) {
         return enabledResult[0];
       }
     };
-    
+
     Exception ex = new Exception("dummy exception");
     StringWriter sw = new StringWriter();
     PrintWriter pw = new PrintWriter(sw);
     ex.printStackTrace(pw);
     String expectedTrace = sw.toString();
-    
+
     logger.log(Logger.ERROR, "some message", null);
     logger.log(Logger.ERROR, "some message with trace", ex);
     assertEquals("", getMessageLines(messages), "message mismatch");
-    
+
     enabledResult[0] = true;
     logger.log(Logger.ERROR, "some message", null);
     logger.log(Logger.ERROR, "some message with trace", ex);
     assertEquals(
-        Logger.ERROR + ":some message\r\n" + 
-        Logger.ERROR + ":some message with trace" + System.lineSeparator() + 
-        expectedTrace +
-        "", getMessageLines(messages), "message mismatch");
+        Logger.ERROR + ":some message\r\n" + Logger.ERROR + ":some message with trace"
+            + System.lineSeparator() + expectedTrace + "",
+        getMessageLines(messages), "message mismatch");
   }
-  
+
   static String getMessageLines(LinkedList<String> messages) {
     try {
-      return messages.stream()
-          .collect(Collectors.joining("\r\n"));
-    }
-    finally {
+      return messages.stream().collect(Collectors.joining("\r\n"));
+    } finally {
       messages.clear();
     }
   }

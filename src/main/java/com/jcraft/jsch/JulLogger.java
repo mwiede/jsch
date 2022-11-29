@@ -7,7 +7,7 @@ public class JulLogger implements com.jcraft.jsch.Logger {
 
   private static final Logger stlogger = Logger.getLogger(JSch.class.getName());
   private final Logger logger;
-  
+
   public JulLogger() {
     this(stlogger);
   }

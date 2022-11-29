@@ -1,31 +1,29 @@
 /* -*-mode:java; c-basic-offset:2; indent-tabs-mode:nil -*- */
 /*
-Copyright (c) 2013-2018 ymnk, JCraft,Inc. All rights reserved.
-
-Redistribution and use in source and binary forms, with or without
-modification, are permitted provided that the following conditions are met:
-
-  1. Redistributions of source code must retain the above copyright notice,
-     this list of conditions and the following disclaimer.
-
-  2. Redistributions in binary form must reproduce the above copyright 
-     notice, this list of conditions and the following disclaimer in 
-     the documentation and/or other materials provided with the distribution.
-
-  3. The names of the authors may not be used to endorse or promote products
-     derived from this software without specific prior written permission.
-
-THIS SOFTWARE IS PROVIDED ``AS IS'' AND ANY EXPRESSED OR IMPLIED WARRANTIES,
-INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND
-FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL JCRAFT,
-INC. OR ANY CONTRIBUTORS TO THIS SOFTWARE BE LIABLE FOR ANY DIRECT, INDIRECT,
-INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA,
-OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
-LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
-NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
-EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*/
+ * Copyright (c) 2013-2018 ymnk, JCraft,Inc. All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without modification, are permitted
+ * provided that the following conditions are met:
+ *
+ * 1. Redistributions of source code must retain the above copyright notice, this list of conditions
+ * and the following disclaimer.
+ *
+ * 2. Redistributions in binary form must reproduce the above copyright notice, this list of
+ * conditions and the following disclaimer in the documentation and/or other materials provided with
+ * the distribution.
+ *
+ * 3. The names of the authors may not be used to endorse or promote products derived from this
+ * software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED ``AS IS'' AND ANY EXPRESSED OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED. IN NO EVENT SHALL JCRAFT, INC. OR ANY CONTRIBUTORS TO THIS SOFTWARE BE LIABLE FOR ANY
+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+ * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR
+ * BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+ * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
 
 package com.jcraft.jsch;
 
@@ -45,42 +43,42 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
- * This class implements ConfigRepository interface, and parses
- * OpenSSH's configuration file.  The following keywords will be recognized,
+ * This class implements ConfigRepository interface, and parses OpenSSH's configuration file. The
+ * following keywords will be recognized,
  * <ul>
- *   <li>Host</li>
- *   <li>User</li>
- *   <li>Hostname</li>
- *   <li>Port</li>
- *   <li>PreferredAuthentications</li>
- *   <li>PubkeyAcceptedAlgorithms</li>
- *   <li>FingerprintHash</li>
- *   <li>IdentityFile</li>
- *   <li>NumberOfPasswordPrompts</li>
- *   <li>ConnectTimeout</li>
- *   <li>HostKeyAlias</li>
- *   <li>UserKnownHostsFile</li>
- *   <li>KexAlgorithms</li>
- *   <li>HostKeyAlgorithms</li>
- *   <li>Ciphers</li>
- *   <li>Macs</li>
- *   <li>Compression</li>
- *   <li>CompressionLevel</li>
- *   <li>ForwardAgent</li>
- *   <li>RequestTTY</li>
- *   <li>ServerAliveInterval</li>
- *   <li>LocalForward</li>
- *   <li>RemoteForward</li>
- *   <li>ClearAllForwardings</li>
+ * <li>Host</li>
+ * <li>User</li>
+ * <li>Hostname</li>
+ * <li>Port</li>
+ * <li>PreferredAuthentications</li>
+ * <li>PubkeyAcceptedAlgorithms</li>
+ * <li>FingerprintHash</li>
+ * <li>IdentityFile</li>
+ * <li>NumberOfPasswordPrompts</li>
+ * <li>ConnectTimeout</li>
+ * <li>HostKeyAlias</li>
+ * <li>UserKnownHostsFile</li>
+ * <li>KexAlgorithms</li>
+ * <li>HostKeyAlgorithms</li>
+ * <li>Ciphers</li>
+ * <li>Macs</li>
+ * <li>Compression</li>
+ * <li>CompressionLevel</li>
+ * <li>ForwardAgent</li>
+ * <li>RequestTTY</li>
+ * <li>ServerAliveInterval</li>
+ * <li>LocalForward</li>
+ * <li>RemoteForward</li>
+ * <li>ClearAllForwardings</li>
  * </ul>
  *
  * @see ConfigRepository
  */
 public class OpenSSHConfig implements ConfigRepository {
 
-  private static final Set<String> keysWithListAdoption = Stream
-      .of("KexAlgorithms", "Ciphers","HostKeyAlgorithms", "MACs", "PubkeyAcceptedAlgorithms", "PubkeyAcceptedKeyTypes")
-      .map(String::toUpperCase).collect(Collectors.toSet());
+  private static final Set<String> keysWithListAdoption =
+      Stream.of("KexAlgorithms", "Ciphers", "HostKeyAlgorithms", "MACs", "PubkeyAcceptedAlgorithms",
+          "PubkeyAcceptedKeyTypes").map(String::toUpperCase).collect(Collectors.toSet());
 
   /**
    * Parses the given string, and returns an instance of ConfigRepository.
@@ -89,8 +87,8 @@ public class OpenSSHConfig implements ConfigRepository {
    * @return an instanceof OpenSSHConfig
    */
   public static OpenSSHConfig parse(String conf) throws IOException {
-    try(Reader r = new StringReader(conf)) {
-      try(BufferedReader br = new BufferedReader(r)) {
+    try (Reader r = new StringReader(conf)) {
+      try (BufferedReader br = new BufferedReader(r)) {
         return new OpenSSHConfig(br);
       }
     }
@@ -103,7 +101,8 @@ public class OpenSSHConfig implements ConfigRepository {
    * @return an instanceof OpenSSHConfig
    */
   public static OpenSSHConfig parseFile(String file) throws IOException {
-    try(BufferedReader br = Files.newBufferedReader(Paths.get(Util.checkTilde(file)), StandardCharsets.UTF_8)) {
+    try (BufferedReader br =
+        Files.newBufferedReader(Paths.get(Util.checkTilde(file)), StandardCharsets.UTF_8)) {
       return new OpenSSHConfig(br);
     }
   }
@@ -120,25 +119,24 @@ public class OpenSSHConfig implements ConfigRepository {
     Vector<String[]> kv = new Vector<>();
     String l = null;
 
-    while((l = br.readLine()) != null){
+    while ((l = br.readLine()) != null) {
       l = l.trim();
-      if(l.length() == 0 || l.startsWith("#"))
+      if (l.length() == 0 || l.startsWith("#"))
         continue;
 
       String[] key_value = l.split("[= \t]", 2);
-      for(int i = 0; i < key_value.length; i++)
+      for (int i = 0; i < key_value.length; i++)
         key_value[i] = key_value[i].trim();
 
-      if(key_value.length <= 1)
+      if (key_value.length <= 1)
         continue;
 
-      if(key_value[0].equalsIgnoreCase("Host")){
+      if (key_value[0].equalsIgnoreCase("Host")) {
         config.put(host, kv);
         hosts.addElement(host);
         host = key_value[1];
         kv = new Vector<>();
-      }
-      else {
+      } else {
         kv.addElement(key_value);
       }
     }
@@ -179,28 +177,27 @@ public class OpenSSHConfig implements ConfigRepository {
     private String host;
     private Vector<Vector<String[]>> _configs = new Vector<>();
 
-    MyConfig(String host){
+    MyConfig(String host) {
       this.host = host;
 
       _configs.addElement(config.get(""));
 
       byte[] _host = Util.str2byte(host);
-      if(hosts.size() > 1){
-        for(int i = 1; i < hosts.size(); i++){
+      if (hosts.size() > 1) {
+        for (int i = 1; i < hosts.size(); i++) {
           String patterns[] = hosts.elementAt(i).split("[ \t]");
-          for(int j = 0; j < patterns.length; j++){
+          for (int j = 0; j < patterns.length; j++) {
             boolean negate = false;
             String foo = patterns[j].trim();
-            if(foo.startsWith("!")){
+            if (foo.startsWith("!")) {
               negate = true;
               foo = foo.substring(1).trim();
             }
-            if(Util.glob(Util.str2byte(foo), _host)){
-              if(!negate){
+            if (Util.glob(Util.str2byte(foo), _host)) {
+              if (!negate) {
                 _configs.addElement(config.get(hosts.elementAt(i)));
               }
-            }
-            else if(negate){
+            } else if (negate) {
               _configs.addElement(config.get(hosts.elementAt(i)));
             }
           }
@@ -209,48 +206,44 @@ public class OpenSSHConfig implements ConfigRepository {
     }
 
     private String find(String key) {
-      String originalKey=key;
-      if(keymap.get(key)!=null) {
+      String originalKey = key;
+      if (keymap.get(key) != null) {
         key = keymap.get(key);
       }
       key = key.toUpperCase();
       String value = null;
-      for(int i = 0; i < _configs.size(); i++) {
+      for (int i = 0; i < _configs.size(); i++) {
         Vector<String[]> v = _configs.elementAt(i);
-        for(int j = 0; j < v.size(); j++) {
+        for (int j = 0; j < v.size(); j++) {
           String[] kv = v.elementAt(j);
-          if(kv[0].toUpperCase().equals(key)) {
+          if (kv[0].toUpperCase().equals(key)) {
             value = kv[1];
             break;
           }
         }
-        if(value != null)
+        if (value != null)
           break;
       }
       // TODO: The following change should be applied,
-      //       but it is breaking changes.
-      //       The consensus is required to enable it.
+      // but it is breaking changes.
+      // The consensus is required to enable it.
       /*
-      if(value!=null &&
-         (key.equals("SERVERALIVEINTERVAL") ||
-          key.equals("CONNECTTIMEOUT"))){
-        try {
-          int timeout = Integer.parseInt(value);
-          value = Integer.toString(timeout*1000);
-        } catch (NumberFormatException e) {
-        }
-      }
-      */
+       * if(value!=null && (key.equals("SERVERALIVEINTERVAL") || key.equals("CONNECTTIMEOUT"))){ try
+       * { int timeout = Integer.parseInt(value); value = Integer.toString(timeout*1000); } catch
+       * (NumberFormatException e) { } }
+       */
 
-      if (keysWithListAdoption.contains(key) && value != null && (value.startsWith("+") || value.startsWith("-") || value.startsWith("^"))) {
+      if (keysWithListAdoption.contains(key) && value != null
+          && (value.startsWith("+") || value.startsWith("-") || value.startsWith("^"))) {
 
         String origConfig = JSch.getConfig(originalKey).trim();
 
         if (value.startsWith("+")) {
-          value=origConfig + "," + value.substring(1).trim();
+          value = origConfig + "," + value.substring(1).trim();
         } else if (value.startsWith("-")) {
-          List<String> algList = Arrays.stream(Util.split(origConfig,",")).collect(Collectors.toList());
-          for (String alg : Util.split(value.substring(1).trim(),",")) {
+          List<String> algList =
+              Arrays.stream(Util.split(origConfig, ",")).collect(Collectors.toList());
+          for (String alg : Util.split(value.substring(1).trim(), ",")) {
             algList.remove(alg.trim());
           }
           value = String.join(",", algList);
@@ -265,13 +258,13 @@ public class OpenSSHConfig implements ConfigRepository {
     private String[] multiFind(String key) {
       key = key.toUpperCase();
       Vector<String> value = new Vector<>();
-      for(int i = 0; i < _configs.size(); i++) {
+      for (int i = 0; i < _configs.size(); i++) {
         Vector<String[]> v = _configs.elementAt(i);
-        for(int j = 0; j < v.size(); j++) {
+        for (int j = 0; j < v.size(); j++) {
           String[] kv = v.elementAt(j);
-          if(kv[0].toUpperCase().equals(key)) {
+          if (kv[0].toUpperCase().equals(key)) {
             String foo = kv[1];
-            if(foo != null) {
+            if (foo != null) {
               value.remove(foo);
               value.addElement(foo);
             }
@@ -284,33 +277,41 @@ public class OpenSSHConfig implements ConfigRepository {
     }
 
     @Override
-    public String getHostname(){ return find("Hostname"); }
+    public String getHostname() {
+      return find("Hostname");
+    }
+
     @Override
-    public String getUser(){ return find("User"); }
+    public String getUser() {
+      return find("User");
+    }
+
     @Override
-    public int getPort(){
+    public int getPort() {
       String foo = find("Port");
       int port = -1;
       try {
         port = Integer.parseInt(foo);
-      }
-      catch(NumberFormatException e){
+      } catch (NumberFormatException e) {
         // wrong format
       }
       return port;
     }
+
     @Override
-    public String getValue(String key){
-      if(key.equals("compression.s2c") ||
-         key.equals("compression.c2s")) {
+    public String getValue(String key) {
+      if (key.equals("compression.s2c") || key.equals("compression.c2s")) {
         String foo = find(key);
-        if(foo == null || foo.equals("no"))
+        if (foo == null || foo.equals("no"))
           return "none,zlib@openssh.com,zlib";
         return "zlib@openssh.com,zlib,none";
       }
       return find(key);
     }
+
     @Override
-    public String[] getValues(String key){ return multiFind(key); }
+    public String[] getValues(String key) {
+      return multiFind(key);
+    }
   }
 }
