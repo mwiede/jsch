@@ -70,7 +70,8 @@ public class Algorithms2IT {
           .withFileFromClasspath("ssh_host_dsa_key", "docker/ssh_host_dsa_key")
           .withFileFromClasspath("ssh_host_dsa_key.pub", "docker/ssh_host_dsa_key.pub")
           .withFileFromClasspath("authorized_keys", "docker/authorized_keys")
-          .withFileFromClasspath("Dockerfile", "docker/Dockerfile.asyncssh")).withExposedPorts(22);
+          .withFileFromClasspath("Dockerfile", "docker/Dockerfile.asyncssh"))
+      .withExposedPorts(22);
 
   @BeforeAll
   public static void beforeAll() {

@@ -36,7 +36,8 @@ public class JSchAlgoNegoFailExceptionIT {
           .withFileFromClasspath("ssh_host_dsa_key.pub", "docker/ssh_host_dsa_key.pub")
           .withFileFromClasspath("sshd_config", "docker/sshd_config")
           .withFileFromClasspath("authorized_keys", "docker/authorized_keys")
-          .withFileFromClasspath("Dockerfile", "docker/Dockerfile")).withExposedPorts(22);
+          .withFileFromClasspath("Dockerfile", "docker/Dockerfile"))
+      .withExposedPorts(22);
 
   @ParameterizedTest
   @CsvSource(delimiter = '|', value = {

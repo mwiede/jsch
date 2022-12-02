@@ -75,13 +75,14 @@ public class SSHAgentIT {
           .withFileFromClasspath("ssh_host_dsa_key.pub", "docker/ssh_host_dsa_key.pub")
           .withFileFromClasspath("sshd_config", "docker/sshd_config")
           .withFileFromClasspath("authorized_keys", "docker/authorized_keys")
-          .withFileFromClasspath("Dockerfile", "docker/Dockerfile")).withExposedPorts(22);
+          .withFileFromClasspath("Dockerfile", "docker/Dockerfile"))
+      .withExposedPorts(22);
 
   @Container
   public GenericContainer<?> sshAgent = new GenericContainer<>(
       new ImageFromDockerfile().withBuildArg("testuid", testuid).withBuildArg("testgid", testgid)
           .withFileFromClasspath("Dockerfile", "docker/Dockerfile.sshagent"))
-              .withFileSystemBind(sshAgentSock.getParent().toString(), "/testuser", READ_WRITE);
+      .withFileSystemBind(sshAgentSock.getParent().toString(), "/testuser", READ_WRITE);
 
   @BeforeAll
   public static void beforeAll() throws IOException {
