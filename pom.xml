@@ -680,6 +680,17 @@
                             <logViolationsToConsole>true</logViolationsToConsole>
                             <violationSeverity>warning</violationSeverity>
                             <configLocation>google_checks.xml</configLocation>
+                            <sourceDirectories>
+                                <sourceDirectory>${project.build.sourceDirectory}</sourceDirectory>
+                                <sourceDirectory>${project.build.testSourceDirectory}</sourceDirectory>
+                                <sourceDirectory>${project.basedir}/examples</sourceDirectory>
+                                <sourceDirectory>${project.basedir}/src/main/java9</sourceDirectory>
+                                <sourceDirectory>${project.basedir}/src/main/java10</sourceDirectory>
+                                <sourceDirectory>${project.basedir}/src/main/java11</sourceDirectory>
+                                <sourceDirectory>${project.basedir}/src/main/java15</sourceDirectory>
+                                <sourceDirectory>${project.basedir}/src/main/java16</sourceDirectory>
+                                <sourceDirectory>${project.basedir}/src/main/java-templates</sourceDirectory>
+                            </sourceDirectories>
                         </configuration>
                         <executions>
                             <execution>
