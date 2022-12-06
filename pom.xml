@@ -355,6 +355,25 @@
                 </executions>
             </plugin>
             <plugin>
+                <groupId>org.apache.felix</groupId>
+                <artifactId>maven-bundle-plugin</artifactId>
+                <version>5.1.8</version>
+                <configuration>
+                    <instructions>
+                        <Export-Package>com.jcraft.jsch</Export-Package>
+                    </instructions>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>bundle-manifest</id>
+                        <phase>process-classes</phase>
+                        <goals>
+                            <goal>manifest</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
                 <groupId>net.alchim31.maven</groupId>
                 <artifactId>scala-maven-plugin</artifactId>
                 <version>4.8.0</version>
@@ -456,6 +475,7 @@
                         <manifestEntries>
                             <Multi-Release>true</Multi-Release>
                         </manifestEntries>
+                        <manifestFile>${project.build.outputDirectory}/META-INF/MANIFEST.MF</manifestFile>
                     </archive>
                 </configuration>
             </plugin>
