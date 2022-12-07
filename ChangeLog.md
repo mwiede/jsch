@@ -1,5 +1,7 @@
 * [0.2.5](https://github.com/mwiede/jsch/releases/tag/jsch-0.2.5)
-  * Explictly free resources in `Compression` implementations.
+  * Explictly free resources in `Compression` implementations in https://github.com/mwiede/jsch/pull/241
+  * Fix integration test failures on Apple Silicon by skipping OpenSSH 7.4 tests by @norrisjeremy in https://github.com/mwiede/jsch/pull/227
+  * generate osgi bundle manifest data for jar #248 by @mwiede in https://github.com/mwiede/jsch/pull/249
 * [0.2.4](https://github.com/mwiede/jsch/releases/tag/jsch-0.2.4)
   * When connections fail due to an algorithm negotiation failure, throw a `JSchAlgoNegoFailException` that extends `JSchException`.
     * The new `JSchAlgoNegoFailException` details which specific algorithm negotiation failed, along with what both JSch and the server proposed.
