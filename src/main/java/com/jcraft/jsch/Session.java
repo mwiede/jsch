@@ -919,25 +919,25 @@ key_fprint+".\n"+
     if((shkc.equals("ask") || shkc.equals("yes")) &&
        (i!=HostKeyRepository.OK) && !insert){
       if(shkc.equals("yes")){
-        throw new JSchException("reject HostKey: "+host);
+        throw new JSchException("reject HostKey: "+chost);
       }
       //System.err.println("finger-print: "+key_fprint);
       if(userinfo!=null){
         boolean foo=userinfo.promptYesNo(
-"The authenticity of host '"+host+"' can't be established.\n"+
+"The authenticity of host '"+chost+"' can't be established.\n"+
 key_type+" key fingerprint is "+key_fprint+".\n"+
 "Are you sure you want to continue connecting?"
                                          );
         if(!foo){
-          throw new JSchException("reject HostKey: "+host);
+          throw new JSchException("reject HostKey: "+chost);
         }
         insert=true;
       }
       else{
         if(i==HostKeyRepository.NOT_INCLUDED)
-          throw new JSchException("UnknownHostKey: "+host+". "+key_type+" key fingerprint is "+key_fprint);
+          throw new JSchException("UnknownHostKey: "+chost+". "+key_type+" key fingerprint is "+key_fprint);
         else
-          throw new JSchException("HostKey has been changed: "+host);
+          throw new JSchException("HostKey has been changed: "+chost);
       }
     }
 
@@ -955,15 +955,15 @@ key_type+" key fingerprint is "+key_fprint+".\n"+
            keys[j].getMarker().equals("@revoked")){
           if(userinfo!=null){
             userinfo.showMessage(
-"The "+ key_type +" host key for "+ host +" is marked as revoked.\n"+
+"The "+ key_type +" host key for "+ chost +" is marked as revoked.\n"+
 "This could mean that a stolen key is being used to "+
 "impersonate this host.");
           }
           if(getLogger().isEnabled(Logger.INFO)){
             getLogger().log(Logger.INFO,
-                                 "Host '"+host+"' has provided revoked key.");
+                                 "Host '"+chost+"' has provided revoked key.");
           }
-          throw new JSchException("revoked HostKey: "+host);
+          throw new JSchException("revoked HostKey: "+chost);
         }
       }
     }
@@ -971,13 +971,13 @@ key_type+" key fingerprint is "+key_fprint+".\n"+
     if(i==HostKeyRepository.OK &&
        getLogger().isEnabled(Logger.INFO)){
       getLogger().log(Logger.INFO,
-                           "Host '"+host+"' is known and matches the "+key_type+" host key");
+                           "Host '"+chost+"' is known and matches the "+key_type+" host key");
     }
 
     if(insert &&
        getLogger().isEnabled(Logger.WARN)){
       getLogger().log(Logger.WARN,
-                           "Permanently added '"+host+"' ("+key_type+") to the list of known hosts.");
+                           "Permanently added '"+chost+"' ("+key_type+") to the list of known hosts.");
     }
 
     if(insert){
