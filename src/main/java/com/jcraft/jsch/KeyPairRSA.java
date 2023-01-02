@@ -190,6 +190,9 @@ class KeyPairRSA extends KeyPair{
                 c_array= prvKEyBuffer.getMPInt(); // iqmp (q^-1 mod p)
                 p_array=prvKEyBuffer.getMPInt(); // p (Prime 1)
                 q_array=prvKEyBuffer.getMPInt(); // q (Prime 2)
+                if(n_array!=null){
+                  key_size = (new BigInteger(n_array)).bitLength();
+                }
 
                 getEPArray();
                 getEQArray();
