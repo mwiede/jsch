@@ -177,6 +177,15 @@ public abstract class KeyPair{
   public abstract int getKeyType();
 
   /**
+   * Wrapper to provide the String representation of {@code #getKeyTypeName()}.
+   *
+   * @return the standard SSH key type string
+   */
+  public String getKeyTypeString() {
+    return Util.byte2str(getKeyTypeName());
+  }
+
+  /**
    * Returns the blob of the public key.
    * @return blob of the public key
    */
