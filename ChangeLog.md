@@ -1,3 +1,7 @@
+* [0.2.6](https://github.com/mwiede/jsch/releases/tag/jsch-0.2.6)
+  * Include host alias instead of the real host in messages and exceptions by @ShadelessFox in https://github.com/mwiede/jsch/pull/257
+  * Fix missing keySize set when loading V1 RSA keys by @Alex-Vol-Amz in https://github.com/mwiede/jsch/pull/258
+  * Enhancement to present KeyPair.getKeyTypeString() method by @Alex-Vol-Amz in https://github.com/mwiede/jsch/pull/259
 * [0.2.5](https://github.com/mwiede/jsch/releases/tag/jsch-0.2.5)
   * Explictly free resources in `Compression` implementations in https://github.com/mwiede/jsch/pull/241
   * Fix integration test failures on Apple Silicon by skipping OpenSSH 7.4 tests by @norrisjeremy in https://github.com/mwiede/jsch/pull/227
