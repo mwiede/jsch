@@ -8,19 +8,9 @@ import org.slf4j.LoggerFactory;
  */
 public class Slf4jLogger implements com.jcraft.jsch.Logger {
 
-  private static final Logger stlogger = LoggerFactory.getLogger(JSch.class);
-  private final Logger logger;
+  private static final Logger logger = LoggerFactory.getLogger(JSch.class);
 
-  /**
-   * Creates a new instance of Slf4jLogger
-   */
-  public Slf4jLogger() {
-    this(stlogger);
-  }
-
-  Slf4jLogger(Logger logger) {
-    this.logger = logger;
-  }
+  public Slf4jLogger() {}
 
   @Override
   public boolean isEnabled(int level) {

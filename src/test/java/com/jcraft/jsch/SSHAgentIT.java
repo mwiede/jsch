@@ -8,9 +8,9 @@ import static org.junit.jupiter.api.condition.JRE.JAVA_16;
 import static org.junit.jupiter.api.condition.OS.LINUX;
 import static org.testcontainers.containers.BindMode.READ_WRITE;
 
-import ch.qos.logback.classic.Logger;
-import ch.qos.logback.classic.spi.ILoggingEvent;
-import ch.qos.logback.core.read.ListAppender;
+import com.github.valfirst.slf4jtest.LoggingEvent;
+import com.github.valfirst.slf4jtest.TestLogger;
+import com.github.valfirst.slf4jtest.TestLoggerFactory;
 import com.sun.jna.platform.unix.LibC;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -30,7 +30,6 @@ import org.junit.jupiter.api.condition.EnabledOnOs;
 import org.junit.jupiter.api.io.TempDir;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
-import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.output.Slf4jLogConsumer;
 import org.testcontainers.images.builder.ImageFromDockerfile;
@@ -43,9 +42,10 @@ public class SSHAgentIT {
 
   private static final int timeout = 2000;
   private static final DigestUtils sha256sum = new DigestUtils(DigestUtils.getSha256Digest());
-  private static final ListAppender<ILoggingEvent> jschAppender = getListAppender(JSch.class);
-  private static final ListAppender<ILoggingEvent> sshdAppender = getListAppender(SSHAgentIT.class);
-  private static final ListAppender<ILoggingEvent> sshAgentAppender = getListAppender(AgentProxy.class);
+  private static final TestLogger jschLogger = TestLoggerFactory.getTestLogger(JSch.class);
+  private static final TestLogger sshdLogger = TestLoggerFactory.getTestLogger(SSHAgentIT.class);
+  private static final TestLogger sshAgentLogger =
+      TestLoggerFactory.getTestLogger(AgentProxy.class);
   @TempDir public static Path tmpDir;
   private static String testuid;
   private static String testgid;
@@ -104,12 +104,12 @@ public class SSHAgentIT {
   @BeforeEach
   public void beforeEach() throws IOException {
     if (sshdLogConsumer == null) {
-      sshdLogConsumer = new Slf4jLogConsumer(LoggerFactory.getLogger(SSHAgentIT.class));
+      sshdLogConsumer = new Slf4jLogConsumer(sshdLogger);
       sshd.followOutput(sshdLogConsumer);
     }
 
     if (sshAgentLogConsumer == null) {
-      sshAgentLogConsumer = new Slf4jLogConsumer(LoggerFactory.getLogger(AgentProxy.class));
+      sshAgentLogConsumer = new Slf4jLogConsumer(sshAgentLogger);
       sshAgent.followOutput(sshAgentLogConsumer);
     }
 
@@ -126,23 +126,13 @@ public class SSHAgentIT {
     }
     hash = sha256sum.digestAsHex(in);
 
-    jschAppender.list.clear();
-    sshdAppender.list.clear();
-    sshAgentAppender.list.clear();
-    jschAppender.start();
-    sshdAppender.start();
-    sshAgentAppender.start();
+    jschLogger.clearAll();
+    sshdLogger.clearAll();
+    sshAgentLogger.clearAll();
   }
 
   @AfterEach
   public void afterEach() {
-    jschAppender.stop();
-    sshdAppender.stop();
-    sshAgentAppender.stop();
-    jschAppender.list.clear();
-    sshdAppender.list.clear();
-    sshAgentAppender.list.clear();
-
     try {
       Files.deleteIfExists(sshAgentSock);
     } catch (IOException ignore) {
@@ -166,6 +156,11 @@ public class SSHAgentIT {
 
   @AfterAll
   public static void afterAll() {
+    JSch.setLogger(null);
+    jschLogger.clearAll();
+    sshdLogger.clearAll();
+    sshAgentLogger.clearAll();
+
     try {
       Files.deleteIfExists(sshAgentSock.getParent());
     } catch (IOException ignore) {
@@ -277,7 +272,8 @@ public class SSHAgentIT {
   }
 
   private JSch createRSAIdentity(USocketFactory factory) throws Exception {
-    IdentityRepository ir = new AgentIdentityRepository(new SSHAgentConnector(factory, sshAgentSock));
+    IdentityRepository ir =
+        new AgentIdentityRepository(new SSHAgentConnector(factory, sshAgentSock));
     assertTrue(ir.getIdentities().isEmpty(), "ssh-agent empty");
 
     HostKey hostKey = readHostKey(getResourceFile("docker/ssh_host_rsa_key.pub"));
@@ -290,7 +286,8 @@ public class SSHAgentIT {
   }
 
   private JSch createECDSA256Identity(USocketFactory factory) throws Exception {
-    IdentityRepository ir = new AgentIdentityRepository(new SSHAgentConnector(factory, sshAgentSock));
+    IdentityRepository ir =
+        new AgentIdentityRepository(new SSHAgentConnector(factory, sshAgentSock));
     assertTrue(ir.getIdentities().isEmpty(), "ssh-agent empty");
 
     HostKey hostKey = readHostKey(getResourceFile("docker/ssh_host_rsa_key.pub"));
@@ -303,7 +300,8 @@ public class SSHAgentIT {
   }
 
   private JSch createECDSA384Identity(USocketFactory factory) throws Exception {
-    IdentityRepository ir = new AgentIdentityRepository(new SSHAgentConnector(factory, sshAgentSock));
+    IdentityRepository ir =
+        new AgentIdentityRepository(new SSHAgentConnector(factory, sshAgentSock));
     assertTrue(ir.getIdentities().isEmpty(), "ssh-agent empty");
 
     HostKey hostKey = readHostKey(getResourceFile("docker/ssh_host_rsa_key.pub"));
@@ -317,7 +315,8 @@ public class SSHAgentIT {
   }
 
   private JSch createECDSA521Identity(USocketFactory factory) throws Exception {
-    IdentityRepository ir = new AgentIdentityRepository(new SSHAgentConnector(factory, sshAgentSock));
+    IdentityRepository ir =
+        new AgentIdentityRepository(new SSHAgentConnector(factory, sshAgentSock));
     assertTrue(ir.getIdentities().isEmpty(), "ssh-agent empty");
 
     HostKey hostKey = readHostKey(getResourceFile("docker/ssh_host_rsa_key.pub"));
@@ -331,7 +330,8 @@ public class SSHAgentIT {
   }
 
   private JSch createDSAIdentity(USocketFactory factory) throws Exception {
-    IdentityRepository ir = new AgentIdentityRepository(new SSHAgentConnector(factory, sshAgentSock));
+    IdentityRepository ir =
+        new AgentIdentityRepository(new SSHAgentConnector(factory, sshAgentSock));
     assertTrue(ir.getIdentities().isEmpty(), "ssh-agent empty");
 
     HostKey hostKey = readHostKey(getResourceFile("docker/ssh_host_rsa_key.pub"));
@@ -344,7 +344,8 @@ public class SSHAgentIT {
   }
 
   private JSch createEd25519Identity(USocketFactory factory) throws Exception {
-    IdentityRepository ir = new AgentIdentityRepository(new SSHAgentConnector(factory, sshAgentSock));
+    IdentityRepository ir =
+        new AgentIdentityRepository(new SSHAgentConnector(factory, sshAgentSock));
     assertTrue(ir.getIdentities().isEmpty(), "ssh-agent empty");
 
     HostKey hostKey = readHostKey(getResourceFile("docker/ssh_host_rsa_key.pub"));
@@ -381,9 +382,6 @@ public class SSHAgentIT {
       sftp.get("/root/test", out.toString());
       sftp.disconnect();
       session.disconnect();
-      jschAppender.stop();
-      sshdAppender.stop();
-      sshAgentAppender.stop();
     } catch (Exception e) {
       if (debugException) {
         printInfo();
@@ -395,13 +393,16 @@ public class SSHAgentIT {
     assertEquals(hash, sha256sum.digestAsHex(out));
   }
 
-  private static void printInfo() {
-    jschAppender.stop();
-    sshdAppender.stop();
-    sshAgentAppender.stop();
-    jschAppender.list.stream().map(ILoggingEvent::getFormattedMessage).forEach(System.out::println);
-    sshdAppender.list.stream().map(ILoggingEvent::getFormattedMessage).forEach(System.out::println);
-    sshAgentAppender.list.stream().map(ILoggingEvent::getFormattedMessage).forEach(System.out::println);
+  private void printInfo() {
+    jschLogger.getAllLoggingEvents().stream()
+        .map(LoggingEvent::getFormattedMessage)
+        .forEach(System.out::println);
+    sshdLogger.getAllLoggingEvents().stream()
+        .map(LoggingEvent::getFormattedMessage)
+        .forEach(System.out::println);
+    sshAgentLogger.getAllLoggingEvents().stream()
+        .map(LoggingEvent::getFormattedMessage)
+        .forEach(System.out::println);
     System.out.println("");
     System.out.println("");
     System.out.println("");
@@ -409,12 +410,5 @@ public class SSHAgentIT {
 
   private String getResourceFile(String fileName) {
     return ResourceUtil.getResourceFile(getClass(), fileName);
-  }
-
-  private static ListAppender<ILoggingEvent> getListAppender(Class<?> clazz) {
-    Logger logger = (Logger) LoggerFactory.getLogger(clazz);
-    ListAppender<ILoggingEvent> listAppender = new ListAppender2<>();
-    logger.addAppender(listAppender);
-    return listAppender;
   }
 }
