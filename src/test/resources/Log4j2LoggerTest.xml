@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration status="OFF">
+  <Appenders>
+    <Console name="Console"/>
+    <List name="List"/>
+  </Appenders>
+  <Loggers>
+    <Root level="off">
+      <AppenderRef ref="Console"/>
+    </Root>
+    <Logger name="com.jcraft.jsch.JSch" level="all" additivity="false">
+      <AppenderRef ref="List"/>
+    </Logger>
+  </Loggers>
+</Configuration>
