@@ -12,21 +12,29 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import uk.org.lidalia.slf4jext.ConventionalLevelHierarchy;
 
-class Slf4jLoggerTest {
+public class Slf4jLoggerTest {
+
   private static final TestLogger logger = TestLoggerFactory.getTestLogger(JSch.class);
-  private Exception testException = new Exception("dummy exception");
+
+  private final Exception testException = new Exception("dummy exception");
 
   @BeforeEach
-  void resetLogger() {
+  public void beforeEach() {
+    logger.clearAll();
+  }
+
+  @AfterAll
+  public static void afterAll() {
     logger.clearAll();
   }
 
   @Test
-  void testIsEnabled() {
+  public void testIsEnabled() {
     Slf4jLogger sl = new Slf4jLogger();
 
     logger.setEnabledLevelsForAllThreads(ConventionalLevelHierarchy.DEBUG_LEVELS);
@@ -79,7 +87,7 @@ class Slf4jLoggerTest {
   }
 
   @Test
-  void testLogging() {
+  public void testLogging() {
     Slf4jLogger sl = new Slf4jLogger();
 
     List<String> expectedMessages =

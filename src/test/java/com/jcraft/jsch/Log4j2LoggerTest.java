@@ -21,20 +21,21 @@ import org.junit.jupiter.api.Test;
 
 @LoggerContextSource("Log4j2LoggerTest.xml")
 public class Log4j2LoggerTest {
-  private Exception testException = new Exception("dummy exception");
-  private ListAppender appender;
+
+  private final Exception testException = new Exception("dummy exception");
+  private final ListAppender appender;
 
   public Log4j2LoggerTest(@Named("List") ListAppender appender) {
     this.appender = appender;
   }
 
   @BeforeEach
-  void resetLogger() {
+  public void beforeEach() {
     appender.clear();
   }
 
   @Test
-  void testGetLevel() {
+  public void testGetLevel() {
     assertEquals(Level.TRACE, Log4j2Logger.getLevel(-1));
 
     assertEquals(Level.DEBUG, Log4j2Logger.getLevel(com.jcraft.jsch.Logger.DEBUG));
@@ -47,7 +48,7 @@ public class Log4j2LoggerTest {
   }
 
   @Test
-  void testIsEnabled() {
+  public void testIsEnabled() {
     Log4j2Logger ll = new Log4j2Logger();
 
     setLevel(Level.ALL);
@@ -116,7 +117,7 @@ public class Log4j2LoggerTest {
   }
 
   @Test
-  void testLogging() {
+  public void testLogging() {
     Log4j2Logger ll = new Log4j2Logger();
 
     List<String> expectedMessages =

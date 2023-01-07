@@ -11,20 +11,25 @@ import java.util.List;
 import java.util.Optional;
 import java.util.logging.Handler;
 import java.util.logging.Level;
+import java.util.logging.LogManager;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 public class JulLoggerTest {
-  private Exception testException = new Exception("dummy exception");
-  private ListHandler handler;
-  private Logger logger;
 
-  public JulLoggerTest() {
-    handler = new ListHandler();
-    logger = Logger.getLogger(JSch.class.getName());
+  private static final Logger logger = Logger.getLogger(JSch.class.getName());
+  private static final ListHandler handler = new ListHandler();
+
+  private final Exception testException = new Exception("dummy exception");
+
+  @BeforeAll
+  public static void beforeAll() {
+    LogManager.getLogManager().reset();
     Arrays.stream(logger.getHandlers()).forEach(logger::removeHandler);
     logger.addHandler(handler);
     logger.setLevel(Level.ALL);
@@ -33,12 +38,17 @@ public class JulLoggerTest {
   }
 
   @BeforeEach
-  void resetLogger() {
+  public void beforeEach() {
     handler.clear();
   }
 
+  @AfterAll
+  public static void afterAll() {
+    LogManager.getLogManager().reset();
+  }
+
   @Test
-  void testGetLevel() {
+  public void testGetLevel() {
     assertEquals(Level.FINER, JulLogger.getLevel(-1));
 
     assertEquals(Level.FINE, JulLogger.getLevel(com.jcraft.jsch.Logger.DEBUG));
@@ -51,7 +61,7 @@ public class JulLoggerTest {
   }
 
   @Test
-  void testIsEnabled() {
+  public void testIsEnabled() {
     JulLogger jl = new JulLogger();
 
     logger.setLevel(Level.FINEST);
@@ -112,7 +122,7 @@ public class JulLoggerTest {
   }
 
   @Test
-  void testLogging() {
+  public void testLogging() {
     JulLogger jl = new JulLogger();
 
     List<String> expectedMessages =
