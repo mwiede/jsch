@@ -29,7 +29,7 @@ public class Log4j2Logger implements com.jcraft.jsch.Logger {
     logger.log(getLevel(level), message, cause);
   }
 
-  private static Level getLevel(int level) {
+  static Level getLevel(int level) {
     switch (level) {
       case com.jcraft.jsch.Logger.DEBUG:
         return Level.DEBUG;

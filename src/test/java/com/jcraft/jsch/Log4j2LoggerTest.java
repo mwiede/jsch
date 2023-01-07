@@ -34,6 +34,19 @@ public class Log4j2LoggerTest {
   }
 
   @Test
+  void testGetLevel() {
+    assertEquals(Level.TRACE, Log4j2Logger.getLevel(-1));
+
+    assertEquals(Level.DEBUG, Log4j2Logger.getLevel(com.jcraft.jsch.Logger.DEBUG));
+    assertEquals(Level.ERROR, Log4j2Logger.getLevel(com.jcraft.jsch.Logger.ERROR));
+    assertEquals(Level.FATAL, Log4j2Logger.getLevel(com.jcraft.jsch.Logger.FATAL));
+    assertEquals(Level.INFO, Log4j2Logger.getLevel(com.jcraft.jsch.Logger.INFO));
+    assertEquals(Level.WARN, Log4j2Logger.getLevel(com.jcraft.jsch.Logger.WARN));
+
+    assertEquals(Level.TRACE, Log4j2Logger.getLevel(Integer.MAX_VALUE));
+  }
+
+  @Test
   void testIsEnabled() {
     Log4j2Logger ll = new Log4j2Logger();
 
