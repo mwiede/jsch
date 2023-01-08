@@ -1,6 +1,5 @@
 package com.jcraft.jsch;
 
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.testcontainers.containers.GenericContainer;
@@ -21,11 +20,6 @@ public class KeyPairIT {
             new ImageFromDockerfile().withFileFromClasspath("sshd_config", "docker/sshd_config")
                     .withFileFromClasspath("authorized_keys", "docker/authorized_keys.KeyPairIT")
                     .withFileFromClasspath("Dockerfile", "docker/Dockerfile.KeyPairIT")).withExposedPorts(22);
-
-    @BeforeAll
-    public static void beforeAll() {
-        JSch.setLogger(new Slf4jLogger());
-    }
 
     @ParameterizedTest
     @MethodSource("com.jcraft.jsch.KeyPairTest#keyArgs")

@@ -1,6 +1,5 @@
 package com.jcraft.jsch;
 
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -21,11 +20,6 @@ class KeyPairTest {
 
     @TempDir
     public Path tmpDir;
-
-    @BeforeAll
-    static void init() {
-        JSch.setLogger(new Slf4jLogger());
-    }
 
     static Stream<Arguments> keyArgs() {
         return Stream.of(
