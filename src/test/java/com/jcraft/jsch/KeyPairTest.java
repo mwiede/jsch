@@ -43,7 +43,16 @@ class KeyPairTest {
                 Arguments.of("docker/ssh_host_ecdsa384_key", null, "ecdsa-sha2-nistp384"),
                 Arguments.of("docker/ssh_host_ecdsa521_key", null, "ecdsa-sha2-nistp521"),
                 // encrypted ecdsa
-                Arguments.of("encrypted_openssh_private_key_ecdsa", "secret123", "ecdsa-sha2-nistp256")
+                Arguments.of("encrypted_openssh_private_key_ecdsa", "secret123", "ecdsa-sha2-nistp256"),
+                // PuTTY keys
+                Arguments.of("ppkv2_dsa_unix.ppk", null, "ssh-dss"),
+                Arguments.of("ppkv2_dsa_unix_encrypted.ppk", "secret123", "ssh-dss"),
+                Arguments.of("ppkv2_dsa_windows.ppk", null, "ssh-dss"),
+                Arguments.of("ppkv2_dsa_windows_encrypted.ppk", "secret123", "ssh-dss"),
+                Arguments.of("ppkv2_rsa_unix.ppk", null, "ssh-rsa"),
+                Arguments.of("ppkv2_rsa_unix_encrypted.ppk", "secret123", "ssh-rsa"),
+                Arguments.of("ppkv2_rsa_windows.ppk", null, "ssh-rsa"),
+                Arguments.of("ppkv2_rsa_windows_encrypted.ppk", "secret123", "ssh-rsa")
         );
     }
 

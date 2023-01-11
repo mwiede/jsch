@@ -1221,22 +1221,24 @@ public abstract class KeyPair{
     int i = index;
     while(lines-->0){
       while(buf.length > i){
-        if(buf[i++] == 0x0d){
+        byte c = buf[i++];
+        if(c == '\r' || c == '\n'){
+          int len = i - index - 1;
           if(data == null){
-            data = new byte[i - index - 1];
-            System.arraycopy(buf, index, data, 0, i - index - 1);
+            data = new byte[len];
+            System.arraycopy(buf, index, data, 0, len);
           }
-          else {
-            byte[] tmp = new byte[data.length + i - index - 1];
+          else if(len > 0){
+            byte[] tmp = new byte[data.length + len];
             System.arraycopy(data, 0, tmp, 0, data.length);
-            System.arraycopy(buf, index, tmp, data.length, i - index -1);
-            for(int j = 0; j < data.length; j++) data[j] = 0; // clear
+            System.arraycopy(buf, index, tmp, data.length, len);
+            Util.bzero(data); // clear
             data = tmp;
           } 
           break;
         }
       }
-      if(buf[i]==0x0a)
+      if(i < buf.length && buf[i]=='\n')
         i++;
       index=i;
     }
@@ -1253,7 +1255,10 @@ public abstract class KeyPair{
     String key = null;
     String value = null;
     for(int i = index; i < buf.length; i++){
-      if(buf[i] == 0x0d){
+      if(buf[i] == '\r' || buf[i] == '\n'){
+        if(i+1 < buf.length && buf[i+1] == '\n'){
+          i++;
+        }
         break;
       }
       if(buf[i] == ':'){
@@ -1271,10 +1276,10 @@ public abstract class KeyPair{
       return false;
 
     for(int i = index; i < buf.length; i++){
-      if(buf[i] == 0x0d){
+      if(buf[i] == '\r' || buf[i] == '\n'){
         value = Util.byte2str(buf, index, i - index);
         i++;
-        if(i < buf.length && buf[i] == 0x0a){
+        if(i < buf.length && buf[i] == '\n'){
           i++;
         }
         index = i;
