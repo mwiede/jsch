@@ -47,7 +47,7 @@ public class ChannelDirectStreamLocal extends ChannelDirectTCPIP {
 
         Buffer buf = new Buffer(50 +
                 socketPath.length() +
-                Session.buffer_margin);
+                session.getBufferMargin());
         Packet packet = new Packet(buf);
         packet.reset();
         buf.putByte((byte) SSH_MSG_CHANNEL_OPEN);

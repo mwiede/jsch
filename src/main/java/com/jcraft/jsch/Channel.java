@@ -240,10 +240,15 @@ public abstract class Channel{
           packet=new Packet(buffer);
 
           byte[] _buf=buffer.buffer;
-          if(_buf.length-(14+0)-Session.buffer_margin<=0){
-            buffer=null;
-            packet=null;
-            throw new IOException("failed to initialize the channel.");
+          try{
+            if(_buf.length-(14+0)-getSession().getBufferMargin()<=0){
+              buffer=null;
+              packet=null;
+              throw new IOException("failed to initialize the channel.");
+            }
+          }
+          catch(JSchException e){
+            throw new IOException("failed to initialize the channel.", e);
           }
 
         }
@@ -265,21 +270,27 @@ public abstract class Channel{
 
           byte[] _buf=buffer.buffer;
           int _bufl=_buf.length;
-          while(l>0){
-            int _l=l;
-            if(l>_bufl-(14+dataLen)-Session.buffer_margin){
-              _l=_bufl-(14+dataLen)-Session.buffer_margin;
-            }
+          try{
+            while(l>0){
+              int _l=l;
+              int buffer_margin=getSession().getBufferMargin();
+              if(l>_bufl-(14+dataLen)-buffer_margin){
+                _l=_bufl-(14+dataLen)-buffer_margin;
+              }
 
-            if(_l<=0){
-              flush();
-              continue;
-            }
+              if(_l<=0){
+                flush();
+                continue;
+              }
 
-            System.arraycopy(buf, s, _buf, 14+dataLen, _l);
-            dataLen+=_l;
-            s+=_l;
-            l-=_l;
+              System.arraycopy(buf, s, _buf, 14+dataLen, _l);
+              dataLen+=_l;
+              s+=_l;
+              l-=_l;
+            }
+          }
+          catch(JSchException e){
+            throw new IOException(e.toString(), e);
           }
         }
 

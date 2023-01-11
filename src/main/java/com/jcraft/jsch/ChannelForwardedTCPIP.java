@@ -96,14 +96,14 @@ public class ChannelForwardedTCPIP extends Channel{
     Packet packet=new Packet(buf);
     int i=0;
     try{
-      Session _session = getSession();
+      Session _session=getSession();
       while(thread!=null && 
             io!=null && 
             io.in!=null){
         i=io.in.read(buf.buffer, 
                      14, 
                      buf.buffer.length-14
-                     -Session.buffer_margin
+                     -_session.getBufferMargin()
                      );
         if(i<=0){
           eof();
