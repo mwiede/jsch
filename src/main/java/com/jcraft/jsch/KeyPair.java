@@ -30,9 +30,11 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 package com.jcraft.jsch;
 
 import java.io.*;
+import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Hashtable;
-import java.util.Vector;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public abstract class KeyPair{
   
@@ -1115,7 +1117,7 @@ public abstract class KeyPair{
     int lines = 0;
 
     Buffer buffer = new Buffer(buf);
-    Hashtable<String, String> v = new Hashtable<>();
+    Map<String, String> v = new HashMap<>();
 
     while(true){
       if(!parseHeader(buffer, v))
@@ -1249,7 +1251,7 @@ public abstract class KeyPair{
     return data;
   }
 
-  private static boolean parseHeader(Buffer buffer, Hashtable<String, String> v){
+  private static boolean parseHeader(Buffer buffer, Map<String, String> v){
     byte[] buf = buffer.buffer;
     int index = buffer.index;
     String key = null;
@@ -1363,7 +1365,7 @@ public abstract class KeyPair{
         return new ASN1[0];
       }
       int index=indexp[0];
-      Vector<ASN1> values = new Vector<>();
+      List<ASN1> values = new ArrayList<>();
       while(length>0) {
         index++; length--;
         int tmp=index;
@@ -1371,14 +1373,12 @@ public abstract class KeyPair{
         int l=getLength(indexp);
         index=indexp[0];
         length-=(index-tmp);
-        values.addElement(new ASN1(buf, tmp-1, 1+(index-tmp)+l));
+        values.add(new ASN1(buf, tmp-1, 1+(index-tmp)+l));
         index+=l;
         length-=l;
       }
       ASN1[] result = new ASN1[values.size()];
-      for(int  i = 0; i <values.size(); i++) {
-        result[i]=values.elementAt(i);
-      }
+      values.toArray(result);
       return result;
     }
   }
