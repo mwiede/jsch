@@ -74,27 +74,43 @@ abstract class KeyPairEdDSA extends KeyPair{
 
   @Override
   boolean parse(byte [] plain){
+    if(vendor==VENDOR_PUTTY){
+      Buffer buf=new Buffer(plain);
+      buf.skip(plain.length);
 
-    // Only OPENSSH Key v1 Format supported for EdDSA keys
-    if(vendor != VENDOR_OPENSSH_V1) return false;
-    try{
-      // OPENSSH Key v1 Format
-      final Buffer buf = new Buffer(plain);
-      int checkInt1 = buf.getInt(); // uint32 checkint1
-      int checkInt2 = buf.getInt(); // uint32 checkint2
-      if (checkInt1 != checkInt2) {
-        throw new JSchException("check failed");
+      try {
+        byte[][] tmp = buf.getBytes(1, "");
+        prv_array = tmp[0];
       }
-      String keyType = Util.byte2str(buf.getString()); // string keytype
-      pub_array = buf.getString(); // public key
-      // OpenSSH stores private key in first half of string and duplicate copy of public key in second half of string
-      byte[] tmp = buf.getString(); // secret key (private key + public key)
-      prv_array = Arrays.copyOf(tmp, getKeySize());
-      publicKeyComment = Util.byte2str(buf.getString());
+      catch(JSchException e){
+        return false;
+      }
+
       return true;
     }
-    catch(Exception e){
-      //System.err.println(e);
+    else if(vendor==VENDOR_OPENSSH_V1){
+      try{
+        // OPENSSH Key v1 Format
+        final Buffer buf = new Buffer(plain);
+        int checkInt1 = buf.getInt(); // uint32 checkint1
+        int checkInt2 = buf.getInt(); // uint32 checkint2
+        if (checkInt1 != checkInt2) {
+          throw new JSchException("check failed");
+        }
+        String keyType = Util.byte2str(buf.getString()); // string keytype
+        pub_array = buf.getString(); // public key
+        // OpenSSH stores private key in first half of string and duplicate copy of public key in second half of string
+        byte[] tmp = buf.getString(); // secret key (private key + public key)
+        prv_array = Arrays.copyOf(tmp, getKeySize());
+        publicKeyComment = Util.byte2str(buf.getString());
+        return true;
+      }
+      catch(Exception e){
+        //System.err.println(e);
+        return false;
+      }
+    }
+    else {
       return false;
     }
   }

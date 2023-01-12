@@ -52,7 +52,23 @@ class KeyPairTest {
                 Arguments.of("ppkv2_rsa_unix.ppk", null, "ssh-rsa"),
                 Arguments.of("ppkv2_rsa_unix_encrypted.ppk", "secret123", "ssh-rsa"),
                 Arguments.of("ppkv2_rsa_windows.ppk", null, "ssh-rsa"),
-                Arguments.of("ppkv2_rsa_windows_encrypted.ppk", "secret123", "ssh-rsa")
+                Arguments.of("ppkv2_rsa_windows_encrypted.ppk", "secret123", "ssh-rsa"),
+                Arguments.of("ppkv2_ecdsa256_unix.ppk", null, "ecdsa-sha2-nistp256"),
+                Arguments.of("ppkv2_ecdsa256_unix_encrypted.ppk", "secret123", "ecdsa-sha2-nistp256"),
+                Arguments.of("ppkv2_ecdsa384_unix.ppk", null, "ecdsa-sha2-nistp384"),
+                Arguments.of("ppkv2_ecdsa384_unix_encrypted.ppk", "secret123", "ecdsa-sha2-nistp384"),
+                Arguments.of("ppkv2_ecdsa521_unix.ppk", null, "ecdsa-sha2-nistp521"),
+                Arguments.of("ppkv2_ecdsa521_unix_encrypted.ppk", "secret123", "ecdsa-sha2-nistp521"),
+                Arguments.of("ppkv2_ecdsa256_windows.ppk", null, "ecdsa-sha2-nistp256"),
+                Arguments.of("ppkv2_ecdsa256_windows_encrypted.ppk", "secret123", "ecdsa-sha2-nistp256"),
+                Arguments.of("ppkv2_ecdsa384_windows.ppk", null, "ecdsa-sha2-nistp384"),
+                Arguments.of("ppkv2_ecdsa384_windows_encrypted.ppk", "secret123", "ecdsa-sha2-nistp384"),
+                Arguments.of("ppkv2_ecdsa521_windows.ppk", null, "ecdsa-sha2-nistp521"),
+                Arguments.of("ppkv2_ecdsa521_windows_encrypted.ppk", "secret123", "ecdsa-sha2-nistp521"),
+                Arguments.of("ppkv2_ed25519_unix.ppk", null, "ssh-ed25519"),
+                Arguments.of("ppkv2_ed25519_unix_encrypted.ppk", "secret123", "ssh-ed25519"),
+                Arguments.of("ppkv2_ed25519_windows.ppk", null, "ssh-ed25519"),
+                Arguments.of("ppkv2_ed25519_windows_encrypted.ppk", "secret123", "ssh-ed25519")
         );
     }
 

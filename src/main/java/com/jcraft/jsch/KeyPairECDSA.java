@@ -178,21 +178,20 @@ class KeyPairECDSA extends KeyPair{
         return false;
       }
       else if(vendor==VENDOR_PUTTY){
-        /*
         Buffer buf=new Buffer(plain);
         buf.skip(plain.length);
 
         try {
           byte[][] tmp = buf.getBytes(1, "");
           prv_array = tmp[0];
+          key_size = prv_array.length>=64 ? 521 :
+                      (prv_array.length>=48 ? 384 : 256);
         }
         catch(JSchException e){
           return false;
         }
 
         return true;
-        */
-        return false;
       }
 
       // OPENSSH Key v1 Format

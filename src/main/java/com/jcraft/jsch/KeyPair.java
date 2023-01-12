@@ -1151,12 +1151,12 @@ public abstract class KeyPair{
     KeyPair kpair = null;
 
     if(typ.equals("ssh-rsa")) {
-
       Buffer _buf = new Buffer(pubkey);
       _buf.skip(pubkey.length);
 
       int len = _buf.getInt();
       _buf.getByte(new byte[len]);             // ssh-rsa
+
       byte[] pub_array = new byte[_buf.getInt()];
       _buf.getByte(pub_array);
       byte[] n_array = new byte[_buf.getInt()];
@@ -1181,6 +1181,42 @@ public abstract class KeyPair{
       _buf.getByte(y_array);
 
       kpair = new KeyPairDSA(jsch, p_array, q_array, g_array, y_array, null);
+    }
+    else if(typ.equals("ecdsa-sha2-nistp256") || typ.equals("ecdsa-sha2-nistp384") || typ.equals("ecdsa-sha2-nistp521")){
+      Buffer _buf = new Buffer(pubkey);
+      _buf.skip(pubkey.length);
+
+      int len = _buf.getInt();
+      _buf.getByte(new byte[len]);              // ecdsa-sha2-nistpXXX
+
+      byte[] name = new byte[_buf.getInt()];
+      _buf.getByte(name);                       // nistpXXX
+
+      len = _buf.getInt();
+      int x04 = _buf.getByte(); // in case of x04 it is uncompressed https://tools.ietf.org/html/rfc5480#page-7
+      byte[] r_array = new byte[(len - 1) / 2];
+      byte[] s_array = new byte[(len - 1) / 2];
+      _buf.getByte(r_array);
+      _buf.getByte(s_array);
+
+      kpair = new KeyPairECDSA(jsch, name, r_array, s_array, null);
+    }
+    else if(typ.equals("ssh-ed25519") || typ.equals("ssh-ed448")){
+      Buffer _buf = new Buffer(pubkey);
+      _buf.skip(pubkey.length);
+
+      int len = _buf.getInt();
+      _buf.getByte(new byte[len]);              // ssh-edXXX
+
+      byte[] pub_array = new byte[_buf.getInt()];
+      _buf.getByte(pub_array);
+
+      if(typ.equals("ssh-ed25519")){
+        kpair = new KeyPairEd25519(jsch, pub_array, null);
+      }
+      else{
+        kpair = new KeyPairEd448(jsch, pub_array, null);
+      }
     }
     else {
       return null;
