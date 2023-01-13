@@ -49,4 +49,5 @@ jobs:
           **/target/surefire-reports/
           **/target/failsafe-reports/
           **/target/site/jacoco/
+          **/target/site/jacoco-it/
       if: always()
