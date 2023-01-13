@@ -81,7 +81,6 @@ class KeyPairRSA extends KeyPair{
       keypairgen=null;
     }
     catch(Exception e){
-      //System.err.println("KeyPairRSA: "+e);
       throw new JSchException(e.toString(), e);
     }
   }
@@ -144,6 +143,9 @@ class KeyPairRSA extends KeyPair{
           c_array = tmp[3];
         }
         catch(JSchException e){
+          if(jsch.getInstanceLogger().isEnabled(Logger.ERROR)){
+            jsch.getInstanceLogger().log(Logger.ERROR, "failed to parse key", e);
+          }
           return false;
         }
 
@@ -171,6 +173,9 @@ class KeyPairRSA extends KeyPair{
           getCArray();
 
           return true;
+        }
+        if(jsch.getInstanceLogger().isEnabled(Logger.ERROR)){
+          jsch.getInstanceLogger().log(Logger.ERROR, "failed to parse key");
         }
         return false;
       }
@@ -318,7 +323,9 @@ class KeyPairRSA extends KeyPair{
 
     }
     catch(Exception e){
-      //System.err.println(e);
+      if(jsch.getInstanceLogger().isEnabled(Logger.ERROR)){
+        jsch.getInstanceLogger().log(Logger.ERROR, "failed to parse key", e);
+      }
       return false;
     }
     return true;
@@ -369,6 +376,9 @@ class KeyPairRSA extends KeyPair{
       return Buffer.fromBytes(tmp).buffer;
     }
     catch(Exception e){
+      if(jsch.getInstanceLogger().isEnabled(Logger.ERROR)){
+        jsch.getInstanceLogger().log(Logger.ERROR, "failed to generate signature", e);
+      }
     }
     return null;
   }
@@ -396,6 +406,9 @@ class KeyPairRSA extends KeyPair{
       return rsa;
     }
     catch(Exception e){
+      if(jsch.getInstanceLogger().isEnabled(Logger.ERROR)){
+        jsch.getInstanceLogger().log(Logger.ERROR, "failed to create verifier", e);
+      }
     }
     return null;
   }

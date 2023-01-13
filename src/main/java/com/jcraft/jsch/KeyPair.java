@@ -173,6 +173,9 @@ public abstract class KeyPair{
       //out.close();
     }
     catch(Exception e){
+      if(jsch.getInstanceLogger().isEnabled(Logger.ERROR)){
+        jsch.getInstanceLogger().log(Logger.ERROR, "failed to write private key", e);
+      }
     }
   }
 
@@ -216,6 +219,9 @@ public abstract class KeyPair{
       out.write(cr);
     }
     catch(Exception e){
+      if(jsch.getInstanceLogger().isEnabled(Logger.ERROR)){
+        jsch.getInstanceLogger().log(Logger.ERROR, "failed to write public key", e);
+      }
     }
   }
 
@@ -253,6 +259,9 @@ public abstract class KeyPair{
       out.write(Util.str2byte("---- END SSH2 PUBLIC KEY ----")); out.write(cr);
     }
     catch(Exception e){
+      if(jsch.getInstanceLogger().isEnabled(Logger.ERROR)){
+        jsch.getInstanceLogger().log(Logger.ERROR, "failed to write public key", e);
+      }
     }
   }
 
@@ -331,7 +340,9 @@ public abstract class KeyPair{
       cipher.update(encoded, 0, encoded.length, encoded, 0);
     }
     catch(Exception e){
-      //System.err.println(e);
+      if(jsch.getInstanceLogger().isEnabled(Logger.ERROR)){
+        jsch.getInstanceLogger().log(Logger.ERROR, "failed to encrypt key", e);
+      }
     }
     Util.bzero(key);
     return encoded;
@@ -350,7 +361,9 @@ public abstract class KeyPair{
       return plain;
     }
     catch(Exception e){
-      //System.err.println(e);
+      if(jsch.getInstanceLogger().isEnabled(Logger.ERROR)){
+        jsch.getInstanceLogger().log(Logger.ERROR, "failed to decrypt key", e);
+      }
     }
     return null;
   }
@@ -416,7 +429,11 @@ public abstract class KeyPair{
         Class<? extends Random> c=Class.forName(JSch.getConfig("random")).asSubclass(Random.class);
         random=c.getDeclaredConstructor().newInstance();
       }
-      catch(Exception e){ System.err.println("connect: random "+e); }
+      catch(Exception e){
+        if(jsch.getInstanceLogger().isEnabled(Logger.ERROR)){
+          jsch.getInstanceLogger().log(Logger.ERROR, "failed to create random", e);
+        }
+      }
     }
     return random;
   }
@@ -428,6 +445,9 @@ public abstract class KeyPair{
       hash.init();
     }
     catch(Exception e){
+      if(jsch.getInstanceLogger().isEnabled(Logger.ERROR)){
+        jsch.getInstanceLogger().log(Logger.ERROR, "failed to create hash", e);
+      }
     }
     return hash;
   }
@@ -437,6 +457,9 @@ public abstract class KeyPair{
       cipher=c.getDeclaredConstructor().newInstance();
     }
     catch(Exception e){
+      if(jsch.getInstanceLogger().isEnabled(Logger.ERROR)){
+        jsch.getInstanceLogger().log(Logger.ERROR, "failed to create cipher", e);
+      }
     }
     return cipher;
   }
@@ -502,7 +525,9 @@ public abstract class KeyPair{
       }
     }
     catch(Exception e){
-      System.err.println(e);
+      if(jsch.getInstanceLogger().isEnabled(Logger.ERROR)){
+        jsch.getInstanceLogger().log(Logger.ERROR, "failed to generate key from passphrase", e);
+      }
     }
     return key;
   } 
@@ -649,7 +674,7 @@ public abstract class KeyPair{
         kpair=KeyPairEd448.fromSSHAgent(jsch, buf);
       }
       else{
-        throw new JSchException("privatekey: invalid key "+Util.byte2str(prvkey, 4, 7));
+        throw new JSchException("privatekey: invalid key "+_type);
       }
       return kpair;
     }
@@ -845,16 +870,14 @@ public abstract class KeyPair{
         _buf.getInt();  // 0x3f6ff9be
         _buf.getInt();
         byte[]_type=_buf.getString();
-        //System.err.println("type: "+Util.byte2str(_type)); 
         String _cipher=Util.byte2str(_buf.getString());
-        //System.err.println("cipher: "+_cipher); 
         if(_cipher.equals("3des-cbc")){
              _buf.getInt();
            byte[] foo=new byte[data.length-_buf.getOffSet()];
            _buf.getByte(foo);
            data=foo;
            encrypted=true;
-           throw new JSchException("unknown privatekey format");
+           throw new JSchException("cipher " + _cipher + " is not supported for this privatekey format");
         }
         else if(_cipher.equals("none")){
              _buf.getInt();
@@ -865,6 +888,9 @@ public abstract class KeyPair{
            byte[] foo=new byte[data.length-_buf.getOffSet()];
            _buf.getByte(foo);
            data=foo;
+        }
+        else{
+           throw new JSchException("cipher " + _cipher + " is not supported for this privatekey format");
         }
     }
     // OPENSSH V1 PRIVATE KEY
@@ -882,7 +908,7 @@ public abstract class KeyPair{
 
       int nrKeys = buffer.getInt(); // int number of keys N; Should be 1
       if (nrKeys != 1) {
-          throw new IOException("We don't support having more than 1 key in the file (yet).");
+          throw new JSchException("We don't support having more than 1 key in the file (yet).");
       }
 
       pubkey = buffer.getString();
@@ -997,6 +1023,9 @@ public abstract class KeyPair{
           }
         }
         catch(Exception ee){
+          if(jsch.getInstanceLogger().isEnabled(Logger.WARN)){
+            jsch.getInstanceLogger().log(Logger.WARN, "failed to parse public key", ee);
+          }
         }
       }
     }
@@ -1054,10 +1083,10 @@ public abstract class KeyPair{
    * @throws IOException
    * @throws JSchException
    */
-  static int readOpenSSHKeyv1(byte[] data) throws IOException, JSchException {
+  static int readOpenSSHKeyv1(byte[] data) throws JSchException {
 
       if (data.length % 8 != 0) {
-          throw new IOException("The private key section must be a multiple of the block size (8)");
+          throw new JSchException("The private key section must be a multiple of the block size (8)");
       }
 
       final Buffer prvKEyBuffer = new Buffer(data);
@@ -1226,11 +1255,11 @@ public abstract class KeyPair{
       }
     }
     else {
-      return null;
+      throw new JSchException("key type " + typ + " is not supported for PPK format");
     }
 
     if(kpair == null)
-      return null;
+      throw new JSchException("key type " + typ + " is not supported for PPK format");
 
     kpair.encrypted = !v.get("Encryption").equals("none");
     kpair.vendor = ppkVersion;
@@ -1243,7 +1272,7 @@ public abstract class KeyPair{
           kpair.iv=new byte[kpair.cipher.getIVSize()];
         }
         catch(Exception e){
-          throw new JSchException("The cipher 'aes256-cbc' is required, but it is not available.");
+          throw new JSchException("The cipher 'aes256-cbc' is required, but it is not available.", e);
         }
       }
       else {
@@ -1258,7 +1287,7 @@ public abstract class KeyPair{
           kpair.sha1=sha1;
         }
         catch(Exception e){
-          throw new JSchException("'sha-1' is required, but it is not available.");
+          throw new JSchException("'sha-1' is required, but it is not available.", e);
         }
       }
       else{
@@ -1300,10 +1329,10 @@ public abstract class KeyPair{
           kpair.argon2=argon2;
         }
         catch(NumberFormatException e){
-          throw new JSchException("Invalid argon2 params.");
+          throw new JSchException("Invalid argon2 params.", e);
         }
         catch(Exception e){
-          throw new JSchException("'argon2' is required, but it is not available.");
+          throw new JSchException("'argon2' is required, but it is not available.", e);
         }
       }
 

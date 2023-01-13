@@ -28,7 +28,9 @@ class KeyPairDeferred extends KeyPair {
                 return true;
             }
             if (_passphrase == null) {
-                jsch.getInstanceLogger().log(Logger.ERROR, "no passphrase set.");
+                if (jsch.getInstanceLogger().isEnabled(Logger.ERROR)) {
+                    jsch.getInstanceLogger().log(Logger.ERROR, "no passphrase set.");
+                }
                 return false;
             }
 

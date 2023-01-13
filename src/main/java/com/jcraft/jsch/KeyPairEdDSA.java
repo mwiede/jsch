@@ -58,7 +58,6 @@ abstract class KeyPairEdDSA extends KeyPair{
       keypairgen=null;
     }
     catch(Exception | NoClassDefFoundError e){
-      //System.err.println("KeyPairEdDSA: "+e);
       throw new JSchException(e.toString(), e);
     }
   }
@@ -83,6 +82,9 @@ abstract class KeyPairEdDSA extends KeyPair{
         prv_array = tmp[0];
       }
       catch(JSchException e){
+        if(jsch.getInstanceLogger().isEnabled(Logger.ERROR)){
+          jsch.getInstanceLogger().log(Logger.ERROR, "failed to parse key", e);
+        }
         return false;
       }
 
@@ -106,11 +108,16 @@ abstract class KeyPairEdDSA extends KeyPair{
         return true;
       }
       catch(Exception e){
-        //System.err.println(e);
+        if(jsch.getInstanceLogger().isEnabled(Logger.ERROR)){
+          jsch.getInstanceLogger().log(Logger.ERROR, "failed to parse key", e);
+        }
         return false;
       }
     }
     else {
+      if(jsch.getInstanceLogger().isEnabled(Logger.ERROR)){
+        jsch.getInstanceLogger().log(Logger.ERROR, "failed to parse key");
+      }
       return false;
     }
   }
@@ -151,6 +158,9 @@ abstract class KeyPairEdDSA extends KeyPair{
       return Buffer.fromBytes(tmp).buffer;
     }
     catch(Exception | NoClassDefFoundError e){
+      if(jsch.getInstanceLogger().isEnabled(Logger.ERROR)){
+        jsch.getInstanceLogger().log(Logger.ERROR, "failed to generate signature", e);
+      }
     }
     return null;
   }
@@ -177,6 +187,9 @@ abstract class KeyPairEdDSA extends KeyPair{
       return eddsa;
     }
     catch(Exception | NoClassDefFoundError e){
+      if(jsch.getInstanceLogger().isEnabled(Logger.ERROR)){
+        jsch.getInstanceLogger().log(Logger.ERROR, "failed to create verifier", e);
+      }
     }
     return null;
   }

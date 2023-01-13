@@ -191,13 +191,27 @@ class KeyPairPKCS8 extends KeyPair {
       }
     }
     catch(ASN1Exception e){
+      if(jsch.getInstanceLogger().isEnabled(Logger.ERROR)){
+        jsch.getInstanceLogger().log(Logger.ERROR, "failed to parse key", e);
+      }
       return false;
     }
     catch(Exception e){
-      //System.err.println(e);
+      if(jsch.getInstanceLogger().isEnabled(Logger.ERROR)){
+        jsch.getInstanceLogger().log(Logger.ERROR, "failed to parse key", e);
+      }
       return false;
     }
-    return kpair != null;
+
+    if(kpair != null){
+      return true;
+    }
+    else{
+      if(jsch.getInstanceLogger().isEnabled(Logger.ERROR)){
+        jsch.getInstanceLogger().log(Logger.ERROR, "failed to parse key");
+      }
+      return false;
+    }
   }
 
   @Override
@@ -328,6 +342,9 @@ or
         key = tmp.getKey(_passphrase, salt, iterations, cipher.getBlockSize());
       }
       catch(Exception ee){
+        if(jsch.getInstanceLogger().isEnabled(Logger.ERROR)){
+          jsch.getInstanceLogger().log(Logger.ERROR, "failed to create pbkdf", ee);
+        }
       }
 
       if(key==null){
@@ -344,12 +361,19 @@ or
       }
     }
     catch(ASN1Exception e){
-      // System.err.println(e);
+      if(jsch.getInstanceLogger().isEnabled(Logger.ERROR)){
+        jsch.getInstanceLogger().log(Logger.ERROR, "failed to decrypt key", e);
+      }
     }
     catch(Exception e){
-      // System.err.println(e);
+      if(jsch.getInstanceLogger().isEnabled(Logger.ERROR)){
+        jsch.getInstanceLogger().log(Logger.ERROR, "failed to decrypt key", e);
+      }
     }
 
+    if(jsch.getInstanceLogger().isEnabled(Logger.ERROR)){
+      jsch.getInstanceLogger().log(Logger.ERROR, "failed to decrypt key");
+    }
     return false;
   }
 

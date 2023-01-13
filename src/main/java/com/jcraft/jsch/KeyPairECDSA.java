@@ -188,6 +188,9 @@ class KeyPairECDSA extends KeyPair{
                       (prv_array.length>=48 ? 384 : 256);
         }
         catch(JSchException e){
+          if(jsch.getInstanceLogger().isEnabled(Logger.ERROR)){
+            jsch.getInstanceLogger().log(Logger.ERROR, "failed to parse key", e);
+          }
           return false;
         }
 
@@ -304,8 +307,9 @@ class KeyPairECDSA extends KeyPair{
                     (prv_array.length>=48 ? 384 : 256);
     }
     catch(Exception e){
-      //System.err.println(e);
-      //e.printStackTrace();
+      if(jsch.getInstanceLogger().isEnabled(Logger.ERROR)){
+        jsch.getInstanceLogger().log(Logger.ERROR, "failed to parse key", e);
+      }
       return false;
     }
     return true;
@@ -360,7 +364,9 @@ class KeyPairECDSA extends KeyPair{
       return Buffer.fromBytes(tmp).buffer;
     }
     catch(Exception e){
-      //System.err.println("e "+e);
+      if(jsch.getInstanceLogger().isEnabled(Logger.ERROR)){
+        jsch.getInstanceLogger().log(Logger.ERROR, "failed to generate signature", e);
+      }
     }
     return null;
   }
@@ -389,7 +395,9 @@ class KeyPairECDSA extends KeyPair{
       return ecdsa;
     }
     catch(Exception e){
-      //System.err.println("e "+e);
+      if(jsch.getInstanceLogger().isEnabled(Logger.ERROR)){
+        jsch.getInstanceLogger().log(Logger.ERROR, "failed to create verifier", e);
+      }
     }
     return null;
   }
