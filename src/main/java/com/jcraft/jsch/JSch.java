@@ -204,6 +204,7 @@ public class JSch{
     config.put("zlib@openssh.com", "com.jcraft.jsch.jzlib.Compression");
 
     config.put("pbkdf", "com.jcraft.jsch.jce.PBKDF");
+    config.put("argon2", "com.jcraft.jsch.bc.Argon2");
 
     if(JavaVersion.getVersion()>=11){
       config.put("xdh", "com.jcraft.jsch.jce.XDH");

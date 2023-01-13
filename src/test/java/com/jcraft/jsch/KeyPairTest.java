@@ -44,7 +44,7 @@ class KeyPairTest {
                 Arguments.of("docker/ssh_host_ecdsa521_key", null, "ecdsa-sha2-nistp521"),
                 // encrypted ecdsa
                 Arguments.of("encrypted_openssh_private_key_ecdsa", "secret123", "ecdsa-sha2-nistp256"),
-                // PuTTY keys
+                // PuTTY v2 keys
                 Arguments.of("ppkv2_dsa_unix.ppk", null, "ssh-dss"),
                 Arguments.of("ppkv2_dsa_unix_encrypted.ppk", "secret123", "ssh-dss"),
                 Arguments.of("ppkv2_dsa_windows.ppk", null, "ssh-dss"),
@@ -68,7 +68,32 @@ class KeyPairTest {
                 Arguments.of("ppkv2_ed25519_unix.ppk", null, "ssh-ed25519"),
                 Arguments.of("ppkv2_ed25519_unix_encrypted.ppk", "secret123", "ssh-ed25519"),
                 Arguments.of("ppkv2_ed25519_windows.ppk", null, "ssh-ed25519"),
-                Arguments.of("ppkv2_ed25519_windows_encrypted.ppk", "secret123", "ssh-ed25519")
+                Arguments.of("ppkv2_ed25519_windows_encrypted.ppk", "secret123", "ssh-ed25519"),
+                // PuTTY v3 keys
+                Arguments.of("ppkv3_dsa_unix.ppk", null, "ssh-dss"),
+                Arguments.of("ppkv3_dsa_unix_encrypted.ppk", "secret123", "ssh-dss"),
+                Arguments.of("ppkv3_dsa_windows.ppk", null, "ssh-dss"),
+                Arguments.of("ppkv3_dsa_windows_encrypted.ppk", "secret123", "ssh-dss"),
+                Arguments.of("ppkv3_rsa_unix.ppk", null, "ssh-rsa"),
+                Arguments.of("ppkv3_rsa_unix_encrypted.ppk", "secret123", "ssh-rsa"),
+                Arguments.of("ppkv3_rsa_windows.ppk", null, "ssh-rsa"),
+                Arguments.of("ppkv3_rsa_windows_encrypted.ppk", "secret123", "ssh-rsa"),
+                Arguments.of("ppkv3_ecdsa256_unix.ppk", null, "ecdsa-sha2-nistp256"),
+                Arguments.of("ppkv3_ecdsa256_unix_encrypted.ppk", "secret123", "ecdsa-sha2-nistp256"),
+                Arguments.of("ppkv3_ecdsa384_unix.ppk", null, "ecdsa-sha2-nistp384"),
+                Arguments.of("ppkv3_ecdsa384_unix_encrypted.ppk", "secret123", "ecdsa-sha2-nistp384"),
+                Arguments.of("ppkv3_ecdsa521_unix.ppk", null, "ecdsa-sha2-nistp521"),
+                Arguments.of("ppkv3_ecdsa521_unix_encrypted.ppk", "secret123", "ecdsa-sha2-nistp521"),
+                Arguments.of("ppkv3_ecdsa256_windows.ppk", null, "ecdsa-sha2-nistp256"),
+                Arguments.of("ppkv3_ecdsa256_windows_encrypted.ppk", "secret123", "ecdsa-sha2-nistp256"),
+                Arguments.of("ppkv3_ecdsa384_windows.ppk", null, "ecdsa-sha2-nistp384"),
+                Arguments.of("ppkv3_ecdsa384_windows_encrypted.ppk", "secret123", "ecdsa-sha2-nistp384"),
+                Arguments.of("ppkv3_ecdsa521_windows.ppk", null, "ecdsa-sha2-nistp521"),
+                Arguments.of("ppkv3_ecdsa521_windows_encrypted.ppk", "secret123", "ecdsa-sha2-nistp521"),
+                Arguments.of("ppkv3_ed25519_unix.ppk", null, "ssh-ed25519"),
+                Arguments.of("ppkv3_ed25519_unix_encrypted.ppk", "secret123", "ssh-ed25519"),
+                Arguments.of("ppkv3_ed25519_windows.ppk", null, "ssh-ed25519"),
+                Arguments.of("ppkv3_ed25519_windows_encrypted.ppk", "secret123", "ssh-ed25519")
         );
     }
 

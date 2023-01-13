@@ -52,6 +52,7 @@ public abstract class KeyPair{
   static final int VENDOR_PUTTY=2;
   static final int VENDOR_PKCS8=3;
   static final int VENDOR_OPENSSH_V1 = 4;
+  static final int VENDOR_PUTTY_V3 = 5;
 
   int vendor=VENDOR_OPENSSH;
 
@@ -99,6 +100,7 @@ public abstract class KeyPair{
 
   JSch jsch=null;
   protected Cipher cipher;
+  protected Argon2 argon2;
   private HASH hash;
   private Random random;
 
@@ -487,6 +489,12 @@ public abstract class KeyPair{
           sha1.update(passphrase, 0, passphrase.length);
           System.arraycopy(sha1.digest(), 0, key, i*20, 20);
         }
+      }
+      else if(vendor==VENDOR_PUTTY_V3){
+        tmp=argon2.getKey(passphrase, cipher.getBlockSize()+cipher.getIVSize()+32);
+        System.arraycopy(tmp, 0, key, 0, key.length);
+        System.arraycopy(tmp, key.length, iv, 0, iv.length);
+        Util.bzero(tmp);
       }
     }
     catch(Exception e){
@@ -1096,21 +1104,6 @@ public abstract class KeyPair{
     dispose();
   }
 
-  private static final String[] header1 = {
-    "PuTTY-User-Key-File-2: ",
-    "Encryption: ",
-    "Comment: ",
-    "Public-Lines: "
-  };
-
-  private static final String[] header2 = {
-    "Private-Lines: "
-  };
-
-  private static final String[] header3 = {
-    "Private-MAC: "
-  };
-
   static KeyPair loadPPK(JSch jsch, byte[] buf) throws JSchException {
     byte[] pubkey = null;
     byte[] prvkey = null;
@@ -1124,9 +1117,19 @@ public abstract class KeyPair{
         break;
     } 
 
+    int ppkVersion;
     String typ = v.get("PuTTY-User-Key-File-2");
     if(typ == null){
-      return null;
+      typ = v.get("PuTTY-User-Key-File-3");
+      if(typ == null){
+        return null;
+      }
+      else{
+        ppkVersion = VENDOR_PUTTY_V3;
+      }
+    }
+    else{
+      ppkVersion = VENDOR_PUTTY;
     }
 
     lines = Integer.parseInt(v.get("Public-Lines"));
@@ -1226,7 +1229,7 @@ public abstract class KeyPair{
       return null;
 
     kpair.encrypted = !v.get("Encryption").equals("none");
-    kpair.vendor = VENDOR_PUTTY;
+    kpair.vendor = ppkVersion;
     kpair.publicKeyComment = v.get("Comment");
     if(kpair.encrypted){
       if(Session.checkCipher(JSch.getConfig("aes256-cbc"))){
@@ -1242,6 +1245,53 @@ public abstract class KeyPair{
       else {
         throw new JSchException("The cipher 'aes256-cbc' is required, but it is not available.");
       }
+
+      if(ppkVersion != VENDOR_PUTTY){
+        String argonTypeStr=v.get("Key-Derivation");
+        String saltStr=v.get("Argon2-Salt");
+        if(argonTypeStr == null || saltStr == null || (saltStr != null && saltStr.length() % 2 != 0)){
+          throw new JSchException("Invalid argon2 params.");
+        }
+
+        int argonType;
+        switch(argonTypeStr){
+          case "Argon2d":
+            argonType=Argon2.ARGON2D;
+            break;
+          case "Argon2i":
+            argonType=Argon2.ARGON2I;
+            break;
+          case "Argon2id":
+            argonType=Argon2.ARGON2ID;
+            break;
+          default:
+            throw new JSchException("Invalid argon2 params.");
+        }
+
+        try{
+          int memory=Integer.parseInt(v.get("Argon2-Memory"));
+          int passes=Integer.parseInt(v.get("Argon2-Passes"));
+          int parallelism=Integer.parseInt(v.get("Argon2-Parallelism"));
+
+          byte[] salt=new byte[saltStr.length()/2];
+          for(int i=0; i<salt.length; i++){
+            int j=i*2;
+            salt[i]=(byte)Integer.parseInt(saltStr.substring(j, j+2), 16);
+          }
+
+          Class<? extends Argon2> c=Class.forName(JSch.getConfig("argon2")).asSubclass(Argon2.class);
+          Argon2 argon2=c.getDeclaredConstructor().newInstance();
+          argon2.init(salt, passes, argonType, new byte[0], new byte[0], memory, parallelism, Argon2.V13);
+          kpair.argon2=argon2;
+        }
+        catch(NumberFormatException e){
+          throw new JSchException("Invalid argon2 params.");
+        }
+        catch(Exception e){
+          throw new JSchException("'argon2' is required, but it is not available.");
+        }
+      }
+
       kpair.data = prvkey;
     }
     else {

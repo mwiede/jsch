@@ -20,10 +20,16 @@ class KeyPair2Test {
 
     static Stream<Arguments> keyArgs() {
         return Stream.of(
+                // PuTTY v2 keys
                 Arguments.of("ppkv2_ed448_unix.ppk", null, "ssh-ed448"),
                 Arguments.of("ppkv2_ed448_unix_encrypted.ppk", "secret123", "ssh-ed448"),
                 Arguments.of("ppkv2_ed448_windows.ppk", null, "ssh-ed448"),
-                Arguments.of("ppkv2_ed448_windows_encrypted.ppk", "secret123", "ssh-ed448")
+                Arguments.of("ppkv2_ed448_windows_encrypted.ppk", "secret123", "ssh-ed448"),
+                // PuTTY v3 keys
+                Arguments.of("ppkv3_ed448_unix.ppk", null, "ssh-ed448"),
+                Arguments.of("ppkv3_ed448_unix_encrypted.ppk", "secret123", "ssh-ed448"),
+                Arguments.of("ppkv3_ed448_windows.ppk", null, "ssh-ed448"),
+                Arguments.of("ppkv3_ed448_windows_encrypted.ppk", "secret123", "ssh-ed448")
         );
     }
 

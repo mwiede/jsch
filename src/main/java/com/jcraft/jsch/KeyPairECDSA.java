@@ -177,7 +177,7 @@ class KeyPairECDSA extends KeyPair{
         */
         return false;
       }
-      else if(vendor==VENDOR_PUTTY){
+      else if(vendor==VENDOR_PUTTY || vendor==VENDOR_PUTTY_V3){
         Buffer buf=new Buffer(plain);
         buf.skip(plain.length);
 

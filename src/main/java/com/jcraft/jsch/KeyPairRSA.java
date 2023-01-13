@@ -132,7 +132,7 @@ class KeyPairRSA extends KeyPair{
       int index=0;
       int length=0;
 
-      if(vendor==VENDOR_PUTTY){
+      if(vendor==VENDOR_PUTTY || vendor==VENDOR_PUTTY_V3){
         Buffer buf = new Buffer(plain);
         buf.skip(plain.length);
 
