@@ -101,6 +101,7 @@ public abstract class KeyPair{
   JSch jsch=null;
   protected Cipher cipher;
   protected Argon2 argon2;
+  protected HASH sha1;
   private HASH hash;
   private Random random;
 
@@ -478,17 +479,20 @@ public abstract class KeyPair{
         System.arraycopy(hn, 0, key, 0, key.length); 
       }
       else if(vendor==VENDOR_PUTTY){
-        Class<? extends HASH> c=Class.forName(JSch.getConfig("sha-1")).asSubclass(HASH.class);
-        HASH sha1=c.getDeclaredConstructor().newInstance();
-        tmp = new byte[4];
-        key = new byte[20*2];
-        for(int i = 0; i < 2; i++){
-          sha1.init();
-          tmp[3]=(byte)i;
-          sha1.update(tmp, 0, tmp.length);
-          sha1.update(passphrase, 0, passphrase.length);
-          System.arraycopy(sha1.digest(), 0, key, i*20, 20);
-        }
+        byte[] i=new byte[4];
+
+        sha1.update(i, 0, i.length);
+        sha1.update(passphrase, 0, passphrase.length);
+        tmp=sha1.digest();
+        System.arraycopy(tmp, 0, key, 0, tmp.length);
+        Util.bzero(tmp);
+
+        i[3]=(byte)1;
+        sha1.update(i, 0, i.length);
+        sha1.update(passphrase, 0, passphrase.length);
+        tmp=sha1.digest();
+        System.arraycopy(tmp, 0, key, tmp.length, key.length-tmp.length);
+        Util.bzero(tmp);
       }
       else if(vendor==VENDOR_PUTTY_V3){
         tmp=argon2.getKey(passphrase, cipher.getBlockSize()+cipher.getIVSize()+32);
@@ -1246,7 +1250,18 @@ public abstract class KeyPair{
         throw new JSchException("The cipher 'aes256-cbc' is required, but it is not available.");
       }
 
-      if(ppkVersion != VENDOR_PUTTY){
+      if(ppkVersion==VENDOR_PUTTY){
+        try {
+          Class<? extends HASH> c=Class.forName(JSch.getConfig("sha-1")).asSubclass(HASH.class);
+          HASH sha1=c.getDeclaredConstructor().newInstance();
+          sha1.init();
+          kpair.sha1=sha1;
+        }
+        catch(Exception e){
+          throw new JSchException("'sha-1' is required, but it is not available.");
+        }
+      }
+      else{
         String argonTypeStr=v.get("Key-Derivation");
         String saltStr=v.get("Argon2-Salt");
         if(argonTypeStr == null || saltStr == null || (saltStr != null && saltStr.length() % 2 != 0)){
