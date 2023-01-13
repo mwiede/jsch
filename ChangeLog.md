@@ -1,3 +1,10 @@
+* [0.2.7](https://github.com/mwiede/jsch/releases/tag/jsch-0.2.7)
+  * Fix exception logging in Log4j2Logger.
+  * [#265](https://github.com/mwiede/jsch/issues/265) change buffer_margin computation to be dynamic based upon the MAC to allow connections that advertise small maximum packet sizes.
+  * [#266](https://github.com/mwiede/jsch/issues/266) fix PuTTY key parsing to work with unix line endings.
+  * Add support for ECDSA & EdDSA type PuTTY keys.
+  * [#71](https://github.com/mwiede/jsch/issues/71) add support for PuTTY version 3 format keys.
+    * Encrypted PuTTY version 3 format keys requires [Bouncy Castle](https://www.bouncycastle.org/java.html) (bcprov-jdk18on).
 * [0.2.6](https://github.com/mwiede/jsch/releases/tag/jsch-0.2.6)
   * Include host alias instead of the real host in messages and exceptions by @ShadelessFox in https://github.com/mwiede/jsch/pull/257
   * Fix missing keySize set when loading V1 RSA keys by @Alex-Vol-Amz in https://github.com/mwiede/jsch/pull/258
