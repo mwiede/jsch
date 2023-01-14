@@ -789,20 +789,20 @@ public abstract class KeyPair{
             }
           continue;
         }
-        if(buf[i]==0x0d && i+1<buf.length && buf[i+1]==0x0a){
+        if(buf[i]=='\r' && i+1<buf.length && buf[i+1]=='\n'){
           i++;
           continue;
         }
-        if(buf[i]==0x0a && i+1<buf.length){
-          if(buf[i+1]==0x0a){ i+=2; break; }
-          if(buf[i+1]==0x0d &&
-             i+2<buf.length && buf[i+2]==0x0a){
+        if(buf[i]=='\n' && i+1<buf.length){
+          if(buf[i+1]=='\n'){ i+=2; break; }
+          if(buf[i+1]=='\r' &&
+             i+2<buf.length && buf[i+2]=='\n'){
              i+=3; break;
           }
           boolean inheader=false;
           for(int j=i+1; j<buf.length; j++){
-            if(buf[j]==0x0a) break;
-            //if(buf[j]==0x0d) break;
+            if(buf[j]=='\n') break;
+            //if(buf[j]=='\r') break;
             if(buf[j]==':'){inheader=true; break;}
           }
           if(!inheader){
@@ -841,9 +841,9 @@ public abstract class KeyPair{
 
         int _len = _buf.length;
         while(i<_len){
-          if(_buf[i]==0x0a){
-            boolean xd=(_buf[i-1]==0x0d);
-            // ignore 0x0a (or 0x0d0x0a)
+          if(_buf[i]=='\n'){
+            boolean xd=(_buf[i-1]=='\r');
+            // ignore \n (or \r\n)
             System.arraycopy(_buf, i+1, _buf, i-(xd ? 1 : 0), _len-(i+1));
             if(xd)_len--;
             _len--;
@@ -938,14 +938,14 @@ public abstract class KeyPair{
 
             boolean valid=true;
             i=0;
-            do{i++;}while(buf.length>i && buf[i]!=0x0a);
+            do{i++;}while(buf.length>i && buf[i]!='\n');
             if(buf.length<=i) {valid=false;}
 
             while(valid){
-              if(buf[i]==0x0a){
+              if(buf[i]=='\n'){
                 boolean inheader=false;
                 for(int j=i+1; j<buf.length; j++){
-                  if(buf[j]==0x0a) break;
+                  if(buf[j]=='\n') break;
                   if(buf[j]==':'){inheader=true; break;}
                 }
                 if(!inheader){
@@ -959,7 +959,7 @@ public abstract class KeyPair{
 
             int start=i;
             while(valid && i<len){
-              if(buf[i]==0x0a){
+              if(buf[i]=='\n'){
                 System.arraycopy(buf, i+1, buf, i, len-i-1);
                 len--;
                 continue;
@@ -994,7 +994,7 @@ public abstract class KeyPair{
               if(i++<len){
                 int start=i;
                 while(i<len){ if(buf[i]=='\n')break; i++;}
-                if(i>0 && buf[i-1]==0x0d) i--;
+                if(i>0 && buf[i-1]=='\r') i--;
                 if(start<i){
                   publicKeyComment = Util.byte2str(buf, start, i-start);
                 }
@@ -1014,7 +1014,7 @@ public abstract class KeyPair{
               if(i++<len){
                 int start=i;
                 while(i<len){ if(buf[i]=='\n')break; i++;}
-                if(i>0 && buf[i-1]==0x0d) i--;
+                if(i>0 && buf[i-1]=='\r') i--;
                 if(start<i){
                   publicKeyComment = Util.byte2str(buf, start, i-start);
                 }
