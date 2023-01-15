@@ -81,7 +81,8 @@ public class Session{
   private static final int PACKET_MAX_SIZE = 256 * 1024;
 
   private byte[] V_S;                                 // server version
-  private byte[] V_C=Util.str2byte("SSH-2.0-JSCH_"+JSch.VERSION); // client version
+  private byte[] V_C; // will be set during connect so that the client version
+                      // can be changed without affecting active sessions
 
   private byte[] I_C; // the payload of the client's SSH_MSG_KEXINIT
   private byte[] I_S; // the payload of the server's SSH_MSG_KEXINIT
@@ -169,6 +170,7 @@ public class Session{
 
   JSch jsch;
   Logger logger;
+  String clientVersion; //=Util.str2byte("SSH-2.0-JSCH_"+Version.getVersion()); // client version
 
   Session(JSch jsch, String username, String host, int port) throws JSchException{
     super();
@@ -199,6 +201,7 @@ public class Session{
       throw new JSchException("session is already connected");
     }
 
+    V_C = Util.str2byte(getClientVersion());
     io=new IO();
     if(random==null){
       try{
@@ -2099,6 +2102,7 @@ break;
 //    }
 
     jsch.removeSession(this);
+    clientVersion = null;
 
     //System.gc();
   }
@@ -2730,11 +2734,32 @@ break;
   public String getServerVersion(){
     return Util.byte2str(V_S);
   }
+  
+  /**
+   * Returns the client version that is used for the next connection.
+   * This value might be different from the version string used in a
+   * currently active connection if <code>setClientVersion</code> has
+   * been called since then.
+   * @return The version string
+   */
   public String getClientVersion(){
-    return Util.byte2str(V_C);
+    return clientVersion == null ? jsch.getClientVersion() : clientVersion;
   }
+  
+  /**
+   * Sets the client version that is used for the next connection.
+   * If a connection is already active this has no effect on the
+   * current connection (e.g. during a rekeying process). If
+   * <code>null</code> is set, the value of the JSch-instance the
+   * session belongs to is used.
+   * @param cv The version string or <code>null</code> if JSch's
+   * value should be used.
+   */
   public void setClientVersion(String cv){
-    V_C=Util.str2byte(cv);
+    clientVersion = cv;
+    if (cv == null) {
+      return;
+    }
   }
 
   public void sendIgnore() throws Exception{
