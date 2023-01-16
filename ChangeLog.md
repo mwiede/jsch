@@ -5,6 +5,8 @@
   * Add support for ECDSA & EdDSA type PuTTY keys.
   * [#71](https://github.com/mwiede/jsch/issues/71) add support for PuTTY version 3 format keys.
     * Encrypted PuTTY version 3 format keys requires [Bouncy Castle](https://www.bouncycastle.org/java.html) (bcprov-jdk18on).
+  * Eliminate KeyPairDeferred and instead change handling of OpenSSH V1 type keys to be more like other KeyPair types.
+  * Be more vigilant about clearing private key data.
 * [0.2.6](https://github.com/mwiede/jsch/releases/tag/jsch-0.2.6)
   * Include host alias instead of the real host in messages and exceptions by @ShadelessFox in https://github.com/mwiede/jsch/pull/257
   * Fix missing keySize set when loading V1 RSA keys by @Alex-Vol-Amz in https://github.com/mwiede/jsch/pull/258
