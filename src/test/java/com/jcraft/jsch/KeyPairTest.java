@@ -131,18 +131,6 @@ class KeyPairTest {
         });
     }
 
-    @Test
-    void loadAndAcessEncryptedKeyWithoutPassword() throws URISyntaxException, JSchException {
-        final JSch jSch = new JSch();
-        final String prvkey = Paths.get(ClassLoader.getSystemResource("encrypted_openssh_private_key_dsa").toURI()).toFile().getAbsolutePath();
-        assertTrue(new File(prvkey).exists());
-        jSch.addIdentity(prvkey);
-
-        assertThrows(IllegalStateException.class, () -> {
-            jSch.getIdentityRepository().getIdentities().get(0).getAlgName();
-        });
-    }
-
     @ParameterizedTest
     @ValueSource(strings = {"encrypted_openssh_private_key_rsa", "encrypted_openssh_private_key_dsa", "encrypted_openssh_private_key_ecdsa"})
     void decryptEncryptedOpensshKey(String keyFile) throws URISyntaxException, JSchException {

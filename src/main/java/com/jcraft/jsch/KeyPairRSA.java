@@ -198,6 +198,7 @@ class KeyPairRSA extends KeyPair{
                 if(n_array!=null){
                   key_size = (new BigInteger(n_array)).bitLength();
                 }
+                publicKeyComment=Util.byte2str(prvKEyBuffer.getString());
 
                 getEPArray();
                 getEQArray();

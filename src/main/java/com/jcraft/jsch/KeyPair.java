@@ -37,7 +37,8 @@ import java.util.List;
 import java.util.Map;
 
 public abstract class KeyPair{
-  
+
+  /** DEFERRED should not be be used. */
   public static final int DEFERRED = -1;
   public static final int ERROR=0;
   public static final int DSA=1;
@@ -100,15 +101,13 @@ public abstract class KeyPair{
 
   JSch jsch=null;
   protected Cipher cipher;
+  protected BCrypt bcrypt;
   protected Argon2 argon2;
   protected HASH sha1;
   private HASH hash;
   private Random random;
 
   private byte[] passphrase;
-
-  protected String kdfName;
-  protected byte[] kdfOptions;
 
   public KeyPair(JSch jsch){
     this.jsch=jsch;
@@ -491,6 +490,12 @@ public abstract class KeyPair{
         }
         System.arraycopy(hn, 0, key, 0, key.length); 
       }
+      else if(vendor==VENDOR_OPENSSH_V1){
+        tmp=bcrypt.getKey(passphrase, cipher.getBlockSize()+cipher.getIVSize());
+        System.arraycopy(tmp, 0, key, 0, key.length);
+        System.arraycopy(tmp, key.length, iv, 0, iv.length);
+        Util.bzero(tmp);
+      }
       else if(vendor==VENDOR_FSECURE){
         for(int index=0; index+hsize<=hn.length;){
           if(tmp!=null){ hash.update(tmp, 0, tmp.length); }
@@ -639,8 +644,6 @@ public abstract class KeyPair{
     int vendor=VENDOR_OPENSSH;
     String publicKeyComment = "";
     Cipher cipher=null;
-    String kdfName = null;
-    byte[] kdfOptions = null;
 
     // prvkey from "ssh-add" command on the remote.
     if(pubkey==null &&
@@ -730,11 +733,12 @@ public abstract class KeyPair{
             type=UNKNOWN;
             vendor=VENDOR_PKCS8;
             i+=5;
-
-      } else if (isOpenSSHPrivateKey(buf, i, len)) {
-          type = UNKNOWN;
-          vendor = VENDOR_OPENSSH_V1;
-      } else {
+          }
+          else if (isOpenSSHPrivateKey(buf, i, len)){
+            type = UNKNOWN;
+            vendor = VENDOR_OPENSSH_V1;
+          }
+          else{
             throw new JSchException("invalid privatekey");
           }
           i+=3;
@@ -859,7 +863,10 @@ public abstract class KeyPair{
         Util.bzero(_buf);
       }
 
-      if(data!=null &&
+      if(vendor == VENDOR_OPENSSH_V1){
+        return loadOpenSSHKeyv1(jsch, data);
+      }
+      else if(data!=null &&
          data.length>4 &&            // FSecure
          data[0]==(byte)0x3f &&
          data[1]==(byte)0x6f &&
@@ -892,42 +899,7 @@ public abstract class KeyPair{
         else{
            throw new JSchException("cipher " + _cipher + " is not supported for this privatekey format");
         }
-    }
-    // OPENSSH V1 PRIVATE KEY
-    else if (data != null &&
-          Util.array_equals(AUTH_MAGIC, Arrays.copyOfRange(data, 0, AUTH_MAGIC.length))) {
-
-      vendor = VENDOR_OPENSSH_V1;
-      Buffer buffer = new Buffer(data);
-      byte[] magic = new byte[AUTH_MAGIC.length];
-      buffer.getByte(magic);
-
-      String cipherName = Util.byte2str(buffer.getString());
-      kdfName = Util.byte2str(buffer.getString()); // string kdfname
-      kdfOptions = buffer.getString(); // string kdfoptions
-
-      int nrKeys = buffer.getInt(); // int number of keys N; Should be 1
-      if (nrKeys != 1) {
-          throw new JSchException("We don't support having more than 1 key in the file (yet).");
       }
-
-      pubkey = buffer.getString();
-
-      if ("none".equals(cipherName)) {
-          encrypted = false;
-          data = buffer.getString();
-          type = readOpenSSHKeyv1(data);
-      } else if (Session.checkCipher(JSch.getConfig(cipherName))) {
-          encrypted = true;
-          Class<? extends Cipher> c = Class.forName(JSch.getConfig(cipherName)).asSubclass(Cipher.class);
-          cipher = c.getDeclaredConstructor().newInstance();
-          data = buffer.getString();
-          // the type can only be determined after encryption, so we take this intermediate here:
-          type = DEFERRED;
-      } else {
-          throw new JSchException("cipher " + cipherName + " is not available");
-      }
-    }
 
       if(pubkey!=null){
         try{
@@ -1028,24 +1000,14 @@ public abstract class KeyPair{
           }
         }
       }
-    }
-    catch(Exception e){
-      if(e instanceof JSchException) throw (JSchException)e;
-      throw new JSchException(e.toString(), e);
-    }
 
-        return getKeyPair(jsch, prvkey, pubkey, iv, encrypted, data, publickeyblob, type, vendor, publicKeyComment, cipher, kdfName, kdfOptions);
-    }
-
-    static KeyPair getKeyPair(JSch jsch, byte[] prvkey, byte[] pubkey, byte[] iv, boolean encrypted, byte[] data, byte[] publickeyblob, int type, int vendor, String publicKeyComment, Cipher cipher, String kdfName, byte[] kdfOptions) throws JSchException {
       KeyPair kpair=null;
       if(type==DSA){ kpair=new KeyPairDSA(jsch); }
       else if(type==RSA){ kpair=new KeyPairRSA(jsch); }
       else if(type==ECDSA){ kpair=new KeyPairECDSA(jsch, pubkey); }
-      else if(type==ED25519){ kpair=new KeyPairEd25519(jsch, pubkey, prvkey); }
-      else if(type==ED448){ kpair=new KeyPairEd448(jsch, pubkey, prvkey); }
+      else if(type==ED25519){ kpair=new KeyPairEd25519(jsch, pubkey, null); }
+      else if(type==ED448){ kpair=new KeyPairEd448(jsch, pubkey, null); }
       else if(vendor==VENDOR_PKCS8){ kpair = new KeyPairPKCS8(jsch); }
-      else if (type == DEFERRED) { kpair = new KeyPairDeferred(jsch); }
 
       if(kpair!=null){
         kpair.encrypted=encrypted;
@@ -1053,8 +1015,6 @@ public abstract class KeyPair{
         kpair.vendor=vendor;
         kpair.publicKeyComment=publicKeyComment;
         kpair.cipher=cipher;
-        kpair.kdfName = kdfName;
-        kpair.kdfOptions = kdfOptions;
 
         if(encrypted){
           kpair.encrypted=true;
@@ -1073,44 +1033,73 @@ public abstract class KeyPair{
       }
 
       return kpair;
+    }
+    catch(Exception e){
+      if(e instanceof JSchException) throw (JSchException)e;
+      throw new JSchException(e.toString(), e);
+    }
   }
 
-  /**
-   * reads openssh key v1 format and returns key type.
-   *
-   * @param data
-   * @return key type 1=DSA, 2=RSA, 3=ECDSA, 4=UNKNOWN, 5=ED25519, 6=ED448
-   * @throws IOException
-   * @throws JSchException
-   */
-  static int readOpenSSHKeyv1(byte[] data) throws JSchException {
-
-      if (data.length % 8 != 0) {
-          throw new JSchException("The private key section must be a multiple of the block size (8)");
+  static KeyPair loadOpenSSHKeyv1(JSch jsch, byte[] data) throws JSchException {
+      if (data == null) {
+          throw new JSchException("invalid privatekey");
       }
 
-      final Buffer prvKEyBuffer = new Buffer(data);
-      int checkInt1 = prvKEyBuffer.getInt(); // uint32 checkint1
-      int checkInt2 = prvKEyBuffer.getInt(); // uint32 checkint2
-      if (checkInt1 != checkInt2) {
-          throw new JSchException("openssh v1 key check failed. Wrong passphrase?");
+      Buffer buffer = new Buffer(data);
+      byte[] magic = new byte[AUTH_MAGIC.length];
+      buffer.getByte(magic);
+      if (!Util.arraysequals(AUTH_MAGIC, magic)) {
+          throw new JSchException("Invalid openssh v1 format.");
       }
 
-      // The private key section contains both the public key and the private key
-      String keyType = Util.byte2str(prvKEyBuffer.getString()); // string keytype
+      String cipherName = Util.byte2str(buffer.getString());
+      String kdfName = Util.byte2str(buffer.getString()); // string kdfname
+      byte[] kdfOptions = buffer.getString(); // string kdfoptions
 
-      if (keyType.equalsIgnoreCase("ssh-rsa")) {
-          return RSA;
-      } else if (keyType.startsWith("ssh-dss")) {
-          return DSA;
-      } else if (keyType.startsWith("ecdsa-sha2")) {
-          return ECDSA;
-      } else if (keyType.startsWith("ssh-ed25519")) {
-          return ED25519;
-      } else if (keyType.startsWith("ssh-ed448")) {
-          return ED448;
-      } else throw new JSchException("keytype " + keyType + " not supported as part of openssh v1 format");
+      int nrKeys = buffer.getInt(); // int number of keys N; Should be 1
+      if (nrKeys != 1) {
+          throw new JSchException("We don't support having more than 1 key in the file (yet).");
+      }
 
+      byte[] publickeyblob = buffer.getString();
+      KeyPair kpair = parsePubkeyBlob(jsch, publickeyblob, null);
+      kpair.encrypted = !"none".equals(cipherName);
+      kpair.publickeyblob = publickeyblob;
+      kpair.vendor = VENDOR_OPENSSH_V1;
+      kpair.publicKeyComment = "";
+      kpair.data = buffer.getString();
+
+      if (!kpair.encrypted) {
+          if (!kpair.parse(kpair.data)) {
+              throw new JSchException("invalid privatekey");
+          }
+      } else {
+          if (Session.checkCipher(JSch.getConfig(cipherName))) {
+              try {
+                  Class<? extends Cipher> c = Class.forName(JSch.getConfig(cipherName)).asSubclass(Cipher.class);
+                  kpair.cipher = c.getDeclaredConstructor().newInstance();
+                  kpair.iv = new byte[kpair.cipher.getIVSize()];
+              } catch (Exception e) {
+                  throw new JSchException("cipher " + cipherName + " is not available", e);
+              }
+          } else {
+              throw new JSchException("cipher " + cipherName + " is not available");
+          }
+
+          try {
+              Buffer kdfOpts = new Buffer(kdfOptions);
+              byte[] salt = kdfOpts.getString();
+              int rounds = kdfOpts.getInt();
+              Class<? extends BCrypt> c = Class.forName(JSch.getConfig(kdfName)).asSubclass(BCrypt.class);
+              BCrypt bcrypt = c.getDeclaredConstructor().newInstance();
+              bcrypt.init(salt, rounds);
+              kpair.bcrypt = bcrypt;
+          } catch (Exception e) {
+              throw new JSchException("kdf " + kdfName + " is not available", e);
+          }
+      }
+
+      return kpair;
   }
 
   private static boolean isOpenSSHPrivateKey(byte[] buf, int i, int len) {
@@ -1172,7 +1161,7 @@ public abstract class KeyPair{
       if(!parseHeader(buffer, v))
         break;
     } 
-    
+
     lines = Integer.parseInt(v.get("Private-Lines"));
     prvkey = parseLines(buffer, lines); 
 
@@ -1184,84 +1173,9 @@ public abstract class KeyPair{
     prvkey = Util.fromBase64(prvkey, 0, prvkey.length);
     pubkey = Util.fromBase64(pubkey, 0, pubkey.length);
 
-    KeyPair kpair = null;
-
-    if(typ.equals("ssh-rsa")) {
-      Buffer _buf = new Buffer(pubkey);
-      _buf.skip(pubkey.length);
-
-      int len = _buf.getInt();
-      _buf.getByte(new byte[len]);             // ssh-rsa
-
-      byte[] pub_array = new byte[_buf.getInt()];
-      _buf.getByte(pub_array);
-      byte[] n_array = new byte[_buf.getInt()];
-      _buf.getByte(n_array);
-
-      kpair = new KeyPairRSA(jsch, n_array, pub_array, null);
-    }
-    else if(typ.equals("ssh-dss")){
-      Buffer _buf = new Buffer(pubkey);
-      _buf.skip(pubkey.length);
-
-      int len = _buf.getInt();
-      _buf.getByte(new byte[len]);              // ssh-dss
-
-      byte[] p_array = new byte[_buf.getInt()];
-      _buf.getByte(p_array);
-      byte[] q_array = new byte[_buf.getInt()];
-      _buf.getByte(q_array);
-      byte[] g_array = new byte[_buf.getInt()];
-      _buf.getByte(g_array);
-      byte[] y_array = new byte[_buf.getInt()];
-      _buf.getByte(y_array);
-
-      kpair = new KeyPairDSA(jsch, p_array, q_array, g_array, y_array, null);
-    }
-    else if(typ.equals("ecdsa-sha2-nistp256") || typ.equals("ecdsa-sha2-nistp384") || typ.equals("ecdsa-sha2-nistp521")){
-      Buffer _buf = new Buffer(pubkey);
-      _buf.skip(pubkey.length);
-
-      int len = _buf.getInt();
-      _buf.getByte(new byte[len]);              // ecdsa-sha2-nistpXXX
-
-      byte[] name = new byte[_buf.getInt()];
-      _buf.getByte(name);                       // nistpXXX
-
-      len = _buf.getInt();
-      int x04 = _buf.getByte(); // in case of x04 it is uncompressed https://tools.ietf.org/html/rfc5480#page-7
-      byte[] r_array = new byte[(len - 1) / 2];
-      byte[] s_array = new byte[(len - 1) / 2];
-      _buf.getByte(r_array);
-      _buf.getByte(s_array);
-
-      kpair = new KeyPairECDSA(jsch, name, r_array, s_array, null);
-    }
-    else if(typ.equals("ssh-ed25519") || typ.equals("ssh-ed448")){
-      Buffer _buf = new Buffer(pubkey);
-      _buf.skip(pubkey.length);
-
-      int len = _buf.getInt();
-      _buf.getByte(new byte[len]);              // ssh-edXXX
-
-      byte[] pub_array = new byte[_buf.getInt()];
-      _buf.getByte(pub_array);
-
-      if(typ.equals("ssh-ed25519")){
-        kpair = new KeyPairEd25519(jsch, pub_array, null);
-      }
-      else{
-        kpair = new KeyPairEd448(jsch, pub_array, null);
-      }
-    }
-    else {
-      throw new JSchException("key type " + typ + " is not supported for PPK format");
-    }
-
-    if(kpair == null)
-      throw new JSchException("key type " + typ + " is not supported for PPK format");
-
+    KeyPair kpair = parsePubkeyBlob(jsch, pubkey, typ);
     kpair.encrypted = !v.get("Encryption").equals("none");
+    kpair.publickeyblob = pubkey;
     kpair.vendor = ppkVersion;
     kpair.publicKeyComment = v.get("Comment");
     if(kpair.encrypted){
@@ -1340,9 +1254,70 @@ public abstract class KeyPair{
     }
     else {
       kpair.data = prvkey;
-      kpair.parse(prvkey);
+      if(!kpair.parse(prvkey)){
+          throw new JSchException("invalid privatekey");
+      }
     }
     return kpair;
+  }
+
+  private static KeyPair parsePubkeyBlob(JSch jsch, byte[] pubkeyblob, String typ) throws JSchException{
+    Buffer _buf = new Buffer(pubkeyblob);
+    _buf.skip(pubkeyblob.length);
+
+    String pubkeyType = Util.byte2str(_buf.getString());
+    if(typ == null || typ.equals("")){
+      typ = pubkeyType;
+    } else if (!typ.equals(pubkeyType)){
+      throw new JSchException("pubkeyblob type ["+pubkeyType+"] does not match expected type ["+typ+"]");
+    }
+
+    if(typ.equals("ssh-rsa")) {
+      byte[] pub_array = new byte[_buf.getInt()];
+      _buf.getByte(pub_array);
+      byte[] n_array = new byte[_buf.getInt()];
+      _buf.getByte(n_array);
+
+      return new KeyPairRSA(jsch, n_array, pub_array, null);
+    }
+    else if(typ.equals("ssh-dss")){
+      byte[] p_array = new byte[_buf.getInt()];
+      _buf.getByte(p_array);
+      byte[] q_array = new byte[_buf.getInt()];
+      _buf.getByte(q_array);
+      byte[] g_array = new byte[_buf.getInt()];
+      _buf.getByte(g_array);
+      byte[] y_array = new byte[_buf.getInt()];
+      _buf.getByte(y_array);
+
+      return new KeyPairDSA(jsch, p_array, q_array, g_array, y_array, null);
+    }
+    else if(typ.equals("ecdsa-sha2-nistp256") || typ.equals("ecdsa-sha2-nistp384") || typ.equals("ecdsa-sha2-nistp521")){
+      byte[] name = _buf.getString();           // nistpXXX
+
+      int len = _buf.getInt();
+      int x04 = _buf.getByte(); // in case of x04 it is uncompressed https://tools.ietf.org/html/rfc5480#page-7
+      byte[] r_array = new byte[(len - 1) / 2];
+      byte[] s_array = new byte[(len - 1) / 2];
+      _buf.getByte(r_array);
+      _buf.getByte(s_array);
+
+      return new KeyPairECDSA(jsch, name, r_array, s_array, null);
+    }
+    else if(typ.equals("ssh-ed25519") || typ.equals("ssh-ed448")){
+      byte[] pub_array = new byte[_buf.getInt()];
+      _buf.getByte(pub_array);
+
+      if(typ.equals("ssh-ed25519")){
+        return new KeyPairEd25519(jsch, pub_array, null);
+      }
+      else{
+        return new KeyPairEd448(jsch, pub_array, null);
+      }
+    }
+    else{
+      throw new JSchException("key type " + typ + " is not supported");
+    }
   }
 
   private static byte[] parseLines(Buffer buffer, int lines){
