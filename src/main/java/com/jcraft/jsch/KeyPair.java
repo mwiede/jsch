@@ -583,10 +583,19 @@ public abstract class KeyPair{
     byte[] bar=new byte[_passphrase.length];
     System.arraycopy(_passphrase, 0, bar, 0, bar.length);
     _passphrase=bar;
-    byte[] foo=decrypt(data, _passphrase, iv);
-    Util.bzero(_passphrase);
-    if(parse(foo)){
-      encrypted=false;
+    byte[] foo=null;
+    try{
+      foo=decrypt(data, _passphrase, iv);
+      if(parse(foo)){
+        encrypted=false;
+        Util.bzero(data);
+      }
+    }
+    finally{
+      Util.bzero(_passphrase);
+      if(foo!=null){
+        Util.bzero(foo);
+      }
     }
     return !encrypted;
   }
@@ -1023,8 +1032,7 @@ public abstract class KeyPair{
         }
         else{
           if(kpair.parse(data)){
-              kpair.encrypted=false;
-              return kpair;
+            kpair.encrypted=false;
           }
           else{
             throw new JSchException("invalid privatekey");
@@ -1035,6 +1043,9 @@ public abstract class KeyPair{
       return kpair;
     }
     catch(Exception e){
+      if(data!=null){
+        Util.bzero(data);
+      }
       if(e instanceof JSchException) throw (JSchException)e;
       throw new JSchException(e.toString(), e);
     }
@@ -1069,37 +1080,44 @@ public abstract class KeyPair{
       kpair.publicKeyComment = "";
       kpair.data = buffer.getString();
 
-      if (!kpair.encrypted) {
-          if (!kpair.parse(kpair.data)) {
-              throw new JSchException("invalid privatekey");
-          }
-      } else {
-          if (Session.checkCipher(JSch.getConfig(cipherName))) {
-              try {
-                  Class<? extends Cipher> c = Class.forName(JSch.getConfig(cipherName)).asSubclass(Cipher.class);
-                  kpair.cipher = c.getDeclaredConstructor().newInstance();
-                  kpair.iv = new byte[kpair.cipher.getIVSize()];
-              } catch (Exception e) {
-                  throw new JSchException("cipher " + cipherName + " is not available", e);
+      try {
+          if (!kpair.encrypted) {
+              if (!kpair.parse(kpair.data)) {
+                  throw new JSchException("invalid privatekey");
+              } else {
+                  Util.bzero(kpair.data);
               }
           } else {
-              throw new JSchException("cipher " + cipherName + " is not available");
+              if (Session.checkCipher(JSch.getConfig(cipherName))) {
+                  try {
+                      Class<? extends Cipher> c = Class.forName(JSch.getConfig(cipherName)).asSubclass(Cipher.class);
+                      kpair.cipher = c.getDeclaredConstructor().newInstance();
+                      kpair.iv = new byte[kpair.cipher.getIVSize()];
+                  } catch (Exception e) {
+                      throw new JSchException("cipher " + cipherName + " is not available", e);
+                  }
+              } else {
+                  throw new JSchException("cipher " + cipherName + " is not available");
+              }
+
+              try {
+                  Buffer kdfOpts = new Buffer(kdfOptions);
+                  byte[] salt = kdfOpts.getString();
+                  int rounds = kdfOpts.getInt();
+                  Class<? extends BCrypt> c = Class.forName(JSch.getConfig(kdfName)).asSubclass(BCrypt.class);
+                  BCrypt bcrypt = c.getDeclaredConstructor().newInstance();
+                  bcrypt.init(salt, rounds);
+                  kpair.bcrypt = bcrypt;
+              } catch (Exception e) {
+                  throw new JSchException("kdf " + kdfName + " is not available", e);
+              }
           }
 
-          try {
-              Buffer kdfOpts = new Buffer(kdfOptions);
-              byte[] salt = kdfOpts.getString();
-              int rounds = kdfOpts.getInt();
-              Class<? extends BCrypt> c = Class.forName(JSch.getConfig(kdfName)).asSubclass(BCrypt.class);
-              BCrypt bcrypt = c.getDeclaredConstructor().newInstance();
-              bcrypt.init(salt, rounds);
-              kpair.bcrypt = bcrypt;
-          } catch (Exception e) {
-              throw new JSchException("kdf " + kdfName + " is not available", e);
-          }
+          return kpair;
+      } catch (Exception e) {
+          Util.bzero(kpair.data);
+          throw e;
       }
-
-      return kpair;
   }
 
   private static boolean isOpenSSHPrivateKey(byte[] buf, int i, int len) {
@@ -1129,6 +1147,7 @@ public abstract class KeyPair{
   static KeyPair loadPPK(JSch jsch, byte[] buf) throws JSchException {
     byte[] pubkey = null;
     byte[] prvkey = null;
+    byte[] _prvkey = null;
     int lines = 0;
 
     Buffer buffer = new Buffer(buf);
@@ -1154,111 +1173,127 @@ public abstract class KeyPair{
       ppkVersion = VENDOR_PUTTY;
     }
 
-    lines = Integer.parseInt(v.get("Public-Lines"));
-    pubkey = parseLines(buffer, lines); 
+    try{
+      lines = Integer.parseInt(v.get("Public-Lines"));
+      pubkey = parseLines(buffer, lines);
 
-    while(true){
-      if(!parseHeader(buffer, v))
-        break;
-    } 
+      while(true){
+        if(!parseHeader(buffer, v))
+          break;
+      } 
 
-    lines = Integer.parseInt(v.get("Private-Lines"));
-    prvkey = parseLines(buffer, lines); 
+      lines = Integer.parseInt(v.get("Private-Lines"));
+      _prvkey = parseLines(buffer, lines);
 
-    while(true){
-      if(!parseHeader(buffer, v))
-        break;
-    } 
+      while(true){
+        if(!parseHeader(buffer, v))
+          break;
+      } 
 
-    prvkey = Util.fromBase64(prvkey, 0, prvkey.length);
-    pubkey = Util.fromBase64(pubkey, 0, pubkey.length);
+      prvkey = Util.fromBase64(_prvkey, 0, _prvkey.length);
+      pubkey = Util.fromBase64(pubkey, 0, pubkey.length);
 
-    KeyPair kpair = parsePubkeyBlob(jsch, pubkey, typ);
-    kpair.encrypted = !v.get("Encryption").equals("none");
-    kpair.publickeyblob = pubkey;
-    kpair.vendor = ppkVersion;
-    kpair.publicKeyComment = v.get("Comment");
-    if(kpair.encrypted){
-      if(Session.checkCipher(JSch.getConfig("aes256-cbc"))){
-        try {
-          Class<? extends Cipher> c=Class.forName(JSch.getConfig("aes256-cbc")).asSubclass(Cipher.class);
-          kpair.cipher=c.getDeclaredConstructor().newInstance();
-          kpair.iv=new byte[kpair.cipher.getIVSize()];
+      KeyPair kpair = parsePubkeyBlob(jsch, pubkey, typ);
+      kpair.encrypted = !v.get("Encryption").equals("none");
+      kpair.publickeyblob = pubkey;
+      kpair.vendor = ppkVersion;
+      kpair.publicKeyComment = v.get("Comment");
+      if(kpair.encrypted){
+        if(Session.checkCipher(JSch.getConfig("aes256-cbc"))){
+          try {
+            Class<? extends Cipher> c=Class.forName(JSch.getConfig("aes256-cbc")).asSubclass(Cipher.class);
+            kpair.cipher=c.getDeclaredConstructor().newInstance();
+            kpair.iv=new byte[kpair.cipher.getIVSize()];
+          }
+          catch(Exception e){
+            throw new JSchException("The cipher 'aes256-cbc' is required, but it is not available.", e);
+          }
         }
-        catch(Exception e){
-          throw new JSchException("The cipher 'aes256-cbc' is required, but it is not available.", e);
-        }
-      }
-      else {
-        throw new JSchException("The cipher 'aes256-cbc' is required, but it is not available.");
-      }
-
-      if(ppkVersion==VENDOR_PUTTY){
-        try {
-          Class<? extends HASH> c=Class.forName(JSch.getConfig("sha-1")).asSubclass(HASH.class);
-          HASH sha1=c.getDeclaredConstructor().newInstance();
-          sha1.init();
-          kpair.sha1=sha1;
-        }
-        catch(Exception e){
-          throw new JSchException("'sha-1' is required, but it is not available.", e);
-        }
-      }
-      else{
-        String argonTypeStr=v.get("Key-Derivation");
-        String saltStr=v.get("Argon2-Salt");
-        if(argonTypeStr == null || saltStr == null || (saltStr != null && saltStr.length() % 2 != 0)){
-          throw new JSchException("Invalid argon2 params.");
+        else {
+          throw new JSchException("The cipher 'aes256-cbc' is required, but it is not available.");
         }
 
-        int argonType;
-        switch(argonTypeStr){
-          case "Argon2d":
-            argonType=Argon2.ARGON2D;
-            break;
-          case "Argon2i":
-            argonType=Argon2.ARGON2I;
-            break;
-          case "Argon2id":
-            argonType=Argon2.ARGON2ID;
-            break;
-          default:
+        if(ppkVersion==VENDOR_PUTTY){
+          try {
+            Class<? extends HASH> c=Class.forName(JSch.getConfig("sha-1")).asSubclass(HASH.class);
+            HASH sha1=c.getDeclaredConstructor().newInstance();
+            sha1.init();
+            kpair.sha1=sha1;
+          }
+          catch(Exception e){
+            throw new JSchException("'sha-1' is required, but it is not available.", e);
+          }
+        }
+        else{
+          String argonTypeStr=v.get("Key-Derivation");
+          String saltStr=v.get("Argon2-Salt");
+          if(argonTypeStr == null || saltStr == null || (saltStr != null && saltStr.length() % 2 != 0)){
             throw new JSchException("Invalid argon2 params.");
-        }
-
-        try{
-          int memory=Integer.parseInt(v.get("Argon2-Memory"));
-          int passes=Integer.parseInt(v.get("Argon2-Passes"));
-          int parallelism=Integer.parseInt(v.get("Argon2-Parallelism"));
-
-          byte[] salt=new byte[saltStr.length()/2];
-          for(int i=0; i<salt.length; i++){
-            int j=i*2;
-            salt[i]=(byte)Integer.parseInt(saltStr.substring(j, j+2), 16);
           }
 
-          Class<? extends Argon2> c=Class.forName(JSch.getConfig("argon2")).asSubclass(Argon2.class);
-          Argon2 argon2=c.getDeclaredConstructor().newInstance();
-          argon2.init(salt, passes, argonType, new byte[0], new byte[0], memory, parallelism, Argon2.V13);
-          kpair.argon2=argon2;
-        }
-        catch(NumberFormatException e){
-          throw new JSchException("Invalid argon2 params.", e);
-        }
-        catch(Exception e){
-          throw new JSchException("'argon2' is required, but it is not available.", e);
-        }
-      }
+          int argonType;
+          switch(argonTypeStr){
+            case "Argon2d":
+              argonType=Argon2.ARGON2D;
+              break;
+            case "Argon2i":
+              argonType=Argon2.ARGON2I;
+              break;
+            case "Argon2id":
+              argonType=Argon2.ARGON2ID;
+              break;
+            default:
+              throw new JSchException("Invalid argon2 params.");
+          }
 
-      kpair.data = prvkey;
+          try{
+            int memory=Integer.parseInt(v.get("Argon2-Memory"));
+            int passes=Integer.parseInt(v.get("Argon2-Passes"));
+            int parallelism=Integer.parseInt(v.get("Argon2-Parallelism"));
+
+            byte[] salt=new byte[saltStr.length()/2];
+            for(int i=0; i<salt.length; i++){
+              int j=i*2;
+              salt[i]=(byte)Integer.parseInt(saltStr.substring(j, j+2), 16);
+            }
+
+            Class<? extends Argon2> c=Class.forName(JSch.getConfig("argon2")).asSubclass(Argon2.class);
+            Argon2 argon2=c.getDeclaredConstructor().newInstance();
+            argon2.init(salt, passes, argonType, new byte[0], new byte[0], memory, parallelism, Argon2.V13);
+            kpair.argon2=argon2;
+          }
+          catch(NumberFormatException e){
+            throw new JSchException("Invalid argon2 params.", e);
+          }
+          catch(Exception e){
+            throw new JSchException("'argon2' is required, but it is not available.", e);
+          }
+        }
+
+        kpair.data = prvkey;
+      }
+      else {
+        kpair.data = prvkey;
+        if(!kpair.parse(prvkey)){
+            throw new JSchException("invalid privatekey");
+        }
+        else{
+          Util.bzero(prvkey);
+        }
+      }
+      return kpair;
     }
-    else {
-      kpair.data = prvkey;
-      if(!kpair.parse(prvkey)){
-          throw new JSchException("invalid privatekey");
+    catch (Exception e){
+      if(prvkey!=null){
+        Util.bzero(prvkey);
+      }
+      throw e;
+    }
+    finally{
+      if(_prvkey!=null){
+        Util.bzero(_prvkey);
       }
     }
-    return kpair;
   }
 
   private static KeyPair parsePubkeyBlob(JSch jsch, byte[] pubkeyblob, String typ) throws JSchException{
