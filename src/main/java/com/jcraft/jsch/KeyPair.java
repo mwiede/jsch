@@ -593,9 +593,7 @@ public abstract class KeyPair{
     }
     finally{
       Util.bzero(_passphrase);
-      if(foo!=null){
-        Util.bzero(foo);
-      }
+      Util.bzero(foo);
     }
     return !encrypted;
   }
@@ -1043,9 +1041,7 @@ public abstract class KeyPair{
       return kpair;
     }
     catch(Exception e){
-      if(data!=null){
-        Util.bzero(data);
-      }
+      Util.bzero(data);
       if(e instanceof JSchException) throw (JSchException)e;
       throw new JSchException(e.toString(), e);
     }
@@ -1284,15 +1280,11 @@ public abstract class KeyPair{
       return kpair;
     }
     catch (Exception e){
-      if(prvkey!=null){
-        Util.bzero(prvkey);
-      }
+      Util.bzero(prvkey);
       throw e;
     }
     finally{
-      if(_prvkey!=null){
-        Util.bzero(_prvkey);
-      }
+      Util.bzero(_prvkey);
     }
   }
 
