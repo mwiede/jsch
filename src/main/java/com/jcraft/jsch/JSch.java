@@ -204,6 +204,11 @@ public class JSch{
     config.put("zlib@openssh.com", "com.jcraft.jsch.jzlib.Compression");
 
     config.put("pbkdf", "com.jcraft.jsch.jce.PBKDF");
+    config.put("pbkdf2-hmac-sha1", "com.jcraft.jsch.jce.PBKDF2HMACSHA1");
+    config.put("pbkdf2-hmac-sha224", "com.jcraft.jsch.jce.PBKDF2HMACSHA224");
+    config.put("pbkdf2-hmac-sha256", "com.jcraft.jsch.jce.PBKDF2HMACSHA256");
+    config.put("pbkdf2-hmac-sha384", "com.jcraft.jsch.jce.PBKDF2HMACSHA384");
+    config.put("pbkdf2-hmac-sha512", "com.jcraft.jsch.jce.PBKDF2HMACSHA512");
     config.put("bcrypt", "com.jcraft.jsch.jbcrypt.JBCrypt");
     config.put("argon2", "com.jcraft.jsch.bc.Argon2");
 

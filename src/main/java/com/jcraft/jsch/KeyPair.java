@@ -1448,7 +1448,7 @@ public abstract class KeyPair{
     private static final long serialVersionUID=-1L;
   }
 
-  class ASN1 {
+  static class ASN1 {
     byte[] buf;
     int start;
     int length;
@@ -1476,6 +1476,9 @@ public abstract class KeyPair{
     }
     boolean isOCTETSTRING() {
       return getType()==(0x04&0xff);
+    }
+    boolean isNULL() {
+      return getType()==(0x05&0xff);
     }
     private int getLength(int[] indexp) {
       int index=indexp[0];

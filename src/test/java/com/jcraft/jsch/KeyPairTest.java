@@ -93,7 +93,14 @@ class KeyPairTest {
                 Arguments.of("ppkv3_ed25519_unix.ppk", null, "ssh-ed25519"),
                 Arguments.of("ppkv3_ed25519_unix_encrypted.ppk", "secret123", "ssh-ed25519"),
                 Arguments.of("ppkv3_ed25519_windows.ppk", null, "ssh-ed25519"),
-                Arguments.of("ppkv3_ed25519_windows_encrypted.ppk", "secret123", "ssh-ed25519")
+                Arguments.of("ppkv3_ed25519_windows_encrypted.ppk", "secret123", "ssh-ed25519"),
+                // PKCS8 keys
+                Arguments.of("pkcs8_dsa", null, "ssh-dss"),
+                Arguments.of("pkcs8_dsa_encrypted_hmacsha1", "secret123", "ssh-dss"),
+                Arguments.of("pkcs8_dsa_encrypted_hmacsha256", "secret123", "ssh-dss"),
+                Arguments.of("pkcs8_rsa", null, "ssh-rsa"),
+                Arguments.of("pkcs8_rsa_encrypted_hmacsha1", "secret123", "ssh-rsa"),
+                Arguments.of("pkcs8_rsa_encrypted_hmacsha256", "secret123", "ssh-rsa")
         );
     }
 
