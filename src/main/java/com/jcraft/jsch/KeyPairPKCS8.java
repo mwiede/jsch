@@ -44,6 +44,26 @@ class KeyPairPKCS8 extends KeyPair {
     (byte)0x38, (byte)0x04, (byte)0x01
   };
 
+  private static final byte[] id_ecPublicKey = {
+    (byte)0x2a, (byte)0x86, (byte)0x48, (byte)0xce,
+    (byte)0x3d, (byte)0x02, (byte)0x01
+  };
+
+  private static final byte[] prime256v1 = {
+    (byte)0x2a, (byte)0x86, (byte)0x48, (byte)0xce,
+    (byte)0x3d, (byte)0x03, (byte)0x01, (byte)0x07
+  };
+
+  private static final byte[] secp384r1 = {
+    (byte)0x2b, (byte)0x81, (byte)0x04, (byte)0x00,
+    (byte)0x22
+  };
+
+  private static final byte[] secp521r1 = {
+    (byte)0x2b, (byte)0x81, (byte)0x04, (byte)0x00,
+    (byte)0x23
+  };
+
   private static final byte[] pbes2 = {
     (byte)0x2a, (byte)0x86, (byte)0x48, (byte)0x86, (byte)0xf7,
     (byte)0x0d, (byte)0x01, (byte)0x05, (byte)0x0d 
@@ -356,6 +376,108 @@ class KeyPairPKCS8 extends KeyPair {
         }
         else {
           throw new JSchException("failed to parse DSA");
+        }
+      }
+      else if(Util.array_equals(privateKeyAlgorithmID, id_ecPublicKey)){
+        if(!foo.isOBJECT()){
+          throw new ASN1Exception();
+        }
+        byte[] curveID = foo.getContent();
+        byte[] name;
+        if(!Util.array_equals(curveID, prime256v1)){
+          name = Util.str2byte("nistp256");
+        }
+        else if(!Util.array_equals(curveID, secp384r1)){
+          name = Util.str2byte("nistp384");
+        }
+        else if(!Util.array_equals(curveID, secp521r1)){
+          name = Util.str2byte("nistp521");
+        }
+        else {
+          throw new JSchException("unsupported curve oid: "+Util.toHex(curveID));
+        }
+
+        ASN1 ecPrivateKey = new ASN1(_data);
+        if(!ecPrivateKey.isSEQUENCE()){
+          throw new ASN1Exception();
+        }
+
+        //   ECPrivateKey ::= SEQUENCE {
+        //     version        INTEGER { ecPrivkeyVer1(1) } (ecPrivkeyVer1),
+        //     privateKey     OCTET STRING,
+        //     parameters [0] ECParameters {{ NamedCurve }} OPTIONAL,
+        //     publicKey  [1] BIT STRING OPTIONAL
+        //   }
+        contents = ecPrivateKey.getContents();
+        if(contents.length<3 || contents.length>4){
+          throw new ASN1Exception();
+        }
+        if(!contents[0].isINTEGER()){
+          throw new ASN1Exception();
+        }
+        if(!contents[1].isOCTETSTRING()){
+          throw new ASN1Exception();
+        }
+
+        version = parseASN1IntegerAsInt(contents[0].getContent());
+        if(version!=1){
+          throw new ASN1Exception();
+        }
+        prv_array = contents[1].getContent();
+
+        // publicKey is required here since there is no other way to derive it.
+        ASN1 publicKey;
+        if(contents.length==3){
+          publicKey = contents[2];
+        }
+        else {
+          publicKey = contents[3];
+
+          if(contents[2].getType()!=(0xa0&0xff)){ //0xa0 == parameters [0] ECParameters {{ NamedCurve }} OPTIONAL
+            throw new ASN1Exception();
+          }
+
+          // NamedCurve isn't required here since it is already known.
+          // But if it is included, they should be the same...
+          ASN1[] goo = contents[2].getContents();
+          if(goo.length!=1){
+            throw new ASN1Exception();
+          }
+          if(!goo[0].isOBJECT()){
+            throw new ASN1Exception();
+          }
+          if(!Util.array_equals(goo[0].getContent(), curveID)){
+            throw new ASN1Exception();
+          }
+        }
+
+        if(publicKey.getType()!=(0xa1&0xff)){ //0xa1 == publicKey [1] BIT STRING OPTIONAL
+          throw new ASN1Exception();
+        }
+        contents = publicKey.getContents();
+        if(contents.length!=1){
+          throw new ASN1Exception();
+        }
+        if(!contents[0].isBITSTRING()){
+          throw new ASN1Exception();
+        }
+
+        byte[] Q_array = contents[0].getContent();
+        byte[][] tmp = KeyPairECDSA.fromPoint(Q_array);
+        byte[] r_array = tmp[0];
+        byte[] s_array = tmp[1];
+
+        _key = new KeyPairECDSA(jsch, name, r_array, s_array, prv_array);
+        _plain = _key.getPrivateKey();
+
+        _kpair = new KeyPairECDSA(jsch);
+        _kpair.copy(this);
+        if(_kpair.parse(_plain)){
+          kpair = _kpair;
+          return true;
+        }
+        else {
+          throw new JSchException("failed to parse ECDSA");
         }
       }
       else {

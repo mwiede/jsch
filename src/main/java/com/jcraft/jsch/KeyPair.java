@@ -1480,6 +1480,9 @@ public abstract class KeyPair{
     boolean isNULL() {
       return getType()==(0x05&0xff);
     }
+    boolean isBITSTRING() {
+      return getType()==(0x03&0xff);
+    }
     private int getLength(int[] indexp) {
       int index=indexp[0];
       int length=buf[index++]&0xff;
