@@ -102,8 +102,11 @@ class KeyPairTest {
                 Arguments.of("pkcs8_rsa_encrypted_hmacsha1", "secret123", "ssh-rsa"),
                 Arguments.of("pkcs8_rsa_encrypted_hmacsha256", "secret123", "ssh-rsa"),
                 Arguments.of("pkcs8_ecdsa256", null, "ecdsa-sha2-nistp256"),
+                Arguments.of("pkcs8_ecdsa256_encrypted_scrypt", "secret123", "ecdsa-sha2-nistp256"),
                 Arguments.of("pkcs8_ecdsa384", null, "ecdsa-sha2-nistp384"),
-                Arguments.of("pkcs8_ecdsa521", null, "ecdsa-sha2-nistp521")
+                Arguments.of("pkcs8_ecdsa384_encrypted_scrypt", "secret123", "ecdsa-sha2-nistp384"),
+                Arguments.of("pkcs8_ecdsa521", null, "ecdsa-sha2-nistp521"),
+                Arguments.of("pkcs8_ecdsa521_encrypted_scrypt", "secret123", "ecdsa-sha2-nistp521")
         );
     }
 

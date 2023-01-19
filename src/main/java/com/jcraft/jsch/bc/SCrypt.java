@@ -27,41 +27,24 @@ NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-package com.jcraft.jsch.jce;
+package com.jcraft.jsch.bc;
 
-import javax.crypto.spec.PBEKeySpec;
-import javax.crypto.SecretKeyFactory;
-import java.security.spec.InvalidKeySpecException;
-import java.security.NoSuchAlgorithmException;
-
-abstract class PBKDF2 implements com.jcraft.jsch.PBKDF2{
-  private SecretKeyFactory skf;
+public class SCrypt implements com.jcraft.jsch.SCrypt{
   private byte[] salt;
-  private int iterations;
-
-  abstract String getName();
+  private int cost;
+  private int blocksize;
+  private int parallel;
 
   @Override
-  public void init(byte[] salt, int iterations) throws Exception{
-    skf=SecretKeyFactory.getInstance(getName());
+  public void init(byte[] salt, int cost, int blocksize, int parallel){
     this.salt=salt;
-    this.iterations=iterations;
+    this.cost=cost;
+    this.blocksize=blocksize;
+    this.parallel=parallel;
   }
 
   @Override
-  public byte[] getKey(byte[] _pass, int size){
-    char[] pass=new char[_pass.length];
-    for(int i = 0; i < _pass.length; i++){
-      pass[i]=(char)(_pass[i]&0xff);
-    }
-    try {
-      PBEKeySpec spec =
-        new PBEKeySpec(pass, salt, iterations, size*8);
-      byte[] key = skf.generateSecret(spec).getEncoded();
-      return key;
-    }
-    catch(InvalidKeySpecException e){
-    }
-    return null;
+  public byte[] getKey(byte[] pass, int size){
+    return org.bouncycastle.crypto.generators.SCrypt.generate(pass, salt, cost, blocksize, parallel, size);
   }
 }

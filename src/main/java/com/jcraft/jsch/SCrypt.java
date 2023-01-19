@@ -27,41 +27,9 @@ NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-package com.jcraft.jsch.jce;
+package com.jcraft.jsch;
 
-import javax.crypto.spec.PBEKeySpec;
-import javax.crypto.SecretKeyFactory;
-import java.security.spec.InvalidKeySpecException;
-import java.security.NoSuchAlgorithmException;
-
-abstract class PBKDF2 implements com.jcraft.jsch.PBKDF2{
-  private SecretKeyFactory skf;
-  private byte[] salt;
-  private int iterations;
-
-  abstract String getName();
-
-  @Override
-  public void init(byte[] salt, int iterations) throws Exception{
-    skf=SecretKeyFactory.getInstance(getName());
-    this.salt=salt;
-    this.iterations=iterations;
-  }
-
-  @Override
-  public byte[] getKey(byte[] _pass, int size){
-    char[] pass=new char[_pass.length];
-    for(int i = 0; i < _pass.length; i++){
-      pass[i]=(char)(_pass[i]&0xff);
-    }
-    try {
-      PBEKeySpec spec =
-        new PBEKeySpec(pass, salt, iterations, size*8);
-      byte[] key = skf.generateSecret(spec).getEncoded();
-      return key;
-    }
-    catch(InvalidKeySpecException e){
-    }
-    return null;
-  }
+public interface SCrypt {
+  void init(byte[] salt, int cost, int blocksize, int parallel) throws Exception;
+  byte[] getKey(byte[] pass, int size);
 }

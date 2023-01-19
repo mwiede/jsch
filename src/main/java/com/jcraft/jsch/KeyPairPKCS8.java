@@ -659,11 +659,11 @@ or
       byte[] pbesid = contents[0].getContent();
       ASN1 pbesparam = contents[1];
 
-      byte[] salt;
-      int iterations;
+      String kdfname;
+      PBKDF2 pbkdf2kdf = null;
+      SCrypt scryptkdf = null;
       byte[] encryptfuncid;
       ASN1 encryptparams;
-      byte[] prfid = null;
 
       if(Util.array_equals(pbesid, pbes2)){
         contents = pbesparam.getContents();
@@ -680,6 +680,18 @@ or
         if(!encryptfunc.isSEQUENCE()){
           throw new ASN1Exception();
         }
+
+        contents = encryptfunc.getContents();
+
+        if(contents.length!=2){
+          throw new ASN1Exception();
+        }
+        if(!contents[0].isOBJECT()){
+          throw new ASN1Exception();
+        }
+
+        encryptfuncid = contents[0].getContent();
+        encryptparams = contents[1];
 
         contents = kdf.getContents();
         if(contents.length!=2){
@@ -730,8 +742,9 @@ or
             }
           }
 
-          salt = contents[0].getContent();
-          iterations = parseASN1IntegerAsInt(contents[1].getContent());
+          byte[] prfid = null;
+          byte[] salt = contents[0].getContent();
+          int iterations = parseASN1IntegerAsInt(contents[1].getContent());
 
           if(prf!=null){
             contents = prf.getContents();
@@ -748,20 +761,45 @@ or
             prfid = contents[0].getContent();
           }
 
-          contents = encryptfunc.getContents();
-
-          if(contents.length!=2){
-            throw new ASN1Exception();
-          }
-          if(!contents[0].isOBJECT()){
-            throw new ASN1Exception();
-          }
-
-          encryptfuncid = contents[0].getContent();
-          encryptparams = contents[1];
+          kdfname=getPBKDF2Name(prfid);
+          pbkdf2kdf=getPBKDF2(kdfname);
+          pbkdf2kdf.init(salt, iterations);
         }
         else if(Util.array_equals(kdfid, scrypt)){
-          throw new JSchException("unsupported kdf: scrypt");
+          contents = contents[1].getContents();
+          if(contents.length<4 || contents.length>5){
+            throw new ASN1Exception();
+          }
+          if(!contents[0].isOCTETSTRING()){
+            throw new ASN1Exception();
+          }
+          if(!contents[1].isINTEGER()){
+            throw new ASN1Exception();
+          }
+          if(!contents[2].isINTEGER()){
+            throw new ASN1Exception();
+          }
+          if(!contents[3].isINTEGER()){
+            throw new ASN1Exception();
+          }
+          if(contents.length>4 && !contents[4].isINTEGER()){
+            throw new ASN1Exception();
+          }
+
+          byte[] salt = contents[0].getContent();
+          int cost = parseASN1IntegerAsInt(contents[1].getContent());
+          int blocksize = parseASN1IntegerAsInt(contents[2].getContent());
+          int parallel = parseASN1IntegerAsInt(contents[3].getContent());
+
+          try{
+            kdfname = "scrypt";
+            Class<? extends SCrypt> c=Class.forName(JSch.getConfig("scrypt")).asSubclass(SCrypt.class);
+            scryptkdf = c.getDeclaredConstructor().newInstance();
+            scryptkdf.init(salt, cost, blocksize, parallel);
+          }
+          catch(Exception e){
+            throw new JSchException("scrypt is not supported", e);
+          }
         }
         else {
           throw new JSchException("unsupported kdf oid: "+Util.toHex(kdfid));
@@ -793,16 +831,19 @@ or
         throw new JSchException(message);
       }
 
-      String pbkdf2name=getPBKDF2Name(prfid);
-      PBKDF2 pbkdf2=getPBKDF2(pbkdf2name);
-
       byte[][] ivp = new byte[1][];
       Cipher cipher=getCipher(encryptfuncid, encryptparams, ivp);
       byte[] iv = ivp[0];
 
-      key = pbkdf2.getKey(_passphrase, salt, iterations, cipher.getBlockSize());
+      if (pbkdf2kdf!=null){
+        key = pbkdf2kdf.getKey(_passphrase, cipher.getBlockSize());
+      }
+      else if(scryptkdf!=null){
+        key = scryptkdf.getKey(_passphrase, cipher.getBlockSize());
+      }
+
       if(key==null){
-        throw new JSchException("failed to generate key from KDF "+pbkdf2name);
+        throw new JSchException("failed to generate key from KDF "+kdfname);
       }
       cipher.init(Cipher.DECRYPT_MODE, key, iv);
       plain=new byte[_data.length];

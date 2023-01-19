@@ -211,6 +211,7 @@ public class JSch{
     config.put("pbkdf2-hmac-sha512", "com.jcraft.jsch.jce.PBKDF2HMACSHA512");
     config.put("bcrypt", "com.jcraft.jsch.jbcrypt.JBCrypt");
     config.put("argon2", "com.jcraft.jsch.bc.Argon2");
+    config.put("scrypt", "com.jcraft.jsch.bc.SCrypt");
 
     if(JavaVersion.getVersion()>=11){
       config.put("xdh", "com.jcraft.jsch.jce.XDH");
