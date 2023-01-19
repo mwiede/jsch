@@ -904,7 +904,7 @@ or
     }
   }
 
-  String getPBKDF2Name(byte[] id) throws JSchException{
+  static String getPBKDF2Name(byte[] id) throws JSchException{
     String name = null;
     if(id==null || Util.array_equals(id, hmacWithSha1)){
       name="pbkdf2-hmac-sha1";
@@ -934,7 +934,7 @@ or
     return name;
   }
 
-  PBKDF2 getPBKDF2(String name) throws JSchException{
+  static PBKDF2 getPBKDF2(String name) throws JSchException{
     try{
       Class<? extends PBKDF2> c=Class.forName(JSch.getConfig(name)).asSubclass(PBKDF2.class);
       return c.getDeclaredConstructor().newInstance();
@@ -944,7 +944,7 @@ or
     }
   }
 
-  Cipher getCipher(byte[] id, ASN1 encryptparams, byte[][] ivp) throws Exception{
+  static Cipher getCipher(byte[] id, ASN1 encryptparams, byte[][] ivp) throws Exception{
     String name = null;
     if(Util.array_equals(id, aes128cbc)){
       name="aes128-cbc";
