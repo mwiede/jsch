@@ -44,12 +44,20 @@ class KeyPairPKCS8 extends KeyPair {
     (byte)0x38, (byte)0x04, (byte)0x01
   };
 
-  private static final byte[] id_ecPublicKey = {
+  private static final byte[] ecPublicKey = {
     (byte)0x2a, (byte)0x86, (byte)0x48, (byte)0xce,
     (byte)0x3d, (byte)0x02, (byte)0x01
   };
 
-  private static final byte[] prime256v1 = {
+  private static final byte[] ed25519 = {
+    (byte)0x2b, (byte)0x65, (byte)0x70
+  };
+
+  private static final byte[] ed448 = {
+    (byte)0x2b, (byte)0x65, (byte)0x71
+  };
+
+  private static final byte[] secp256r1 = {
     (byte)0x2a, (byte)0x86, (byte)0x48, (byte)0xce,
     (byte)0x3d, (byte)0x03, (byte)0x01, (byte)0x07
   };
@@ -257,19 +265,25 @@ class KeyPairPKCS8 extends KeyPair {
       ASN1 privateKey = contents[2];
 
       contents = privateKeyAlgorithm.getContents();
-      if(contents.length!=2){
+      if(contents.length==0){
         throw new ASN1Exception();
       }
       if(!contents[0].isOBJECT()){
         throw new ASN1Exception();
       }
       byte[] privateKeyAlgorithmID = contents[0].getContent();
-      ASN1 foo = contents[1];
 
       _data = privateKey.getContent();
 
       KeyPair _kpair = null;
       if(Util.array_equals(privateKeyAlgorithmID, rsaEncryption)){
+        if(contents.length!=2){
+          throw new ASN1Exception();
+        }
+        if(!contents[1].isNULL()){
+          throw new ASN1Exception();
+        }
+
         _kpair = new KeyPairRSA(jsch);
         _kpair.copy(this);
         if(_kpair.parse(_data)){
@@ -283,8 +297,8 @@ class KeyPairPKCS8 extends KeyPair {
       else if(Util.array_equals(privateKeyAlgorithmID, dsaEncryption)){
         List<byte[]> values = new ArrayList<>(3);
 
-        if(foo.isSEQUENCE()){
-          contents = foo.getContents();
+        if(contents.length>1 && contents[1].isSEQUENCE()){
+          contents = contents[1].getContents();
           if(contents.length!=3){
             throw new ASN1Exception();
           }
@@ -313,6 +327,10 @@ class KeyPairPKCS8 extends KeyPair {
                  INTEGER    // G_array
                INTEGER      // prv_array
           */
+          if(!asn1.isSEQUENCE()){
+            throw new ASN1Exception();
+          }
+
           contents = asn1.getContents();
           if(contents.length!=2){
             throw new ASN1Exception();
@@ -378,23 +396,27 @@ class KeyPairPKCS8 extends KeyPair {
           throw new JSchException("failed to parse DSA");
         }
       }
-      else if(Util.array_equals(privateKeyAlgorithmID, id_ecPublicKey)){
-        if(!foo.isOBJECT()){
+      else if(Util.array_equals(privateKeyAlgorithmID, ecPublicKey)){
+        if(contents.length!=2){
           throw new ASN1Exception();
         }
-        byte[] curveID = foo.getContent();
+        if(!contents[1].isOBJECT()){
+          throw new ASN1Exception();
+        }
+
+        byte[] namedCurve = contents[1].getContent();
         byte[] name;
-        if(!Util.array_equals(curveID, prime256v1)){
+        if(!Util.array_equals(namedCurve, secp256r1)){
           name = Util.str2byte("nistp256");
         }
-        else if(!Util.array_equals(curveID, secp384r1)){
+        else if(!Util.array_equals(namedCurve, secp384r1)){
           name = Util.str2byte("nistp384");
         }
-        else if(!Util.array_equals(curveID, secp521r1)){
+        else if(!Util.array_equals(namedCurve, secp521r1)){
           name = Util.str2byte("nistp521");
         }
         else {
-          throw new JSchException("unsupported curve oid: "+Util.toHex(curveID));
+          throw new JSchException("unsupported named curve oid: "+Util.toHex(namedCurve));
         }
 
         ASN1 ecPrivateKey = new ASN1(_data);
@@ -446,7 +468,7 @@ class KeyPairPKCS8 extends KeyPair {
           if(!goo[0].isOBJECT()){
             throw new ASN1Exception();
           }
-          if(!Util.array_equals(goo[0].getContent(), curveID)){
+          if(!Util.array_equals(goo[0].getContent(), namedCurve)){
             throw new ASN1Exception();
           }
         }
@@ -479,6 +501,12 @@ class KeyPairPKCS8 extends KeyPair {
         else {
           throw new JSchException("failed to parse ECDSA");
         }
+      }
+      else if(Util.array_equals(privateKeyAlgorithmID, ed25519)){
+        throw new JSchException("ed25519 unsupported");
+      }
+      else if(Util.array_equals(privateKeyAlgorithmID, ed448)){
+        throw new JSchException("ed448 unsupported");
       }
       else {
         throw new JSchException("unsupported privateKeyAlgorithm oid: "+Util.toHex(privateKeyAlgorithmID));
