@@ -9,6 +9,8 @@
   * Be more vigilant about clearing private key data.
   * Improve PKCS8 key handling and add support for PKCS5 2.1 encryption.
   * Add support for ECDSA type PKCS8 keys.
+  * Add support for SCrypt type KDF for PKCS8 keys.
+    * PKCS8 keys using SCrypt requires [Bouncy Castle](https://www.bouncycastle.org/java.html) (bcprov-jdk18on).
 * [0.2.6](https://github.com/mwiede/jsch/releases/tag/jsch-0.2.6)
   * Include host alias instead of the real host in messages and exceptions by @ShadelessFox in https://github.com/mwiede/jsch/pull/257
   * Fix missing keySize set when loading V1 RSA keys by @Alex-Vol-Amz in https://github.com/mwiede/jsch/pull/258
