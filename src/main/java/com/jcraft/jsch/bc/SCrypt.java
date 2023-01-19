@@ -29,18 +29,27 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 package com.jcraft.jsch.bc;
 
+import com.jcraft.jsch.JSchException;
+
 public class SCrypt implements com.jcraft.jsch.SCrypt{
+  private Class<?> ignore;
   private byte[] salt;
   private int cost;
   private int blocksize;
   private int parallel;
 
   @Override
-  public void init(byte[] salt, int cost, int blocksize, int parallel){
-    this.salt=salt;
-    this.cost=cost;
-    this.blocksize=blocksize;
-    this.parallel=parallel;
+  public void init(byte[] salt, int cost, int blocksize, int parallel) throws Exception{
+    try{
+      ignore=org.bouncycastle.crypto.generators.SCrypt.class;
+      this.salt=salt;
+      this.cost=cost;
+      this.blocksize=blocksize;
+      this.parallel=parallel;
+    }
+    catch(NoClassDefFoundError e){
+      throw new JSchException("scrypt unavailable", e);
+    }
   }
 
   @Override

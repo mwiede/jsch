@@ -63,17 +63,22 @@ public class Argon2 implements com.jcraft.jsch.Argon2{
       throw new JSchException("Invalid argon2 version.");
     }
 
-    Argon2Parameters params=new Argon2Parameters.Builder(type)
-            .withSalt(salt)
-            .withAdditional(additional)
-            .withSecret(secret)
-            .withIterations(iteration)
-            .withMemoryAsKB(memory)
-            .withParallelism(parallelism)
-            .withVersion(version)
-            .build();
-    generator=new Argon2BytesGenerator();
-    generator.init(params);
+    try{
+      Argon2Parameters params=new Argon2Parameters.Builder(type)
+              .withSalt(salt)
+              .withAdditional(additional)
+              .withSecret(secret)
+              .withIterations(iteration)
+              .withMemoryAsKB(memory)
+              .withParallelism(parallelism)
+              .withVersion(version)
+              .build();
+      generator=new Argon2BytesGenerator();
+      generator.init(params);
+    }
+    catch(NoClassDefFoundError e){
+      throw new JSchException("argon2 unavailable", e);
+    }
   }
 
   @Override
