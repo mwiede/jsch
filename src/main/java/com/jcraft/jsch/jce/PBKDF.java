@@ -36,6 +36,10 @@ import javax.crypto.SecretKeyFactory;
 import java.security.spec.InvalidKeySpecException;
 import java.security.NoSuchAlgorithmException;
 
+/**
+ * Use PBKDF2 instead.
+ */
+@Deprecated
 public class PBKDF implements com.jcraft.jsch.PBKDF{
   @Override
   public byte[] getKey(byte[] _pass, byte[] salt, int iterations, int size){
