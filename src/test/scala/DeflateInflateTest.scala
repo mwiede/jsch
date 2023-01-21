@@ -60,7 +60,7 @@ class DeflateInflateTest extends AnyFlatSpec with BeforeAndAfter with Matchers {
     err = deflater.deflate(Z_NO_FLUSH)
     err should equal (Z_OK)
 
-    err = deflater.deflate(JZlib.Z_FINISH);
+    err = deflater.deflate(JZlib.Z_FINISH)
     err should equal (Z_STREAM_END)
 
     err = deflater.end
@@ -108,7 +108,7 @@ class DeflateInflateTest extends AnyFlatSpec with BeforeAndAfter with Matchers {
       deflater.avail_out = 1
       err = deflater.deflate(Z_FINISH)
     }
-    while(err != Z_STREAM_END);
+    while(err != Z_STREAM_END)
 
     err = deflater.end
     err should equal (Z_OK)
@@ -123,8 +123,8 @@ class DeflateInflateTest extends AnyFlatSpec with BeforeAndAfter with Matchers {
     while(inflater.total_out<uncomprLen &&
           inflater.total_in<comprLen && 
           loop) {
-      inflater.avail_in = 1; // force small buffers
-      inflater.avail_out = 1; // force small buffers
+      inflater.avail_in = 1 // force small buffers
+      inflater.avail_out = 1 // force small buffers
       err = inflater.inflate(Z_NO_FLUSH)
       if(err == Z_STREAM_END) loop = false
       else err should equal (Z_OK)
@@ -175,7 +175,7 @@ class DeflateInflateTest extends AnyFlatSpec with BeforeAndAfter with Matchers {
           loop = false
         case Z_NEED_DICT =>
           dictID should equal (inflater.getAdler)
-          err = inflater.setDictionary(dictionary, dictionary.length);
+          err = inflater.setDictionary(dictionary, dictionary.length)
           err should equal (Z_OK)
         case _ =>
           err should equal (Z_OK)
@@ -200,14 +200,14 @@ class DeflateInflateTest extends AnyFlatSpec with BeforeAndAfter with Matchers {
     err should equal (Z_OK)
 
     deflater.setInput(hello)
-    deflater.avail_in = 3;
+    deflater.avail_in = 3
     deflater.setOutput(compr)
 
     err = deflater.deflate(Z_FULL_FLUSH)
     err should equal (Z_OK)
 
     compr(3) = (compr(3) + 1).asInstanceOf[Byte]
-    deflater.avail_in = hello.length - 3;
+    deflater.avail_in = hello.length - 3
 
     err = deflater.deflate(Z_FINISH)
     err should equal (Z_STREAM_END)
@@ -303,7 +303,7 @@ class DeflateInflateTest extends AnyFlatSpec with BeforeAndAfter with Matchers {
       deflater.avail_out = 1
       err = deflater.deflate(Z_FINISH)
     }
-    while(err != Z_STREAM_END);
+    while(err != Z_STREAM_END)
 
     err = deflater.end
     err should equal (Z_OK)
@@ -318,8 +318,8 @@ class DeflateInflateTest extends AnyFlatSpec with BeforeAndAfter with Matchers {
     while(inflater.total_out<uncomprLen &&
           inflater.total_in<comprLen && 
           loop) {
-      inflater.avail_in = 1; // force small buffers
-      inflater.avail_out = 1; // force small buffers
+      inflater.avail_in = 1 // force small buffers
+      inflater.avail_out = 1 // force small buffers
       err = inflater.inflate(Z_NO_FLUSH)
       if(err == Z_STREAM_END) loop = false
       else err should equal (Z_OK)

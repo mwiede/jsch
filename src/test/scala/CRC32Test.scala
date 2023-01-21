@@ -26,7 +26,7 @@ class CRC32Test extends AnyFlatSpec with BeforeAndAfter with Matchers {
       juza.update(buf1, 0, buf1.length)
       juza.getValue
     }
-    val actual = getValue(List(buf1));
+    val actual = getValue(List(buf1))
 
     actual should equal (expected)
   }
@@ -37,12 +37,12 @@ class CRC32Test extends AnyFlatSpec with BeforeAndAfter with Matchers {
 
     val crc1 = new CRC32
     
-    crc1.update(buf1, 0, buf1.length);
+    crc1.update(buf1, 0, buf1.length)
 
     val crc2 = crc1.copy
 
-    crc1.update(buf2, 0, buf1.length);
-    crc2.update(buf2, 0, buf1.length);
+    crc1.update(buf2, 0, buf1.length)
+    crc2.update(buf2, 0, buf1.length)
 
     val expected = crc1.getValue
     val actual = crc2.getValue
@@ -55,9 +55,9 @@ class CRC32Test extends AnyFlatSpec with BeforeAndAfter with Matchers {
     val buf1 = randombuf(1024)
     val buf2 = randombuf(1024)
 
-    val crc1 = getValue(List(buf1));
-    val crc2 = getValue(List(buf2));
-    val expected = getValue(List(buf1, buf2));
+    val crc1 = getValue(List(buf1))
+    val crc2 = getValue(List(buf2))
+    val expected = getValue(List(buf1, buf2))
 
     val actual = CRC32.combine(crc1, crc2, buf2.length)
 
