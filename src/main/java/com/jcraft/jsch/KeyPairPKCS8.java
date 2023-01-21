@@ -502,11 +502,31 @@ class KeyPairPKCS8 extends KeyPair {
           throw new JSchException("failed to parse ECDSA");
         }
       }
-      else if(Util.array_equals(privateKeyAlgorithmID, ed25519)){
-        throw new JSchException("ed25519 unsupported");
-      }
-      else if(Util.array_equals(privateKeyAlgorithmID, ed448)){
-        throw new JSchException("ed448 unsupported");
+      else if(Util.array_equals(privateKeyAlgorithmID, ed25519) ||
+              Util.array_equals(privateKeyAlgorithmID, ed448)){
+        if(contents.length!=1){
+          throw new ASN1Exception();
+        }
+        ASN1 curvePrivateKey = new ASN1(_data);
+        if(!curvePrivateKey.isOCTETSTRING()){
+          throw new ASN1Exception();
+        }
+
+        prv_array=curvePrivateKey.getContent();
+        if(Util.array_equals(privateKeyAlgorithmID, ed25519)){
+          _kpair = new KeyPairEd25519(jsch);
+        }
+        else {
+          _kpair = new KeyPairEd448(jsch);
+        }
+        _kpair.copy(this);
+        if(_kpair.parse(prv_array)){
+          kpair = _kpair;
+          return true;
+        }
+        else {
+          throw new JSchException("failed to parse EdDSA");
+        }
       }
       else {
         throw new JSchException("unsupported privateKeyAlgorithm oid: "+Util.toHex(privateKeyAlgorithmID));

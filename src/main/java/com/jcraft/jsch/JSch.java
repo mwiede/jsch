@@ -230,6 +230,7 @@ public class JSch{
       config.put("ssh-ed25519", "com.jcraft.jsch.bc.SignatureEd25519");
       config.put("ssh-ed448", "com.jcraft.jsch.bc.SignatureEd448");
     }
+    config.put("keypairgen_fromprivate.eddsa", "com.jcraft.jsch.bc.KeyPairGenEdDSA");
 
     config.put("StrictHostKeyChecking",  "ask");
     config.put("HashKnownHosts",  "no");

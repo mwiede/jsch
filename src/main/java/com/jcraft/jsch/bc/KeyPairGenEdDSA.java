@@ -58,7 +58,26 @@ public class KeyPairGenEdDSA implements com.jcraft.jsch.KeyPairGenEdDSA{
     }
   }
   @Override
-  public byte[] getPrv(){return pub;}
+  public byte[] getPrv(){return prv;}
   @Override
-  public byte[] getPub(){return prv;}
+  public byte[] getPub(){return pub;}
+  @Override
+  public void init(String name, byte[] prv) throws Exception{
+    if(!name.equals("Ed25519") && !name.equals("Ed448")){
+      throw new NoSuchAlgorithmException("invalid curve " + name);
+    }
+    this.name = name;
+
+    if(name.equals("Ed25519")){
+      Ed25519PrivateKeyParameters privateKey = new Ed25519PrivateKeyParameters(prv);
+      pub = privateKey.generatePublicKey().getEncoded();
+      this.prv = privateKey.getEncoded();
+    }
+    else{
+      Ed448PrivateKeyParameters privateKey = new Ed448PrivateKeyParameters(prv);
+      pub = privateKey.generatePublicKey().getEncoded();
+      this.prv = privateKey.getEncoded();
+    }
+    this.keylen = this.prv.length;
+  }
 }

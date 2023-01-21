@@ -29,7 +29,10 @@ class KeyPair2Test {
                 Arguments.of("ppkv3_ed448_unix.ppk", null, "ssh-ed448"),
                 Arguments.of("ppkv3_ed448_unix_encrypted.ppk", "secret123", "ssh-ed448"),
                 Arguments.of("ppkv3_ed448_windows.ppk", null, "ssh-ed448"),
-                Arguments.of("ppkv3_ed448_windows_encrypted.ppk", "secret123", "ssh-ed448")
+                Arguments.of("ppkv3_ed448_windows_encrypted.ppk", "secret123", "ssh-ed448"),
+                // PKCS8 keys
+                Arguments.of("pkcs8_ed448", null, "ssh-ed448"),
+                Arguments.of("pkcs8_ed448_encrypted_scrypt", "secret123", "ssh-ed448")
         );
     }
 

@@ -114,6 +114,22 @@ abstract class KeyPairEdDSA extends KeyPair{
         return false;
       }
     }
+    else if(vendor==VENDOR_PKCS8){
+      try{
+        Class<? extends KeyPairGenEdDSA> c=Class.forName(JSch.getConfig("keypairgen_fromprivate.eddsa")).asSubclass(KeyPairGenEdDSA.class);
+        KeyPairGenEdDSA keypairgen=c.getDeclaredConstructor().newInstance();
+        keypairgen.init(getJceName(), plain);
+        pub_array=keypairgen.getPub();
+        prv_array=keypairgen.getPrv();
+        return true;
+      }
+      catch(Exception | NoClassDefFoundError e){
+        if(jsch.getInstanceLogger().isEnabled(Logger.ERROR)){
+          jsch.getInstanceLogger().log(Logger.ERROR, "failed to parse key", e);
+        }
+        return false;
+      }
+    }
     else {
       if(jsch.getInstanceLogger().isEnabled(Logger.ERROR)){
         jsch.getInstanceLogger().log(Logger.ERROR, "failed to parse key");

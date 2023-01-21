@@ -30,7 +30,10 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 package com.jcraft.jsch;
 
 public interface KeyPairGenEdDSA{
-  void init(String Name, int keylen) throws Exception;
+  void init(String name, int keylen) throws Exception;
   byte[] getPub();
   byte[] getPrv();
+  default void init(String name, byte[] prv) throws Exception{
+    throw new UnsupportedOperationException();
+  }
 }

@@ -55,9 +55,9 @@ public class KeyPairGenEdDSA implements com.jcraft.jsch.KeyPairGenEdDSA{
     if(point.isXOdd()){ pub[pub.length - 1] |= 0x80; }
   }
   @Override
-  public byte[] getPrv(){return pub;}
+  public byte[] getPrv(){return prv;}
   @Override
-  public byte[] getPub(){return prv;}
+  public byte[] getPub(){return pub;}
 
   private byte[] rotate(byte[] in){
     int len = in.length;
