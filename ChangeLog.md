@@ -11,6 +11,8 @@
   * Add support for ECDSA type PKCS8 keys.
   * Add support for SCrypt type KDF for PKCS8 keys.
     * PKCS8 keys using SCrypt requires [Bouncy Castle](https://www.bouncycastle.org/java.html) (bcprov-jdk18on).
+  * Add support for EdDSA type PKCS8 keys.
+    * EdDSA type PKCS8 keys requires [Bouncy Castle](https://www.bouncycastle.org/java.html) (bcprov-jdk18on).
 * [0.2.6](https://github.com/mwiede/jsch/releases/tag/jsch-0.2.6)
   * Include host alias instead of the real host in messages and exceptions by @ShadelessFox in https://github.com/mwiede/jsch/pull/257
   * Fix missing keySize set when loading V1 RSA keys by @Alex-Vol-Amz in https://github.com/mwiede/jsch/pull/258
