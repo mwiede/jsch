@@ -29,6 +29,6 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 package com.jcraft.jsch;
 
-public interface SCrypt extends KDF{
-  void init(byte[] salt, int cost, int blocksize, int parallel) throws Exception;
+public interface KDF {
+  byte[] getKey(byte[] pass, int size);
 }

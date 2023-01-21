@@ -29,7 +29,6 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 package com.jcraft.jsch;
 
-public interface BCrypt {
+public interface BCrypt extends KDF{
   void init(byte[] salt, int iteration) throws Exception;
-  byte[] getKey(byte[] pass, int size);
 }

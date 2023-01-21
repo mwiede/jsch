@@ -101,9 +101,8 @@ public abstract class KeyPair{
 
   JSch jsch=null;
   protected Cipher cipher;
-  protected BCrypt bcrypt;
-  protected Argon2 argon2;
-  protected HASH sha1;
+  private KDF kdf;
+  private HASH sha1;
   private HASH hash;
   private Random random;
 
@@ -491,7 +490,7 @@ public abstract class KeyPair{
         System.arraycopy(hn, 0, key, 0, key.length); 
       }
       else if(vendor==VENDOR_OPENSSH_V1){
-        tmp=bcrypt.getKey(passphrase, cipher.getBlockSize()+cipher.getIVSize());
+        tmp=kdf.getKey(passphrase, cipher.getBlockSize()+cipher.getIVSize());
         System.arraycopy(tmp, 0, key, 0, key.length);
         System.arraycopy(tmp, key.length, iv, 0, iv.length);
         Util.bzero(tmp);
@@ -523,7 +522,7 @@ public abstract class KeyPair{
         Util.bzero(tmp);
       }
       else if(vendor==VENDOR_PUTTY_V3){
-        tmp=argon2.getKey(passphrase, cipher.getBlockSize()+cipher.getIVSize()+32);
+        tmp=kdf.getKey(passphrase, cipher.getBlockSize()+cipher.getIVSize()+32);
         System.arraycopy(tmp, 0, key, 0, key.length);
         System.arraycopy(tmp, key.length, iv, 0, iv.length);
         Util.bzero(tmp);
@@ -1103,7 +1102,7 @@ public abstract class KeyPair{
                   Class<? extends BCrypt> c = Class.forName(JSch.getConfig(kdfName)).asSubclass(BCrypt.class);
                   BCrypt bcrypt = c.getDeclaredConstructor().newInstance();
                   bcrypt.init(salt, rounds);
-                  kpair.bcrypt = bcrypt;
+                  kpair.kdf = bcrypt;
               } catch (Exception e) {
                   throw new JSchException("kdf " + kdfName + " is not available", e);
               }
@@ -1256,7 +1255,7 @@ public abstract class KeyPair{
             Class<? extends Argon2> c=Class.forName(JSch.getConfig("argon2")).asSubclass(Argon2.class);
             Argon2 argon2=c.getDeclaredConstructor().newInstance();
             argon2.init(salt, passes, argonType, new byte[0], new byte[0], memory, parallelism, Argon2.V13);
-            kpair.argon2=argon2;
+            kpair.kdf=argon2;
           }
           catch(NumberFormatException e){
             throw new JSchException("Invalid argon2 params.", e);

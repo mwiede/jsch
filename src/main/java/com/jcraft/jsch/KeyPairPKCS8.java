@@ -708,8 +708,7 @@ or
       ASN1 pbesparam = contents[1];
 
       String kdfname;
-      PBKDF2 pbkdf2kdf = null;
-      SCrypt scryptkdf = null;
+      KDF kdfinst;
       byte[] encryptfuncid;
       ASN1 encryptparams;
 
@@ -809,9 +808,10 @@ or
             prfid = contents[0].getContent();
           }
 
-          kdfname=getPBKDF2Name(prfid);
-          pbkdf2kdf=getPBKDF2(kdfname);
+          kdfname = getPBKDF2Name(prfid);
+          PBKDF2 pbkdf2kdf = getPBKDF2(kdfname);
           pbkdf2kdf.init(salt, iterations);
+          kdfinst = pbkdf2kdf;
         }
         else if(Util.array_equals(kdfid, scrypt)){
           contents = contents[1].getContents();
@@ -839,15 +839,10 @@ or
           int blocksize = parseASN1IntegerAsInt(contents[2].getContent());
           int parallel = parseASN1IntegerAsInt(contents[3].getContent());
 
-          try{
-            kdfname = "scrypt";
-            Class<? extends SCrypt> c=Class.forName(JSch.getConfig("scrypt")).asSubclass(SCrypt.class);
-            scryptkdf = c.getDeclaredConstructor().newInstance();
-            scryptkdf.init(salt, cost, blocksize, parallel);
-          }
-          catch(Exception e){
-            throw new JSchException("scrypt is not supported", e);
-          }
+          kdfname = "scrypt";
+          SCrypt scryptkdf = getSCrypt();
+          scryptkdf.init(salt, cost, blocksize, parallel);
+          kdfinst = scryptkdf;
         }
         else {
           throw new JSchException("unsupported kdf oid: "+Util.toHex(kdfid));
@@ -883,13 +878,7 @@ or
       Cipher cipher=getCipher(encryptfuncid, encryptparams, ivp);
       byte[] iv = ivp[0];
 
-      if (pbkdf2kdf!=null){
-        key = pbkdf2kdf.getKey(_passphrase, cipher.getBlockSize());
-      }
-      else if(scryptkdf!=null){
-        key = scryptkdf.getKey(_passphrase, cipher.getBlockSize());
-      }
-
+      key = kdfinst.getKey(_passphrase, cipher.getBlockSize());
       if(key==null){
         throw new JSchException("failed to generate key from KDF "+kdfname);
       }
@@ -961,6 +950,16 @@ or
     }
     catch(Exception e){
       throw new JSchException(name+" is not supported", e);
+    }
+  }
+
+  static SCrypt getSCrypt() throws JSchException{
+    try{
+      Class<? extends SCrypt> c=Class.forName(JSch.getConfig("scrypt")).asSubclass(SCrypt.class);
+      return c.getDeclaredConstructor().newInstance();
+    }
+    catch(Exception e){
+      throw new JSchException("scrypt is not supported", e);
     }
   }
 
