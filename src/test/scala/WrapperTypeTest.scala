@@ -12,15 +12,15 @@ import java.io.{ByteArrayOutputStream => BAOS, ByteArrayInputStream => BAIS}
 import JZlib._
 
 class WrapperTypeTest extends AnyFlatSpec with BeforeAndAfter with Matchers {
-  val data = "hello, hello!".getBytes
+  private val data = "hello, hello!".getBytes
 
-  val comprLen = 40000
-  val uncomprLen = comprLen
-  var compr:Array[Byte] = _
-  var uncompr:Array[Byte] = _
-  var err: Int = _
+  private val comprLen = 40000
+  private val uncomprLen = comprLen
+  private var compr:Array[Byte] = _
+  private var uncompr:Array[Byte] = _
+  private var err: Int = _
 
-  val cases =      /* success */        /* fail */ 
+  private val cases = /* success */     /* fail */ 
     List((W_ZLIB, (List(W_ZLIB, W_ANY), List(W_GZIP, W_NONE))),
          (W_GZIP, (List(W_GZIP, W_ANY), List(W_ZLIB, W_NONE))),
          (W_NONE, (List(W_NONE, W_ANY), List(W_ZLIB, W_GZIP))))

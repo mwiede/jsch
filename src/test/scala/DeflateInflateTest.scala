@@ -8,14 +8,14 @@ import matchers.should._
 import JZlib._
 
 class DeflateInflateTest extends AnyFlatSpec with BeforeAndAfter with Matchers {
-  val comprLen = 40000
-  val uncomprLen = comprLen
-  var compr:Array[Byte] = _
-  var uncompr:Array[Byte] = _
+  private val comprLen = 40000
+  private val uncomprLen = comprLen
+  private var compr:Array[Byte] = _
+  private var uncompr:Array[Byte] = _
 
-  var deflater: Deflater = _
-  var inflater: Inflater = _
-  var err: Int = _
+  private var deflater: Deflater = _
+  private var inflater: Inflater = _
+  private var err: Int = _
 
   before {
     compr = new Array[Byte](comprLen)
@@ -33,8 +33,6 @@ class DeflateInflateTest extends AnyFlatSpec with BeforeAndAfter with Matchers {
   behavior of "Deflter and Inflater"
 
   it can "deflate and infate data in the large buffer." in {
-    val data = "hello, hello!".getBytes
-
     err = deflater.init(Z_BEST_SPEED)
     err should equal (Z_OK)
 

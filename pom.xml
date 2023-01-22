@@ -389,10 +389,12 @@
                     <recompileMode>all</recompileMode>
                     <sendJavaToScalac>false</sendJavaToScalac>
                     <args>
+                        <arg>-release:8</arg>
                         <arg>-deprecation</arg>
                         <arg>-feature</arg>
                         <arg>-unchecked</arg>
-                        <arg>-Xfatal-warnings</arg>
+                        <arg>-Xlint</arg>
+                        <arg>-Werror</arg>
                     </args>
                 </configuration>
                 <executions>

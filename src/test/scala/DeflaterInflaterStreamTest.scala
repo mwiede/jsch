@@ -9,8 +9,6 @@ import scala.language.reflectiveCalls
 
 import java.io.{ByteArrayOutputStream => BAOS, ByteArrayInputStream => BAIS}
 
-import JZlib._
-
 class DeflaterInflaterStreamTest extends AnyFlatSpec with BeforeAndAfter with Matchers {
 
   before {
