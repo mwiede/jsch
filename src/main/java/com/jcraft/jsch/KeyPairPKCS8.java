@@ -252,7 +252,8 @@ class KeyPairPKCS8 extends KeyPair {
       if(!contents[2].isOCTETSTRING()){
         throw new ASN1Exception();
       }
-      if(contents.length>3 && contents[3].getType()!=(0xa0&0xff)){ //0xa0 == attributes [0]  IMPLICIT Attributes OPTIONAL
+      // attributes [0] IMPLICIT Attributes OPTIONAL
+      if(contents.length>3 && !contents[3].isCONTEXTCONSTRUCTED(0)){
         throw new ASN1Exception();
       }
 
@@ -455,7 +456,8 @@ class KeyPairPKCS8 extends KeyPair {
         else {
           publicKey = contents[3];
 
-          if(contents[2].getType()!=(0xa0&0xff)){ //0xa0 == parameters [0] ECParameters {{ NamedCurve }} OPTIONAL
+          // parameters [0] ECParameters {{ NamedCurve }} OPTIONAL
+          if(!contents[2].isCONTEXTCONSTRUCTED(0)){
             throw new ASN1Exception();
           }
 
@@ -473,7 +475,8 @@ class KeyPairPKCS8 extends KeyPair {
           }
         }
 
-        if(publicKey.getType()!=(0xa1&0xff)){ //0xa1 == publicKey [1] BIT STRING OPTIONAL
+        // publicKey [1] BIT STRING OPTIONAL
+        if(!publicKey.isCONTEXTCONSTRUCTED(1)){
           throw new ASN1Exception();
         }
         contents = publicKey.getContents();

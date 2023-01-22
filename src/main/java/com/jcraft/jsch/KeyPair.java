@@ -1474,6 +1474,18 @@ public abstract class KeyPair{
     boolean isBITSTRING() {
       return getType()==(0x03&0xff);
     }
+    boolean isCONTEXTPRIMITIVE(int tag) {
+      if((tag&~0xff)!=0 || (tag&0x60)!=0){
+        throw new IllegalArgumentException();
+      }
+      return getType()==((tag|0x80)&0xff);
+    }
+    boolean isCONTEXTCONSTRUCTED(int tag) {
+      if((tag&~0xff)!=0 || (tag&0x40)!=0){
+        throw new IllegalArgumentException();
+      }
+      return getType()==((tag|0xa0)&0xff);
+    }
     private int getLength(int[] indexp) {
       int index=indexp[0];
       int length=buf[index++]&0xff;
