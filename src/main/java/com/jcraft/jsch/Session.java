@@ -3113,6 +3113,8 @@ break;
     checkConfig(config, "kex");
     checkConfig(config, "server_host_key");
     checkConfig(config, "prefer_known_host_key_types");
+    checkConfig(config, "enable_pubkey_auth_query");
+    checkConfig(config, "try_additional_pubkey_algorithms");
 
     checkConfig(config, "cipher.c2s");
     checkConfig(config, "cipher.s2c");
