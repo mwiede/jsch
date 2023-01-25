@@ -239,6 +239,7 @@ public class JSch{
     config.put("PubkeyAcceptedAlgorithms", Util.getSystemProperty("jsch.client_pubkey", "ssh-ed25519,ecdsa-sha2-nistp256,ecdsa-sha2-nistp384,ecdsa-sha2-nistp521,rsa-sha2-512,rsa-sha2-256"));
     config.put("enable_pubkey_auth_query", Util.getSystemProperty("jsch.enable_pubkey_auth_query", "yes"));
     config.put("try_additional_pubkey_algorithms", Util.getSystemProperty("jsch.try_additional_pubkey_algorithms", "yes"));
+    config.put("enable_auth_none", Util.getSystemProperty("jsch.enable_auth_none", "yes"));
 
     config.put("CheckCiphers", Util.getSystemProperty("jsch.check_ciphers", "chacha20-poly1305@openssh.com"));
     config.put("CheckMacs", Util.getSystemProperty("jsch.check_macs", ""));
