@@ -17,6 +17,7 @@
     * Allow this behavior to be disabled via `try_additional_pubkey_algorithms` config option.
       * Some servers incorrectly respond with `SSH_MSG_USERAUTH_PK_OK` to an initial auth query that they don't actually support for RSA keys.
   * Add a new config option `enable_pubkey_auth_query` to allow skipping auth queries and proceed directly to attempting full `SSH_MSG_USERAUTH_REQUEST`'s.
+  * Add a new config option `enable_auth_none` to control whether an initial auth request for the method `none` is sent to detect all supported auth methods available on the server.
 * [0.2.6](https://github.com/mwiede/jsch/releases/tag/jsch-0.2.6)
   * Include host alias instead of the real host in messages and exceptions by @ShadelessFox in https://github.com/mwiede/jsch/pull/257
   * Fix missing keySize set when loading V1 RSA keys by @Alex-Vol-Amz in https://github.com/mwiede/jsch/pull/258
