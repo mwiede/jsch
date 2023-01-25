@@ -2,7 +2,6 @@ package com.jcraft.jsch;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.stream.Collectors.toList;
-import static org.apache.commons.codec.binary.Base64.decodeBase64;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.condition.JRE.JAVA_11;
@@ -17,6 +16,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
+import java.util.Base64;
 import java.util.List;
 import java.util.Optional;
 import java.util.Random;
@@ -530,7 +530,7 @@ public class AlgorithmsIT {
     List<String> lines = Files.readAllLines(Paths.get(fileName), UTF_8);
     String[] split = lines.get(0).split("\\s+");
     String hostname = String.format("[%s]:%d", sshd.getHost(), sshd.getFirstMappedPort());
-    return new HostKey(hostname, decodeBase64(split[1]));
+    return new HostKey(hostname, Base64.getDecoder().decode(split[1]));
   }
 
   private Session createSession(JSch ssh) throws Exception {
