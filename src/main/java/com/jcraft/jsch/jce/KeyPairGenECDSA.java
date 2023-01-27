@@ -84,17 +84,14 @@ public class KeyPairGenECDSA implements com.jcraft.jsch.KeyPairGenECDSA {
 //    if ((buf[0] & 0x80) == 0) return buf;
     byte[] tmp = new byte[buf.length+1];
     System.arraycopy(buf, 0, tmp, 1, buf.length);
-    bzero(buf);
+    Util.bzero(buf);
     return tmp;
   }
   private byte[] chop0(byte[] buf){
     if(buf[0]!=0 || (buf[1]&0x80)==0) return buf;
     byte[] tmp = new byte[buf.length-1];
     System.arraycopy(buf, 1, tmp, 0, tmp.length);
-    bzero(buf);
+    Util.bzero(buf);
     return tmp;
-  }
-  private void bzero(byte[] buf){
-    for(int i = 0; i<buf.length; i++) buf[i]=0;
   }
 }

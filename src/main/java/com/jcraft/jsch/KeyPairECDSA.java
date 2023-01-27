@@ -177,22 +177,24 @@ class KeyPairECDSA extends KeyPair{
         */
         return false;
       }
-      else if(vendor==VENDOR_PUTTY){
-        /*
+      else if(vendor==VENDOR_PUTTY || vendor==VENDOR_PUTTY_V3){
         Buffer buf=new Buffer(plain);
         buf.skip(plain.length);
 
         try {
           byte[][] tmp = buf.getBytes(1, "");
           prv_array = tmp[0];
+          key_size = prv_array.length>=64 ? 521 :
+                      (prv_array.length>=48 ? 384 : 256);
         }
         catch(JSchException e){
+          if(jsch.getInstanceLogger().isEnabled(Logger.ERROR)){
+            jsch.getInstanceLogger().log(Logger.ERROR, "failed to parse key", e);
+          }
           return false;
         }
 
         return true;
-        */
-        return false;
       }
 
       // OPENSSH Key v1 Format
@@ -305,8 +307,9 @@ class KeyPairECDSA extends KeyPair{
                     (prv_array.length>=48 ? 384 : 256);
     }
     catch(Exception e){
-      //System.err.println(e);
-      //e.printStackTrace();
+      if(jsch.getInstanceLogger().isEnabled(Logger.ERROR)){
+        jsch.getInstanceLogger().log(Logger.ERROR, "failed to parse key", e);
+      }
       return false;
     }
     return true;
@@ -361,7 +364,9 @@ class KeyPairECDSA extends KeyPair{
       return Buffer.fromBytes(tmp).buffer;
     }
     catch(Exception e){
-      //System.err.println("e "+e);
+      if(jsch.getInstanceLogger().isEnabled(Logger.ERROR)){
+        jsch.getInstanceLogger().log(Logger.ERROR, "failed to generate signature", e);
+      }
     }
     return null;
   }
@@ -390,7 +395,9 @@ class KeyPairECDSA extends KeyPair{
       return ecdsa;
     }
     catch(Exception e){
-      //System.err.println("e "+e);
+      if(jsch.getInstanceLogger().isEnabled(Logger.ERROR)){
+        jsch.getInstanceLogger().log(Logger.ERROR, "failed to create verifier", e);
+      }
     }
     return null;
   }

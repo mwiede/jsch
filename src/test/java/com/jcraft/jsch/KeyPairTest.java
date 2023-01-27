@@ -1,6 +1,5 @@
 package com.jcraft.jsch;
 
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -21,11 +20,6 @@ class KeyPairTest {
 
     @TempDir
     public Path tmpDir;
-
-    @BeforeAll
-    static void init() {
-        JSch.setLogger(new Slf4jLogger());
-    }
 
     static Stream<Arguments> keyArgs() {
         return Stream.of(
@@ -49,7 +43,72 @@ class KeyPairTest {
                 Arguments.of("docker/ssh_host_ecdsa384_key", null, "ecdsa-sha2-nistp384"),
                 Arguments.of("docker/ssh_host_ecdsa521_key", null, "ecdsa-sha2-nistp521"),
                 // encrypted ecdsa
-                Arguments.of("encrypted_openssh_private_key_ecdsa", "secret123", "ecdsa-sha2-nistp256")
+                Arguments.of("encrypted_openssh_private_key_ecdsa", "secret123", "ecdsa-sha2-nistp256"),
+                // PuTTY v2 keys
+                Arguments.of("ppkv2_dsa_unix.ppk", null, "ssh-dss"),
+                Arguments.of("ppkv2_dsa_unix_encrypted.ppk", "secret123", "ssh-dss"),
+                Arguments.of("ppkv2_dsa_windows.ppk", null, "ssh-dss"),
+                Arguments.of("ppkv2_dsa_windows_encrypted.ppk", "secret123", "ssh-dss"),
+                Arguments.of("ppkv2_rsa_unix.ppk", null, "ssh-rsa"),
+                Arguments.of("ppkv2_rsa_unix_encrypted.ppk", "secret123", "ssh-rsa"),
+                Arguments.of("ppkv2_rsa_windows.ppk", null, "ssh-rsa"),
+                Arguments.of("ppkv2_rsa_windows_encrypted.ppk", "secret123", "ssh-rsa"),
+                Arguments.of("ppkv2_ecdsa256_unix.ppk", null, "ecdsa-sha2-nistp256"),
+                Arguments.of("ppkv2_ecdsa256_unix_encrypted.ppk", "secret123", "ecdsa-sha2-nistp256"),
+                Arguments.of("ppkv2_ecdsa384_unix.ppk", null, "ecdsa-sha2-nistp384"),
+                Arguments.of("ppkv2_ecdsa384_unix_encrypted.ppk", "secret123", "ecdsa-sha2-nistp384"),
+                Arguments.of("ppkv2_ecdsa521_unix.ppk", null, "ecdsa-sha2-nistp521"),
+                Arguments.of("ppkv2_ecdsa521_unix_encrypted.ppk", "secret123", "ecdsa-sha2-nistp521"),
+                Arguments.of("ppkv2_ecdsa256_windows.ppk", null, "ecdsa-sha2-nistp256"),
+                Arguments.of("ppkv2_ecdsa256_windows_encrypted.ppk", "secret123", "ecdsa-sha2-nistp256"),
+                Arguments.of("ppkv2_ecdsa384_windows.ppk", null, "ecdsa-sha2-nistp384"),
+                Arguments.of("ppkv2_ecdsa384_windows_encrypted.ppk", "secret123", "ecdsa-sha2-nistp384"),
+                Arguments.of("ppkv2_ecdsa521_windows.ppk", null, "ecdsa-sha2-nistp521"),
+                Arguments.of("ppkv2_ecdsa521_windows_encrypted.ppk", "secret123", "ecdsa-sha2-nistp521"),
+                Arguments.of("ppkv2_ed25519_unix.ppk", null, "ssh-ed25519"),
+                Arguments.of("ppkv2_ed25519_unix_encrypted.ppk", "secret123", "ssh-ed25519"),
+                Arguments.of("ppkv2_ed25519_windows.ppk", null, "ssh-ed25519"),
+                Arguments.of("ppkv2_ed25519_windows_encrypted.ppk", "secret123", "ssh-ed25519"),
+                // PuTTY v3 keys
+                Arguments.of("ppkv3_dsa_unix.ppk", null, "ssh-dss"),
+                Arguments.of("ppkv3_dsa_unix_encrypted.ppk", "secret123", "ssh-dss"),
+                Arguments.of("ppkv3_dsa_windows.ppk", null, "ssh-dss"),
+                Arguments.of("ppkv3_dsa_windows_encrypted.ppk", "secret123", "ssh-dss"),
+                Arguments.of("ppkv3_rsa_unix.ppk", null, "ssh-rsa"),
+                Arguments.of("ppkv3_rsa_unix_encrypted.ppk", "secret123", "ssh-rsa"),
+                Arguments.of("ppkv3_rsa_windows.ppk", null, "ssh-rsa"),
+                Arguments.of("ppkv3_rsa_windows_encrypted.ppk", "secret123", "ssh-rsa"),
+                Arguments.of("ppkv3_ecdsa256_unix.ppk", null, "ecdsa-sha2-nistp256"),
+                Arguments.of("ppkv3_ecdsa256_unix_encrypted.ppk", "secret123", "ecdsa-sha2-nistp256"),
+                Arguments.of("ppkv3_ecdsa384_unix.ppk", null, "ecdsa-sha2-nistp384"),
+                Arguments.of("ppkv3_ecdsa384_unix_encrypted.ppk", "secret123", "ecdsa-sha2-nistp384"),
+                Arguments.of("ppkv3_ecdsa521_unix.ppk", null, "ecdsa-sha2-nistp521"),
+                Arguments.of("ppkv3_ecdsa521_unix_encrypted.ppk", "secret123", "ecdsa-sha2-nistp521"),
+                Arguments.of("ppkv3_ecdsa256_windows.ppk", null, "ecdsa-sha2-nistp256"),
+                Arguments.of("ppkv3_ecdsa256_windows_encrypted.ppk", "secret123", "ecdsa-sha2-nistp256"),
+                Arguments.of("ppkv3_ecdsa384_windows.ppk", null, "ecdsa-sha2-nistp384"),
+                Arguments.of("ppkv3_ecdsa384_windows_encrypted.ppk", "secret123", "ecdsa-sha2-nistp384"),
+                Arguments.of("ppkv3_ecdsa521_windows.ppk", null, "ecdsa-sha2-nistp521"),
+                Arguments.of("ppkv3_ecdsa521_windows_encrypted.ppk", "secret123", "ecdsa-sha2-nistp521"),
+                Arguments.of("ppkv3_ed25519_unix.ppk", null, "ssh-ed25519"),
+                Arguments.of("ppkv3_ed25519_unix_encrypted.ppk", "secret123", "ssh-ed25519"),
+                Arguments.of("ppkv3_ed25519_windows.ppk", null, "ssh-ed25519"),
+                Arguments.of("ppkv3_ed25519_windows_encrypted.ppk", "secret123", "ssh-ed25519"),
+                // PKCS8 keys
+                Arguments.of("pkcs8_dsa", null, "ssh-dss"),
+                Arguments.of("pkcs8_dsa_encrypted_hmacsha1", "secret123", "ssh-dss"),
+                Arguments.of("pkcs8_dsa_encrypted_hmacsha256", "secret123", "ssh-dss"),
+                Arguments.of("pkcs8_rsa", null, "ssh-rsa"),
+                Arguments.of("pkcs8_rsa_encrypted_hmacsha1", "secret123", "ssh-rsa"),
+                Arguments.of("pkcs8_rsa_encrypted_hmacsha256", "secret123", "ssh-rsa"),
+                Arguments.of("pkcs8_ecdsa256", null, "ecdsa-sha2-nistp256"),
+                Arguments.of("pkcs8_ecdsa256_encrypted_scrypt", "secret123", "ecdsa-sha2-nistp256"),
+                Arguments.of("pkcs8_ecdsa384", null, "ecdsa-sha2-nistp384"),
+                Arguments.of("pkcs8_ecdsa384_encrypted_scrypt", "secret123", "ecdsa-sha2-nistp384"),
+                Arguments.of("pkcs8_ecdsa521", null, "ecdsa-sha2-nistp521"),
+                Arguments.of("pkcs8_ecdsa521_encrypted_scrypt", "secret123", "ecdsa-sha2-nistp521"),
+                Arguments.of("pkcs8_ed25519", null, "ssh-ed25519"),
+                Arguments.of("pkcs8_ed25519_encrypted_scrypt", "secret123", "ssh-ed25519")
         );
     }
 
@@ -84,18 +143,6 @@ class KeyPairTest {
         assertDoesNotThrow(() -> {
             KeyPair kpair = KeyPair.genKeyPair(jSch, KeyPair.RSA, 1024);
             kpair.writePrivateKey(tmpDir.resolve("my-private-key-encrypted").toString(), "my-password".getBytes(UTF_8));
-        });
-    }
-
-    @Test
-    void loadAndAcessEncryptedKeyWithoutPassword() throws URISyntaxException, JSchException {
-        final JSch jSch = new JSch();
-        final String prvkey = Paths.get(ClassLoader.getSystemResource("encrypted_openssh_private_key_dsa").toURI()).toFile().getAbsolutePath();
-        assertTrue(new File(prvkey).exists());
-        jSch.addIdentity(prvkey);
-
-        assertThrows(IllegalStateException.class, () -> {
-            jSch.getIdentityRepository().getIdentities().get(0).getAlgName();
         });
     }
 

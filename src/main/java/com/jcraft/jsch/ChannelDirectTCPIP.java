@@ -104,7 +104,7 @@ public class ChannelDirectTCPIP extends Channel{
         i=io.in.read(buf.buffer, 
                      14, 
                      buf.buffer.length-14
-                     -Session.buffer_margin
+                     -_session.getBufferMargin()
                      );
         if(i<=0){
           eof();
@@ -154,7 +154,7 @@ public class ChannelDirectTCPIP extends Channel{
   protected Packet genChannelOpenPacket(){
     Buffer buf = new Buffer(50 + // 6 + 4*8 + 12
                             host.length() + originator_IP_address.length() +
-                            Session.buffer_margin);
+                            session.getBufferMargin());
     Packet packet = new Packet(buf);
     // byte   SSH_MSG_CHANNEL_OPEN(90)
     // string channel type         //

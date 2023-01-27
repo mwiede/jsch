@@ -66,6 +66,9 @@ class UserAuthNone extends UserAuth{
     if(!result)
       return false;
 
+    if(!session.getConfig("enable_auth_none").equals("yes"))
+      return false;
+
     byte[] _username=null;
     _username=Util.str2byte(username);
 

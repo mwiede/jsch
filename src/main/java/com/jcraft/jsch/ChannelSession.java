@@ -241,6 +241,7 @@ class ChannelSession extends Channel{
     Packet packet=new Packet(buf);
     int i=-1;
     try{
+      Session _session=getSession();
       while(isConnected() &&
             thread!=null && 
             io!=null && 
@@ -248,7 +249,7 @@ class ChannelSession extends Channel{
         i=io.in.read(buf.buffer, 
                      14,    
                      buf.buffer.length-14
-                     -Session.buffer_margin
+                     -_session.getBufferMargin()
                      );
         if(i==0)continue;
         if(i==-1){
@@ -262,7 +263,7 @@ class ChannelSession extends Channel{
         buf.putInt(recipient);
         buf.putInt(i);
         buf.skip(i);
-        getSession().write(packet, this, i);
+        _session.write(packet, this, i);
       }
     }
     catch(Exception e){

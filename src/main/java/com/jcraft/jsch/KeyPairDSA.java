@@ -77,7 +77,6 @@ class KeyPairDSA extends KeyPair{
       keypairgen=null;
     }
     catch(Exception e){
-      //System.err.println("KeyPairDSA: "+e);
       throw new JSchException(e.toString(), e);
     }
   }
@@ -134,7 +133,7 @@ class KeyPairDSA extends KeyPair{
         }
         return false;
       }
-      else if(vendor==VENDOR_PUTTY){
+      else if(vendor==VENDOR_PUTTY || vendor==VENDOR_PUTTY_V3){
         Buffer buf=new Buffer(plain);
         buf.skip(plain.length);
 
@@ -143,6 +142,9 @@ class KeyPairDSA extends KeyPair{
           prv_array = tmp[0];
         }
         catch(JSchException e){
+          if(jsch.getInstanceLogger().isEnabled(Logger.ERROR)){
+            jsch.getInstanceLogger().log(Logger.ERROR, "failed to parse key", e);
+          }
           return false;
         }
 
@@ -246,8 +248,9 @@ class KeyPairDSA extends KeyPair{
         key_size = (new BigInteger(P_array)).bitLength();
     }
     catch(Exception e){
-      //System.err.println(e);
-      //e.printStackTrace();
+      if(jsch.getInstanceLogger().isEnabled(Logger.ERROR)){
+        jsch.getInstanceLogger().log(Logger.ERROR, "failed to parse key", e);
+      }
       return false;
     }
     return true;
@@ -295,7 +298,9 @@ class KeyPairDSA extends KeyPair{
       return Buffer.fromBytes(tmp).buffer;
     }
     catch(Exception e){
-      //System.err.println("e "+e);
+      if(jsch.getInstanceLogger().isEnabled(Logger.ERROR)){
+        jsch.getInstanceLogger().log(Logger.ERROR, "failed to generate signature", e);
+      }
     }
     return null;
   }
@@ -325,7 +330,9 @@ class KeyPairDSA extends KeyPair{
       return dsa;
     }
     catch(Exception e){
-      //System.err.println("e "+e);
+      if(jsch.getInstanceLogger().isEnabled(Logger.ERROR)){
+        jsch.getInstanceLogger().log(Logger.ERROR, "failed to create verifier", e);
+      }
     }
     return null;
   }

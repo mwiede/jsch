@@ -593,9 +593,10 @@ public class ChannelSftp extends ChannelSession{
 
       boolean dontcopy=true;
 
+      int buffer_margin=session.getBufferMargin();
       if(!dontcopy){  // This case will not work anymore.
         data=new byte[obuf.buffer.length
-                      -(5+13+21+handle.length+Session.buffer_margin
+                      -(5+13+21+handle.length+buffer_margin
                         )
         ];
       }
@@ -616,7 +617,7 @@ public class ChannelSftp extends ChannelSession{
       else{
         data=obuf.buffer;
         _s=5+13+21+handle.length;
-        _datalen=obuf.buffer.length-_s-Session.buffer_margin;
+        _datalen=obuf.buffer.length-_s-buffer_margin;
       }
 
       int bulk_requests = rq.size();
@@ -664,7 +665,7 @@ public class ChannelSftp extends ChannelSession{
             foo-=sendWRITE(handle, offset, data, 0, foo);
             if(data!=obuf.buffer){
               data=obuf.buffer;
-              _datalen=obuf.buffer.length-_s-Session.buffer_margin;
+              _datalen=obuf.buffer.length-_s-buffer_margin;
             }
           }
           else {
@@ -2581,8 +2582,10 @@ public class ChannelSftp extends ChannelSession{
                         byte[] data, int start, int length) throws Exception{
     int _length=length;
     opacket.reset();
-    if(obuf.buffer.length<obuf.index+13+21+handle.length+length+Session.buffer_margin){
-      _length=obuf.buffer.length-(obuf.index+13+21+handle.length+Session.buffer_margin);
+    Session _session=getSession();
+    int buffer_margin=_session.getBufferMargin();
+    if(obuf.buffer.length<obuf.index+13+21+handle.length+length+buffer_margin){
+      _length=obuf.buffer.length-(obuf.index+13+21+handle.length+buffer_margin);
       // System.err.println("_length="+_length+" length="+length);
     }
 
@@ -2597,7 +2600,7 @@ public class ChannelSftp extends ChannelSession{
       obuf.putInt(_length);
       obuf.skip(_length);
     }
-    getSession().write(opacket, this, 21+handle.length+_length+4);
+    _session.write(opacket, this, 21+handle.length+_length+4);
     return _length;
   }
   private void sendREAD(byte[] handle, long offset, int length) throws Exception{

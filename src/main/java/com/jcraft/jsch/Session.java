@@ -135,10 +135,6 @@ public class Session{
 
   SocketFactory socket_factory=null;
 
-  static final int buffer_margin = 32 + // maximum padding length
-                                   64 + // maximum mac length
-                                   32;  // margin for deflater; deflater may inflate data
-
   private Hashtable<String, String> config=null;
 
   private Proxy proxy=null;
@@ -562,7 +558,7 @@ public class Session{
         if(isConnected){
           String message = e.toString();
           packet.reset();
-          buf.checkFreeSize(1+4*3+message.length()+2+buffer_margin);
+          buf.checkFreeSize(1+4*3+message.length()+2+getBufferMargin());
           buf.putByte((byte)SSH_MSG_DISCONNECT);
           buf.putInt(3);
           buf.putString(Util.str2byte(message));
@@ -3117,6 +3113,9 @@ break;
     checkConfig(config, "kex");
     checkConfig(config, "server_host_key");
     checkConfig(config, "prefer_known_host_key_types");
+    checkConfig(config, "enable_pubkey_auth_query");
+    checkConfig(config, "try_additional_pubkey_algorithms");
+    checkConfig(config, "enable_auth_none");
 
     checkConfig(config, "cipher.c2s");
     checkConfig(config, "cipher.s2c");
@@ -3286,5 +3285,28 @@ break;
    */
   public void setLogger(Logger logger) {
     this.logger = logger;
+  }
+
+  int getBufferMargin() {
+    int buffer_margin = 32 + // maximum padding length
+                        32;  // margin for deflater; deflater may inflate data
+
+    Cipher _c2scipher = c2scipher;
+    MAC _c2smac = c2smac;
+
+    // maximum mac length
+    int mac_length = 20;
+    if (_c2scipher != null && (_c2scipher.isChaCha20() || _c2scipher.isAEAD())) {
+      if (_c2scipher.getTagSize() > mac_length) {
+        mac_length = _c2scipher.getTagSize();
+      }
+    } else if (_c2smac != null) {
+      if (_c2smac.getBlockSize() > mac_length) {
+        mac_length = _c2smac.getBlockSize();
+      }
+    }
+    buffer_margin += mac_length;
+
+    return buffer_margin;
   }
 }

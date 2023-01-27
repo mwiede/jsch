@@ -58,7 +58,6 @@ abstract class KeyPairEdDSA extends KeyPair{
       keypairgen=null;
     }
     catch(Exception | NoClassDefFoundError e){
-      //System.err.println("KeyPairEdDSA: "+e);
       throw new JSchException(e.toString(), e);
     }
   }
@@ -74,27 +73,67 @@ abstract class KeyPairEdDSA extends KeyPair{
 
   @Override
   boolean parse(byte [] plain){
+    if(vendor==VENDOR_PUTTY || vendor==VENDOR_PUTTY_V3){
+      Buffer buf=new Buffer(plain);
+      buf.skip(plain.length);
 
-    // Only OPENSSH Key v1 Format supported for EdDSA keys
-    if(vendor != VENDOR_OPENSSH_V1) return false;
-    try{
-      // OPENSSH Key v1 Format
-      final Buffer buf = new Buffer(plain);
-      int checkInt1 = buf.getInt(); // uint32 checkint1
-      int checkInt2 = buf.getInt(); // uint32 checkint2
-      if (checkInt1 != checkInt2) {
-        throw new JSchException("check failed");
+      try {
+        byte[][] tmp = buf.getBytes(1, "");
+        prv_array = tmp[0];
       }
-      String keyType = Util.byte2str(buf.getString()); // string keytype
-      pub_array = buf.getString(); // public key
-      // OpenSSH stores private key in first half of string and duplicate copy of public key in second half of string
-      byte[] tmp = buf.getString(); // secret key (private key + public key)
-      prv_array = Arrays.copyOf(tmp, getKeySize());
-      publicKeyComment = Util.byte2str(buf.getString());
+      catch(JSchException e){
+        if(jsch.getInstanceLogger().isEnabled(Logger.ERROR)){
+          jsch.getInstanceLogger().log(Logger.ERROR, "failed to parse key", e);
+        }
+        return false;
+      }
+
       return true;
     }
-    catch(Exception e){
-      //System.err.println(e);
+    else if(vendor==VENDOR_OPENSSH_V1){
+      try{
+        // OPENSSH Key v1 Format
+        final Buffer buf = new Buffer(plain);
+        int checkInt1 = buf.getInt(); // uint32 checkint1
+        int checkInt2 = buf.getInt(); // uint32 checkint2
+        if (checkInt1 != checkInt2) {
+          throw new JSchException("check failed");
+        }
+        String keyType = Util.byte2str(buf.getString()); // string keytype
+        pub_array = buf.getString(); // public key
+        // OpenSSH stores private key in first half of string and duplicate copy of public key in second half of string
+        byte[] tmp = buf.getString(); // secret key (private key + public key)
+        prv_array = Arrays.copyOf(tmp, getKeySize());
+        publicKeyComment = Util.byte2str(buf.getString());
+        return true;
+      }
+      catch(Exception e){
+        if(jsch.getInstanceLogger().isEnabled(Logger.ERROR)){
+          jsch.getInstanceLogger().log(Logger.ERROR, "failed to parse key", e);
+        }
+        return false;
+      }
+    }
+    else if(vendor==VENDOR_PKCS8){
+      try{
+        Class<? extends KeyPairGenEdDSA> c=Class.forName(JSch.getConfig("keypairgen_fromprivate.eddsa")).asSubclass(KeyPairGenEdDSA.class);
+        KeyPairGenEdDSA keypairgen=c.getDeclaredConstructor().newInstance();
+        keypairgen.init(getJceName(), plain);
+        pub_array=keypairgen.getPub();
+        prv_array=keypairgen.getPrv();
+        return true;
+      }
+      catch(Exception | NoClassDefFoundError e){
+        if(jsch.getInstanceLogger().isEnabled(Logger.ERROR)){
+          jsch.getInstanceLogger().log(Logger.ERROR, "failed to parse key", e);
+        }
+        return false;
+      }
+    }
+    else {
+      if(jsch.getInstanceLogger().isEnabled(Logger.ERROR)){
+        jsch.getInstanceLogger().log(Logger.ERROR, "failed to parse key");
+      }
       return false;
     }
   }
@@ -135,6 +174,9 @@ abstract class KeyPairEdDSA extends KeyPair{
       return Buffer.fromBytes(tmp).buffer;
     }
     catch(Exception | NoClassDefFoundError e){
+      if(jsch.getInstanceLogger().isEnabled(Logger.ERROR)){
+        jsch.getInstanceLogger().log(Logger.ERROR, "failed to generate signature", e);
+      }
     }
     return null;
   }
@@ -161,6 +203,9 @@ abstract class KeyPairEdDSA extends KeyPair{
       return eddsa;
     }
     catch(Exception | NoClassDefFoundError e){
+      if(jsch.getInstanceLogger().isEnabled(Logger.ERROR)){
+        jsch.getInstanceLogger().log(Logger.ERROR, "failed to create verifier", e);
+      }
     }
     return null;
   }

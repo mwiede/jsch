@@ -212,8 +212,13 @@ public class Buffer{
     return buffer[5];
   }
 
+  // Hardcode this since we can't use dynamic Session value
+  private static final int buffer_margin = 32 + // maximum padding length
+                                           64 + // maximum mac length
+                                           32;  // margin for deflater; deflater may inflate data
+
   void checkFreeSize(int n){
-    int size = index+n+Session.buffer_margin;
+    int size = index+n+buffer_margin;
     if(buffer.length<size){
       int i = buffer.length*2;
       if(i<size) i = size;

@@ -204,6 +204,14 @@ public class JSch{
     config.put("zlib@openssh.com", "com.jcraft.jsch.jzlib.Compression");
 
     config.put("pbkdf", "com.jcraft.jsch.jce.PBKDF");
+    config.put("pbkdf2-hmac-sha1", "com.jcraft.jsch.jce.PBKDF2HMACSHA1");
+    config.put("pbkdf2-hmac-sha224", "com.jcraft.jsch.jce.PBKDF2HMACSHA224");
+    config.put("pbkdf2-hmac-sha256", "com.jcraft.jsch.jce.PBKDF2HMACSHA256");
+    config.put("pbkdf2-hmac-sha384", "com.jcraft.jsch.jce.PBKDF2HMACSHA384");
+    config.put("pbkdf2-hmac-sha512", "com.jcraft.jsch.jce.PBKDF2HMACSHA512");
+    config.put("bcrypt", "com.jcraft.jsch.jbcrypt.JBCrypt");
+    config.put("argon2", "com.jcraft.jsch.bc.Argon2");
+    config.put("scrypt", "com.jcraft.jsch.bc.SCrypt");
 
     if(JavaVersion.getVersion()>=11){
       config.put("xdh", "com.jcraft.jsch.jce.XDH");
@@ -222,12 +230,16 @@ public class JSch{
       config.put("ssh-ed25519", "com.jcraft.jsch.bc.SignatureEd25519");
       config.put("ssh-ed448", "com.jcraft.jsch.bc.SignatureEd448");
     }
+    config.put("keypairgen_fromprivate.eddsa", "com.jcraft.jsch.bc.KeyPairGenEdDSA");
 
     config.put("StrictHostKeyChecking",  "ask");
     config.put("HashKnownHosts",  "no");
 
     config.put("PreferredAuthentications", Util.getSystemProperty("jsch.preferred_authentications", "gssapi-with-mic,publickey,keyboard-interactive,password"));
     config.put("PubkeyAcceptedAlgorithms", Util.getSystemProperty("jsch.client_pubkey", "ssh-ed25519,ecdsa-sha2-nistp256,ecdsa-sha2-nistp384,ecdsa-sha2-nistp521,rsa-sha2-512,rsa-sha2-256"));
+    config.put("enable_pubkey_auth_query", Util.getSystemProperty("jsch.enable_pubkey_auth_query", "yes"));
+    config.put("try_additional_pubkey_algorithms", Util.getSystemProperty("jsch.try_additional_pubkey_algorithms", "yes"));
+    config.put("enable_auth_none", Util.getSystemProperty("jsch.enable_auth_none", "yes"));
 
     config.put("CheckCiphers", Util.getSystemProperty("jsch.check_ciphers", "chacha20-poly1305@openssh.com"));
     config.put("CheckMacs", Util.getSystemProperty("jsch.check_macs", ""));

@@ -179,7 +179,7 @@ abstract class SignatureECDSAN implements com.jcraft.jsch.SignatureECDSA {
     if ((buf[0] & 0x80) == 0) return buf;
     byte[] tmp = new byte[buf.length+1];
     System.arraycopy(buf, 0, tmp, 1, buf.length);
-    bzero(buf);
+    Util.bzero(buf);
     return tmp;
   }
 
@@ -187,12 +187,8 @@ abstract class SignatureECDSAN implements com.jcraft.jsch.SignatureECDSA {
     if(buf[0]!=0) return buf;
     byte[] tmp = new byte[buf.length-1];
     System.arraycopy(buf, 1, tmp, 0, tmp.length);
-    bzero(buf);
+    Util.bzero(buf);
     return tmp;
-  }
-
-  private static void bzero(byte[] buf){
-    for(int i = 0; i<buf.length; i++) buf[i]=0;
   }
 
   private static byte[] trimLeadingZeros(byte[] buf){
@@ -208,7 +204,7 @@ abstract class SignatureECDSAN implements com.jcraft.jsch.SignatureECDSA {
 
     byte[] tmp = new byte[buf.length-i];
     System.arraycopy(buf, i, tmp, 0, tmp.length);
-    bzero(buf);
+    Util.bzero(buf);
     return tmp;
   }
 }

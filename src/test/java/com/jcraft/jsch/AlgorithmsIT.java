@@ -2,26 +2,26 @@ package com.jcraft.jsch;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.stream.Collectors.toList;
-import static org.apache.commons.codec.binary.Base64.decodeBase64;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.condition.JRE.JAVA_11;
 import static org.junit.jupiter.api.condition.JRE.JAVA_15;
 
-import ch.qos.logback.classic.Logger;
-import ch.qos.logback.classic.spi.ILoggingEvent;
-import ch.qos.logback.core.read.ListAppender;
+import com.github.valfirst.slf4jtest.LoggingEvent;
+import com.github.valfirst.slf4jtest.TestLogger;
+import com.github.valfirst.slf4jtest.TestLoggerFactory;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
+import java.util.Base64;
 import java.util.List;
 import java.util.Optional;
 import java.util.Random;
 import org.apache.commons.codec.digest.DigestUtils;
-import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -30,7 +30,6 @@ import org.junit.jupiter.api.io.TempDir;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.ValueSource;
-import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.output.Slf4jLogConsumer;
 import org.testcontainers.images.builder.ImageFromDockerfile;
@@ -42,9 +41,8 @@ public class AlgorithmsIT {
 
   private static final int timeout = 2000;
   private static final DigestUtils sha256sum = new DigestUtils(DigestUtils.getSha256Digest());
-  private static final ListAppender<ILoggingEvent> jschAppender = getListAppender(JSch.class);
-  private static final ListAppender<ILoggingEvent> sshdAppender =
-      getListAppender(AlgorithmsIT.class);
+  private static final TestLogger jschLogger = TestLoggerFactory.getTestLogger(JSch.class);
+  private static final TestLogger sshdLogger = TestLoggerFactory.getTestLogger(AlgorithmsIT.class);
 
   @TempDir public Path tmpDir;
   private Path in;
@@ -85,7 +83,7 @@ public class AlgorithmsIT {
   @BeforeEach
   public void beforeEach() throws IOException {
     if (sshdLogConsumer == null) {
-      sshdLogConsumer = new Slf4jLogConsumer(LoggerFactory.getLogger(AlgorithmsIT.class));
+      sshdLogConsumer = new Slf4jLogConsumer(sshdLogger);
       sshd.followOutput(sshdLogConsumer);
     }
 
@@ -101,18 +99,15 @@ public class AlgorithmsIT {
     }
     hash = sha256sum.digestAsHex(in);
 
-    jschAppender.list.clear();
-    sshdAppender.list.clear();
-    jschAppender.start();
-    sshdAppender.start();
+    jschLogger.clearAll();
+    sshdLogger.clearAll();
   }
 
-  @AfterEach
-  public void afterEach() {
-    jschAppender.stop();
-    sshdAppender.stop();
-    jschAppender.list.clear();
-    sshdAppender.list.clear();
+  @AfterAll
+  public static void afterAll() {
+    JSch.setLogger(null);
+    jschLogger.clearAll();
+    sshdLogger.clearAll();
   }
 
   @ParameterizedTest
@@ -192,7 +187,8 @@ public class AlgorithmsIT {
     doSftp(session, true);
 
     String expectedKex = String.format("kex: algorithm: %s.*", kex);
-    String expectedSizes = String.format("SSH_MSG_KEX_DH_GEX_REQUEST\\(%s<%s<%s\\) sent", size, size, size);
+    String expectedSizes =
+        String.format("SSH_MSG_KEX_DH_GEX_REQUEST\\(%s<%s<%s\\) sent", size, size, size);
     checkLogs(expectedKex);
     checkLogs(expectedSizes);
   }
@@ -534,7 +530,7 @@ public class AlgorithmsIT {
     List<String> lines = Files.readAllLines(Paths.get(fileName), UTF_8);
     String[] split = lines.get(0).split("\\s+");
     String hostname = String.format("[%s]:%d", sshd.getHost(), sshd.getFirstMappedPort());
-    return new HostKey(hostname, decodeBase64(split[1]));
+    return new HostKey(hostname, Base64.getDecoder().decode(split[1]));
   }
 
   private Session createSession(JSch ssh) throws Exception {
@@ -554,8 +550,6 @@ public class AlgorithmsIT {
       sftp.get("/root/test", out.toString());
       sftp.disconnect();
       session.disconnect();
-      jschAppender.stop();
-      sshdAppender.stop();
     } catch (Exception e) {
       if (debugException) {
         printInfo();
@@ -567,26 +561,29 @@ public class AlgorithmsIT {
     assertEquals(hash, sha256sum.digestAsHex(out));
   }
 
-  private static void printInfo() {
-    jschAppender.stop();
-    sshdAppender.stop();
-    jschAppender.list.stream().map(ILoggingEvent::getFormattedMessage).forEach(System.out::println);
-    sshdAppender.list.stream().map(ILoggingEvent::getFormattedMessage).forEach(System.out::println);
+  private void printInfo() {
+    jschLogger.getAllLoggingEvents().stream()
+        .map(LoggingEvent::getFormattedMessage)
+        .forEach(System.out::println);
+    sshdLogger.getAllLoggingEvents().stream()
+        .map(LoggingEvent::getFormattedMessage)
+        .forEach(System.out::println);
     System.out.println("");
     System.out.println("");
     System.out.println("");
   }
 
-  private static void checkLogs(String expected) {
+  private void checkLogs(String expected) {
     Optional<String> actualJsch =
-        jschAppender.list.stream()
-            .map(ILoggingEvent::getFormattedMessage)
+        jschLogger.getAllLoggingEvents().stream()
+            .map(LoggingEvent::getFormattedMessage)
             .filter(msg -> msg.matches(expected))
             .findFirst();
-    // Skip OpenSSH log checks, as log output from Docker falls behind and these assertions frequently run before they are output
+    // Skip OpenSSH log checks, as log output from Docker falls behind and these assertions
+    // frequently run before they are output
     // Optional<String> actualSshd =
-    //     sshdAppender.list.stream()
-    //         .map(ILoggingEvent::getFormattedMessage)
+    //     sshdLogger.getAllLoggingEvents().stream()
+    //         .map(LoggingEvent::getFormattedMessage)
     //         .filter(msg -> msg.matches("STDERR: debug1: " + expected))
     //         .findFirst();
     try {
@@ -600,12 +597,5 @@ public class AlgorithmsIT {
 
   private String getResourceFile(String fileName) {
     return ResourceUtil.getResourceFile(getClass(), fileName);
-  }
-
-  private static ListAppender<ILoggingEvent> getListAppender(Class<?> clazz) {
-    Logger logger = (Logger) LoggerFactory.getLogger(clazz);
-    ListAppender<ILoggingEvent> listAppender = new ListAppender2<>();
-    logger.addAppender(listAppender);
-    return listAppender;
   }
 }
