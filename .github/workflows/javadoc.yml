@@ -23,5 +23,5 @@ jobs:
       - name: Deploy 🚀
         uses: JamesIves/github-pages-deploy-action@v4
         with:
-          folder: target/apidocs
+          folder: target/site/apidocs
           target-folder: "$GITHUB_REF_NAME"
