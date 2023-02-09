@@ -75,7 +75,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <skipITs>true</skipITs>
-        <junixsocket.version>2.6.1</junixsocket.version>
+        <junixsocket.version>2.6.2</junixsocket.version>
         <jna.version>5.13.0</jna.version>
         <log4j.version>2.19.0</log4j.version>
     </properties>
@@ -101,7 +101,7 @@
         <dependency>
             <groupId>com.kohlschutter</groupId>
             <artifactId>compiler-annotations</artifactId>
-            <version>1.5.1</version>
+            <version>1.5.2</version>
             <optional>true</optional>
         </dependency>
         <dependency>
@@ -512,7 +512,7 @@
             <plugin>
                 <groupId>net.revelc.code.formatter</groupId>
                 <artifactId>formatter-maven-plugin</artifactId>
-                <version>2.21.0</version>
+                <version>2.22.0</version>
                 <configuration>
                     <configFile>${project.basedir}/eclipse-java-google-style.xml</configFile>
                     <encoding>UTF-8</encoding>
@@ -652,6 +652,7 @@
             </build>
         </profile>
         <profile>
+			<id>formatvalidation</id>
             <activation>
                 <jdk>[11,)</jdk>
             </activation>
@@ -679,7 +680,7 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-checkstyle-plugin</artifactId>
-                        <version>3.2.0</version>
+                        <version>3.2.1</version>
                         <configuration>
                             <encoding>UTF-8</encoding>
                             <failOnViolation>true</failOnViolation>
