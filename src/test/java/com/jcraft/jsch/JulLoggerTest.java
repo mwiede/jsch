@@ -155,17 +155,14 @@ public class JulLoggerTest {
     checkMessages(expectedMessages, expectedExceptions);
   }
 
-  private void checkMessages(
-      List<String> expectedMessages, List<Optional<Throwable>> expectedExceptions) {
+  private void checkMessages(List<String> expectedMessages,
+      List<Optional<Throwable>> expectedExceptions) {
     List<LogRecord> records = handler.getRecords();
     handler.clear();
     List<String> actualMessages =
         records.stream().map(LogRecord::getMessage).collect(Collectors.toList());
-    List<Optional<Throwable>> actualExceptions =
-        records.stream()
-            .map(LogRecord::getThrown)
-            .map(Optional::ofNullable)
-            .collect(Collectors.toList());
+    List<Optional<Throwable>> actualExceptions = records.stream().map(LogRecord::getThrown)
+        .map(Optional::ofNullable).collect(Collectors.toList());
     assertEquals(expectedMessages, actualMessages, "mismatch in logged messages");
     assertEquals(expectedExceptions, actualExceptions, "mismatch in logged exceptions");
   }

@@ -1,4 +1,3 @@
-/* -*-mode:java; c-basic-offset:2; indent-tabs-mode:nil -*- */
 /**
  * This program enables you to connect to sshd server and forward the docker socket. $
  * CLASSPATH=.:../build javac SocketForwardingL.java $ CLASSPATH=.:../build java SocketForwardingL

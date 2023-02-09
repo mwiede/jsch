@@ -1,4 +1,3 @@
-/* -*-mode:java; c-basic-offset:2; indent-tabs-mode:nil -*- */
 /**
  * This program will demonstrate SSH through jump hosts. Suppose that you don't have direct accesses
  * to host2 and host3. $ CLASSPATH=.:../build javac JumpHosts.java $ CLASSPATH=.:../build java

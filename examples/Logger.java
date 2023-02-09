@@ -1,4 +1,3 @@
-/* -*-mode:java; c-basic-offset:2; indent-tabs-mode:nil -*- */
 /**
  * This program will demonstrate how to enable logging mechanism and get logging messages.
  */

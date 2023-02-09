@@ -1,4 +1,3 @@
-/* -*-mode:java; c-basic-offset:2; indent-tabs-mode:nil -*- */
 /**
  * This program will demonstrate the 'known_hosts' file handling. $ CLASSPATH=.:../build javac
  * KnownHosts.java $ CLASSPATH=.:../build java KnownHosts You will be asked username, hostname, a

@@ -1,4 +1,3 @@
-/* -*-mode:java; c-basic-offset:2; indent-tabs-mode:nil -*- */
 package com.jcraft.jsch.juz;
 
 import com.jcraft.jsch.*;

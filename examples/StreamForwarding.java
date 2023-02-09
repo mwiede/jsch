@@ -1,4 +1,3 @@
-/* -*-mode:java; c-basic-offset:2; indent-tabs-mode:nil -*- */
 /**
  * This program will demonstrate the stream forwarding. The given Java I/O streams will be forwared
  * to the given remote host and port on the remote side. It is simmilar to the -L option of ssh

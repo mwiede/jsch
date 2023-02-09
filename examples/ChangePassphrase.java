@@ -1,4 +1,3 @@
-/* -*-mode:java; c-basic-offset:2; indent-tabs-mode:nil -*- */
 /**
  * This program will demonstrate to change the passphrase for a private key file instead of creating
  * a new private key. $ CLASSPATH=.:../build javac ChangePassphrase.java $ CLASSPATH=.:../build java

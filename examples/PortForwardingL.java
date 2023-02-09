@@ -1,4 +1,3 @@
-/* -*-mode:java; c-basic-offset:2; indent-tabs-mode:nil -*- */
 /**
  * This program will demonstrate the port forwarding like option -L of ssh command; the given port
  * on the local host will be forwarded to the given remote host and port on the remote side. $

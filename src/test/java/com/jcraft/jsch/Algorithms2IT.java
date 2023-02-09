@@ -365,11 +365,9 @@ public class Algorithms2IT {
   }
 
   private void printInfo() {
-    jschLogger.getAllLoggingEvents().stream()
-        .map(LoggingEvent::getFormattedMessage)
+    jschLogger.getAllLoggingEvents().stream().map(LoggingEvent::getFormattedMessage)
         .forEach(System.out::println);
-    sshdLogger.getAllLoggingEvents().stream()
-        .map(LoggingEvent::getFormattedMessage)
+    sshdLogger.getAllLoggingEvents().stream().map(LoggingEvent::getFormattedMessage)
         .forEach(System.out::println);
     System.out.println("");
     System.out.println("");
@@ -377,11 +375,8 @@ public class Algorithms2IT {
   }
 
   private void checkLogs(String expected) {
-    Optional<String> actualJsch =
-        jschLogger.getAllLoggingEvents().stream()
-            .map(LoggingEvent::getFormattedMessage)
-            .filter(msg -> msg.matches(expected))
-            .findFirst();
+    Optional<String> actualJsch = jschLogger.getAllLoggingEvents().stream()
+        .map(LoggingEvent::getFormattedMessage).filter(msg -> msg.matches(expected)).findFirst();
     try {
       assertTrue(actualJsch.isPresent(), () -> "JSch: " + expected);
     } catch (AssertionError e) {

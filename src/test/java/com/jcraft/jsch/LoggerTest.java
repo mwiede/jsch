@@ -18,20 +18,19 @@ public class LoggerTest {
   public void testLogging() {
     List<String> actualMessages = new ArrayList<>();
     boolean[] enabledResult = new boolean[1];
-    Logger logger =
-        new Logger() {
-          @Override
-          public void log(int level, String message) {
-            if (isEnabled(level)) {
-              actualMessages.add(level + ":" + message);
-            }
-          }
+    Logger logger = new Logger() {
+      @Override
+      public void log(int level, String message) {
+        if (isEnabled(level)) {
+          actualMessages.add(level + ":" + message);
+        }
+      }
 
-          @Override
-          public boolean isEnabled(int level) {
-            return enabledResult[0];
-          }
-        };
+      @Override
+      public boolean isEnabled(int level) {
+        return enabledResult[0];
+      }
+    };
 
     actualMessages.clear();
     enabledResult[0] = false;
@@ -44,11 +43,9 @@ public class LoggerTest {
     try (PrintWriter pw = new PrintWriter(sw, true)) {
       testException.printStackTrace(pw);
     }
-    List<String> expectedMessages =
-        Arrays.asList(
-            Logger.ERROR + ":debug message",
-            Logger.ERROR + ":debug message with null cause",
-            Logger.ERROR + ":debug message with cause" + System.lineSeparator() + sw);
+    List<String> expectedMessages = Arrays.asList(Logger.ERROR + ":debug message",
+        Logger.ERROR + ":debug message with null cause",
+        Logger.ERROR + ":debug message with cause" + System.lineSeparator() + sw);
 
     actualMessages.clear();
     enabledResult[0] = true;

@@ -1,4 +1,3 @@
-/* -*-mode:java; c-basic-offset:2; indent-tabs-mode:nil -*- */
 /**
  * This program demonsrates how to use OpenSSHConfig class. $ CLASSPATH=.:../build javac
  * OpenSSHConfig.java $ CLASSPATH=.:../build java OpenSSHConfig You will be asked username, hostname

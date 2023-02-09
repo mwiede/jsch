@@ -74,8 +74,10 @@ public class DeflateInflateTest {
     while (loop) {
       inflater.setOutput(uncompr);
       err = inflater.inflate(Z_NO_FLUSH);
-      if (err == Z_STREAM_END) loop = false;
-      else assertEquals(Z_OK, err);
+      if (err == Z_STREAM_END)
+        loop = false;
+      else
+        assertEquals(Z_OK, err);
     }
 
     err = inflater.end();
@@ -122,8 +124,10 @@ public class DeflateInflateTest {
       inflater.avail_in = 1; // force small buffers
       inflater.avail_out = 1; // force small buffers
       err = inflater.inflate(Z_NO_FLUSH);
-      if (err == Z_STREAM_END) loop = false;
-      else assertEquals(Z_OK, err);
+      if (err == Z_STREAM_END)
+        loop = false;
+      else
+        assertEquals(Z_OK, err);
     }
 
     err = inflater.end();
@@ -246,35 +250,10 @@ public class DeflateInflateTest {
   @Test
   public void testInflaterCanInflateGzipData() {
     byte[] hello = "foo".getBytes();
-    byte[] data = {
-      (byte) 0x1f,
-      (byte) 0x8b,
-      (byte) 0x08,
-      (byte) 0x18,
-      (byte) 0x08,
-      (byte) 0xeb,
-      (byte) 0x7a,
-      (byte) 0x0b,
-      (byte) 0x00,
-      (byte) 0x0b,
-      (byte) 0x58,
-      (byte) 0x00,
-      (byte) 0x59,
-      (byte) 0x00,
-      (byte) 0x4b,
-      (byte) 0xcb,
-      (byte) 0xcf,
-      (byte) 0x07,
-      (byte) 0x00,
-      (byte) 0x21,
-      (byte) 0x65,
-      (byte) 0x73,
-      (byte) 0x8c,
-      (byte) 0x03,
-      (byte) 0x00,
-      (byte) 0x00,
-      (byte) 0x00
-    };
+    byte[] data = {(byte) 0x1f, (byte) 0x8b, (byte) 0x08, (byte) 0x18, (byte) 0x08, (byte) 0xeb,
+        (byte) 0x7a, (byte) 0x0b, (byte) 0x00, (byte) 0x0b, (byte) 0x58, (byte) 0x00, (byte) 0x59,
+        (byte) 0x00, (byte) 0x4b, (byte) 0xcb, (byte) 0xcf, (byte) 0x07, (byte) 0x00, (byte) 0x21,
+        (byte) 0x65, (byte) 0x73, (byte) 0x8c, (byte) 0x03, (byte) 0x00, (byte) 0x00, (byte) 0x00};
 
     err = inflater.init(15 + 32);
     assertEquals(Z_OK, err);
@@ -287,8 +266,10 @@ public class DeflateInflateTest {
     boolean loop = true;
     while (inflater.total_out < uncomprLen && inflater.total_in < comprLen && loop) {
       err = inflater.inflate(Z_NO_FLUSH);
-      if (err == Z_STREAM_END) loop = false;
-      else assertEquals(Z_OK, err);
+      if (err == Z_STREAM_END)
+        loop = false;
+      else
+        assertEquals(Z_OK, err);
     }
 
     err = inflater.end();
@@ -337,8 +318,10 @@ public class DeflateInflateTest {
       inflater.avail_in = 1; // force small buffers
       inflater.avail_out = 1; // force small buffers
       err = inflater.inflate(Z_NO_FLUSH);
-      if (err == Z_STREAM_END) loop = false;
-      else assertEquals(Z_OK, err);
+      if (err == Z_STREAM_END)
+        loop = false;
+      else
+        assertEquals(Z_OK, err);
     }
 
     err = inflater.end();

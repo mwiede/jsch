@@ -37,39 +37,34 @@ public abstract class AbstractBufferMargin {
   private static final TestLogger sshdLogger =
       TestLoggerFactory.getTestLogger(AbstractBufferMargin.class);
 
-  @TempDir public Path tmpDir;
+  @TempDir
+  public Path tmpDir;
   private Path in;
   private Path out;
   private String hash;
   private Slf4jLogConsumer sshdLogConsumer;
 
   @Container
-  public GenericContainer<?> sshd =
-      new GenericContainer<>(
-              new ImageFromDockerfile()
-                  .withFileFromClasspath("asyncsshd.py", "docker/asyncsshd.py")
-                  .withFileFromClasspath("ssh_host_ed448_key", "docker/ssh_host_ed448_key")
-                  .withFileFromClasspath("ssh_host_ed448_key.pub", "docker/ssh_host_ed448_key.pub")
-                  .withFileFromClasspath("ssh_host_rsa_key", "docker/ssh_host_rsa_key")
-                  .withFileFromClasspath("ssh_host_rsa_key.pub", "docker/ssh_host_rsa_key.pub")
-                  .withFileFromClasspath("ssh_host_ecdsa256_key", "docker/ssh_host_ecdsa256_key")
-                  .withFileFromClasspath(
-                      "ssh_host_ecdsa256_key.pub", "docker/ssh_host_ecdsa256_key.pub")
-                  .withFileFromClasspath("ssh_host_ecdsa384_key", "docker/ssh_host_ecdsa384_key")
-                  .withFileFromClasspath(
-                      "ssh_host_ecdsa384_key.pub", "docker/ssh_host_ecdsa384_key.pub")
-                  .withFileFromClasspath("ssh_host_ecdsa521_key", "docker/ssh_host_ecdsa521_key")
-                  .withFileFromClasspath(
-                      "ssh_host_ecdsa521_key.pub", "docker/ssh_host_ecdsa521_key.pub")
-                  .withFileFromClasspath("ssh_host_ed25519_key", "docker/ssh_host_ed25519_key")
-                  .withFileFromClasspath(
-                      "ssh_host_ed25519_key.pub", "docker/ssh_host_ed25519_key.pub")
-                  .withFileFromClasspath("ssh_host_dsa_key", "docker/ssh_host_dsa_key")
-                  .withFileFromClasspath("ssh_host_dsa_key.pub", "docker/ssh_host_dsa_key.pub")
-                  .withFileFromClasspath("authorized_keys", "docker/authorized_keys")
-                  .withFileFromClasspath("Dockerfile", "docker/Dockerfile.asyncssh")
-                  .withBuildArg("MAX_PKTSIZE", Integer.toString(maxPktSize())))
-          .withExposedPorts(22);
+  public GenericContainer<?> sshd = new GenericContainer<>(
+      new ImageFromDockerfile().withFileFromClasspath("asyncsshd.py", "docker/asyncsshd.py")
+          .withFileFromClasspath("ssh_host_ed448_key", "docker/ssh_host_ed448_key")
+          .withFileFromClasspath("ssh_host_ed448_key.pub", "docker/ssh_host_ed448_key.pub")
+          .withFileFromClasspath("ssh_host_rsa_key", "docker/ssh_host_rsa_key")
+          .withFileFromClasspath("ssh_host_rsa_key.pub", "docker/ssh_host_rsa_key.pub")
+          .withFileFromClasspath("ssh_host_ecdsa256_key", "docker/ssh_host_ecdsa256_key")
+          .withFileFromClasspath("ssh_host_ecdsa256_key.pub", "docker/ssh_host_ecdsa256_key.pub")
+          .withFileFromClasspath("ssh_host_ecdsa384_key", "docker/ssh_host_ecdsa384_key")
+          .withFileFromClasspath("ssh_host_ecdsa384_key.pub", "docker/ssh_host_ecdsa384_key.pub")
+          .withFileFromClasspath("ssh_host_ecdsa521_key", "docker/ssh_host_ecdsa521_key")
+          .withFileFromClasspath("ssh_host_ecdsa521_key.pub", "docker/ssh_host_ecdsa521_key.pub")
+          .withFileFromClasspath("ssh_host_ed25519_key", "docker/ssh_host_ed25519_key")
+          .withFileFromClasspath("ssh_host_ed25519_key.pub", "docker/ssh_host_ed25519_key.pub")
+          .withFileFromClasspath("ssh_host_dsa_key", "docker/ssh_host_dsa_key")
+          .withFileFromClasspath("ssh_host_dsa_key.pub", "docker/ssh_host_dsa_key.pub")
+          .withFileFromClasspath("authorized_keys", "docker/authorized_keys")
+          .withFileFromClasspath("Dockerfile", "docker/Dockerfile.asyncssh")
+          .withBuildArg("MAX_PKTSIZE", Integer.toString(maxPktSize())))
+      .withExposedPorts(22);
 
   @BeforeAll
   public static void beforeAll() {
@@ -269,11 +264,9 @@ public abstract class AbstractBufferMargin {
   }
 
   private void printInfo() {
-    jschLogger.getAllLoggingEvents().stream()
-        .map(LoggingEvent::getFormattedMessage)
+    jschLogger.getAllLoggingEvents().stream().map(LoggingEvent::getFormattedMessage)
         .forEach(System.out::println);
-    sshdLogger.getAllLoggingEvents().stream()
-        .map(LoggingEvent::getFormattedMessage)
+    sshdLogger.getAllLoggingEvents().stream().map(LoggingEvent::getFormattedMessage)
         .forEach(System.out::println);
     System.out.println("");
     System.out.println("");

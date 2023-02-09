@@ -25,12 +25,11 @@ public class WrapperTypeTest {
   private byte[] uncompr;
   private int err;
 
-  private final List<Case> cases =
-      Arrays.asList(
-          /*               success                       fail */
-          new Case(W_ZLIB, Arrays.asList(W_ZLIB, W_ANY), Arrays.asList(W_GZIP, W_NONE)),
-          new Case(W_GZIP, Arrays.asList(W_GZIP, W_ANY), Arrays.asList(W_ZLIB, W_NONE)),
-          new Case(W_NONE, Arrays.asList(W_NONE, W_ANY), Arrays.asList(W_ZLIB, W_GZIP)));
+  private final List<Case> cases = Arrays.asList(
+      /* success fail */
+      new Case(W_ZLIB, Arrays.asList(W_ZLIB, W_ANY), Arrays.asList(W_GZIP, W_NONE)),
+      new Case(W_GZIP, Arrays.asList(W_GZIP, W_ANY), Arrays.asList(W_ZLIB, W_NONE)),
+      new Case(W_NONE, Arrays.asList(W_NONE, W_ANY), Arrays.asList(W_ZLIB, W_GZIP)));
 
   @BeforeEach
   public void before() {
@@ -47,83 +46,59 @@ public class WrapperTypeTest {
   public void testDeflaterCanDetectDataTypeOfInput() {
     byte[] buf = compr;
 
-    cases.forEach(
-        uncheckedConsumer(
-            c -> {
-              ByteArrayOutputStream baos = new ByteArrayOutputStream();
-              Deflater deflater = new Deflater(Z_DEFAULT_COMPRESSION, DEF_WBITS, 9, c.iflag);
-              DeflaterOutputStream gos = new DeflaterOutputStream(baos, deflater);
-              readArray(data, gos, buf);
-              gos.close();
+    cases.forEach(uncheckedConsumer(c -> {
+      ByteArrayOutputStream baos = new ByteArrayOutputStream();
+      Deflater deflater = new Deflater(Z_DEFAULT_COMPRESSION, DEF_WBITS, 9, c.iflag);
+      DeflaterOutputStream gos = new DeflaterOutputStream(baos, deflater);
+      readArray(data, gos, buf);
+      gos.close();
 
-              byte[] deflated = baos.toByteArray();
+      byte[] deflated = baos.toByteArray();
 
-              c.good.stream()
-                  .map(
-                      uncheckedFunction(
-                          w -> {
-                            ByteArrayOutputStream baos2 = new ByteArrayOutputStream();
-                            Inflater inflater = new Inflater(w);
-                            readIS(
-                                new InflaterInputStream(
-                                    new ByteArrayInputStream(deflated), inflater),
-                                baos2,
-                                buf);
-                            byte[] data1 = baos2.toByteArray();
-                            assertEquals(data.length, data1.length);
-                            assertArrayEquals(data, data1);
-                            return new Tuple(
-                                inflater.avail_in,
-                                inflater.avail_out,
-                                inflater.total_in,
-                                inflater.total_out);
-                          }))
-                  .reduce(
-                      (x, y) -> {
-                        assertEquals(y, x);
-                        return x;
-                      });
+      c.good.stream().map(uncheckedFunction(w -> {
+        ByteArrayOutputStream baos2 = new ByteArrayOutputStream();
+        Inflater inflater = new Inflater(w);
+        readIS(new InflaterInputStream(new ByteArrayInputStream(deflated), inflater), baos2, buf);
+        byte[] data1 = baos2.toByteArray();
+        assertEquals(data.length, data1.length);
+        assertArrayEquals(data, data1);
+        return new Tuple(inflater.avail_in, inflater.avail_out, inflater.total_in,
+            inflater.total_out);
+      })).reduce((x, y) -> {
+        assertEquals(y, x);
+        return x;
+      });
 
-              c.bad.forEach(
-                  uncheckedConsumer(
-                      w -> {
-                        ByteArrayOutputStream baos2 = new ByteArrayOutputStream();
-                        Inflater inflater = new Inflater(w);
-                        assertThrows(
-                            IOException.class,
-                            () ->
-                                readIS(
-                                    new InflaterInputStream(
-                                        new ByteArrayInputStream(deflated), inflater),
-                                    baos2,
-                                    buf));
-                      }));
-            }));
+      c.bad.forEach(uncheckedConsumer(w -> {
+        ByteArrayOutputStream baos2 = new ByteArrayOutputStream();
+        Inflater inflater = new Inflater(w);
+        assertThrows(IOException.class,
+            () -> readIS(new InflaterInputStream(new ByteArrayInputStream(deflated), inflater),
+                baos2, buf));
+      }));
+    }));
   }
 
   @Test
   public void testZStreamCanDetectDataTypeOfInput() {
-    cases.forEach(
-        c -> {
-          ZStream deflater = new ZStream();
+    cases.forEach(c -> {
+      ZStream deflater = new ZStream();
 
-          err = deflater.deflateInit(Z_BEST_SPEED, DEF_WBITS, 9, c.iflag);
-          assertEquals(Z_OK, err);
+      err = deflater.deflateInit(Z_BEST_SPEED, DEF_WBITS, 9, c.iflag);
+      assertEquals(Z_OK, err);
 
-          deflate(deflater, data, compr);
+      deflate(deflater, data, compr);
 
-          c.good.forEach(
-              w -> {
-                ZStream inflater = inflate(compr, uncompr, w);
-                int total_out = (int) inflater.total_out;
-                assertEquals(new String(data), new String(uncompr, 0, total_out));
-              });
+      c.good.forEach(w -> {
+        ZStream inflater = inflate(compr, uncompr, w);
+        int total_out = (int) inflater.total_out;
+        assertEquals(new String(data), new String(uncompr, 0, total_out));
+      });
 
-          c.bad.forEach(
-              w -> {
-                inflate_fail(compr, uncompr, w);
-              });
-        });
+      c.bad.forEach(w -> {
+        inflate_fail(compr, uncompr, w);
+      });
+    });
   }
 
   @Test
@@ -145,8 +120,10 @@ public class WrapperTypeTest {
     while (loop) {
       inflater.setOutput(uncompr);
       err = inflater.inflate(Z_NO_FLUSH);
-      if (err == Z_STREAM_END) loop = false;
-      else assertEquals(Z_OK, err);
+      if (err == Z_STREAM_END)
+        loop = false;
+      else
+        assertEquals(Z_OK, err);
     }
     err = inflater.end();
     assertEquals(Z_OK, err);
@@ -170,8 +147,10 @@ public class WrapperTypeTest {
     while (loop) {
       inflater.setOutput(uncompr);
       err = inflater.inflate(Z_NO_FLUSH);
-      if (err == Z_STREAM_END) loop = false;
-      else assertEquals(Z_OK, err);
+      if (err == Z_STREAM_END)
+        loop = false;
+      else
+        assertEquals(Z_OK, err);
     }
     err = inflater.end();
     assertEquals(Z_OK, err);
@@ -202,8 +181,10 @@ public class WrapperTypeTest {
     while (loop) {
       inflater.setOutput(uncompr);
       err = inflater.inflate(Z_NO_FLUSH);
-      if (err == Z_STREAM_END) loop = false;
-      else assertEquals(Z_OK, err);
+      if (err == Z_STREAM_END)
+        loop = false;
+      else
+        assertEquals(Z_OK, err);
     }
     err = inflater.end();
     assertEquals(Z_OK, err);
@@ -223,7 +204,8 @@ public class WrapperTypeTest {
     while (loop) {
       inflater.setOutput(uncompr);
       err = inflater.inflate(Z_NO_FLUSH);
-      if (err == Z_STREAM_END) loop = false;
+      if (err == Z_STREAM_END)
+        loop = false;
       else {
         assertEquals(Z_DATA_ERROR, err);
         loop = false;
@@ -258,12 +240,18 @@ public class WrapperTypeTest {
 
     @Override
     public boolean equals(Object obj) {
-      if (!(obj instanceof Tuple)) return false;
-      else if (a != ((Tuple) obj).a) return false;
-      else if (b != ((Tuple) obj).b) return false;
-      else if (c != ((Tuple) obj).c) return false;
-      else if (d != ((Tuple) obj).d) return false;
-      else return true;
+      if (!(obj instanceof Tuple))
+        return false;
+      else if (a != ((Tuple) obj).a)
+        return false;
+      else if (b != ((Tuple) obj).b)
+        return false;
+      else if (c != ((Tuple) obj).c)
+        return false;
+      else if (d != ((Tuple) obj).d)
+        return false;
+      else
+        return true;
     }
 
     @Override

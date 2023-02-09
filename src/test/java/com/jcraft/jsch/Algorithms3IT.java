@@ -37,20 +37,18 @@ public class Algorithms3IT {
   private static final TestLogger jschLogger = TestLoggerFactory.getTestLogger(JSch.class);
   private static final TestLogger sshdLogger = TestLoggerFactory.getTestLogger(Algorithms3IT.class);
 
-  @TempDir public Path tmpDir;
+  @TempDir
+  public Path tmpDir;
   private Path in;
   private Path out;
   private String hash;
   private Slf4jLogConsumer sshdLogConsumer;
 
   @Container
-  public GenericContainer<?> sshd =
-      new GenericContainer<>(
-              new ImageFromDockerfile()
-                  .withFileFromClasspath("dropbear_rsa_host_key", "docker/dropbear_rsa_host_key")
-                  .withFileFromClasspath("authorized_keys", "docker/authorized_keys")
-                  .withFileFromClasspath("Dockerfile", "docker/Dockerfile.dropbear"))
-          .withExposedPorts(22);
+  public GenericContainer<?> sshd = new GenericContainer<>(new ImageFromDockerfile()
+      .withFileFromClasspath("dropbear_rsa_host_key", "docker/dropbear_rsa_host_key")
+      .withFileFromClasspath("authorized_keys", "docker/authorized_keys")
+      .withFileFromClasspath("Dockerfile", "docker/Dockerfile.dropbear")).withExposedPorts(22);
 
   @BeforeAll
   public static void beforeAll() {
@@ -153,11 +151,9 @@ public class Algorithms3IT {
   }
 
   private void printInfo() {
-    jschLogger.getAllLoggingEvents().stream()
-        .map(LoggingEvent::getFormattedMessage)
+    jschLogger.getAllLoggingEvents().stream().map(LoggingEvent::getFormattedMessage)
         .forEach(System.out::println);
-    sshdLogger.getAllLoggingEvents().stream()
-        .map(LoggingEvent::getFormattedMessage)
+    sshdLogger.getAllLoggingEvents().stream().map(LoggingEvent::getFormattedMessage)
         .forEach(System.out::println);
     System.out.println("");
     System.out.println("");
@@ -165,11 +161,8 @@ public class Algorithms3IT {
   }
 
   private void checkLogs(String expected) {
-    Optional<String> actualJsch =
-        jschLogger.getAllLoggingEvents().stream()
-            .map(LoggingEvent::getFormattedMessage)
-            .filter(msg -> msg.matches(expected))
-            .findFirst();
+    Optional<String> actualJsch = jschLogger.getAllLoggingEvents().stream()
+        .map(LoggingEvent::getFormattedMessage).filter(msg -> msg.matches(expected)).findFirst();
     try {
       assertTrue(actualJsch.isPresent(), () -> "JSch: " + expected);
     } catch (AssertionError e) {
