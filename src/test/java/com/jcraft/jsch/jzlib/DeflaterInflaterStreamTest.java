@@ -79,9 +79,7 @@ public class DeflaterInflaterStreamTest {
 
       ByteArrayOutputStream baos2 = new ByteArrayOutputStream();
       Inflater inflater = new Inflater(JZlib.DEF_WBITS, true);
-      readIS(
-          new InflaterInputStream(new ByteArrayInputStream(baos.toByteArray()), inflater),
-          baos2,
+      readIS(new InflaterInputStream(new ByteArrayInputStream(baos.toByteArray()), inflater), baos2,
           buf);
       byte[] data2 = baos2.toByteArray();
 
@@ -94,33 +92,26 @@ public class DeflaterInflaterStreamTest {
   public void testDeflaterAndInflaterCanDeflateAndInflateNowrapDataWithMaxWbits() {
     byte[] buf = new byte[100];
 
-    Arrays.asList(
-            randombuf(10240),
-            "{\"color\":2,\"id\":\"EvLd4UG.CXjnk35o1e8LrYYQfHu0h.d*SqVJPoqmzXM::Ly::Snaps::Store::Commit\"}"
-                .getBytes())
-        .forEach(
-            uncheckedConsumer(
-                data1 -> {
-                  Deflater deflater =
-                      new Deflater(JZlib.Z_DEFAULT_COMPRESSION, JZlib.MAX_WBITS, true);
+    Arrays.asList(randombuf(10240),
+        "{\"color\":2,\"id\":\"EvLd4UG.CXjnk35o1e8LrYYQfHu0h.d*SqVJPoqmzXM::Ly::Snaps::Store::Commit\"}"
+            .getBytes())
+        .forEach(uncheckedConsumer(data1 -> {
+          Deflater deflater = new Deflater(JZlib.Z_DEFAULT_COMPRESSION, JZlib.MAX_WBITS, true);
 
-                  Inflater inflater = new Inflater(JZlib.MAX_WBITS, true);
+          Inflater inflater = new Inflater(JZlib.MAX_WBITS, true);
 
-                  ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                  DeflaterOutputStream gos = new DeflaterOutputStream(baos, deflater);
-                  readArray(data1, gos, buf);
-                  gos.close();
+          ByteArrayOutputStream baos = new ByteArrayOutputStream();
+          DeflaterOutputStream gos = new DeflaterOutputStream(baos, deflater);
+          readArray(data1, gos, buf);
+          gos.close();
 
-                  ByteArrayOutputStream baos2 = new ByteArrayOutputStream();
-                  readIS(
-                      new InflaterInputStream(
-                          new ByteArrayInputStream(baos.toByteArray()), inflater),
-                      baos2,
-                      buf);
-                  byte[] data2 = baos2.toByteArray();
+          ByteArrayOutputStream baos2 = new ByteArrayOutputStream();
+          readIS(new InflaterInputStream(new ByteArrayInputStream(baos.toByteArray()), inflater),
+              baos2, buf);
+          byte[] data2 = baos2.toByteArray();
 
-                  assertEquals(data1.length, data2.length);
-                  assertArrayEquals(data1, data2);
-                }));
+          assertEquals(data1.length, data2.length);
+          assertArrayEquals(data1, data2);
+        }));
   }
 }

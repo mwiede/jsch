@@ -75,7 +75,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <skipITs>true</skipITs>
-        <junixsocket.version>2.6.1</junixsocket.version>
+        <junixsocket.version>2.6.2</junixsocket.version>
         <jna.version>5.13.0</jna.version>
         <log4j.version>2.19.0</log4j.version>
     </properties>
@@ -101,7 +101,7 @@
         <dependency>
             <groupId>com.kohlschutter</groupId>
             <artifactId>compiler-annotations</artifactId>
-            <version>1.5.1</version>
+            <version>1.5.2</version>
             <optional>true</optional>
         </dependency>
         <dependency>
@@ -509,6 +509,26 @@
                 <artifactId>maven-dependency-plugin</artifactId>
                 <version>3.5.0</version>
             </plugin>
+            <plugin>
+                <groupId>net.revelc.code.formatter</groupId>
+                <artifactId>formatter-maven-plugin</artifactId>
+                <version>2.22.0</version>
+                <configuration>
+                    <configFile>${project.basedir}/eclipse-java-google-style.xml</configFile>
+                    <encoding>UTF-8</encoding>
+                    <directories>
+                        <directory>${project.build.sourceDirectory}</directory>
+                        <directory>${project.build.testSourceDirectory}</directory>
+                        <directory>${project.basedir}/examples</directory>
+                        <directory>${project.basedir}/src/main/java9</directory>
+                        <directory>${project.basedir}/src/main/java10</directory>
+                        <directory>${project.basedir}/src/main/java11</directory>
+                        <directory>${project.basedir}/src/main/java15</directory>
+                        <directory>${project.basedir}/src/main/java16</directory>
+                        <directory>${project.basedir}/src/main/java-templates</directory>
+                    </directories>
+                </configuration>
+            </plugin>
         </plugins>
     </build>
     <profiles>
@@ -608,6 +628,86 @@
                                 </path>
                             </annotationProcessorPaths>
                         </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <profile>
+            <id>format</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>net.revelc.code.formatter</groupId>
+                        <artifactId>formatter-maven-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>format</id>
+                                <goals>
+                                    <goal>format</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <profile>
+            <id>formatvalidation</id>
+            <activation>
+                <jdk>[11,)</jdk>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>net.revelc.code.formatter</groupId>
+                        <artifactId>formatter-maven-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <phase>verify</phase>
+                                <goals>
+                                    <goal>validate</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <profile>
+            <id>checkstyle</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-checkstyle-plugin</artifactId>
+                        <version>3.2.1</version>
+                        <configuration>
+                            <encoding>UTF-8</encoding>
+                            <failOnViolation>true</failOnViolation>
+                            <logViolationsToConsole>true</logViolationsToConsole>
+                            <violationSeverity>warning</violationSeverity>
+                            <configLocation>google_checks.xml</configLocation>
+                            <sourceDirectories>
+                                <sourceDirectory>${project.build.sourceDirectory}</sourceDirectory>
+                                <sourceDirectory>${project.build.testSourceDirectory}</sourceDirectory>
+                                <sourceDirectory>${project.basedir}/examples</sourceDirectory>
+                                <sourceDirectory>${project.basedir}/src/main/java9</sourceDirectory>
+                                <sourceDirectory>${project.basedir}/src/main/java10</sourceDirectory>
+                                <sourceDirectory>${project.basedir}/src/main/java11</sourceDirectory>
+                                <sourceDirectory>${project.basedir}/src/main/java15</sourceDirectory>
+                                <sourceDirectory>${project.basedir}/src/main/java16</sourceDirectory>
+                                <sourceDirectory>${project.basedir}/src/main/java-templates</sourceDirectory>
+                            </sourceDirectories>
+                        </configuration>
+                        <executions>
+                            <execution>
+                                <id>validate</id>
+                                <phase>validate</phase>
+                                <goals>
+                                    <goal>check</goal>
+                                </goals>
+                            </execution>
+                        </executions>
                     </plugin>
                 </plugins>
             </build>

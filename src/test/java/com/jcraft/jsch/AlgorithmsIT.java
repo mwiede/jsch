@@ -44,36 +44,31 @@ public class AlgorithmsIT {
   private static final TestLogger jschLogger = TestLoggerFactory.getTestLogger(JSch.class);
   private static final TestLogger sshdLogger = TestLoggerFactory.getTestLogger(AlgorithmsIT.class);
 
-  @TempDir public Path tmpDir;
+  @TempDir
+  public Path tmpDir;
   private Path in;
   private Path out;
   private String hash;
   private Slf4jLogConsumer sshdLogConsumer;
 
   @Container
-  public GenericContainer<?> sshd =
-      new GenericContainer<>(
-              new ImageFromDockerfile()
-                  .withFileFromClasspath("ssh_host_rsa_key", "docker/ssh_host_rsa_key")
-                  .withFileFromClasspath("ssh_host_rsa_key.pub", "docker/ssh_host_rsa_key.pub")
-                  .withFileFromClasspath("ssh_host_ecdsa256_key", "docker/ssh_host_ecdsa256_key")
-                  .withFileFromClasspath(
-                      "ssh_host_ecdsa256_key.pub", "docker/ssh_host_ecdsa256_key.pub")
-                  .withFileFromClasspath("ssh_host_ecdsa384_key", "docker/ssh_host_ecdsa384_key")
-                  .withFileFromClasspath(
-                      "ssh_host_ecdsa384_key.pub", "docker/ssh_host_ecdsa384_key.pub")
-                  .withFileFromClasspath("ssh_host_ecdsa521_key", "docker/ssh_host_ecdsa521_key")
-                  .withFileFromClasspath(
-                      "ssh_host_ecdsa521_key.pub", "docker/ssh_host_ecdsa521_key.pub")
-                  .withFileFromClasspath("ssh_host_ed25519_key", "docker/ssh_host_ed25519_key")
-                  .withFileFromClasspath(
-                      "ssh_host_ed25519_key.pub", "docker/ssh_host_ed25519_key.pub")
-                  .withFileFromClasspath("ssh_host_dsa_key", "docker/ssh_host_dsa_key")
-                  .withFileFromClasspath("ssh_host_dsa_key.pub", "docker/ssh_host_dsa_key.pub")
-                  .withFileFromClasspath("sshd_config", "docker/sshd_config")
-                  .withFileFromClasspath("authorized_keys", "docker/authorized_keys")
-                  .withFileFromClasspath("Dockerfile", "docker/Dockerfile"))
-          .withExposedPorts(22);
+  public GenericContainer<?> sshd = new GenericContainer<>(
+      new ImageFromDockerfile().withFileFromClasspath("ssh_host_rsa_key", "docker/ssh_host_rsa_key")
+          .withFileFromClasspath("ssh_host_rsa_key.pub", "docker/ssh_host_rsa_key.pub")
+          .withFileFromClasspath("ssh_host_ecdsa256_key", "docker/ssh_host_ecdsa256_key")
+          .withFileFromClasspath("ssh_host_ecdsa256_key.pub", "docker/ssh_host_ecdsa256_key.pub")
+          .withFileFromClasspath("ssh_host_ecdsa384_key", "docker/ssh_host_ecdsa384_key")
+          .withFileFromClasspath("ssh_host_ecdsa384_key.pub", "docker/ssh_host_ecdsa384_key.pub")
+          .withFileFromClasspath("ssh_host_ecdsa521_key", "docker/ssh_host_ecdsa521_key")
+          .withFileFromClasspath("ssh_host_ecdsa521_key.pub", "docker/ssh_host_ecdsa521_key.pub")
+          .withFileFromClasspath("ssh_host_ed25519_key", "docker/ssh_host_ed25519_key")
+          .withFileFromClasspath("ssh_host_ed25519_key.pub", "docker/ssh_host_ed25519_key.pub")
+          .withFileFromClasspath("ssh_host_dsa_key", "docker/ssh_host_dsa_key")
+          .withFileFromClasspath("ssh_host_dsa_key.pub", "docker/ssh_host_dsa_key.pub")
+          .withFileFromClasspath("sshd_config", "docker/sshd_config")
+          .withFileFromClasspath("authorized_keys", "docker/authorized_keys")
+          .withFileFromClasspath("Dockerfile", "docker/Dockerfile"))
+      .withExposedPorts(22);
 
   @BeforeAll
   public static void beforeAll() {
@@ -138,21 +133,11 @@ public class AlgorithmsIT {
   }
 
   @ParameterizedTest
-  @ValueSource(
-      strings = {
-        "curve25519-sha256",
-        "curve25519-sha256@libssh.org",
-        "ecdh-sha2-nistp521",
-        "ecdh-sha2-nistp384",
-        "ecdh-sha2-nistp256",
-        "diffie-hellman-group18-sha512",
-        "diffie-hellman-group16-sha512",
-        "diffie-hellman-group14-sha256",
-        "diffie-hellman-group-exchange-sha256",
-        "diffie-hellman-group-exchange-sha1",
-        "diffie-hellman-group14-sha1",
-        "diffie-hellman-group1-sha1"
-      })
+  @ValueSource(strings = {"curve25519-sha256", "curve25519-sha256@libssh.org", "ecdh-sha2-nistp521",
+      "ecdh-sha2-nistp384", "ecdh-sha2-nistp256", "diffie-hellman-group18-sha512",
+      "diffie-hellman-group16-sha512", "diffie-hellman-group14-sha256",
+      "diffie-hellman-group-exchange-sha256", "diffie-hellman-group-exchange-sha1",
+      "diffie-hellman-group14-sha1", "diffie-hellman-group1-sha1"})
   public void testKEXs(String kex) throws Exception {
     JSch ssh = createRSAIdentity();
     Session session = createSession(ssh);
@@ -164,19 +149,12 @@ public class AlgorithmsIT {
   }
 
   @ParameterizedTest
-  @CsvSource(
-      value = {
-        "diffie-hellman-group-exchange-sha256,2048",
-        "diffie-hellman-group-exchange-sha256,3072",
-        "diffie-hellman-group-exchange-sha256,4096",
-        "diffie-hellman-group-exchange-sha256,6144",
-        "diffie-hellman-group-exchange-sha256,8192",
-        "diffie-hellman-group-exchange-sha1,2048",
-        "diffie-hellman-group-exchange-sha1,3072",
-        "diffie-hellman-group-exchange-sha1,4096",
-        "diffie-hellman-group-exchange-sha1,6144",
-        "diffie-hellman-group-exchange-sha1,8192"
-      })
+  @CsvSource(value = {"diffie-hellman-group-exchange-sha256,2048",
+      "diffie-hellman-group-exchange-sha256,3072", "diffie-hellman-group-exchange-sha256,4096",
+      "diffie-hellman-group-exchange-sha256,6144", "diffie-hellman-group-exchange-sha256,8192",
+      "diffie-hellman-group-exchange-sha1,2048", "diffie-hellman-group-exchange-sha1,3072",
+      "diffie-hellman-group-exchange-sha1,4096", "diffie-hellman-group-exchange-sha1,6144",
+      "diffie-hellman-group-exchange-sha1,8192"})
   public void testDHGEXSizes(String kex, String size) throws Exception {
     JSch ssh = createRSAIdentity();
     Session session = createSession(ssh);
@@ -296,41 +274,19 @@ public class AlgorithmsIT {
   }
 
   @ParameterizedTest
-  @CsvSource(
-      value = {
-        "chacha20-poly1305@openssh.com,none",
-        "chacha20-poly1305@openssh.com,zlib@openssh.com",
-        "aes256-gcm@openssh.com,none",
-        "aes256-gcm@openssh.com,zlib@openssh.com",
-        "aes128-gcm@openssh.com,none",
-        "aes128-gcm@openssh.com,zlib@openssh.com",
-        "aes256-ctr,none",
-        "aes256-ctr,zlib@openssh.com",
-        "aes192-ctr,none",
-        "aes192-ctr,zlib@openssh.com",
-        "aes128-ctr,none",
-        "aes128-ctr,zlib@openssh.com",
-        "aes256-cbc,none",
-        "aes256-cbc,zlib@openssh.com",
-        "aes192-cbc,none",
-        "aes192-cbc,zlib@openssh.com",
-        "aes128-cbc,none",
-        "aes128-cbc,zlib@openssh.com",
-        "3des-cbc,none",
-        "3des-cbc,zlib@openssh.com",
-        "blowfish-cbc,none",
-        "blowfish-cbc,zlib@openssh.com",
-        "arcfour,none",
-        "arcfour,zlib@openssh.com",
-        "arcfour256,none",
-        "arcfour256,zlib@openssh.com",
-        "arcfour128,none",
-        "arcfour128,zlib@openssh.com",
-        "rijndael-cbc@lysator.liu.se,none",
-        "rijndael-cbc@lysator.liu.se,zlib@openssh.com",
-        "cast128-cbc,none",
-        "cast128-cbc,zlib@openssh.com"
-      })
+  @CsvSource(value = {"chacha20-poly1305@openssh.com,none",
+      "chacha20-poly1305@openssh.com,zlib@openssh.com", "aes256-gcm@openssh.com,none",
+      "aes256-gcm@openssh.com,zlib@openssh.com", "aes128-gcm@openssh.com,none",
+      "aes128-gcm@openssh.com,zlib@openssh.com", "aes256-ctr,none", "aes256-ctr,zlib@openssh.com",
+      "aes192-ctr,none", "aes192-ctr,zlib@openssh.com", "aes128-ctr,none",
+      "aes128-ctr,zlib@openssh.com", "aes256-cbc,none", "aes256-cbc,zlib@openssh.com",
+      "aes192-cbc,none", "aes192-cbc,zlib@openssh.com", "aes128-cbc,none",
+      "aes128-cbc,zlib@openssh.com", "3des-cbc,none", "3des-cbc,zlib@openssh.com",
+      "blowfish-cbc,none", "blowfish-cbc,zlib@openssh.com", "arcfour,none",
+      "arcfour,zlib@openssh.com", "arcfour256,none", "arcfour256,zlib@openssh.com",
+      "arcfour128,none", "arcfour128,zlib@openssh.com", "rijndael-cbc@lysator.liu.se,none",
+      "rijndael-cbc@lysator.liu.se,zlib@openssh.com", "cast128-cbc,none",
+      "cast128-cbc,zlib@openssh.com"})
   public void testCiphers(String cipher, String compression) throws Exception {
     JSch ssh = createRSAIdentity();
     Session session = createSession(ssh);
@@ -347,39 +303,20 @@ public class AlgorithmsIT {
   }
 
   @ParameterizedTest
-  @CsvSource(
-      value = {
-        "hmac-sha2-512-etm@openssh.com,none",
-        "hmac-sha2-512-etm@openssh.com,zlib@openssh.com",
-        "hmac-sha2-256-etm@openssh.com,none",
-        "hmac-sha2-256-etm@openssh.com,zlib@openssh.com",
-        "hmac-sha1-etm@openssh.com,none",
-        "hmac-sha1-etm@openssh.com,zlib@openssh.com",
-        "hmac-sha1-96-etm@openssh.com,none",
-        "hmac-sha1-96-etm@openssh.com,zlib@openssh.com",
-        "hmac-md5-etm@openssh.com,none",
-        "hmac-md5-etm@openssh.com,zlib@openssh.com",
-        "hmac-md5-96-etm@openssh.com,none",
-        "hmac-md5-96-etm@openssh.com,zlib@openssh.com",
-        "hmac-sha2-512,none",
-        "hmac-sha2-512,zlib@openssh.com",
-        "hmac-sha2-256,none",
-        "hmac-sha2-256,zlib@openssh.com",
-        "hmac-sha1,none",
-        "hmac-sha1,zlib@openssh.com",
-        "hmac-sha1-96,none",
-        "hmac-sha1-96,zlib@openssh.com",
-        "hmac-md5,none",
-        "hmac-md5,zlib@openssh.com",
-        "hmac-md5-96,none",
-        "hmac-md5-96,zlib@openssh.com",
-        "hmac-ripemd160,none",
-        "hmac-ripemd160,zlib@openssh.com",
-        "hmac-ripemd160@openssh.com,none",
-        "hmac-ripemd160@openssh.com,zlib@openssh.com",
-        "hmac-ripemd160-etm@openssh.com,none",
-        "hmac-ripemd160-etm@openssh.com,zlib@openssh.com"
-      })
+  @CsvSource(value = {"hmac-sha2-512-etm@openssh.com,none",
+      "hmac-sha2-512-etm@openssh.com,zlib@openssh.com", "hmac-sha2-256-etm@openssh.com,none",
+      "hmac-sha2-256-etm@openssh.com,zlib@openssh.com", "hmac-sha1-etm@openssh.com,none",
+      "hmac-sha1-etm@openssh.com,zlib@openssh.com", "hmac-sha1-96-etm@openssh.com,none",
+      "hmac-sha1-96-etm@openssh.com,zlib@openssh.com", "hmac-md5-etm@openssh.com,none",
+      "hmac-md5-etm@openssh.com,zlib@openssh.com", "hmac-md5-96-etm@openssh.com,none",
+      "hmac-md5-96-etm@openssh.com,zlib@openssh.com", "hmac-sha2-512,none",
+      "hmac-sha2-512,zlib@openssh.com", "hmac-sha2-256,none", "hmac-sha2-256,zlib@openssh.com",
+      "hmac-sha1,none", "hmac-sha1,zlib@openssh.com", "hmac-sha1-96,none",
+      "hmac-sha1-96,zlib@openssh.com", "hmac-md5,none", "hmac-md5,zlib@openssh.com",
+      "hmac-md5-96,none", "hmac-md5-96,zlib@openssh.com", "hmac-ripemd160,none",
+      "hmac-ripemd160,zlib@openssh.com", "hmac-ripemd160@openssh.com,none",
+      "hmac-ripemd160@openssh.com,zlib@openssh.com", "hmac-ripemd160-etm@openssh.com,none",
+      "hmac-ripemd160-etm@openssh.com,zlib@openssh.com"})
   public void testMACs(String mac, String compression) throws Exception {
     JSch ssh = createRSAIdentity();
     Session session = createSession(ssh);
@@ -432,15 +369,12 @@ public class AlgorithmsIT {
   }
 
   @ParameterizedTest
-  @ValueSource(
-      strings = {
-        "SHA512:EyyvMhUehzuELz3ySpqMw2UggtNqVmWnTSrQy2x4FLT7aF1lmqKC30oF+VUOLhvTmFHYaDLLN9UnpuGphIltKQ",
-        "SHA384:CMxHNJ/xzOfsmNqw4g6Be+ltVZX3ixtplON7nOspNlji0iMnWzM7X4SelzcpP7Ap",
-        "SHA256:iqNO6JDjrpga8TvgBKGReaKEnGoF/1csoxWp/DV5xJ0",
-        "SHA224:mJNHjKtQuiRHioFZIGj1g/+fcKMOsKmzcokU2w",
-        "SHA1:FO2EB514+YMk4jTFmNGOwscY2Pk",
-        "MD5:3b:50:5b:c5:53:66:8c:2c:98:9b:ee:3f:19:0a:ff:29"
-      })
+  @ValueSource(strings = {
+      "SHA512:EyyvMhUehzuELz3ySpqMw2UggtNqVmWnTSrQy2x4FLT7aF1lmqKC30oF+VUOLhvTmFHYaDLLN9UnpuGphIltKQ",
+      "SHA384:CMxHNJ/xzOfsmNqw4g6Be+ltVZX3ixtplON7nOspNlji0iMnWzM7X4SelzcpP7Ap",
+      "SHA256:iqNO6JDjrpga8TvgBKGReaKEnGoF/1csoxWp/DV5xJ0",
+      "SHA224:mJNHjKtQuiRHioFZIGj1g/+fcKMOsKmzcokU2w", "SHA1:FO2EB514+YMk4jTFmNGOwscY2Pk",
+      "MD5:3b:50:5b:c5:53:66:8c:2c:98:9b:ee:3f:19:0a:ff:29"})
   public void testFingerprintHashes(String fingerprint) throws Exception {
     String[] split = fingerprint.split(":");
     String hash = split[0];
@@ -459,11 +393,8 @@ public class AlgorithmsIT {
     }
 
     String expected = String.format("RSA key fingerprint is %s.", fingerprint);
-    List<String> msgs =
-        userInfo.getMessages().stream()
-            .map(msg -> msg.split("\n"))
-            .flatMap(Arrays::stream)
-            .collect(toList());
+    List<String> msgs = userInfo.getMessages().stream().map(msg -> msg.split("\n"))
+        .flatMap(Arrays::stream).collect(toList());
     Optional<String> actual = msgs.stream().filter(msg -> msg.equals(expected)).findFirst();
 
     if (!actual.isPresent()) {
@@ -485,8 +416,8 @@ public class AlgorithmsIT {
   private JSch createECDSA256Identity() throws Exception {
     HostKey hostKey = readHostKey(getResourceFile("docker/ssh_host_ecdsa256_key.pub"));
     JSch ssh = new JSch();
-    ssh.addIdentity(
-        getResourceFile("docker/id_ecdsa256"), getResourceFile("docker/id_ecdsa256.pub"), null);
+    ssh.addIdentity(getResourceFile("docker/id_ecdsa256"),
+        getResourceFile("docker/id_ecdsa256.pub"), null);
     ssh.getHostKeyRepository().add(hostKey, null);
     return ssh;
   }
@@ -494,8 +425,8 @@ public class AlgorithmsIT {
   private JSch createECDSA384Identity() throws Exception {
     HostKey hostKey = readHostKey(getResourceFile("docker/ssh_host_ecdsa384_key.pub"));
     JSch ssh = new JSch();
-    ssh.addIdentity(
-        getResourceFile("docker/id_ecdsa384"), getResourceFile("docker/id_ecdsa384.pub"), null);
+    ssh.addIdentity(getResourceFile("docker/id_ecdsa384"),
+        getResourceFile("docker/id_ecdsa384.pub"), null);
     ssh.getHostKeyRepository().add(hostKey, null);
     return ssh;
   }
@@ -503,8 +434,8 @@ public class AlgorithmsIT {
   private JSch createECDSA521Identity() throws Exception {
     HostKey hostKey = readHostKey(getResourceFile("docker/ssh_host_ecdsa521_key.pub"));
     JSch ssh = new JSch();
-    ssh.addIdentity(
-        getResourceFile("docker/id_ecdsa521"), getResourceFile("docker/id_ecdsa521.pub"), null);
+    ssh.addIdentity(getResourceFile("docker/id_ecdsa521"),
+        getResourceFile("docker/id_ecdsa521.pub"), null);
     ssh.getHostKeyRepository().add(hostKey, null);
     return ssh;
   }
@@ -520,8 +451,8 @@ public class AlgorithmsIT {
   private JSch createEd25519Identity() throws Exception {
     HostKey hostKey = readHostKey(getResourceFile("docker/ssh_host_ed25519_key.pub"));
     JSch ssh = new JSch();
-    ssh.addIdentity(
-        getResourceFile("docker/id_ed25519"), getResourceFile("docker/id_ed25519.pub"), null);
+    ssh.addIdentity(getResourceFile("docker/id_ed25519"), getResourceFile("docker/id_ed25519.pub"),
+        null);
     ssh.getHostKeyRepository().add(hostKey, null);
     return ssh;
   }
@@ -562,11 +493,9 @@ public class AlgorithmsIT {
   }
 
   private void printInfo() {
-    jschLogger.getAllLoggingEvents().stream()
-        .map(LoggingEvent::getFormattedMessage)
+    jschLogger.getAllLoggingEvents().stream().map(LoggingEvent::getFormattedMessage)
         .forEach(System.out::println);
-    sshdLogger.getAllLoggingEvents().stream()
-        .map(LoggingEvent::getFormattedMessage)
+    sshdLogger.getAllLoggingEvents().stream().map(LoggingEvent::getFormattedMessage)
         .forEach(System.out::println);
     System.out.println("");
     System.out.println("");
@@ -574,18 +503,15 @@ public class AlgorithmsIT {
   }
 
   private void checkLogs(String expected) {
-    Optional<String> actualJsch =
-        jschLogger.getAllLoggingEvents().stream()
-            .map(LoggingEvent::getFormattedMessage)
-            .filter(msg -> msg.matches(expected))
-            .findFirst();
+    Optional<String> actualJsch = jschLogger.getAllLoggingEvents().stream()
+        .map(LoggingEvent::getFormattedMessage).filter(msg -> msg.matches(expected)).findFirst();
     // Skip OpenSSH log checks, as log output from Docker falls behind and these assertions
     // frequently run before they are output
     // Optional<String> actualSshd =
-    //     sshdLogger.getAllLoggingEvents().stream()
-    //         .map(LoggingEvent::getFormattedMessage)
-    //         .filter(msg -> msg.matches("STDERR: debug1: " + expected))
-    //         .findFirst();
+    // sshdLogger.getAllLoggingEvents().stream()
+    // .map(LoggingEvent::getFormattedMessage)
+    // .filter(msg -> msg.matches("STDERR: debug1: " + expected))
+    // .findFirst();
     try {
       assertTrue(actualJsch.isPresent(), () -> "JSch: " + expected);
       // assertTrue(actualSshd.isPresent(), () -> "sshd: " + expected);

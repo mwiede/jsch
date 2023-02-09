@@ -1,12 +1,8 @@
-/* -*-mode:java; c-basic-offset:2; indent-tabs-mode:nil -*- */
 /**
- * This program will demonstrate SSH through jump hosts.
- * Suppose that you don't have direct accesses to host2 and host3.
- *   $ CLASSPATH=.:../build javac JumpHosts.java
- *   $ CLASSPATH=.:../build java JumpHosts usr1@host1 usr2@host2 usr3@host3
- * You will be asked passwords for those destinations,
- * and if everything works fine, you will get file lists of your home-directory
- * at host3.
+ * This program will demonstrate SSH through jump hosts. Suppose that you don't have direct accesses
+ * to host2 and host3. $ CLASSPATH=.:../build javac JumpHosts.java $ CLASSPATH=.:../build java
+ * JumpHosts usr1@host1 usr2@host2 usr3@host3 You will be asked passwords for those destinations,
+ * and if everything works fine, you will get file lists of your home-directory at host3.
  *
  */
 import com.jcraft.jsch.*;
@@ -14,12 +10,12 @@ import java.awt.*;
 import javax.swing.*;
 
 public class JumpHosts {
-  public static void main(String[] arg){
+  public static void main(String[] arg) {
 
-    try{
+    try {
       JSch jsch = new JSch();
 
-      if(arg.length <= 1){
+      if (arg.length <= 1) {
         System.out.println("This program expects more arguments.");
         System.exit(-1);
       }
@@ -29,95 +25,92 @@ public class JumpHosts {
 
       String host = arg[0];
       String user = host.substring(0, host.indexOf('@'));
-      host = host.substring(host.indexOf('@')+1);
+      host = host.substring(host.indexOf('@') + 1);
 
       sessions[0] = session = jsch.getSession(user, host, 22);
       session.setUserInfo(new MyUserInfo());
       session.connect();
-      System.out.println("The session has been established to "+user+"@"+host);
+      System.out.println("The session has been established to " + user + "@" + host);
 
-      for(int i = 1; i < arg.length; i++){
+      for (int i = 1; i < arg.length; i++) {
         host = arg[i];
         user = host.substring(0, host.indexOf('@'));
-        host = host.substring(host.indexOf('@')+1);
+        host = host.substring(host.indexOf('@') + 1);
 
         int assinged_port = session.setPortForwardingL(0, host, 22);
-        System.out.println("portforwarding: "+
-                           "localhost:"+assinged_port+" -> "+host+":"+22);
-        sessions[i] = session =
-          jsch.getSession(user, "127.0.0.1", assinged_port);
+        System.out
+            .println("portforwarding: " + "localhost:" + assinged_port + " -> " + host + ":" + 22);
+        sessions[i] = session = jsch.getSession(user, "127.0.0.1", assinged_port);
 
         session.setUserInfo(new MyUserInfo());
         session.setHostKeyAlias(host);
         session.connect();
-        System.out.println("The session has been established to "+
-                           user+"@"+host);
+        System.out.println("The session has been established to " + user + "@" + host);
       }
 
-      ChannelSftp sftp = (ChannelSftp)session.openChannel("sftp");
+      ChannelSftp sftp = (ChannelSftp) session.openChannel("sftp");
 
       sftp.connect();
-      sftp.ls(".",
-              new ChannelSftp.LsEntrySelector() {
-                public int select(ChannelSftp.LsEntry le) {
-                  System.out.println(le);
-                  return ChannelSftp.LsEntrySelector.CONTINUE;
-                }
-              });
+      sftp.ls(".", new ChannelSftp.LsEntrySelector() {
+        public int select(ChannelSftp.LsEntry le) {
+          System.out.println(le);
+          return ChannelSftp.LsEntrySelector.CONTINUE;
+        }
+      });
       sftp.disconnect();
 
-      for(int i = sessions.length-1; i >= 0; i--){
+      for (int i = sessions.length - 1; i >= 0; i--) {
         sessions[i].disconnect();
       }
-    }
-    catch(Exception e){
+    } catch (Exception e) {
       System.out.println(e);
     }
   }
 
-  public static class MyUserInfo implements UserInfo, UIKeyboardInteractive{
-    public String getPassword(){ return passwd; }
-    public boolean promptYesNo(String str){
-      Object[] options={ "yes", "no" };
-      int foo=JOptionPane.showOptionDialog(null,
-             str,
-             "Warning",
-             JOptionPane.DEFAULT_OPTION,
-             JOptionPane.WARNING_MESSAGE,
-             null, options, options[0]);
-       return foo==0;
+  public static class MyUserInfo implements UserInfo, UIKeyboardInteractive {
+    public String getPassword() {
+      return passwd;
+    }
+
+    public boolean promptYesNo(String str) {
+      Object[] options = {"yes", "no"};
+      int foo = JOptionPane.showOptionDialog(null, str, "Warning", JOptionPane.DEFAULT_OPTION,
+          JOptionPane.WARNING_MESSAGE, null, options, options[0]);
+      return foo == 0;
     }
 
     String passwd;
-    JTextField passwordField=(JTextField)new JPasswordField(20);
+    JTextField passwordField = (JTextField) new JPasswordField(20);
 
-    public String getPassphrase(){ return null; }
-    public boolean promptPassphrase(String message){ return true; }
-    public boolean promptPassword(String message){
-      Object[] ob={passwordField};
-      int result=
-          JOptionPane.showConfirmDialog(null, ob, message,
-                                        JOptionPane.OK_CANCEL_OPTION);
-      if(result==JOptionPane.OK_OPTION){
-        passwd=passwordField.getText();
-        return true;
-      }
-      else{ return false; }
+    public String getPassphrase() {
+      return null;
     }
-    public void showMessage(String message){
+
+    public boolean promptPassphrase(String message) {
+      return true;
+    }
+
+    public boolean promptPassword(String message) {
+      Object[] ob = {passwordField};
+      int result = JOptionPane.showConfirmDialog(null, ob, message, JOptionPane.OK_CANCEL_OPTION);
+      if (result == JOptionPane.OK_OPTION) {
+        passwd = passwordField.getText();
+        return true;
+      } else {
+        return false;
+      }
+    }
+
+    public void showMessage(String message) {
       JOptionPane.showMessageDialog(null, message);
     }
-    final GridBagConstraints gbc =
-      new GridBagConstraints(0,0,1,1,1,1,
-                             GridBagConstraints.NORTHWEST,
-                             GridBagConstraints.NONE,
-                             new Insets(0,0,0,0),0,0);
+
+    final GridBagConstraints gbc = new GridBagConstraints(0, 0, 1, 1, 1, 1,
+        GridBagConstraints.NORTHWEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0);
     private Container panel;
-    public String[] promptKeyboardInteractive(String destination,
-                                              String name,
-                                              String instruction,
-                                              String[] prompt,
-                                              boolean[] echo){
+
+    public String[] promptKeyboardInteractive(String destination, String name, String instruction,
+        String[] prompt, boolean[] echo) {
       panel = new JPanel();
       panel.setLayout(new GridBagLayout());
 
@@ -129,39 +122,34 @@ public class JumpHosts {
 
       gbc.gridwidth = GridBagConstraints.RELATIVE;
 
-      JTextField[] texts=new JTextField[prompt.length];
-      for(int i=0; i<prompt.length; i++){
+      JTextField[] texts = new JTextField[prompt.length];
+      for (int i = 0; i < prompt.length; i++) {
         gbc.fill = GridBagConstraints.NONE;
         gbc.gridx = 0;
         gbc.weightx = 1;
-        panel.add(new JLabel(prompt[i]),gbc);
+        panel.add(new JLabel(prompt[i]), gbc);
 
         gbc.gridx = 1;
         gbc.fill = GridBagConstraints.HORIZONTAL;
         gbc.weighty = 1;
-        if(echo[i]){
-          texts[i]=new JTextField(20);
-        }
-        else{
-          texts[i]=new JPasswordField(20);
+        if (echo[i]) {
+          texts[i] = new JTextField(20);
+        } else {
+          texts[i] = new JPasswordField(20);
         }
         panel.add(texts[i], gbc);
         gbc.gridy++;
       }
 
-      if(JOptionPane.showConfirmDialog(null, panel,
-                                       destination+": "+name,
-                                       JOptionPane.OK_CANCEL_OPTION,
-                                       JOptionPane.QUESTION_MESSAGE)
-         ==JOptionPane.OK_OPTION){
-        String[] response=new String[prompt.length];
-        for(int i=0; i<prompt.length; i++){
-          response[i]=texts[i].getText();
+      if (JOptionPane.showConfirmDialog(null, panel, destination + ": " + name,
+          JOptionPane.OK_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE) == JOptionPane.OK_OPTION) {
+        String[] response = new String[prompt.length];
+        for (int i = 0; i < prompt.length; i++) {
+          response[i] = texts[i].getText();
         }
         return response;
-      }
-      else{
-        return null;  // cancel
+      } else {
+        return null; // cancel
       }
     }
   }

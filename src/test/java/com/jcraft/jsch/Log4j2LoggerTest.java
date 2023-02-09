@@ -150,20 +150,14 @@ public class Log4j2LoggerTest {
     checkMessages(expectedMessages, expectedExceptions);
   }
 
-  private void checkMessages(
-      List<String> expectedMessages, List<Optional<Throwable>> expectedExceptions) {
+  private void checkMessages(List<String> expectedMessages,
+      List<Optional<Throwable>> expectedExceptions) {
     List<LogEvent> events = appender.getEvents();
     appender.clear();
-    List<String> actualMessages =
-        events.stream()
-            .map(LogEvent::getMessage)
-            .map(Message::getFormattedMessage)
-            .collect(Collectors.toList());
-    List<Optional<Throwable>> actualExceptions =
-        events.stream()
-            .map(LogEvent::getThrown)
-            .map(Optional::ofNullable)
-            .collect(Collectors.toList());
+    List<String> actualMessages = events.stream().map(LogEvent::getMessage)
+        .map(Message::getFormattedMessage).collect(Collectors.toList());
+    List<Optional<Throwable>> actualExceptions = events.stream().map(LogEvent::getThrown)
+        .map(Optional::ofNullable).collect(Collectors.toList());
     assertEquals(expectedMessages, actualMessages, "mismatch in logged messages");
     assertEquals(expectedExceptions, actualExceptions, "mismatch in logged exceptions");
   }

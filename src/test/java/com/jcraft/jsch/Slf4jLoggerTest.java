@@ -120,8 +120,8 @@ public class Slf4jLoggerTest {
     checkMessages(expectedMessages, expectedExceptions);
   }
 
-  private void checkMessages(
-      List<String> expectedMessages, List<Optional<Throwable>> expectedExceptions) {
+  private void checkMessages(List<String> expectedMessages,
+      List<Optional<Throwable>> expectedExceptions) {
     List<LoggingEvent> events = logger.getAllLoggingEvents();
     logger.clearAll();
     List<String> actualMessages =
