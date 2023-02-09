@@ -5,16 +5,9 @@ import java.util.logging.Logger;
 
 public class JulLogger implements com.jcraft.jsch.Logger {
 
-  private static final Logger stlogger = Logger.getLogger(JSch.class.getName());
-  private final Logger logger;
+  private static final Logger logger = Logger.getLogger(JSch.class.getName());
 
-  public JulLogger() {
-    this(stlogger);
-  }
-
-  JulLogger(Logger logger) {
-    this.logger = logger;
-  }
+  public JulLogger() {}
 
   @Override
   public boolean isEnabled(int level) {

@@ -2,6 +2,7 @@
 
 import asyncio
 import asyncssh
+import os
 import sys
 
 
@@ -11,8 +12,8 @@ class MySFTPServer(asyncssh.SFTPServer):
         super().__init__(chan, chroot=root)
 
 
-async def start_server():
-    await asyncssh.listen('', 22, sftp_factory=MySFTPServer, allow_scp=True,
+async def start_server(max_pktsize: int):
+    await asyncssh.listen('', 22, sftp_factory=MySFTPServer, allow_scp=True, max_pktsize=max_pktsize,
                           authorized_client_keys='/root/.ssh/authorized_keys',
                           server_host_keys=['/etc/ssh/ssh_host_ecdsa256_key', '/etc/ssh/ssh_host_ecdsa384_key',
                                             '/etc/ssh/ssh_host_ecdsa521_key', '/etc/ssh/ssh_host_ed448_key',
@@ -51,8 +52,9 @@ async def start_server():
 loop = asyncio.get_event_loop()
 
 try:
-    loop.run_until_complete(start_server())
-except (OSError, asyncssh.Error) as exc:
+    max_pktsize = int(os.getenv("MAX_PKTSIZE"))
+    loop.run_until_complete(start_server(max_pktsize))
+except (ValueError, OSError, asyncssh.Error) as exc:
     sys.exit('Error starting server: ' + str(exc))
 
 loop.run_forever()

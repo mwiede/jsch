@@ -1,29 +1,31 @@
 /* -*-mode:java; c-basic-offset:2; indent-tabs-mode:nil -*- */
 /*
- * Copyright (c) 2002-2018 ymnk, JCraft,Inc. All rights reserved.
- *
- * Redistribution and use in source and binary forms, with or without modification, are permitted
- * provided that the following conditions are met:
- *
- * 1. Redistributions of source code must retain the above copyright notice, this list of conditions
- * and the following disclaimer.
- *
- * 2. Redistributions in binary form must reproduce the above copyright notice, this list of
- * conditions and the following disclaimer in the documentation and/or other materials provided with
- * the distribution.
- *
- * 3. The names of the authors may not be used to endorse or promote products derived from this
- * software without specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED ``AS IS'' AND ANY EXPRESSED OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
- * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL JCRAFT, INC. OR ANY CONTRIBUTORS TO THIS SOFTWARE BE LIABLE FOR ANY
- * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
- * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR
- * BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
- * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- */
+Copyright (c) 2002-2018 ymnk, JCraft,Inc. All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met:
+
+  1. Redistributions of source code must retain the above copyright notice,
+     this list of conditions and the following disclaimer.
+
+  2. Redistributions in binary form must reproduce the above copyright 
+     notice, this list of conditions and the following disclaimer in 
+     the documentation and/or other materials provided with the distribution.
+
+  3. The names of the authors may not be used to endorse or promote products
+     derived from this software without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED ``AS IS'' AND ANY EXPRESSED OR IMPLIED WARRANTIES,
+INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND
+FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL JCRAFT,
+INC. OR ANY CONTRIBUTORS TO THIS SOFTWARE BE LIABLE FOR ANY DIRECT, INDIRECT,
+INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA,
+OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
+EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+*/
 
 package com.jcraft.jsch;
 
@@ -32,30 +34,22 @@ import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Vector;
 
-public class JSch {
+public class JSch{
   /**
    * The version number.
    */
-  public static final String VERSION = Version.getVersion();
+  public static final String VERSION  = Version.getVersion();
 
-  static Hashtable<String, String> config = new Hashtable<>();
-  static {
-    config.put("kex", Util.getSystemProperty("jsch.kex",
-        "curve25519-sha256,curve25519-sha256@libssh.org,ecdh-sha2-nistp256,ecdh-sha2-nistp384,ecdh-sha2-nistp521,diffie-hellman-group-exchange-sha256,diffie-hellman-group16-sha512,diffie-hellman-group18-sha512,diffie-hellman-group14-sha256"));
-    config.put("server_host_key", Util.getSystemProperty("jsch.server_host_key",
-        "ssh-ed25519,ecdsa-sha2-nistp256,ecdsa-sha2-nistp384,ecdsa-sha2-nistp521,rsa-sha2-512,rsa-sha2-256"));
-    config.put("prefer_known_host_key_types",
-        Util.getSystemProperty("jsch.prefer_known_host_key_types", "yes"));
-    config.put("enable_server_sig_algs",
-        Util.getSystemProperty("jsch.enable_server_sig_algs", "yes"));
-    config.put("cipher.s2c", Util.getSystemProperty("jsch.cipher",
-        "aes128-ctr,aes192-ctr,aes256-ctr,aes128-gcm@openssh.com,aes256-gcm@openssh.com"));
-    config.put("cipher.c2s", Util.getSystemProperty("jsch.cipher",
-        "aes128-ctr,aes192-ctr,aes256-ctr,aes128-gcm@openssh.com,aes256-gcm@openssh.com"));
-    config.put("mac.s2c", Util.getSystemProperty("jsch.mac",
-        "hmac-sha2-256-etm@openssh.com,hmac-sha2-512-etm@openssh.com,hmac-sha1-etm@openssh.com,hmac-sha2-256,hmac-sha2-512,hmac-sha1"));
-    config.put("mac.c2s", Util.getSystemProperty("jsch.mac",
-        "hmac-sha2-256-etm@openssh.com,hmac-sha2-512-etm@openssh.com,hmac-sha1-etm@openssh.com,hmac-sha2-256,hmac-sha2-512,hmac-sha1"));
+  static Hashtable<String, String> config=new Hashtable<>();
+  static{
+    config.put("kex", Util.getSystemProperty("jsch.kex", "curve25519-sha256,curve25519-sha256@libssh.org,ecdh-sha2-nistp256,ecdh-sha2-nistp384,ecdh-sha2-nistp521,diffie-hellman-group-exchange-sha256,diffie-hellman-group16-sha512,diffie-hellman-group18-sha512,diffie-hellman-group14-sha256"));
+    config.put("server_host_key", Util.getSystemProperty("jsch.server_host_key", "ssh-ed25519,ecdsa-sha2-nistp256,ecdsa-sha2-nistp384,ecdsa-sha2-nistp521,rsa-sha2-512,rsa-sha2-256"));
+    config.put("prefer_known_host_key_types", Util.getSystemProperty("jsch.prefer_known_host_key_types", "yes"));
+    config.put("enable_server_sig_algs", Util.getSystemProperty("jsch.enable_server_sig_algs", "yes"));
+    config.put("cipher.s2c", Util.getSystemProperty("jsch.cipher", "aes128-ctr,aes192-ctr,aes256-ctr,aes128-gcm@openssh.com,aes256-gcm@openssh.com"));
+    config.put("cipher.c2s", Util.getSystemProperty("jsch.cipher", "aes128-ctr,aes192-ctr,aes256-ctr,aes128-gcm@openssh.com,aes256-gcm@openssh.com"));
+    config.put("mac.s2c", Util.getSystemProperty("jsch.mac", "hmac-sha2-256-etm@openssh.com,hmac-sha2-512-etm@openssh.com,hmac-sha1-etm@openssh.com,hmac-sha2-256,hmac-sha2-512,hmac-sha1"));
+    config.put("mac.c2s", Util.getSystemProperty("jsch.mac", "hmac-sha2-256-etm@openssh.com,hmac-sha2-512-etm@openssh.com,hmac-sha1-etm@openssh.com,hmac-sha2-256,hmac-sha2-512,hmac-sha1"));
     config.put("compression.s2c", Util.getSystemProperty("jsch.compression", "none"));
     config.put("compression.c2s", Util.getSystemProperty("jsch.compression", "none"));
 
@@ -68,25 +62,44 @@ public class JSch {
 
     config.put("compression_level", Util.getSystemProperty("jsch.compression_level", "6"));
 
-    config.put("diffie-hellman-group-exchange-sha1", "com.jcraft.jsch.DHGEX1");
-    config.put("diffie-hellman-group1-sha1", "com.jcraft.jsch.DHG1");
-    config.put("diffie-hellman-group14-sha1", "com.jcraft.jsch.DHG14");
-    config.put("diffie-hellman-group-exchange-sha256", "com.jcraft.jsch.DHGEX256");
-    config.put("diffie-hellman-group-exchange-sha224@ssh.com", "com.jcraft.jsch.DHGEX224");
-    config.put("diffie-hellman-group-exchange-sha384@ssh.com", "com.jcraft.jsch.DHGEX384");
-    config.put("diffie-hellman-group-exchange-sha512@ssh.com", "com.jcraft.jsch.DHGEX512");
-    config.put("diffie-hellman-group14-sha256", "com.jcraft.jsch.DHG14256");
-    config.put("diffie-hellman-group15-sha512", "com.jcraft.jsch.DHG15");
-    config.put("diffie-hellman-group16-sha512", "com.jcraft.jsch.DHG16");
-    config.put("diffie-hellman-group17-sha512", "com.jcraft.jsch.DHG17");
-    config.put("diffie-hellman-group18-sha512", "com.jcraft.jsch.DHG18");
-    config.put("diffie-hellman-group14-sha256@ssh.com", "com.jcraft.jsch.DHG14256");
-    config.put("diffie-hellman-group14-sha224@ssh.com", "com.jcraft.jsch.DHG14224");
-    config.put("diffie-hellman-group15-sha256@ssh.com", "com.jcraft.jsch.DHG15256");
-    config.put("diffie-hellman-group15-sha384@ssh.com", "com.jcraft.jsch.DHG15384");
-    config.put("diffie-hellman-group16-sha512@ssh.com", "com.jcraft.jsch.DHG16");
-    config.put("diffie-hellman-group16-sha384@ssh.com", "com.jcraft.jsch.DHG16384");
-    config.put("diffie-hellman-group18-sha512@ssh.com", "com.jcraft.jsch.DHG18");
+    config.put("diffie-hellman-group-exchange-sha1", 
+                                "com.jcraft.jsch.DHGEX1");
+    config.put("diffie-hellman-group1-sha1", 
+                                "com.jcraft.jsch.DHG1");
+    config.put("diffie-hellman-group14-sha1", 
+               "com.jcraft.jsch.DHG14");
+    config.put("diffie-hellman-group-exchange-sha256", 
+               "com.jcraft.jsch.DHGEX256");
+    config.put("diffie-hellman-group-exchange-sha224@ssh.com", 
+               "com.jcraft.jsch.DHGEX224");
+    config.put("diffie-hellman-group-exchange-sha384@ssh.com", 
+               "com.jcraft.jsch.DHGEX384");
+    config.put("diffie-hellman-group-exchange-sha512@ssh.com", 
+               "com.jcraft.jsch.DHGEX512");
+    config.put("diffie-hellman-group14-sha256", 
+               "com.jcraft.jsch.DHG14256");
+    config.put("diffie-hellman-group15-sha512", 
+               "com.jcraft.jsch.DHG15");
+    config.put("diffie-hellman-group16-sha512", 
+               "com.jcraft.jsch.DHG16");
+    config.put("diffie-hellman-group17-sha512", 
+               "com.jcraft.jsch.DHG17");
+    config.put("diffie-hellman-group18-sha512", 
+               "com.jcraft.jsch.DHG18");
+    config.put("diffie-hellman-group14-sha256@ssh.com", 
+               "com.jcraft.jsch.DHG14256");
+    config.put("diffie-hellman-group14-sha224@ssh.com", 
+               "com.jcraft.jsch.DHG14224");
+    config.put("diffie-hellman-group15-sha256@ssh.com", 
+               "com.jcraft.jsch.DHG15256");
+    config.put("diffie-hellman-group15-sha384@ssh.com", 
+               "com.jcraft.jsch.DHG15384");
+    config.put("diffie-hellman-group16-sha512@ssh.com", 
+               "com.jcraft.jsch.DHG16");
+    config.put("diffie-hellman-group16-sha384@ssh.com", 
+               "com.jcraft.jsch.DHG16384");
+    config.put("diffie-hellman-group18-sha512@ssh.com", 
+               "com.jcraft.jsch.DHG18");
     config.put("ecdsa-sha2-nistp256", "com.jcraft.jsch.jce.SignatureECDSA256");
     config.put("ecdsa-sha2-nistp384", "com.jcraft.jsch.jce.SignatureECDSA384");
     config.put("ecdsa-sha2-nistp521", "com.jcraft.jsch.jce.SignatureECDSA521");
@@ -97,132 +110,141 @@ public class JSch {
 
     config.put("ecdh-sha2-nistp", "com.jcraft.jsch.jce.ECDHN");
 
-    config.put("curve25519-sha256", "com.jcraft.jsch.DH25519");
+    config.put("curve25519-sha256",            "com.jcraft.jsch.DH25519");
     config.put("curve25519-sha256@libssh.org", "com.jcraft.jsch.DH25519");
-    config.put("curve448-sha512", "com.jcraft.jsch.DH448");
+    config.put("curve448-sha512",              "com.jcraft.jsch.DH448");
 
-    config.put("dh", "com.jcraft.jsch.jce.DH");
-    config.put("3des-cbc", "com.jcraft.jsch.jce.TripleDESCBC");
-    config.put("blowfish-cbc", "com.jcraft.jsch.jce.BlowfishCBC");
-    config.put("hmac-sha1", "com.jcraft.jsch.jce.HMACSHA1");
-    config.put("hmac-sha1-96", "com.jcraft.jsch.jce.HMACSHA196");
-    config.put("hmac-sha2-256", "com.jcraft.jsch.jce.HMACSHA256");
-    config.put("hmac-sha2-512", "com.jcraft.jsch.jce.HMACSHA512");
-    config.put("hmac-md5", "com.jcraft.jsch.jce.HMACMD5");
-    config.put("hmac-md5-96", "com.jcraft.jsch.jce.HMACMD596");
-    config.put("hmac-sha1-etm@openssh.com", "com.jcraft.jsch.jce.HMACSHA1ETM");
-    config.put("hmac-sha1-96-etm@openssh.com", "com.jcraft.jsch.jce.HMACSHA196ETM");
-    config.put("hmac-sha2-256-etm@openssh.com", "com.jcraft.jsch.jce.HMACSHA256ETM");
-    config.put("hmac-sha2-512-etm@openssh.com", "com.jcraft.jsch.jce.HMACSHA512ETM");
-    config.put("hmac-md5-etm@openssh.com", "com.jcraft.jsch.jce.HMACMD5ETM");
-    config.put("hmac-md5-96-etm@openssh.com", "com.jcraft.jsch.jce.HMACMD596ETM");
-    config.put("hmac-sha256-2@ssh.com", "com.jcraft.jsch.jce.HMACSHA2562SSHCOM");
-    config.put("hmac-sha224@ssh.com", "com.jcraft.jsch.jce.HMACSHA224SSHCOM");
-    config.put("hmac-sha256@ssh.com", "com.jcraft.jsch.jce.HMACSHA256SSHCOM");
-    config.put("hmac-sha384@ssh.com", "com.jcraft.jsch.jce.HMACSHA384SSHCOM");
-    config.put("hmac-sha512@ssh.com", "com.jcraft.jsch.jce.HMACSHA512SSHCOM");
-    config.put("sha-1", "com.jcraft.jsch.jce.SHA1");
-    config.put("sha-224", "com.jcraft.jsch.jce.SHA224");
-    config.put("sha-256", "com.jcraft.jsch.jce.SHA256");
-    config.put("sha-384", "com.jcraft.jsch.jce.SHA384");
-    config.put("sha-512", "com.jcraft.jsch.jce.SHA512");
-    config.put("md5", "com.jcraft.jsch.jce.MD5");
-    config.put("sha1", "com.jcraft.jsch.jce.SHA1");
-    config.put("sha224", "com.jcraft.jsch.jce.SHA224");
-    config.put("sha256", "com.jcraft.jsch.jce.SHA256");
-    config.put("sha384", "com.jcraft.jsch.jce.SHA384");
-    config.put("sha512", "com.jcraft.jsch.jce.SHA512");
+    config.put("dh",            "com.jcraft.jsch.jce.DH");
+    config.put("3des-cbc",      "com.jcraft.jsch.jce.TripleDESCBC");
+    config.put("blowfish-cbc",  "com.jcraft.jsch.jce.BlowfishCBC");
+    config.put("hmac-sha1",     "com.jcraft.jsch.jce.HMACSHA1");
+    config.put("hmac-sha1-96",  "com.jcraft.jsch.jce.HMACSHA196");
+    config.put("hmac-sha2-256",  "com.jcraft.jsch.jce.HMACSHA256");
+    config.put("hmac-sha2-512",  "com.jcraft.jsch.jce.HMACSHA512");
+    config.put("hmac-md5",      "com.jcraft.jsch.jce.HMACMD5");
+    config.put("hmac-md5-96",   "com.jcraft.jsch.jce.HMACMD596");
+    config.put("hmac-sha1-etm@openssh.com",     "com.jcraft.jsch.jce.HMACSHA1ETM");
+    config.put("hmac-sha1-96-etm@openssh.com",  "com.jcraft.jsch.jce.HMACSHA196ETM");
+    config.put("hmac-sha2-256-etm@openssh.com",  "com.jcraft.jsch.jce.HMACSHA256ETM");
+    config.put("hmac-sha2-512-etm@openssh.com",  "com.jcraft.jsch.jce.HMACSHA512ETM");
+    config.put("hmac-md5-etm@openssh.com",      "com.jcraft.jsch.jce.HMACMD5ETM");
+    config.put("hmac-md5-96-etm@openssh.com",   "com.jcraft.jsch.jce.HMACMD596ETM");
+    config.put("hmac-sha256-2@ssh.com",  "com.jcraft.jsch.jce.HMACSHA2562SSHCOM");
+    config.put("hmac-sha224@ssh.com",  "com.jcraft.jsch.jce.HMACSHA224SSHCOM");
+    config.put("hmac-sha256@ssh.com",  "com.jcraft.jsch.jce.HMACSHA256SSHCOM");
+    config.put("hmac-sha384@ssh.com",  "com.jcraft.jsch.jce.HMACSHA384SSHCOM");
+    config.put("hmac-sha512@ssh.com",  "com.jcraft.jsch.jce.HMACSHA512SSHCOM");
+    config.put("sha-1",         "com.jcraft.jsch.jce.SHA1");
+    config.put("sha-224",       "com.jcraft.jsch.jce.SHA224");
+    config.put("sha-256",       "com.jcraft.jsch.jce.SHA256");
+    config.put("sha-384",       "com.jcraft.jsch.jce.SHA384");
+    config.put("sha-512",       "com.jcraft.jsch.jce.SHA512");
+    config.put("md5",           "com.jcraft.jsch.jce.MD5");
+    config.put("sha1",          "com.jcraft.jsch.jce.SHA1");
+    config.put("sha224",        "com.jcraft.jsch.jce.SHA224");
+    config.put("sha256",        "com.jcraft.jsch.jce.SHA256");
+    config.put("sha384",        "com.jcraft.jsch.jce.SHA384");
+    config.put("sha512",        "com.jcraft.jsch.jce.SHA512");
     config.put("signature.dss", "com.jcraft.jsch.jce.SignatureDSA");
-    config.put("ssh-rsa", "com.jcraft.jsch.jce.SignatureRSA");
-    config.put("rsa-sha2-256", "com.jcraft.jsch.jce.SignatureRSASHA256");
-    config.put("rsa-sha2-512", "com.jcraft.jsch.jce.SignatureRSASHA512");
-    config.put("ssh-rsa-sha224@ssh.com", "com.jcraft.jsch.jce.SignatureRSASHA224SSHCOM");
-    config.put("ssh-rsa-sha256@ssh.com", "com.jcraft.jsch.jce.SignatureRSASHA256SSHCOM");
-    config.put("ssh-rsa-sha384@ssh.com", "com.jcraft.jsch.jce.SignatureRSASHA384SSHCOM");
-    config.put("ssh-rsa-sha512@ssh.com", "com.jcraft.jsch.jce.SignatureRSASHA512SSHCOM");
-    config.put("keypairgen.dsa", "com.jcraft.jsch.jce.KeyPairGenDSA");
-    config.put("keypairgen.rsa", "com.jcraft.jsch.jce.KeyPairGenRSA");
+    config.put("ssh-rsa",       "com.jcraft.jsch.jce.SignatureRSA");
+    config.put("rsa-sha2-256",  "com.jcraft.jsch.jce.SignatureRSASHA256");
+    config.put("rsa-sha2-512",  "com.jcraft.jsch.jce.SignatureRSASHA512");
+    config.put("ssh-rsa-sha224@ssh.com",  "com.jcraft.jsch.jce.SignatureRSASHA224SSHCOM");
+    config.put("ssh-rsa-sha256@ssh.com",  "com.jcraft.jsch.jce.SignatureRSASHA256SSHCOM");
+    config.put("ssh-rsa-sha384@ssh.com",  "com.jcraft.jsch.jce.SignatureRSASHA384SSHCOM");
+    config.put("ssh-rsa-sha512@ssh.com",  "com.jcraft.jsch.jce.SignatureRSASHA512SSHCOM");
+    config.put("keypairgen.dsa",   "com.jcraft.jsch.jce.KeyPairGenDSA");
+    config.put("keypairgen.rsa",   "com.jcraft.jsch.jce.KeyPairGenRSA");
     config.put("keypairgen.ecdsa", "com.jcraft.jsch.jce.KeyPairGenECDSA");
-    config.put("random", "com.jcraft.jsch.jce.Random");
+    config.put("random",        "com.jcraft.jsch.jce.Random");
 
     config.put("hmac-ripemd160", "com.jcraft.jsch.bc.HMACRIPEMD160");
     config.put("hmac-ripemd160@openssh.com", "com.jcraft.jsch.bc.HMACRIPEMD160OpenSSH");
     config.put("hmac-ripemd160-etm@openssh.com", "com.jcraft.jsch.bc.HMACRIPEMD160ETM");
 
-    config.put("none", "com.jcraft.jsch.CipherNone");
+    config.put("none",           "com.jcraft.jsch.CipherNone");
 
-    config.put("aes128-gcm@openssh.com", "com.jcraft.jsch.jce.AES128GCM");
-    config.put("aes256-gcm@openssh.com", "com.jcraft.jsch.jce.AES256GCM");
+    config.put("aes128-gcm@openssh.com",    "com.jcraft.jsch.jce.AES128GCM");
+    config.put("aes256-gcm@openssh.com",    "com.jcraft.jsch.jce.AES256GCM");
 
-    config.put("aes128-cbc", "com.jcraft.jsch.jce.AES128CBC");
-    config.put("aes192-cbc", "com.jcraft.jsch.jce.AES192CBC");
-    config.put("aes256-cbc", "com.jcraft.jsch.jce.AES256CBC");
-    config.put("rijndael-cbc@lysator.liu.se", "com.jcraft.jsch.jce.AES256CBC");
+    config.put("aes128-cbc",    "com.jcraft.jsch.jce.AES128CBC");
+    config.put("aes192-cbc",    "com.jcraft.jsch.jce.AES192CBC");
+    config.put("aes256-cbc",    "com.jcraft.jsch.jce.AES256CBC");
+    config.put("rijndael-cbc@lysator.liu.se",    "com.jcraft.jsch.jce.AES256CBC");
 
     config.put("chacha20-poly1305@openssh.com", "com.jcraft.jsch.bc.ChaCha20Poly1305");
-    config.put("cast128-cbc", "com.jcraft.jsch.bc.CAST128CBC");
-    config.put("cast128-ctr", "com.jcraft.jsch.bc.CAST128CTR");
-    config.put("twofish128-cbc", "com.jcraft.jsch.bc.Twofish128CBC");
-    config.put("twofish192-cbc", "com.jcraft.jsch.bc.Twofish192CBC");
-    config.put("twofish256-cbc", "com.jcraft.jsch.bc.Twofish256CBC");
-    config.put("twofish-cbc", "com.jcraft.jsch.bc.Twofish256CBC");
-    config.put("twofish128-ctr", "com.jcraft.jsch.bc.Twofish128CTR");
-    config.put("twofish192-ctr", "com.jcraft.jsch.bc.Twofish192CTR");
-    config.put("twofish256-ctr", "com.jcraft.jsch.bc.Twofish256CTR");
-    config.put("seed-cbc@ssh.com", "com.jcraft.jsch.bc.SEEDCBC");
+    config.put("cast128-cbc",    "com.jcraft.jsch.bc.CAST128CBC");
+    config.put("cast128-ctr",    "com.jcraft.jsch.bc.CAST128CTR");
+    config.put("twofish128-cbc",    "com.jcraft.jsch.bc.Twofish128CBC");
+    config.put("twofish192-cbc",    "com.jcraft.jsch.bc.Twofish192CBC");
+    config.put("twofish256-cbc",    "com.jcraft.jsch.bc.Twofish256CBC");
+    config.put("twofish-cbc",    "com.jcraft.jsch.bc.Twofish256CBC");
+    config.put("twofish128-ctr",    "com.jcraft.jsch.bc.Twofish128CTR");
+    config.put("twofish192-ctr",    "com.jcraft.jsch.bc.Twofish192CTR");
+    config.put("twofish256-ctr",    "com.jcraft.jsch.bc.Twofish256CTR");
+    config.put("seed-cbc@ssh.com",    "com.jcraft.jsch.bc.SEEDCBC");
 
-    config.put("aes128-ctr", "com.jcraft.jsch.jce.AES128CTR");
-    config.put("aes192-ctr", "com.jcraft.jsch.jce.AES192CTR");
-    config.put("aes256-ctr", "com.jcraft.jsch.jce.AES256CTR");
-    config.put("3des-ctr", "com.jcraft.jsch.jce.TripleDESCTR");
-    config.put("blowfish-ctr", "com.jcraft.jsch.jce.BlowfishCTR");
-    config.put("arcfour", "com.jcraft.jsch.jce.ARCFOUR");
-    config.put("arcfour128", "com.jcraft.jsch.jce.ARCFOUR128");
-    config.put("arcfour256", "com.jcraft.jsch.jce.ARCFOUR256");
+    config.put("aes128-ctr",    "com.jcraft.jsch.jce.AES128CTR");
+    config.put("aes192-ctr",    "com.jcraft.jsch.jce.AES192CTR");
+    config.put("aes256-ctr",    "com.jcraft.jsch.jce.AES256CTR");
+    config.put("3des-ctr",      "com.jcraft.jsch.jce.TripleDESCTR");
+    config.put("blowfish-ctr",  "com.jcraft.jsch.jce.BlowfishCTR");
+    config.put("arcfour",      "com.jcraft.jsch.jce.ARCFOUR");
+    config.put("arcfour128",      "com.jcraft.jsch.jce.ARCFOUR128");
+    config.put("arcfour256",      "com.jcraft.jsch.jce.ARCFOUR256");
 
-    config.put("userauth.none", "com.jcraft.jsch.UserAuthNone");
-    config.put("userauth.password", "com.jcraft.jsch.UserAuthPassword");
-    config.put("userauth.keyboard-interactive", "com.jcraft.jsch.UserAuthKeyboardInteractive");
-    config.put("userauth.publickey", "com.jcraft.jsch.UserAuthPublicKey");
-    config.put("userauth.gssapi-with-mic", "com.jcraft.jsch.UserAuthGSSAPIWithMIC");
-    config.put("gssapi-with-mic.krb5", "com.jcraft.jsch.jgss.GSSContextKrb5");
+    config.put("userauth.none",    "com.jcraft.jsch.UserAuthNone");
+    config.put("userauth.password",    "com.jcraft.jsch.UserAuthPassword");
+    config.put("userauth.keyboard-interactive",    "com.jcraft.jsch.UserAuthKeyboardInteractive");
+    config.put("userauth.publickey",    "com.jcraft.jsch.UserAuthPublicKey");
+    config.put("userauth.gssapi-with-mic",    "com.jcraft.jsch.UserAuthGSSAPIWithMIC");
+    config.put("gssapi-with-mic.krb5",    "com.jcraft.jsch.jgss.GSSContextKrb5");
 
-    config.put("zlib", "com.jcraft.jsch.jzlib.Compression");
+    config.put("zlib",             "com.jcraft.jsch.jzlib.Compression");
     config.put("zlib@openssh.com", "com.jcraft.jsch.jzlib.Compression");
 
     config.put("pbkdf", "com.jcraft.jsch.jce.PBKDF");
+    config.put("pbkdf2-hmac-sha1", "com.jcraft.jsch.jce.PBKDF2HMACSHA1");
+    config.put("pbkdf2-hmac-sha224", "com.jcraft.jsch.jce.PBKDF2HMACSHA224");
+    config.put("pbkdf2-hmac-sha256", "com.jcraft.jsch.jce.PBKDF2HMACSHA256");
+    config.put("pbkdf2-hmac-sha384", "com.jcraft.jsch.jce.PBKDF2HMACSHA384");
+    config.put("pbkdf2-hmac-sha512", "com.jcraft.jsch.jce.PBKDF2HMACSHA512");
+    config.put("bcrypt", "com.jcraft.jsch.jbcrypt.JBCrypt");
+    config.put("argon2", "com.jcraft.jsch.bc.Argon2");
+    config.put("scrypt", "com.jcraft.jsch.bc.SCrypt");
 
-    if (JavaVersion.getVersion() >= 11) {
+    if(JavaVersion.getVersion()>=11){
       config.put("xdh", "com.jcraft.jsch.jce.XDH");
-    } else {
+    }
+    else{
       config.put("xdh", "com.jcraft.jsch.bc.XDH");
     }
 
-    if (JavaVersion.getVersion() >= 15) {
+    if(JavaVersion.getVersion()>=15){
       config.put("keypairgen.eddsa", "com.jcraft.jsch.jce.KeyPairGenEdDSA");
       config.put("ssh-ed25519", "com.jcraft.jsch.jce.SignatureEd25519");
       config.put("ssh-ed448", "com.jcraft.jsch.jce.SignatureEd448");
-    } else {
+    }
+    else{
       config.put("keypairgen.eddsa", "com.jcraft.jsch.bc.KeyPairGenEdDSA");
       config.put("ssh-ed25519", "com.jcraft.jsch.bc.SignatureEd25519");
       config.put("ssh-ed448", "com.jcraft.jsch.bc.SignatureEd448");
     }
+    config.put("keypairgen_fromprivate.eddsa", "com.jcraft.jsch.bc.KeyPairGenEdDSA");
 
-    config.put("StrictHostKeyChecking", "ask");
-    config.put("HashKnownHosts", "no");
+    config.put("StrictHostKeyChecking",  "ask");
+    config.put("HashKnownHosts",  "no");
 
-    config.put("PreferredAuthentications", Util.getSystemProperty("jsch.preferred_authentications",
-        "gssapi-with-mic,publickey,keyboard-interactive,password"));
-    config.put("PubkeyAcceptedAlgorithms", Util.getSystemProperty("jsch.client_pubkey",
-        "ssh-ed25519,ecdsa-sha2-nistp256,ecdsa-sha2-nistp384,ecdsa-sha2-nistp521,rsa-sha2-512,rsa-sha2-256"));
+    config.put("PreferredAuthentications", Util.getSystemProperty("jsch.preferred_authentications", "gssapi-with-mic,publickey,keyboard-interactive,password"));
+    config.put("PubkeyAcceptedAlgorithms", Util.getSystemProperty("jsch.client_pubkey", "ssh-ed25519,ecdsa-sha2-nistp256,ecdsa-sha2-nistp384,ecdsa-sha2-nistp521,rsa-sha2-512,rsa-sha2-256"));
+    config.put("enable_pubkey_auth_query", Util.getSystemProperty("jsch.enable_pubkey_auth_query", "yes"));
+    config.put("try_additional_pubkey_algorithms", Util.getSystemProperty("jsch.try_additional_pubkey_algorithms", "yes"));
+    config.put("enable_auth_none", Util.getSystemProperty("jsch.enable_auth_none", "yes"));
 
-    config.put("CheckCiphers",
-        Util.getSystemProperty("jsch.check_ciphers", "chacha20-poly1305@openssh.com"));
+    config.put("CheckCiphers", Util.getSystemProperty("jsch.check_ciphers", "chacha20-poly1305@openssh.com"));
     config.put("CheckMacs", Util.getSystemProperty("jsch.check_macs", ""));
-    config.put("CheckKexes", Util.getSystemProperty("jsch.check_kexes",
-        "curve25519-sha256,curve25519-sha256@libssh.org,curve448-sha512"));
-    config.put("CheckSignatures",
-        Util.getSystemProperty("jsch.check_signatures", "ssh-ed25519,ssh-ed448"));
+    config.put("CheckKexes", Util.getSystemProperty("jsch.check_kexes", "curve25519-sha256,curve25519-sha256@libssh.org,curve448-sha512"));
+    config.put("CheckSignatures", Util.getSystemProperty("jsch.check_signatures", "ssh-ed25519,ssh-ed448"));
     config.put("FingerprintHash", Util.getSystemProperty("jsch.fingerprint_hash", "sha256"));
 
     config.put("MaxAuthTries", Util.getSystemProperty("jsch.max_auth_tries", "6"));
@@ -231,30 +253,32 @@ public class JSch {
 
   private Vector<Session> sessionPool = new Vector<>();
 
-  private IdentityRepository defaultIdentityRepository = new LocalIdentityRepository(this);
+  private IdentityRepository defaultIdentityRepository =
+    new LocalIdentityRepository(this);
 
   private IdentityRepository identityRepository = defaultIdentityRepository;
 
   private ConfigRepository configRepository = null;
 
   /**
-   * Sets the <code>identityRepository</code>, which will be referred in the public key
-   * authentication.
+   * Sets the <code>identityRepository</code>, which will be referred
+   * in the public key authentication.
    *
-   * @param identityRepository if <code>null</code> is given, the default repository, which usually
-   *        refers to ~/.ssh/, will be used.
+   * @param identityRepository if <code>null</code> is given,
+   * the default repository, which usually refers to ~/.ssh/, will be used.
    *
    * @see #getIdentityRepository()
    */
-  public synchronized void setIdentityRepository(IdentityRepository identityRepository) {
-    if (identityRepository == null) {
+  public synchronized void setIdentityRepository(IdentityRepository identityRepository){
+    if(identityRepository == null){
       this.identityRepository = defaultIdentityRepository;
-    } else {
+    }
+    else{
       this.identityRepository = identityRepository;
     }
   }
 
-  public synchronized IdentityRepository getIdentityRepository() {
+  public synchronized IdentityRepository getIdentityRepository(){
     return this.identityRepository;
   }
 
@@ -266,30 +290,30 @@ public class JSch {
     this.configRepository = configRepository;
   }
 
-  private HostKeyRepository known_hosts = null;
+  private HostKeyRepository known_hosts=null;
 
-  static final Logger DEVNULL = new Logger() {
-    @Override
-    public boolean isEnabled(int level) {
-      return false;
-    }
-
-    @Override
-    public void log(int level, String message) {}
-  };
-  static Logger logger = DEVNULL;
+  static final Logger DEVNULL=new Logger(){
+      @Override
+      public boolean isEnabled(int level){return false;}
+      @Override
+      public void log(int level, String message){}
+    };
+  static Logger logger=DEVNULL;
   private Logger instLogger;
 
-  public JSch() {}
+  public JSch(){
+  }
 
   /**
-   * Instantiates the <code>Session</code> object with <code>host</code>. The user name and port
-   * number will be retrieved from ConfigRepository. If user name is not given, the system property
-   * "user.name" will be referred.
+   * Instantiates the <code>Session</code> object with
+   * <code>host</code>.  The user name and port number will be retrieved from
+   * ConfigRepository.  If user name is not given,
+   * the system property "user.name" will be referred. 
    *
    * @param host hostname
    *
-   * @throws JSchException if <code>username</code> or <code>host</code> are invalid.
+   * @throws JSchException
+   *         if <code>username</code> or <code>host</code> are invalid.
    *
    * @return the instance of <code>Session</code> class.
    *
@@ -297,39 +321,46 @@ public class JSch {
    * @see com.jcraft.jsch.Session
    * @see com.jcraft.jsch.ConfigRepository
    */
-  public Session getSession(String host) throws JSchException {
+  public Session getSession(String host)
+     throws JSchException {
     return getSession(null, host, 22);
   }
 
   /**
-   * Instantiates the <code>Session</code> object with <code>username</code> and <code>host</code>.
-   * The TCP port 22 will be used in making the connection. Note that the TCP connection must not be
-   * established until Session#connect().
+   * Instantiates the <code>Session</code> object with
+   * <code>username</code> and <code>host</code>.
+   * The TCP port 22 will be used in making the connection.
+   * Note that the TCP connection must not be established
+   * until Session#connect().
    *
    * @param username user name
    * @param host hostname
    *
-   * @throws JSchException if <code>username</code> or <code>host</code> are invalid.
+   * @throws JSchException
+   *         if <code>username</code> or <code>host</code> are invalid.
    *
    * @return the instance of <code>Session</code> class.
    *
    * @see #getSession(String username, String host, int port)
    * @see com.jcraft.jsch.Session
    */
-  public Session getSession(String username, String host) throws JSchException {
+  public Session getSession(String username, String host)
+     throws JSchException {
     return getSession(username, host, 22);
   }
 
   /**
-   * Instantiates the <code>Session</code> object with given <code>username</code>,
-   * <code>host</code> and <code>port</code>. Note that the TCP connection must not be established
+   * Instantiates the <code>Session</code> object with given
+   * <code>username</code>, <code>host</code> and <code>port</code>.
+   * Note that the TCP connection must not be established
    * until Session#connect().
    *
    * @param username user name
    * @param host hostname
    * @param port port number
    *
-   * @throws JSchException if <code>username</code> or <code>host</code> are invalid.
+   * @throws JSchException
+   *         if <code>username</code> or <code>host</code> are invalid.
    *
    * @return the instance of <code>Session</code> class.
    *
@@ -337,21 +368,21 @@ public class JSch {
    * @see com.jcraft.jsch.Session
    */
   public Session getSession(String username, String host, int port) throws JSchException {
-    if (host == null) {
+    if(host==null){
       throw new JSchException("host must not be null.");
     }
-    Session s = new Session(this, username, host, port);
+    Session s = new Session(this, username, host, port); 
     return s;
   }
 
-  protected void addSession(Session session) {
-    synchronized (sessionPool) {
+  protected void addSession(Session session){
+    synchronized(sessionPool){
       sessionPool.addElement(session);
     }
   }
 
-  protected boolean removeSession(Session session) {
-    synchronized (sessionPool) {
+  protected boolean removeSession(Session session){
+    synchronized(sessionPool){
       return sessionPool.remove(session);
     }
   }
@@ -364,65 +395,67 @@ public class JSch {
    * @see com.jcraft.jsch.HostKeyRepository
    * @see com.jcraft.jsch.KnownHosts
    */
-  public void setHostKeyRepository(HostKeyRepository hkrepo) {
-    known_hosts = hkrepo;
+  public void setHostKeyRepository(HostKeyRepository hkrepo){
+    known_hosts=hkrepo;
   }
 
   /**
-   * Sets the instance of <code>KnownHosts</code>, which refers to <code>filename</code>.
+   * Sets the instance of <code>KnownHosts</code>, which refers
+   * to <code>filename</code>.
    *
    * @param filename filename of known_hosts file.
    *
-   * @throws JSchException if the given filename is invalid.
+   * @throws JSchException
+   *         if the given filename is invalid.
    *
    * @see com.jcraft.jsch.KnownHosts
    */
-  public void setKnownHosts(String filename) throws JSchException {
-    if (known_hosts == null)
-      known_hosts = new KnownHosts(this);
-    if (known_hosts instanceof KnownHosts) {
-      synchronized (known_hosts) {
-        ((KnownHosts) known_hosts).setKnownHosts(filename);
+  public void setKnownHosts(String filename) throws JSchException{
+    if(known_hosts==null) known_hosts=new KnownHosts(this);
+    if(known_hosts instanceof KnownHosts){
+      synchronized(known_hosts){
+        ((KnownHosts)known_hosts).setKnownHosts(filename); 
       }
     }
   }
 
   /**
-   * Sets the instance of <code>KnownHosts</code> generated with <code>stream</code>.
+   * Sets the instance of <code>KnownHosts</code> generated with
+   * <code>stream</code>.
    *
    * @param stream the instance of InputStream from known_hosts file.
    *
-   * @throws JSchException if an I/O error occurs.
+   * @throws JSchException
+   *         if an I/O error occurs.
    *
    * @see com.jcraft.jsch.KnownHosts
    */
-  public void setKnownHosts(InputStream stream) throws JSchException {
-    if (known_hosts == null)
-      known_hosts = new KnownHosts(this);
-    if (known_hosts instanceof KnownHosts) {
-      synchronized (known_hosts) {
-        ((KnownHosts) known_hosts).setKnownHosts(stream);
+  public void setKnownHosts(InputStream stream) throws JSchException{ 
+    if(known_hosts==null) known_hosts=new KnownHosts(this);
+    if(known_hosts instanceof KnownHosts){
+      synchronized(known_hosts){
+        ((KnownHosts)known_hosts).setKnownHosts(stream); 
       }
     }
   }
 
   /**
-   * Returns the current hostkey repository. By the default, this method will the instance of
-   * <code>KnownHosts</code>.
+   * Returns the current hostkey repository.
+   * By the default, this method will the instance of <code>KnownHosts</code>.
    *
    * @return current hostkey repository.
    *
    * @see com.jcraft.jsch.HostKeyRepository
    * @see com.jcraft.jsch.KnownHosts
    */
-  public HostKeyRepository getHostKeyRepository() {
-    if (known_hosts == null)
-      known_hosts = new KnownHosts(this);
-    return known_hosts;
+  public HostKeyRepository getHostKeyRepository(){ 
+    if(known_hosts==null) known_hosts=new KnownHosts(this);
+    return known_hosts; 
   }
 
   /**
-   * Sets the private key, which will be referred in the public key authentication.
+   * Sets the private key, which will be referred in
+   * the public key authentication.
    *
    * @param prvkey filename of the private key.
    *
@@ -430,13 +463,15 @@ public class JSch {
    *
    * @see #addIdentity(String prvkey, String passphrase)
    */
-  public void addIdentity(String prvkey) throws JSchException {
-    addIdentity(prvkey, (byte[]) null);
+  public void addIdentity(String prvkey) throws JSchException{
+    addIdentity(prvkey, (byte[])null);
   }
 
   /**
-   * Sets the private key, which will be referred in the public key authentication. Before
-   * registering it into identityRepository, it will be deciphered with <code>passphrase</code>.
+   * Sets the private key, which will be referred in
+   * the public key authentication.
+   * Before registering it into identityRepository,
+   * it will be deciphered with <code>passphrase</code>.
    *
    * @param prvkey filename of the private key.
    * @param passphrase passphrase for <code>prvkey</code>.
@@ -445,19 +480,21 @@ public class JSch {
    *
    * @see #addIdentity(String prvkey, byte[] passphrase)
    */
-  public void addIdentity(String prvkey, String passphrase) throws JSchException {
-    byte[] _passphrase = null;
-    if (passphrase != null) {
-      _passphrase = Util.str2byte(passphrase);
+  public void addIdentity(String prvkey, String passphrase) throws JSchException{
+    byte[] _passphrase=null;
+    if(passphrase!=null){
+      _passphrase=Util.str2byte(passphrase);
     }
     addIdentity(prvkey, _passphrase);
-    if (_passphrase != null)
+    if(_passphrase!=null)
       Util.bzero(_passphrase);
   }
 
   /**
-   * Sets the private key, which will be referred in the public key authentication. Before
-   * registering it into identityRepository, it will be deciphered with <code>passphrase</code>.
+   * Sets the private key, which will be referred in
+   * the public key authentication.
+   * Before registering it into identityRepository,
+   * it will be deciphered with <code>passphrase</code>.
    *
    * @param prvkey filename of the private key.
    * @param passphrase passphrase for <code>prvkey</code>.
@@ -466,14 +503,16 @@ public class JSch {
    *
    * @see #addIdentity(String prvkey, String pubkey, byte[] passphrase)
    */
-  public void addIdentity(String prvkey, byte[] passphrase) throws JSchException {
-    Identity identity = IdentityFile.newInstance(prvkey, null, this);
+  public void addIdentity(String prvkey, byte[] passphrase) throws JSchException{
+    Identity identity=IdentityFile.newInstance(prvkey, null, this);
     addIdentity(identity, passphrase);
   }
 
   /**
-   * Sets the private key, which will be referred in the public key authentication. Before
-   * registering it into identityRepository, it will be deciphered with <code>passphrase</code>.
+   * Sets the private key, which will be referred in
+   * the public key authentication.
+   * Before registering it into identityRepository,
+   * it will be deciphered with <code>passphrase</code>.
    *
    * @param prvkey filename of the private key.
    * @param pubkey filename of the public key.
@@ -481,59 +520,66 @@ public class JSch {
    *
    * @throws JSchException if <code>passphrase</code> is not right.
    */
-  public void addIdentity(String prvkey, String pubkey, byte[] passphrase) throws JSchException {
-    Identity identity = IdentityFile.newInstance(prvkey, pubkey, this);
+  public void addIdentity(String prvkey, String pubkey, byte[] passphrase) throws JSchException{
+    Identity identity=IdentityFile.newInstance(prvkey, pubkey, this);
     addIdentity(identity, passphrase);
   }
 
   /**
-   * Sets the private key, which will be referred in the public key authentication. Before
-   * registering it into identityRepository, it will be deciphered with <code>passphrase</code>.
+   * Sets the private key, which will be referred in
+   * the public key authentication.
+   * Before registering it into identityRepository,
+   * it will be deciphered with <code>passphrase</code>.
    *
-   * @param name name of the identity to be used to retrieve it in the identityRepository.
+   * @param name name of the identity to be used to
+                 retrieve it in the identityRepository.
    * @param prvkey private key in byte array.
    * @param pubkey public key in byte array.
    * @param passphrase passphrase for <code>prvkey</code>.
    *
    */
-  public void addIdentity(String name, byte[] prvkey, byte[] pubkey, byte[] passphrase)
-      throws JSchException {
-    Identity identity = IdentityFile.newInstance(name, prvkey, pubkey, this);
+  public void addIdentity(String name, byte[]prvkey, byte[]pubkey, byte[] passphrase) throws JSchException{
+    Identity identity=IdentityFile.newInstance(name, prvkey, pubkey, this);
     addIdentity(identity, passphrase);
   }
 
   /**
-   * Sets the private key, which will be referred in the public key authentication. Before
-   * registering it into identityRepository, it will be deciphered with <code>passphrase</code>.
+   * Sets the private key, which will be referred in
+   * the public key authentication.
+   * Before registering it into identityRepository,
+   * it will be deciphered with <code>passphrase</code>.
    *
    * @param identity private key.
    * @param passphrase passphrase for <code>identity</code>.
    *
    * @throws JSchException if <code>passphrase</code> is not right.
    */
-  public void addIdentity(Identity identity, byte[] passphrase) throws JSchException {
-    if (passphrase != null) {
-      try {
-        byte[] goo = new byte[passphrase.length];
+  public void addIdentity(Identity identity, byte[] passphrase) throws JSchException{
+    if(passphrase!=null){
+      try{ 
+        byte[] goo=new byte[passphrase.length];
         System.arraycopy(passphrase, 0, goo, 0, passphrase.length);
-        passphrase = goo;
-        identity.setPassphrase(passphrase);
-      } finally {
+        passphrase=goo;
+        identity.setPassphrase(passphrase); 
+      }
+      finally{
         Util.bzero(passphrase);
       }
     }
 
-    if (identityRepository instanceof LocalIdentityRepository) {
-      ((LocalIdentityRepository) identityRepository).add(identity);
-    } else if (identity instanceof IdentityFile && !identity.isEncrypted()) {
-      identityRepository.add(((IdentityFile) identity).getKeyPair().forSSHAgent());
-    } else {
-      synchronized (this) {
-        if (!(identityRepository instanceof IdentityRepositoryWrapper)) {
+    if(identityRepository instanceof LocalIdentityRepository){
+      ((LocalIdentityRepository)identityRepository).add(identity);
+    }
+    else if(identity instanceof IdentityFile && !identity.isEncrypted()) {
+      identityRepository.add(((IdentityFile)identity).getKeyPair().forSSHAgent());
+    }
+    else {
+      synchronized(this){
+        if(!(identityRepository instanceof IdentityRepositoryWrapper)){
           setIdentityRepository(new IdentityRepositoryWrapper(identityRepository));
         }
       }
-      ((IdentityRepositoryWrapper) identityRepository).add(identity);
+      ((IdentityRepositoryWrapper)identityRepository).add(identity);
     }
   }
 
@@ -541,15 +587,16 @@ public class JSch {
    * @deprecated use #removeIdentity(Identity identity)
    */
   @Deprecated
-  public void removeIdentity(String name) throws JSchException {
+  public void removeIdentity(String name) throws JSchException{
     Vector<Identity> identities = identityRepository.getIdentities();
-    for (int i = 0; i < identities.size(); i++) {
-      Identity identity = identities.elementAt(i);
-      if (!identity.getName().equals(name))
+    for(int i=0; i<identities.size(); i++){
+      Identity identity=identities.elementAt(i);
+      if(!identity.getName().equals(name))
         continue;
-      if (identityRepository instanceof LocalIdentityRepository) {
-        ((LocalIdentityRepository) identityRepository).remove(identity);
-      } else
+      if(identityRepository instanceof LocalIdentityRepository){
+        ((LocalIdentityRepository)identityRepository).remove(identity);
+      }
+      else
         identityRepository.remove(identity.getPublicKeyBlob());
     }
   }
@@ -561,7 +608,7 @@ public class JSch {
    *
    * @throws JSchException if <code>identity</code> is invalid.
    */
-  public void removeIdentity(Identity identity) throws JSchException {
+  public void removeIdentity(Identity identity) throws JSchException{
     identityRepository.remove(identity.getPublicKeyBlob());
   }
 
@@ -572,11 +619,11 @@ public class JSch {
    *
    * @throws JSchException if identityReposory has problems.
    */
-  public Vector<String> getIdentityNames() throws JSchException {
-    Vector<String> foo = new Vector<>();
+  public Vector<String> getIdentityNames() throws JSchException{
+    Vector<String> foo=new Vector<>();
     Vector<Identity> identities = identityRepository.getIdentities();
-    for (int i = 0; i < identities.size(); i++) {
-      Identity identity = identities.elementAt(i);
+    for(int i=0; i<identities.size(); i++){
+      Identity identity=identities.elementAt(i);
       foo.addElement(identity.getName());
     }
     return foo;
@@ -587,7 +634,7 @@ public class JSch {
    *
    * @throws JSchException if identityReposory has problems.
    */
-  public void removeAllIdentity() throws JSchException {
+  public void removeAllIdentity() throws JSchException{
     identityRepository.removeAll();
   }
 
@@ -597,13 +644,13 @@ public class JSch {
    * @param key key for the configuration.
    * @return config value
    */
-  public static String getConfig(String key) {
-    synchronized (config) {
-      if (key.equals("PubkeyAcceptedKeyTypes")) {
-        key = "PubkeyAcceptedAlgorithms";
+  public static String getConfig(String key){ 
+    synchronized(config){
+      if(key.equals("PubkeyAcceptedKeyTypes")){
+        key="PubkeyAcceptedAlgorithms";
       }
       return config.get(key);
-    }
+    } 
   }
 
   /**
@@ -611,12 +658,11 @@ public class JSch {
    *
    * @param newconf configurations
    */
-  public static void setConfig(Hashtable<String, String> newconf) {
-    synchronized (config) {
-      for (Enumeration<String> e = newconf.keys(); e.hasMoreElements();) {
-        String newkey = e.nextElement();
-        String key =
-            (newkey.equals("PubkeyAcceptedKeyTypes") ? "PubkeyAcceptedAlgorithms" : newkey);
+  public static void setConfig(Hashtable<String, String> newconf){
+    synchronized(config){
+      for(Enumeration<String> e=newconf.keys() ; e.hasMoreElements() ;) {
+        String newkey=e.nextElement();
+        String key=(newkey.equals("PubkeyAcceptedKeyTypes") ? "PubkeyAcceptedAlgorithms" : newkey);
         config.put(key, newconf.get(newkey));
       }
     }
@@ -628,10 +674,11 @@ public class JSch {
    * @param key key for the configuration
    * @param value value for the configuration
    */
-  public static void setConfig(String key, String value) {
-    if (key.equals("PubkeyAcceptedKeyTypes")) {
+  public static void setConfig(String key, String value){
+    if(key.equals("PubkeyAcceptedKeyTypes")){
       config.put("PubkeyAcceptedAlgorithms", value);
-    } else {
+    }
+    else{
       config.put(key, value);
     }
   }
@@ -639,46 +686,43 @@ public class JSch {
   /**
    * Sets the logger
    *
-   * @param logger logger or <code>null</code> if no logging should take place
+   * @param logger logger or <code>null</code> if no logging
+   * should take place
    *
    * @see com.jcraft.jsch.Logger
    */
-  public static void setLogger(Logger logger) {
-    if (logger == null)
-      logger = DEVNULL;
-    JSch.logger = logger;
+  public static void setLogger(Logger logger){
+    if(logger==null) logger=DEVNULL;
+    JSch.logger=logger;
   }
-
+  
   /**
-   * Returns a logger to be used for this particular instance of JSch
-   *
-   * @return The logger that is used by this instance. If no particular logger has been set, the
-   *         statically set logger is returned.
+   * Returns  a logger to be used for this particular instance of JSch
+   * @return The logger that is used by this instance. If no particular
+   * logger has been set, the statically set logger is returned.
    */
   public Logger getInstanceLogger() {
-    if (this.instLogger == null) {
-      return logger;
-    }
-    return instLogger;
+      if (this.instLogger == null) {
+          return logger;
+      }
+      return instLogger;
   }
-
+  
   /**
    * Sets a logger to be used for this particular instance of JSch
-   *
-   * @param logger The logger to be used or <code>null</code> if the statically set logger should be
-   *        used
+   * @param logger The logger to be used or <code>null</code> if
+   * the statically set logger should be used
    */
   public void setInstanceLogger(Logger logger) {
-    this.instLogger = logger;
+      this.instLogger = logger;
   }
-
+  
   /**
-   * Returns the statically set logger, i.e. the logger being used by all JSch instances without
-   * explicitly set logger.
-   *
+   * Returns the statically set logger, i.e. the logger being
+   * used by all JSch instances without explicitly set logger.
    * @return The logger
    */
-  public static Logger getLogger() {
+  public static Logger getLogger(){
     return logger;
   }
 }

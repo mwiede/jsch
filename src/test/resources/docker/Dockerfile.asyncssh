@@ -1,4 +1,5 @@
 FROM python:3.9
+ARG MAX_PKTSIZE=32768
 RUN pip install 'asyncssh[bcrypt]' && \
     mkdir /root/.ssh && \
     chmod 700 /root/.ssh
@@ -20,4 +21,5 @@ COPY ssh_host_dsa_key.pub /etc/ssh/
 COPY authorized_keys /root/.ssh/
 RUN chmod 600 /etc/ssh/ssh_*_key /root/.ssh/authorized_keys
 RUN passwd -u root
+ENV MAX_PKTSIZE=${MAX_PKTSIZE}
 ENTRYPOINT ["python", "/asyncsshd.py"]

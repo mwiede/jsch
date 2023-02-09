@@ -1,0 +1,27 @@
+name: Build Javadocs and Deploy to Github Pages
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - '*'
+permissions:
+  contents: write
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout 🛎️
+        uses: actions/checkout@v3
+      - name: Set up build JDK
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'zulu'
+          java-version: '17'
+          check-latest: true
+      - name: Build Javadoc
+        run: mvn javadoc:javadoc
+      - name: Deploy 🚀
+        uses: JamesIves/github-pages-deploy-action@v4
+        with:
+          folder: target/site/apidocs
+          target-folder: ${{github.ref_name}}

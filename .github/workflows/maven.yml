@@ -34,6 +34,12 @@ jobs:
         check-latest: true
     - name: Build with Maven
       run: mvn -B -DskipTests=true package --file pom.xml
+    - uses: actions/upload-artifact@v3
+      with:
+        name: java-${{ matrix.java }}-jars
+        path: |
+          **/target/*.jar
+      if: always()
     - name: Set up test JDK ${{ matrix.java }}
       uses: actions/setup-java@v3
       with:
@@ -49,4 +55,5 @@ jobs:
           **/target/surefire-reports/
           **/target/failsafe-reports/
           **/target/site/jacoco/
+          **/target/site/jacoco-it/
       if: always()

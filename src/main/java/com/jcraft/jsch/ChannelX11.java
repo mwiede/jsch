@@ -146,14 +146,19 @@ class ChannelX11 extends Channel {
       return;
     }
 
-    thread = Thread.currentThread();
-    Buffer buf = new Buffer(rmpsize);
-    Packet packet = new Packet(buf);
-    int i = 0;
-    try {
-      while (thread != null && io != null && io.in != null) {
-        i = io.in.read(buf.buffer, 14, buf.buffer.length - 14 - Session.buffer_margin);
-        if (i <= 0) {
+    thread=Thread.currentThread();
+    Buffer buf=new Buffer(rmpsize);
+    Packet packet=new Packet(buf);
+    int i=0;
+    try{
+      Session _session=getSession();
+      while(thread!=null &&
+            io!=null &&
+            io.in!=null){
+        i=io.in.read(buf.buffer,
+                     14,
+                     buf.buffer.length-14-_session.getBufferMargin());
+        if(i<=0){
           eof();
           break;
         }
@@ -164,7 +169,7 @@ class ChannelX11 extends Channel {
         buf.putInt(recipient);
         buf.putInt(i);
         buf.skip(i);
-        getSession().write(packet, this, i);
+        _session.write(packet, this, i);
       }
     } catch (Exception e) {
       // System.err.println(e);
