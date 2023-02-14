@@ -39,6 +39,7 @@ jobs:
         name: java-${{ matrix.java }}-jars
         path: |
           **/target/*.jar
+          **/target/bom.*
       if: always()
     - name: Set up test JDK ${{ matrix.java }}
       uses: actions/setup-java@v3

@@ -96,6 +96,7 @@
             <groupId>com.kohlschutter</groupId>
             <artifactId>compiler-annotations</artifactId>
             <version>1.5.2</version>
+            <scope>provided</scope>
             <optional>true</optional>
         </dependency>
         <dependency>
@@ -479,6 +480,21 @@
                         <id>attach-javadocs</id>
                         <goals>
                             <goal>jar</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.cyclonedx</groupId>
+                <artifactId>cyclonedx-maven-plugin</artifactId>
+                <version>2.7.4</version>
+                <configuration>
+                    <includeProvidedScope>false</includeProvidedScope>
+                </configuration>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>makeBom</goal>
                         </goals>
                     </execution>
                 </executions>
