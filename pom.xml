@@ -207,6 +207,9 @@
                                     <version>16</version>
                                 </requireJavaVersion>
                                 <dependencyConvergence />
+                                <banDuplicatePomDependencyVersions />
+                                <reactorModuleConvergence />
+                                <requireUpperBoundDeps />
                             </rules>
                         </configuration>
                     </execution>
