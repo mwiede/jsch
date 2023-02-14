@@ -93,12 +93,6 @@
             <optional>true</optional>
         </dependency>
         <dependency>
-            <groupId>com.kohlschutter.junixsocket</groupId>
-            <artifactId>junixsocket-native-common</artifactId>
-            <version>${junixsocket.version}</version>
-            <optional>true</optional>
-        </dependency>
-        <dependency>
             <groupId>com.kohlschutter</groupId>
             <artifactId>compiler-annotations</artifactId>
             <version>1.5.2</version>
@@ -161,6 +155,12 @@
             <groupId>commons-codec</groupId>
             <artifactId>commons-codec</artifactId>
             <version>1.15</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.kohlschutter.junixsocket</groupId>
+            <artifactId>junixsocket-native-common</artifactId>
+            <version>${junixsocket.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
