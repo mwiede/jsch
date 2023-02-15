@@ -509,6 +509,11 @@
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-gpg-plugin</artifactId>
+                <version>3.0.1</version>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-deploy-plugin</artifactId>
                 <version>3.1.0</version>
             </plugin>
@@ -526,6 +531,28 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-dependency-plugin</artifactId>
                 <version>3.5.0</version>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-checkstyle-plugin</artifactId>
+                <version>3.2.1</version>
+                <configuration>
+                    <failOnViolation>true</failOnViolation>
+                    <logViolationsToConsole>true</logViolationsToConsole>
+                    <violationSeverity>warning</violationSeverity>
+                    <configLocation>google_checks.xml</configLocation>
+                    <sourceDirectories>
+                        <sourceDirectory>${project.build.sourceDirectory}</sourceDirectory>
+                        <sourceDirectory>${project.build.testSourceDirectory}</sourceDirectory>
+                        <sourceDirectory>${project.basedir}/examples</sourceDirectory>
+                        <sourceDirectory>${project.basedir}/src/main/java9</sourceDirectory>
+                        <sourceDirectory>${project.basedir}/src/main/java10</sourceDirectory>
+                        <sourceDirectory>${project.basedir}/src/main/java11</sourceDirectory>
+                        <sourceDirectory>${project.basedir}/src/main/java15</sourceDirectory>
+                        <sourceDirectory>${project.basedir}/src/main/java16</sourceDirectory>
+                        <sourceDirectory>${project.basedir}/src/main/java-templates</sourceDirectory>
+                    </sourceDirectories>
+                </configuration>
             </plugin>
             <plugin>
                 <groupId>net.revelc.code.formatter</groupId>
@@ -547,6 +574,19 @@
                     </directories>
                 </configuration>
             </plugin>
+            <plugin>
+                <groupId>org.jacoco</groupId>
+                <artifactId>jacoco-maven-plugin</artifactId>
+                <version>0.8.8</version>
+                <configuration>
+                    <excludes>
+                        <exclude>com/jcraft/jsch/JavaVersion.class</exclude>
+                        <exclude>com/jcraft/jsch/UnixDomainSocketFactory.class</exclude>
+                        <exclude>META-INF/versions/9/com/jcraft/jsch/JavaVersion.class</exclude>
+                        <exclude>META-INF/versions/10/com/jcraft/jsch/JavaVersion.class</exclude>
+                    </excludes>
+                </configuration>
+            </plugin>
         </plugins>
     </build>
     <profiles>
@@ -557,7 +597,6 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-gpg-plugin</artifactId>
-                        <version>3.0.1</version>
                         <executions>
                             <execution>
                                 <id>sign-artifacts</id>
@@ -578,15 +617,6 @@
                     <plugin>
                         <groupId>org.jacoco</groupId>
                         <artifactId>jacoco-maven-plugin</artifactId>
-                        <version>0.8.8</version>
-                        <configuration>
-                            <excludes>
-                                <exclude>com/jcraft/jsch/JavaVersion.class</exclude>
-                                <exclude>com/jcraft/jsch/UnixDomainSocketFactory.class</exclude>
-                                <exclude>META-INF/versions/9/com/jcraft/jsch/JavaVersion.class</exclude>
-                                <exclude>META-INF/versions/10/com/jcraft/jsch/JavaVersion.class</exclude>
-                            </excludes>
-                        </configuration>
                         <executions>
                             <execution>
                                 <id>default-prepare-agent</id>
@@ -699,25 +729,6 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-checkstyle-plugin</artifactId>
-                        <version>3.2.1</version>
-                        <configuration>
-                            <encoding>UTF-8</encoding>
-                            <failOnViolation>true</failOnViolation>
-                            <logViolationsToConsole>true</logViolationsToConsole>
-                            <violationSeverity>warning</violationSeverity>
-                            <configLocation>google_checks.xml</configLocation>
-                            <sourceDirectories>
-                                <sourceDirectory>${project.build.sourceDirectory}</sourceDirectory>
-                                <sourceDirectory>${project.build.testSourceDirectory}</sourceDirectory>
-                                <sourceDirectory>${project.basedir}/examples</sourceDirectory>
-                                <sourceDirectory>${project.basedir}/src/main/java9</sourceDirectory>
-                                <sourceDirectory>${project.basedir}/src/main/java10</sourceDirectory>
-                                <sourceDirectory>${project.basedir}/src/main/java11</sourceDirectory>
-                                <sourceDirectory>${project.basedir}/src/main/java15</sourceDirectory>
-                                <sourceDirectory>${project.basedir}/src/main/java16</sourceDirectory>
-                                <sourceDirectory>${project.basedir}/src/main/java-templates</sourceDirectory>
-                            </sourceDirectories>
-                        </configuration>
                         <executions>
                             <execution>
                                 <id>validate</id>
