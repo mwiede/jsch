@@ -34,7 +34,7 @@ jobs:
         java-version: '17'
         check-latest: true
     - name: Build with Maven
-      run: mvn -B -DskipTests=true package --file pom.xml
+      run: mvn -B -V -DskipTests=true package --file pom.xml
     - uses: actions/upload-artifact@v3
       with:
         name: java-${{ matrix.java }}-jars
@@ -49,7 +49,7 @@ jobs:
         java-version: ${{ matrix.java }}
         check-latest: true
     - name: Test with Maven
-      run: mvn -B -P coverage verify -Denforcer.skip=true -Dmaven.resources.skip=true -Dmaven.main.skip=true -Dassembly.skipAssembly=true -Dmaven.javadoc.skip=true -DskipITs=false --file pom.xml
+      run: mvn -B -V -P coverage verify -Denforcer.skip=true -Dmaven.resources.skip=true -Dmaven.main.skip=true -Dassembly.skipAssembly=true -Dmaven.javadoc.skip=true -DskipITs=false --file pom.xml
     - uses: actions/upload-artifact@v3
       with:
         name: java-${{ matrix.java }}-testresults
