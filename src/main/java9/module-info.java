@@ -7,7 +7,6 @@ module com.jcraft.jsch {
     requires static org.slf4j;
     requires static org.bouncycastle.provider;
     requires static org.newsclub.net.unix;
-    requires static com.kohlschutter.junixsocket.nativecommon;
     requires static com.sun.jna;
     requires static com.sun.jna.platform;
 }

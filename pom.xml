@@ -63,7 +63,7 @@
             <url>https://github.com/mwiede/jsch/blob/master/LICENSE.txt</url>
         </license>
         <license>
-            <name>BSD</name>
+            <name>Revised BSD</name>
             <url>https://github.com/mwiede/jsch/blob/master/LICENSE.JZlib.txt</url>
         </license>
         <license>
@@ -90,18 +90,6 @@
             <groupId>com.kohlschutter.junixsocket</groupId>
             <artifactId>junixsocket-common</artifactId>
             <version>${junixsocket.version}</version>
-            <optional>true</optional>
-        </dependency>
-        <dependency>
-            <groupId>com.kohlschutter.junixsocket</groupId>
-            <artifactId>junixsocket-native-common</artifactId>
-            <version>${junixsocket.version}</version>
-            <optional>true</optional>
-        </dependency>
-        <dependency>
-            <groupId>com.kohlschutter</groupId>
-            <artifactId>compiler-annotations</artifactId>
-            <version>1.5.2</version>
             <optional>true</optional>
         </dependency>
         <dependency>
@@ -164,6 +152,12 @@
             <scope>test</scope>
         </dependency>
         <dependency>
+            <groupId>com.kohlschutter.junixsocket</groupId>
+            <artifactId>junixsocket-native-common</artifactId>
+            <version>${junixsocket.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
             <version>31.1-jre</version>
@@ -207,6 +201,9 @@
                                     <version>16</version>
                                 </requireJavaVersion>
                                 <dependencyConvergence />
+                                <banDuplicatePomDependencyVersions />
+                                <reactorModuleConvergence />
+                                <requireUpperBoundDeps />
                             </rules>
                         </configuration>
                     </execution>
@@ -273,12 +270,11 @@
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>3.10.1</version>
                 <configuration>
-                    <fork>true</fork>
                     <release>8</release>
                     <showDeprecation>true</showDeprecation>
                     <showWarnings>true</showWarnings>
                     <compilerArgs>
-                        <arg>-Xlint:all,-processing</arg>
+                        <arg>-Xlint:all,-processing,-classfile</arg>
                         <arg>-Werror</arg>
                     </compilerArgs>
                 </configuration>
@@ -481,6 +477,18 @@
                 </executions>
             </plugin>
             <plugin>
+                <groupId>org.cyclonedx</groupId>
+                <artifactId>cyclonedx-maven-plugin</artifactId>
+                <version>2.7.5</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>makeBom</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-release-plugin</artifactId>
                 <version>2.5.3</version>
@@ -488,6 +496,11 @@
                     <useReleaseProfile>false</useReleaseProfile>
                     <releaseProfiles>release</releaseProfiles>
                 </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-gpg-plugin</artifactId>
+                <version>3.0.1</version>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -510,6 +523,28 @@
                 <version>3.5.0</version>
             </plugin>
             <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-checkstyle-plugin</artifactId>
+                <version>3.2.1</version>
+                <configuration>
+                    <failOnViolation>true</failOnViolation>
+                    <logViolationsToConsole>true</logViolationsToConsole>
+                    <violationSeverity>warning</violationSeverity>
+                    <configLocation>google_checks.xml</configLocation>
+                    <sourceDirectories>
+                        <sourceDirectory>${project.build.sourceDirectory}</sourceDirectory>
+                        <sourceDirectory>${project.build.testSourceDirectory}</sourceDirectory>
+                        <sourceDirectory>${project.basedir}/examples</sourceDirectory>
+                        <sourceDirectory>${project.basedir}/src/main/java9</sourceDirectory>
+                        <sourceDirectory>${project.basedir}/src/main/java10</sourceDirectory>
+                        <sourceDirectory>${project.basedir}/src/main/java11</sourceDirectory>
+                        <sourceDirectory>${project.basedir}/src/main/java15</sourceDirectory>
+                        <sourceDirectory>${project.basedir}/src/main/java16</sourceDirectory>
+                        <sourceDirectory>${project.basedir}/src/main/java-templates</sourceDirectory>
+                    </sourceDirectories>
+                </configuration>
+            </plugin>
+            <plugin>
                 <groupId>net.revelc.code.formatter</groupId>
                 <artifactId>formatter-maven-plugin</artifactId>
                 <version>2.22.0</version>
@@ -529,6 +564,19 @@
                     </directories>
                 </configuration>
             </plugin>
+            <plugin>
+                <groupId>org.jacoco</groupId>
+                <artifactId>jacoco-maven-plugin</artifactId>
+                <version>0.8.8</version>
+                <configuration>
+                    <excludes>
+                        <exclude>com/jcraft/jsch/JavaVersion.class</exclude>
+                        <exclude>com/jcraft/jsch/UnixDomainSocketFactory.class</exclude>
+                        <exclude>META-INF/versions/9/com/jcraft/jsch/JavaVersion.class</exclude>
+                        <exclude>META-INF/versions/10/com/jcraft/jsch/JavaVersion.class</exclude>
+                    </excludes>
+                </configuration>
+            </plugin>
         </plugins>
     </build>
     <profiles>
@@ -539,7 +587,6 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-gpg-plugin</artifactId>
-                        <version>3.0.1</version>
                         <executions>
                             <execution>
                                 <id>sign-artifacts</id>
@@ -560,15 +607,6 @@
                     <plugin>
                         <groupId>org.jacoco</groupId>
                         <artifactId>jacoco-maven-plugin</artifactId>
-                        <version>0.8.8</version>
-                        <configuration>
-                            <excludes>
-                                <exclude>com/jcraft/jsch/JavaVersion.class</exclude>
-                                <exclude>com/jcraft/jsch/UnixDomainSocketFactory.class</exclude>
-                                <exclude>META-INF/versions/9/com/jcraft/jsch/JavaVersion.class</exclude>
-                                <exclude>META-INF/versions/10/com/jcraft/jsch/JavaVersion.class</exclude>
-                            </excludes>
-                        </configuration>
                         <executions>
                             <execution>
                                 <id>default-prepare-agent</id>
@@ -607,6 +645,7 @@
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-compiler-plugin</artifactId>
                         <configuration>
+                            <fork>true</fork>
                             <compilerArgs combine.children="append">
                                 <arg>-XDcompilePolicy=simple</arg>
                                 <arg>-Xplugin:ErrorProne</arg>
@@ -624,7 +663,7 @@
                                 <path>
                                     <groupId>com.google.errorprone</groupId>
                                     <artifactId>error_prone_core</artifactId>
-                                    <version>2.17.0</version>
+                                    <version>2.18.0</version>
                                 </path>
                             </annotationProcessorPaths>
                         </configuration>
@@ -680,25 +719,6 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-checkstyle-plugin</artifactId>
-                        <version>3.2.1</version>
-                        <configuration>
-                            <encoding>UTF-8</encoding>
-                            <failOnViolation>true</failOnViolation>
-                            <logViolationsToConsole>true</logViolationsToConsole>
-                            <violationSeverity>warning</violationSeverity>
-                            <configLocation>google_checks.xml</configLocation>
-                            <sourceDirectories>
-                                <sourceDirectory>${project.build.sourceDirectory}</sourceDirectory>
-                                <sourceDirectory>${project.build.testSourceDirectory}</sourceDirectory>
-                                <sourceDirectory>${project.basedir}/examples</sourceDirectory>
-                                <sourceDirectory>${project.basedir}/src/main/java9</sourceDirectory>
-                                <sourceDirectory>${project.basedir}/src/main/java10</sourceDirectory>
-                                <sourceDirectory>${project.basedir}/src/main/java11</sourceDirectory>
-                                <sourceDirectory>${project.basedir}/src/main/java15</sourceDirectory>
-                                <sourceDirectory>${project.basedir}/src/main/java16</sourceDirectory>
-                                <sourceDirectory>${project.basedir}/src/main/java-templates</sourceDirectory>
-                            </sourceDirectories>
-                        </configuration>
                         <executions>
                             <execution>
                                 <id>validate</id>
