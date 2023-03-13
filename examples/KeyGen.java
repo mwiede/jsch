@@ -1,15 +1,13 @@
 /**
- * This progam will demonstrate the DSA keypair generation. $ CLASSPATH=.:../build javac KeyGen.java
- * $ CLASSPATH=.:../build java KeyGen rsa output_keyfile comment or $ CLASSPATH=.:../build java
- * KeyGen dsa output_keyfile comment You will be asked a passphrase for output_keyfile. If
- * everything works fine, you will get the DSA or RSA keypair, output_keyfile and
+ * This progam will demonstrate the keypair generation. You will be asked a passphrase for
+ * output_keyfile. If everything works fine, you will get the keypair, output_keyfile and
  * output_keyfile+".pub". The private key and public key are in the OpenSSH format.
  *
  */
 import com.jcraft.jsch.*;
 import javax.swing.*;
 
-class KeyGen {
+public class KeyGen {
   public static void main(String[] arg) {
     int key_size = 1024;
     if (arg.length < 3) {
@@ -49,7 +47,7 @@ class KeyGen {
     JSch jsch = new JSch();
 
     String passphrase = "";
-    JTextField passphraseField = (JTextField) new JPasswordField(20);
+    JTextField passphraseField = new JPasswordField(20);
     Object[] ob = {passphraseField};
     int result = JOptionPane.showConfirmDialog(null, ob,
         "Enter passphrase (empty for no passphrase)", JOptionPane.OK_CANCEL_OPTION);
@@ -59,8 +57,7 @@ class KeyGen {
 
     try {
       KeyPair kpair = KeyPair.genKeyPair(jsch, type, key_size);
-      kpair.setPassphrase(passphrase);
-      kpair.writePrivateKey(filename);
+      kpair.writePrivateKey(filename, passphrase.getBytes());
       kpair.writePublicKey(filename + ".pub", comment);
       System.out.println("Finger print: " + kpair.getFingerPrint());
       kpair.dispose();

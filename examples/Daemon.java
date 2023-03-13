@@ -51,16 +51,19 @@ public class Daemon {
     InputStream in;
     OutputStream out;
 
+    @Override
     public void setChannel(ChannelForwardedTCPIP c, InputStream in, OutputStream out) {
       this.channel = c;
       this.in = in;
       this.out = out;
     }
 
+    @Override
     public void setArg(Object[] arg) {
       this.arg = arg;
     }
 
+    @Override
     public void run() {
       try {
         byte[] buf = new byte[1024];
@@ -83,10 +86,12 @@ public class Daemon {
   }
 
   public static class MyUserInfo implements UserInfo, UIKeyboardInteractive {
+    @Override
     public String getPassword() {
       return passwd;
     }
 
+    @Override
     public boolean promptYesNo(String str) {
       Object[] options = {"yes", "no"};
       int foo = JOptionPane.showOptionDialog(null, str, "Warning", JOptionPane.DEFAULT_OPTION,
@@ -95,16 +100,19 @@ public class Daemon {
     }
 
     String passwd;
-    JTextField passwordField = (JTextField) new JPasswordField(20);
+    JTextField passwordField = new JPasswordField(20);
 
+    @Override
     public String getPassphrase() {
       return null;
     }
 
+    @Override
     public boolean promptPassphrase(String message) {
       return true;
     }
 
+    @Override
     public boolean promptPassword(String message) {
       Object[] ob = {passwordField};
       int result = JOptionPane.showConfirmDialog(null, ob, message, JOptionPane.OK_CANCEL_OPTION);
@@ -116,6 +124,7 @@ public class Daemon {
       }
     }
 
+    @Override
     public void showMessage(String message) {
       JOptionPane.showMessageDialog(null, message);
     }
@@ -124,6 +133,7 @@ public class Daemon {
         GridBagConstraints.NORTHWEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0);
     private Container panel;
 
+    @Override
     public String[] promptKeyboardInteractive(String destination, String name, String instruction,
         String[] prompt, boolean[] echo) {
       panel = new JPanel();

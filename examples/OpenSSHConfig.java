@@ -1,8 +1,7 @@
 /**
- * This program demonsrates how to use OpenSSHConfig class. $ CLASSPATH=.:../build javac
- * OpenSSHConfig.java $ CLASSPATH=.:../build java OpenSSHConfig You will be asked username, hostname
- * and passwd. If everything works fine, you will get the shell prompt. Output may be ugly because
- * of lacks of terminal-emulation, but you can issue commands.
+ * This program demonsrates how to use OpenSSHConfig class. You will be asked username, hostname and
+ * passwd. If everything works fine, you will get the shell prompt. Output may be ugly because of
+ * lacks of terminal-emulation, but you can issue commands.
  *
  */
 import com.jcraft.jsch.*;
@@ -46,10 +45,12 @@ public class OpenSSHConfig {
       session.setPassword(passwd);
 
       UserInfo ui = new MyUserInfo() {
+        @Override
         public void showMessage(String message) {
           JOptionPane.showMessageDialog(null, message);
         }
 
+        @Override
         public boolean promptYesNo(String message) {
           Object[] options = {"yes", "no"};
           int foo = JOptionPane.showOptionDialog(null, message, "Warning",
@@ -72,22 +73,21 @@ public class OpenSSHConfig {
       Channel channel = session.openChannel("shell");
 
       channel.setInputStream(System.in);
-      /*
-       * // a hack for MS-DOS prompt on Windows. channel.setInputStream(new
-       * FilterInputStream(System.in){ public int read(byte[] b, int off, int len)throws
-       * IOException{ return in.read(b, off, (len>1024?1024:len)); } });
-       */
+      // a hack for MS-DOS prompt on Windows.
+      // channel.setInputStream(new FilterInputStream(System.in) {
+      // @Override
+      // public int read(byte[] b, int off, int len) throws IOException {
+      // return in.read(b, off, len > 1024 ? 1024 : len);
+      // }
+      // });
 
       channel.setOutputStream(System.out);
 
-      /*
-       * // Choose the pty-type "vt102". ((ChannelShell)channel).setPtyType("vt102");
-       */
+      // Choose the pty-type "vt102".
+      // ((ChannelShell) channel).setPtyType("vt102");
 
-      /*
-       * // Set environment variable "LANG" as "ja_JP.eucJP". ((ChannelShell)channel).setEnv("LANG",
-       * "ja_JP.eucJP");
-       */
+      // Set environment variable "LANG" as "ja_JP.eucJP".
+      // ((ChannelShell) channel).setEnv("LANG", "ja_JP.eucJP");
 
       // channel.connect();
       channel.connect(3 * 1000);
@@ -97,28 +97,27 @@ public class OpenSSHConfig {
   }
 
   public static abstract class MyUserInfo implements UserInfo, UIKeyboardInteractive {
+    @Override
     public String getPassword() {
       return null;
     }
 
-    public boolean promptYesNo(String str) {
-      return false;
-    }
-
+    @Override
     public String getPassphrase() {
       return null;
     }
 
+    @Override
     public boolean promptPassphrase(String message) {
       return false;
     }
 
+    @Override
     public boolean promptPassword(String message) {
       return false;
     }
 
-    public void showMessage(String message) {}
-
+    @Override
     public String[] promptKeyboardInteractive(String destination, String name, String instruction,
         String[] prompt, boolean[] echo) {
       return null;

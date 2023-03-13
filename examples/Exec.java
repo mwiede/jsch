@@ -1,8 +1,7 @@
 /**
- * This program will demonstrate remote exec. $ CLASSPATH=.:../build javac Exec.java $
- * CLASSPATH=.:../build java Exec You will be asked username, hostname, displayname, passwd and
- * command. If everything works fine, given command will be invoked on the remote side and outputs
- * will be printed out.
+ * This program will demonstrate remote exec. You will be asked username, hostname, displayname,
+ * passwd and command. If everything works fine, given command will be invoked on the remote side
+ * and outputs will be printed out.
  *
  */
 import com.jcraft.jsch.*;
@@ -27,13 +26,13 @@ public class Exec {
 
       Session session = jsch.getSession(user, host, 22);
 
-      /*
-       * String xhost="127.0.0.1"; int xport=0; String
-       * display=JOptionPane.showInputDialog("Enter display name", xhost+":"+xport);
-       * xhost=display.substring(0, display.indexOf(':'));
-       * xport=Integer.parseInt(display.substring(display.indexOf(':')+1));
-       * session.setX11Host(xhost); session.setX11Port(xport+6000);
-       */
+      // String xhost = "127.0.0.1";
+      // int xport = 0;
+      // String display = JOptionPane.showInputDialog("Enter display name", xhost + ":" + xport);
+      // xhost = display.substring(0, display.indexOf(':'));
+      // xport = Integer.parseInt(display.substring(display.indexOf(':') + 1));
+      // session.setX11Host(xhost);
+      // session.setX11Port(xport + 6000);
 
       // username and password will be given via UserInfo interface.
       UserInfo ui = new MyUserInfo();
@@ -53,8 +52,8 @@ public class Exec {
 
       // channel.setOutputStream(System.out);
 
-      // FileOutputStream fos=new FileOutputStream("/tmp/stderr");
-      // ((ChannelExec)channel).setErrStream(fos);
+      // OutputStream fos = new FileOutputStream("/tmp/stderr");
+      // ((ChannelExec) channel).setErrStream(fos);
       ((ChannelExec) channel).setErrStream(System.err);
 
       InputStream in = channel.getInputStream();
@@ -88,10 +87,12 @@ public class Exec {
   }
 
   public static class MyUserInfo implements UserInfo, UIKeyboardInteractive {
+    @Override
     public String getPassword() {
       return passwd;
     }
 
+    @Override
     public boolean promptYesNo(String str) {
       Object[] options = {"yes", "no"};
       int foo = JOptionPane.showOptionDialog(null, str, "Warning", JOptionPane.DEFAULT_OPTION,
@@ -100,16 +101,19 @@ public class Exec {
     }
 
     String passwd;
-    JTextField passwordField = (JTextField) new JPasswordField(20);
+    JTextField passwordField = new JPasswordField(20);
 
+    @Override
     public String getPassphrase() {
       return null;
     }
 
+    @Override
     public boolean promptPassphrase(String message) {
       return true;
     }
 
+    @Override
     public boolean promptPassword(String message) {
       Object[] ob = {passwordField};
       int result = JOptionPane.showConfirmDialog(null, ob, message, JOptionPane.OK_CANCEL_OPTION);
@@ -121,6 +125,7 @@ public class Exec {
       }
     }
 
+    @Override
     public void showMessage(String message) {
       JOptionPane.showMessageDialog(null, message);
     }
@@ -129,6 +134,7 @@ public class Exec {
         GridBagConstraints.NORTHWEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0);
     private Container panel;
 
+    @Override
     public String[] promptKeyboardInteractive(String destination, String name, String instruction,
         String[] prompt, boolean[] echo) {
       panel = new JPanel();

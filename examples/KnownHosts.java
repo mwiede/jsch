@@ -1,8 +1,8 @@
 /**
- * This program will demonstrate the 'known_hosts' file handling. $ CLASSPATH=.:../build javac
- * KnownHosts.java $ CLASSPATH=.:../build java KnownHosts You will be asked username, hostname, a
- * path for 'known_hosts' and passwd. If everything works fine, you will get the shell prompt. In
- * current implementation, jsch only reads 'known_hosts' for checking and does not modify it.
+ * This program will demonstrate the 'known_hosts' file handling. You will be asked username,
+ * hostname, a path for 'known_hosts' and passwd. If everything works fine, you will get the shell
+ * prompt. In current implementation, jsch only reads 'known_hosts' for checking and does not modify
+ * it.
  *
  */
 import com.jcraft.jsch.*;
@@ -28,8 +28,7 @@ public class KnownHosts {
       HostKey[] hks = hkr.getHostKey();
       if (hks != null) {
         System.out.println("Host keys in " + hkr.getKnownHostsRepositoryID());
-        for (int i = 0; i < hks.length; i++) {
-          HostKey hk = hks[i];
+        for (HostKey hk : hks) {
           System.out.println(hk.getHost() + " " + hk.getType() + " " + hk.getFingerPrint(jsch));
         }
         System.out.println("");
@@ -51,10 +50,8 @@ public class KnownHosts {
       UserInfo ui = new MyUserInfo();
       session.setUserInfo(ui);
 
-      /*
-       * // In adding to known_hosts file, host names will be hashed.
-       * session.setConfig("HashKnownHosts", "yes");
-       */
+      // In adding to known_hosts file, host names will be hashed.
+      // session.setConfig("HashKnownHosts", "yes");
 
       session.connect();
 
@@ -88,7 +85,7 @@ public class KnownHosts {
     }
 
     String passwd;
-    JTextField passwordField = (JTextField) new JPasswordField(20);
+    JTextField passwordField = new JPasswordField(20);
 
     public String getPassphrase() {
       return null;
