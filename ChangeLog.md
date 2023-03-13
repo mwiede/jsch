@@ -1,5 +1,6 @@
 * [0.2.8](https://github.com/mwiede/jsch/releases/tag/jsch-0.2.8)
   * [#287](https://github.com/mwiede/jsch/issues/287) add algorithm type information to algorithm negotiation logs.
+  * [#289](https://github.com/mwiede/jsch/issues/289) wrap NoClassDefFoundError's for invalid private keys.
 * [0.2.7](https://github.com/mwiede/jsch/releases/tag/jsch-0.2.7)
   * Fix exception logging in Log4j2Logger.
   * [#265](https://github.com/mwiede/jsch/issues/265) change buffer_margin computation to be dynamic based upon the MAC to allow connections that advertise small maximum packet sizes.
