@@ -555,6 +555,7 @@ public class JSch {
    */
   @Deprecated
   public void removeIdentity(String name) throws JSchException {
+    @SuppressWarnings("unchecked")
     Vector<Identity> identities = identityRepository.getIdentities();
     for (int i = 0; i < identities.size(); i++) {
       Identity identity = identities.elementAt(i);
@@ -587,6 +588,7 @@ public class JSch {
    */
   public Vector<String> getIdentityNames() throws JSchException {
     Vector<String> foo = new Vector<>();
+    @SuppressWarnings("unchecked")
     Vector<Identity> identities = identityRepository.getIdentities();
     for (int i = 0; i < identities.size(); i++) {
       Identity identity = identities.elementAt(i);

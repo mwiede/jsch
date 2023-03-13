@@ -74,13 +74,13 @@ class IdentityRepositoryWrapper implements IdentityRepository {
   }
 
   @Override
-  public Vector<Identity> getIdentities() {
-    Vector<Identity> result = new Vector<>();
+  public Vector<?> getIdentities() {
+    Vector<Object> result = new Vector<>();
     for (int i = 0; i < cache.size(); i++) {
       Identity identity = cache.elementAt(i);
       result.add(identity);
     }
-    Vector<Identity> tmp = ir.getIdentities();
+    Vector<?> tmp = ir.getIdentities();
     for (int i = 0; i < tmp.size(); i++) {
       result.add(tmp.elementAt(i));
     }

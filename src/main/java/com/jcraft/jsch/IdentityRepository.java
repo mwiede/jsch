@@ -37,7 +37,8 @@ public interface IdentityRepository {
 
   public int getStatus();
 
-  public Vector<Identity> getIdentities();
+  @SuppressWarnings("rawtypes")
+  public Vector getIdentities();
 
   public boolean add(byte[] identity);
 

@@ -50,6 +50,6 @@ class KeyPair2Test {
         jSch.addIdentity(prvkey);
       }
     });
-    assertEquals(keyType, jSch.getIdentityRepository().getIdentities().get(0).getAlgName());
+    assertEquals(keyType, ((Identity) jSch.getIdentityRepository().getIdentities().get(0)).getAlgName());
   }
 }

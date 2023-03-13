@@ -34,6 +34,7 @@ class UserAuthPublicKey extends UserAuth {
   public boolean start(Session session) throws Exception {
     super.start(session);
 
+    @SuppressWarnings("unchecked")
     Vector<Identity> identities = session.getIdentityRepository().getIdentities();
 
     synchronized (identities) {

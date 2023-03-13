@@ -49,7 +49,7 @@ class LocalIdentityRepository implements IdentityRepository {
   }
 
   @Override
-  public synchronized Vector<Identity> getIdentities() {
+  public synchronized Vector<?> getIdentities() {
     removeDupulicates();
     Vector<Identity> v = new Vector<>();
     for (int i = 0; i < identities.size(); i++) {

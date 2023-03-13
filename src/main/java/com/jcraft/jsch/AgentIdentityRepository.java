@@ -37,7 +37,7 @@ public class AgentIdentityRepository implements IdentityRepository {
   }
 
   @Override
-  public Vector<Identity> getIdentities() {
+  public Vector<?> getIdentities() {
     return agent.getIdentities();
   }
 

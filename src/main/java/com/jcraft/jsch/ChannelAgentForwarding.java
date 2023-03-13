@@ -128,6 +128,7 @@ class ChannelAgentForwarding extends Channel {
 
     if (typ == SSH2_AGENTC_REQUEST_IDENTITIES) {
       mbuf.putByte(SSH2_AGENT_IDENTITIES_ANSWER);
+      @SuppressWarnings("unchecked")
       Vector<Identity> identities = irepo.getIdentities();
       synchronized (identities) {
         int count = 0;
@@ -158,6 +159,7 @@ class ChannelAgentForwarding extends Channel {
       // datafellows = SSH_BUG_SIGBLOB;
       // }
 
+      @SuppressWarnings("unchecked")
       Vector<Identity> identities = irepo.getIdentities();
       Identity identity = null;
       synchronized (identities) {
