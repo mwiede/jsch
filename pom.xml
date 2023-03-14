@@ -3,7 +3,7 @@
     <groupId>com.jcraft</groupId>
     <artifactId>jsch</artifactId>
     <packaging>jar</packaging>
-    <version>0.2.2</version>
+    <version>0.2.4</version>
     <name>JSch</name>
     <url>https://github.com/mwiede/jsch</url>
     <description>JSch is a pure Java implementation of SSH2</description>
@@ -559,6 +559,7 @@
                 <artifactId>maven-dependency-plugin</artifactId>
                 <version>3.5.0</version>
             </plugin>
+<!--
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-checkstyle-plugin</artifactId>
@@ -601,6 +602,7 @@
                     </directories>
                 </configuration>
             </plugin>
+-->
             <plugin>
                 <groupId>org.jacoco</groupId>
                 <artifactId>jacoco-maven-plugin</artifactId>
@@ -708,6 +710,7 @@
                 </plugins>
             </build>
         </profile>
+<!--
         <profile>
             <id>format</id>
             <build>
@@ -769,5 +772,6 @@
                 </plugins>
             </build>
         </profile>
+-->
     </profiles>
 </project>
