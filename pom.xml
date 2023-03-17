@@ -631,6 +631,15 @@
                                     <include>com.kohlschutter.junixsocket:junixsocket-native-common</include>
                                 </includes>
                             </artifactSet>
+                            <filters>
+                                <filter>
+                                    <artifact>com.kohlschutter.junixsocket:*</artifact>
+                                    <excludes>
+                                        <exclude>lib/**/*.dll</exclude>
+                                        <exclude>lib/**/*.nodeps.so</exclude>
+                                    </excludes>
+                                </filter>
+                            </filters>
                         </configuration>
                     </execution>
                 </executions>
