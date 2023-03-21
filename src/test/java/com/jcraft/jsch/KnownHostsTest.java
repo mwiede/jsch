@@ -1,5 +1,7 @@
 package com.jcraft.jsch;
 
+import static java.nio.charset.StandardCharsets.ISO_8859_1;
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -113,7 +115,7 @@ class KnownHostsTest {
     File hostFile = File.createTempFile("setknownhosts", ".txt");
     try {
       try (FileOutputStream fos = new FileOutputStream(hostFile)) {
-        fos.write("some host data".getBytes("8859_1"));
+        fos.write("some host data".getBytes(ISO_8859_1));
       }
       System.setProperty("user.home", hostFile.getParentFile().getAbsolutePath());
       kh.setKnownHosts("some_filename:that can't exist");
@@ -208,7 +210,7 @@ class KnownHostsTest {
     // comment with umlaut to check used charset for dump
     kh.setKnownHosts(
         new ByteArrayInputStream((hashValue + " " + "ssh-rsa " + rsaKey + " some comment\r\n"
-            + "# 192.168.1.61 ssh-rsa MYRSAKEY some other commänt").getBytes("utf8")));
+            + "# 192.168.1.61 ssh-rsa MYRSAKEY some other commänt").getBytes(UTF_8)));
 
     assertEquals(0, messages.size(), "no messages expected");
     HostKey[] keys = kh.getHostKey();
@@ -237,7 +239,7 @@ class KnownHostsTest {
     KnownHosts kh = new KnownHosts(jsch);
     kh.setKnownHosts(new ByteArrayInputStream(
         ("@cert-authority " + hostLine + " " + "ssh-rsa " + rsaKey + " some comment")
-            .getBytes("8859_1")));
+            .getBytes(ISO_8859_1)));
 
     assertEquals(0, messages.size(), "no messages expected");
     HostKey[] keys = kh.getHostKey();
@@ -262,7 +264,7 @@ class KnownHostsTest {
 
     kh.setKnownHosts(new ByteArrayInputStream(
         ("!ssh.example.com,!192.168.1.61 " + "ssh-rsa " + rsaKey + " some comment")
-            .getBytes("8859_1")));
+            .getBytes(ISO_8859_1)));
     assertEquals(0, messages.size(), "no messages expected");
     keys = kh.getHostKey();
     checkResultForKeyResult(keys, rsaKey, "!ssh.example.com,!192.168.1.61", "");
@@ -314,7 +316,7 @@ class KnownHostsTest {
         void dump(OutputStream out) {
           messages.add("stream based dump called with stream: " + out.getClass().getName());
           try {
-            out.write("some dump data".getBytes("8859_1"));
+            out.write("some dump data".getBytes(ISO_8859_1));
           } catch (IOException ioe) {
             Assertions.fail("exception occurred while trying to write dump to tream", ioe);
           }
@@ -382,28 +384,28 @@ class KnownHostsTest {
     KnownHosts kh = new KnownHosts(jsch);
 
     kh.dumpHostKey(sink,
-        new HostKey("", "hostwithoutmarker", HostKey.SSHRSA, "rsakey".getBytes("8859_1"), null));
+        new HostKey("", "hostwithoutmarker", HostKey.SSHRSA, "rsakey".getBytes(ISO_8859_1), null));
     assertEquals("hostwithoutmarker ssh-rsa cnNha2V5\n", sink.toString("utf8"), "check dumped key");
     sink.reset();
     kh.dumpHostKey(sink, new HostKey("@somemarker", "hostwithmarker", HostKey.SSHRSA,
-        "rsakey".getBytes("8859_1"), null));
+        "rsakey".getBytes(ISO_8859_1), null));
     assertEquals("@somemarker hostwithmarker ssh-rsa cnNha2V5\n", sink.toString("utf8"),
         "check dumped key");
     sink.reset();
 
     kh.dumpHostKey(sink, new HostKey("", "hostwithoutmarker", HostKey.SSHRSA,
-        "rsakey".getBytes("8859_1"), "some commänt"));
+        "rsakey".getBytes(ISO_8859_1), "some commänt"));
     assertEquals("hostwithoutmarker ssh-rsa cnNha2V5 some commänt\n", sink.toString("utf8"),
         "check dumped key");
     sink.reset();
     kh.dumpHostKey(sink, new HostKey("@somemarker", "hostwithmarker", HostKey.SSHRSA,
-        "rsakey".getBytes("8859_1"), "some commänt"));
+        "rsakey".getBytes(ISO_8859_1), "some commänt"));
     assertEquals("@somemarker hostwithmarker ssh-rsa cnNha2V5 some commänt\n",
         sink.toString("utf8"), "check dumped key");
     sink.reset();
 
     kh.dumpHostKey(sink, new HostKey("", "hostwithoutmarker", HostKey.UNKNOWN,
-        "rsakey".getBytes("8859_1"), "some commänt"));
+        "rsakey".getBytes(ISO_8859_1), "some commänt"));
     assertEquals("hostwithoutmarker\n", sink.toString("utf8"), "check dumped key");
     sink.reset();
   }
@@ -434,7 +436,7 @@ class KnownHostsTest {
     kh.hmacsha1 = null; // this will lead to an NPE if the creation uses this instance
 
     try {
-      kh.createHashedHostKey("host.example.com", "    ssh-rsa".getBytes("8859_1"));
+      kh.createHashedHostKey("host.example.com", "    ssh-rsa".getBytes(ISO_8859_1));
       fail("exception expected");
     } catch (NullPointerException npe) {
       // expected but messages differ between java versions, so we don't check the message
@@ -442,7 +444,8 @@ class KnownHostsTest {
     }
 
     kh.hmacsha1 = new HMACSHA256();
-    HostKey hostKey = kh.createHashedHostKey("host.example.com", "    ssh-rsa".getBytes("8859_1"));
+    HostKey hostKey =
+        kh.createHashedHostKey("host.example.com", "    ssh-rsa".getBytes(ISO_8859_1));
     assertNotNull(hostKey, "returned host key shouldn't be null");
     assertEquals(HashedHostKey.class.getName(), hostKey.getClass().getName(),
         "check type of returned host key");
@@ -792,7 +795,7 @@ class KnownHostsTest {
         "invalid syntax should return NOT_INCLUDED");
 
     assertEquals(KnownHosts.CHANGED,
-        kh.check("host.example.com", "    ssh-rsa1234".getBytes("8859_1")),
+        kh.check("host.example.com", "    ssh-rsa1234".getBytes(ISO_8859_1)),
         "changed key should return CHANGED");
     assertEquals(KnownHosts.NOT_INCLUDED, kh.check("host2.example.com", rsaKeyBytes),
         "host mismatch should return NOT_INCLUDED");
@@ -888,7 +891,7 @@ class KnownHostsTest {
         getHostKeysString(hosts), "unexpected hosts");
     assertEquals("", getMessagesAsString(), "unexpected messages");
 
-    kh.remove("[192.277.325.5]:123", "ssh-rsa", "    ssh-rsa1234".getBytes("8859_1"));
+    kh.remove("[192.277.325.5]:123", "ssh-rsa", "    ssh-rsa1234".getBytes(ISO_8859_1));
     hosts = kh.getHostKey();
     assertEquals(3, hosts.length, "unexpected number of host keys: " + getHostKeysString(hosts));
     assertEquals(
@@ -1029,10 +1032,10 @@ class KnownHostsTest {
     assertEquals(expectedType, hhk.getType(), "type mismatch");
     assertTrue(hhk.isHashed(), "key should report itself hashed");
     assertEquals("AAECAwQFBgcICQoLDA0ODxAREhM=",
-        new String(Util.toBase64(hhk.salt, 0, hhk.salt.length, true), "8859_1"),
+        new String(Util.toBase64(hhk.salt, 0, hhk.salt.length, true), ISO_8859_1),
         "salt should be null");
     assertEquals("/pE4peaossRYDRp6bEWa348eFLI=",
-        new String(Util.toBase64(hhk.hash, 0, hhk.hash.length, true), "8859_1"),
+        new String(Util.toBase64(hhk.hash, 0, hhk.hash.length, true), ISO_8859_1),
         "salt should be null");
   }
 

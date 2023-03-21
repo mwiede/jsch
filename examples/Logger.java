@@ -1,5 +1,6 @@
 /**
  * This program will demonstrate how to enable logging mechanism and get logging messages.
+ *
  */
 import com.jcraft.jsch.*;
 import java.awt.*;
@@ -42,30 +43,34 @@ public class Logger {
   }
 
   public static class MyLogger implements com.jcraft.jsch.Logger {
-    static java.util.Hashtable name = new java.util.Hashtable();
+    static java.util.Map<Integer, String> name = new java.util.HashMap<>();
     static {
-      name.put(new Integer(DEBUG), "DEBUG: ");
-      name.put(new Integer(INFO), "INFO: ");
-      name.put(new Integer(WARN), "WARN: ");
-      name.put(new Integer(ERROR), "ERROR: ");
-      name.put(new Integer(FATAL), "FATAL: ");
+      name.put(DEBUG, "DEBUG: ");
+      name.put(INFO, "INFO: ");
+      name.put(WARN, "WARN: ");
+      name.put(ERROR, "ERROR: ");
+      name.put(FATAL, "FATAL: ");
     }
 
+    @Override
     public boolean isEnabled(int level) {
       return true;
     }
 
+    @Override
     public void log(int level, String message) {
-      System.err.print(name.get(new Integer(level)));
+      System.err.print(name.get(level));
       System.err.println(message);
     }
   }
 
   public static class MyUserInfo implements UserInfo, UIKeyboardInteractive {
+    @Override
     public String getPassword() {
       return passwd;
     }
 
+    @Override
     public boolean promptYesNo(String str) {
       Object[] options = {"yes", "no"};
       int foo = JOptionPane.showOptionDialog(null, str, "Warning", JOptionPane.DEFAULT_OPTION,
@@ -74,16 +79,19 @@ public class Logger {
     }
 
     String passwd;
-    JTextField passwordField = (JTextField) new JPasswordField(20);
+    JTextField passwordField = new JPasswordField(20);
 
+    @Override
     public String getPassphrase() {
       return null;
     }
 
+    @Override
     public boolean promptPassphrase(String message) {
       return true;
     }
 
+    @Override
     public boolean promptPassword(String message) {
       Object[] ob = {passwordField};
       int result = JOptionPane.showConfirmDialog(null, ob, message, JOptionPane.OK_CANCEL_OPTION);
@@ -95,6 +103,7 @@ public class Logger {
       }
     }
 
+    @Override
     public void showMessage(String message) {
       JOptionPane.showMessageDialog(null, message);
     }
@@ -103,6 +112,7 @@ public class Logger {
         GridBagConstraints.NORTHWEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0);
     private Container panel;
 
+    @Override
     public String[] promptKeyboardInteractive(String destination, String name, String instruction,
         String[] prompt, boolean[] echo) {
       panel = new JPanel();

@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Configuration status="OFF">
+<Configuration name="Log4j2LoggerTest" status="off" strict="true">
   <Appenders>
-    <Console name="Console"/>
-    <List name="List"/>
+    <Appender type="Console" name="Console"/>
+    <Appender type="List" name="List"/>
   </Appenders>
   <Loggers>
     <Root level="off">

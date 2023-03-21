@@ -1,5 +1,6 @@
 /**
- * This program will demonstrate how to enable none cipher.
+ * This program will demonstrate how to enable none cipher. You will be asked passwd. If everything
+ * works fine, a local file 'file1' will copied to 'file2' on 'remotehost'.
  *
  */
 import com.jcraft.jsch.*;
@@ -14,7 +15,6 @@ public class ScpToNoneCipher {
       System.exit(-1);
     }
 
-    FileInputStream fis = null;
     try {
 
       String lfile = arg[0];
@@ -53,8 +53,20 @@ public class ScpToNoneCipher {
         System.exit(0);
       }
 
+      File _lfile = new File(lfile);
+
+      command = "T " + (_lfile.lastModified() / 1000) + " 0";
+      // The access time should be sent here,
+      // but it is not accessible with JavaAPI ;-<
+      command += " " + (_lfile.lastModified() / 1000) + " 0\n";
+      out.write(command.getBytes());
+      out.flush();
+      if (checkAck(in) != 0) {
+        System.exit(0);
+      }
+
       // send "C0644 filesize filename", where filename should not include '/'
-      long filesize = (new File(lfile)).length();
+      long filesize = _lfile.length();
       command = "C0644 " + filesize + " ";
       if (lfile.lastIndexOf('/') > 0) {
         command += lfile.substring(lfile.lastIndexOf('/') + 1);
@@ -69,18 +81,18 @@ public class ScpToNoneCipher {
         System.exit(0);
       }
 
-      // send a content of lfile
-      fis = new FileInputStream(lfile);
       byte[] buf = new byte[1024];
-      while (true) {
-        int len = fis.read(buf, 0, buf.length);
-        if (len <= 0)
-          break;
-        out.write(buf, 0, len);
-        out.flush();
+
+      // send a content of lfile
+      try (InputStream fis = new FileInputStream(lfile)) {
+        while (true) {
+          int len = fis.read(buf, 0, buf.length);
+          if (len <= 0)
+            break;
+          out.write(buf, 0, len);
+          // out.flush();
+        }
       }
-      fis.close();
-      fis = null;
 
       // send '\0'
       buf[0] = 0;
@@ -96,11 +108,6 @@ public class ScpToNoneCipher {
       System.exit(0);
     } catch (Exception e) {
       System.out.println(e);
-      try {
-        if (fis != null)
-          fis.close();
-      } catch (Exception ee) {
-      }
     }
   }
 
@@ -116,27 +123,29 @@ public class ScpToNoneCipher {
       return b;
 
     if (b == 1 || b == 2) {
-      StringBuffer sb = new StringBuffer();
+      StringBuilder sb = new StringBuilder();
       int c;
       do {
         c = in.read();
         sb.append((char) c);
       } while (c != '\n');
       if (b == 1) { // error
-        System.out.print(sb.toString());
+        System.out.print(sb);
       }
       if (b == 2) { // fatal error
-        System.out.print(sb.toString());
+        System.out.print(sb);
       }
     }
     return b;
   }
 
   public static class MyUserInfo implements UserInfo, UIKeyboardInteractive {
+    @Override
     public String getPassword() {
       return passwd;
     }
 
+    @Override
     public boolean promptYesNo(String str) {
       Object[] options = {"yes", "no"};
       int foo = JOptionPane.showOptionDialog(null, str, "Warning", JOptionPane.DEFAULT_OPTION,
@@ -145,16 +154,19 @@ public class ScpToNoneCipher {
     }
 
     String passwd;
-    JTextField passwordField = (JTextField) new JPasswordField(20);
+    JTextField passwordField = new JPasswordField(20);
 
+    @Override
     public String getPassphrase() {
       return null;
     }
 
+    @Override
     public boolean promptPassphrase(String message) {
       return true;
     }
 
+    @Override
     public boolean promptPassword(String message) {
       Object[] ob = {passwordField};
       int result = JOptionPane.showConfirmDialog(null, ob, message, JOptionPane.OK_CANCEL_OPTION);
@@ -166,6 +178,7 @@ public class ScpToNoneCipher {
       }
     }
 
+    @Override
     public void showMessage(String message) {
       JOptionPane.showMessageDialog(null, message);
     }
@@ -174,6 +187,7 @@ public class ScpToNoneCipher {
         GridBagConstraints.NORTHWEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0);
     private Container panel;
 
+    @Override
     public String[] promptKeyboardInteractive(String destination, String name, String instruction,
         String[] prompt, boolean[] echo) {
       panel = new JPanel();

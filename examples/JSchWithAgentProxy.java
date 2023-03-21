@@ -8,6 +8,7 @@ public class JSchWithAgentProxy {
     try {
       JSch jsch = new JSch();
 
+      // IdentityRepository irepo = new AgentIdentityRepository(new PageantConnector());
       IdentityRepository irepo = new AgentIdentityRepository(new SSHAgentConnector());
       jsch.setIdentityRepository(irepo);
 

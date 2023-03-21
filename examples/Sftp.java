@@ -1,9 +1,7 @@
 /**
- * This program will demonstrate the sftp protocol support. $ CLASSPATH=.:../build javac Sftp.java $
- * CLASSPATH=.:../build java Sftp You will be asked username, host and passwd. If everything works
- * fine, you will get a prompt 'sftp>'. 'help' command will show available command. In current
- * implementation, the destination path for 'get' and 'put' commands must be a file, not a
- * directory.
+ * This program will demonstrate the sftp protocol support. If everything works fine, you will get a
+ * prompt 'sftp>'. 'help' command will show available command. In current implementation, the
+ * destination path for 'get' and 'put' commands must be a file, not a directory.
  *
  */
 import com.jcraft.jsch.*;
@@ -42,7 +40,7 @@ public class Sftp {
       java.io.InputStream in = System.in;
       java.io.PrintStream out = System.out;
 
-      java.util.Vector cmds = new java.util.Vector();
+      java.util.List<String> cmds = new java.util.ArrayList<>();
       byte[] buf = new byte[1024];
       int i;
       String str;
@@ -50,7 +48,7 @@ public class Sftp {
 
       while (true) {
         out.print("sftp> ");
-        cmds.removeAllElements();
+        cmds.clear();
         i = in.read(buf, 0, 1024);
         if (i <= 0)
           break;
@@ -58,13 +56,13 @@ public class Sftp {
         i--;
         if (i > 0 && buf[i - 1] == 0x0d)
           i--;
-        // str=new String(buf, 0, i);
-        // System.out.println("|"+str+"|");
+        // str = new String(buf, 0, i);
+        // System.out.println("|" + str + "|");
         int s = 0;
         for (int ii = 0; ii < i; ii++) {
           if (buf[ii] == ' ') {
             if (ii - s > 0) {
-              cmds.addElement(new String(buf, s, ii - s));
+              cmds.add(new String(buf, s, ii - s));
             }
             while (ii < i) {
               if (buf[ii] != ' ')
@@ -75,12 +73,12 @@ public class Sftp {
           }
         }
         if (s < i) {
-          cmds.addElement(new String(buf, s, i - s));
+          cmds.add(new String(buf, s, i - s));
         }
-        if (cmds.size() == 0)
+        if (cmds.isEmpty())
           continue;
 
-        String cmd = (String) cmds.elementAt(0);
+        String cmd = cmds.get(0);
         if (cmd.equals("quit")) {
           c.quit();
           break;
@@ -99,7 +97,7 @@ public class Sftp {
             continue;
           }
           try {
-            level = Integer.parseInt((String) cmds.elementAt(1));
+            level = Integer.parseInt(cmds.get(1));
             if (level == 0) {
               session.setConfig("compression.s2c", "none");
               session.setConfig("compression.c2s", "none");
@@ -115,21 +113,21 @@ public class Sftp {
         if (cmd.equals("cd") || cmd.equals("lcd")) {
           if (cmds.size() < 2)
             continue;
-          String path = (String) cmds.elementAt(1);
+          String path = cmds.get(1);
           try {
             if (cmd.equals("cd"))
               c.cd(path);
             else
               c.lcd(path);
           } catch (SftpException e) {
-            System.out.println(e.toString());
+            System.out.println(e);
           }
           continue;
         }
         if (cmd.equals("rm") || cmd.equals("rmdir") || cmd.equals("mkdir")) {
           if (cmds.size() < 2)
             continue;
-          String path = (String) cmds.elementAt(1);
+          String path = cmds.get(1);
           try {
             if (cmd.equals("rm"))
               c.rm(path);
@@ -138,20 +136,18 @@ public class Sftp {
             else
               c.mkdir(path);
           } catch (SftpException e) {
-            System.out.println(e.toString());
+            System.out.println(e);
           }
           continue;
         }
         if (cmd.equals("chgrp") || cmd.equals("chown") || cmd.equals("chmod")) {
           if (cmds.size() != 3)
             continue;
-          String path = (String) cmds.elementAt(2);
+          String path = cmds.get(2);
           int foo = 0;
           if (cmd.equals("chmod")) {
-            byte[] bar = ((String) cmds.elementAt(1)).getBytes();
-            int k;
-            for (int j = 0; j < bar.length; j++) {
-              k = bar[j];
+            byte[] bar = cmds.get(1).getBytes();
+            for (int k : bar) {
               if (k < '0' || k > '7') {
                 foo = -1;
                 break;
@@ -163,7 +159,7 @@ public class Sftp {
               continue;
           } else {
             try {
-              foo = Integer.parseInt((String) cmds.elementAt(1));
+              foo = Integer.parseInt(cmds.get(1));
             } catch (Exception e) {
               continue;
             }
@@ -177,7 +173,7 @@ public class Sftp {
               c.chmod(foo, path);
             }
           } catch (SftpException e) {
-            System.out.println(e.toString());
+            System.out.println(e);
           }
           continue;
         }
@@ -194,29 +190,24 @@ public class Sftp {
         if (cmd.equals("ls") || cmd.equals("dir")) {
           String path = ".";
           if (cmds.size() == 2)
-            path = (String) cmds.elementAt(1);
+            path = cmds.get(1);
           try {
-            java.util.Vector vv = c.ls(path);
+            java.util.Vector<ChannelSftp.LsEntry> vv = c.ls(path);
             if (vv != null) {
-              for (int ii = 0; ii < vv.size(); ii++) {
-                // out.println(vv.elementAt(ii).toString());
-
-                Object obj = vv.elementAt(ii);
-                if (obj instanceof com.jcraft.jsch.ChannelSftp.LsEntry) {
-                  out.println(((com.jcraft.jsch.ChannelSftp.LsEntry) obj).getLongname());
-                }
-
+              for (ChannelSftp.LsEntry le : vv) {
+                // out.println(le);
+                out.println(le.getLongname());
               }
             }
           } catch (SftpException e) {
-            System.out.println(e.toString());
+            System.out.println(e);
           }
           continue;
         }
         if (cmd.equals("lls") || cmd.equals("ldir")) {
           String path = ".";
           if (cmds.size() == 2)
-            path = (String) cmds.elementAt(1);
+            path = cmds.get(1);
           try {
             java.io.File file = new java.io.File(path);
             if (!file.exists()) {
@@ -225,8 +216,8 @@ public class Sftp {
             }
             if (file.isDirectory()) {
               String[] list = file.list();
-              for (int ii = 0; ii < list.length; ii++) {
-                out.println(list[ii]);
+              for (String l : list) {
+                out.println(l);
               }
               continue;
             }
@@ -240,11 +231,11 @@ public class Sftp {
             || cmd.equals("put") || cmd.equals("put-resume") || cmd.equals("put-append")) {
           if (cmds.size() != 2 && cmds.size() != 3)
             continue;
-          String p1 = (String) cmds.elementAt(1);
-          // String p2=p1;
+          String p1 = cmds.get(1);
+          // String p2 = p1;
           String p2 = ".";
           if (cmds.size() == 3)
-            p2 = (String) cmds.elementAt(2);
+            p2 = cmds.get(2);
           try {
             SftpProgressMonitor monitor = new MyProgressMonitor();
             if (cmd.startsWith("get")) {
@@ -265,7 +256,7 @@ public class Sftp {
               c.put(p1, p2, monitor, mode);
             }
           } catch (SftpException e) {
-            System.out.println(e.toString());
+            System.out.println(e);
           }
           continue;
         }
@@ -273,8 +264,8 @@ public class Sftp {
             || cmd.equals("hardlink")) {
           if (cmds.size() != 3)
             continue;
-          String p1 = (String) cmds.elementAt(1);
-          String p2 = (String) cmds.elementAt(2);
+          String p1 = cmds.get(1);
+          String p2 = cmds.get(2);
           try {
             if (cmd.equals("hardlink")) {
               c.hardlink(p1, p2);
@@ -283,14 +274,14 @@ public class Sftp {
             else
               c.symlink(p1, p2);
           } catch (SftpException e) {
-            System.out.println(e.toString());
+            System.out.println(e);
           }
           continue;
         }
         if (cmd.equals("df")) {
           if (cmds.size() > 2)
             continue;
-          String p1 = cmds.size() == 1 ? "." : (String) cmds.elementAt(1);
+          String p1 = cmds.size() == 1 ? "." : cmds.get(1);
           SftpStatVFS stat = c.statVFS(p1);
 
           long size = stat.getSize();
@@ -310,7 +301,7 @@ public class Sftp {
         if (cmd.equals("stat") || cmd.equals("lstat")) {
           if (cmds.size() != 2)
             continue;
-          String p1 = (String) cmds.elementAt(1);
+          String p1 = cmds.get(1);
           SftpATTRS attrs = null;
           try {
             if (cmd.equals("stat"))
@@ -318,7 +309,7 @@ public class Sftp {
             else
               attrs = c.lstat(p1);
           } catch (SftpException e) {
-            System.out.println(e.toString());
+            System.out.println(e);
           }
           if (attrs != null) {
             out.println(attrs);
@@ -329,26 +320,26 @@ public class Sftp {
         if (cmd.equals("readlink")) {
           if (cmds.size() != 2)
             continue;
-          String p1 = (String) cmds.elementAt(1);
+          String p1 = cmds.get(1);
           String filename = null;
           try {
             filename = c.readlink(p1);
             out.println(filename);
           } catch (SftpException e) {
-            System.out.println(e.toString());
+            System.out.println(e);
           }
           continue;
         }
         if (cmd.equals("realpath")) {
           if (cmds.size() != 2)
             continue;
-          String p1 = (String) cmds.elementAt(1);
+          String p1 = cmds.get(1);
           String filename = null;
           try {
             filename = c.realpath(p1);
             out.println(filename);
           } catch (SftpException e) {
-            System.out.println(e.toString());
+            System.out.println(e);
           }
           continue;
         }
@@ -370,10 +361,12 @@ public class Sftp {
   }
 
   public static class MyUserInfo implements UserInfo, UIKeyboardInteractive {
+    @Override
     public String getPassword() {
       return passwd;
     }
 
+    @Override
     public boolean promptYesNo(String str) {
       Object[] options = {"yes", "no"};
       int foo = JOptionPane.showOptionDialog(null, str, "Warning", JOptionPane.DEFAULT_OPTION,
@@ -382,16 +375,19 @@ public class Sftp {
     }
 
     String passwd;
-    JTextField passwordField = (JTextField) new JPasswordField(20);
+    JTextField passwordField = new JPasswordField(20);
 
+    @Override
     public String getPassphrase() {
       return null;
     }
 
+    @Override
     public boolean promptPassphrase(String message) {
       return true;
     }
 
+    @Override
     public boolean promptPassword(String message) {
       Object[] ob = {passwordField};
       int result = JOptionPane.showConfirmDialog(null, ob, message, JOptionPane.OK_CANCEL_OPTION);
@@ -403,6 +399,7 @@ public class Sftp {
       }
     }
 
+    @Override
     public void showMessage(String message) {
       JOptionPane.showMessageDialog(null, message);
     }
@@ -411,6 +408,7 @@ public class Sftp {
         GridBagConstraints.NORTHWEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0);
     private Container panel;
 
+    @Override
     public String[] promptKeyboardInteractive(String destination, String name, String instruction,
         String[] prompt, boolean[] echo) {
       panel = new JPanel();
@@ -456,28 +454,12 @@ public class Sftp {
     }
   }
 
-  /*
-   * public static class MyProgressMonitor implements com.jcraft.jsch.ProgressMonitor{ JProgressBar
-   * progressBar; JFrame frame; long count=0; long max=0;
-   *
-   * public void init(String info, long max){ this.max=max; if(frame==null){ frame=new JFrame();
-   * frame.setSize(200, 20); progressBar = new JProgressBar(); } count=0;
-   *
-   * frame.setTitle(info); progressBar.setMaximum((int)max); progressBar.setMinimum((int)0);
-   * progressBar.setValue((int)count); progressBar.setStringPainted(true);
-   *
-   * JPanel p=new JPanel(); p.add(progressBar); frame.getContentPane().add(progressBar);
-   * frame.setVisible(true); System.out.println("!info:"+info+", max="+max+" "+progressBar); }
-   * public void count(long count){ this.count+=count; System.out.println("count: "+count);
-   * progressBar.setValue((int)this.count); } public void end(){ System.out.println("end");
-   * progressBar.setValue((int)this.max); frame.setVisible(false); } }
-   */
-
   public static class MyProgressMonitor implements SftpProgressMonitor {
     ProgressMonitor monitor;
     long count = 0;
     long max = 0;
 
+    @Override
     public void init(int op, String src, String dest, long max) {
       this.max = max;
       monitor = new ProgressMonitor(null,
@@ -490,6 +472,7 @@ public class Sftp {
 
     private long percent = -1;
 
+    @Override
     public boolean count(long count) {
       this.count += count;
 
@@ -504,6 +487,7 @@ public class Sftp {
       return !(monitor.isCanceled());
     }
 
+    @Override
     public void end() {
       monitor.close();
     }

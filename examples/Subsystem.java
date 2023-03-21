@@ -38,25 +38,42 @@ public class Subsystem {
       channel.setOutputStream(System.out);
       channel.connect();
 
-      /*
-       * channel.setInputStream(System.in); ((ChannelSubsystem)channel).setErrStream(System.err);
-       * InputStream in = channel.getInputStream(); channel.connect();
-       *
-       * byte[] tmp=new byte[1024]; while(true){ while(in.available()>0){ int i=in.read(tmp, 0,
-       * 1024); if(i<0)break; System.out.print(new String(tmp, 0, i)); } if(channel.isClosed()){
-       * System.out.println("exit-status: "+channel.getExitStatus()); break; }
-       * try{Thread.sleep(1000);}catch(Exception ee){} } channel.disconnect(); session.disconnect();
-       */
+      // channel.setInputStream(System.in);
+      // ((ChannelSubsystem) channel).setErrStream(System.err);
+      // InputStream in = channel.getInputStream();
+      // channel.connect();
+      //
+      // byte[] tmp = new byte[1024];
+      // while (true) {
+      // while (in.available() > 0) {
+      // int i = in.read(tmp, 0, 1024);
+      // if (i < 0)
+      // break;
+      // System.out.print(new String(tmp, 0, i));
+      // }
+      // if (channel.isClosed()) {
+      // System.out.println("exit-status: " + channel.getExitStatus());
+      // break;
+      // }
+      // try {
+      // Thread.sleep(1000);
+      // } catch (Exception ee) {
+      // }
+      // }
+      // channel.disconnect();
+      // session.disconnect();
     } catch (Exception e) {
       System.out.println(e);
     }
   }
 
   public static class MyUserInfo implements UserInfo, UIKeyboardInteractive {
+    @Override
     public String getPassword() {
       return passwd;
     }
 
+    @Override
     public boolean promptYesNo(String str) {
       Object[] options = {"yes", "no"};
       int foo = JOptionPane.showOptionDialog(null, str, "Warning", JOptionPane.DEFAULT_OPTION,
@@ -65,16 +82,19 @@ public class Subsystem {
     }
 
     String passwd;
-    JTextField passwordField = (JTextField) new JPasswordField(20);
+    JTextField passwordField = new JPasswordField(20);
 
+    @Override
     public String getPassphrase() {
       return null;
     }
 
+    @Override
     public boolean promptPassphrase(String message) {
       return true;
     }
 
+    @Override
     public boolean promptPassword(String message) {
       Object[] ob = {passwordField};
       int result = JOptionPane.showConfirmDialog(null, ob, message, JOptionPane.OK_CANCEL_OPTION);
@@ -86,6 +106,7 @@ public class Subsystem {
       }
     }
 
+    @Override
     public void showMessage(String message) {
       JOptionPane.showMessageDialog(null, message);
     }
@@ -94,6 +115,7 @@ public class Subsystem {
         GridBagConstraints.NORTHWEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0);
     private Container panel;
 
+    @Override
     public String[] promptKeyboardInteractive(String destination, String name, String instruction,
         String[] prompt, boolean[] echo) {
       panel = new JPanel();

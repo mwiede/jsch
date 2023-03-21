@@ -1,8 +1,8 @@
 /**
  * This program will demonstrate SSH through jump hosts. Suppose that you don't have direct accesses
- * to host2 and host3. $ CLASSPATH=.:../build javac JumpHosts.java $ CLASSPATH=.:../build java
- * JumpHosts usr1@host1 usr2@host2 usr3@host3 You will be asked passwords for those destinations,
- * and if everything works fine, you will get file lists of your home-directory at host3.
+ * to host2 and host3. java JumpHosts usr1@host1 usr2@host2 usr3@host3. You will be asked passwords
+ * for those destinations. If everything works fine, you will get file lists of your home-directory
+ * at host3.
  *
  */
 import com.jcraft.jsch.*;
@@ -52,6 +52,7 @@ public class JumpHosts {
 
       sftp.connect();
       sftp.ls(".", new ChannelSftp.LsEntrySelector() {
+        @Override
         public int select(ChannelSftp.LsEntry le) {
           System.out.println(le);
           return ChannelSftp.LsEntrySelector.CONTINUE;
@@ -68,10 +69,12 @@ public class JumpHosts {
   }
 
   public static class MyUserInfo implements UserInfo, UIKeyboardInteractive {
+    @Override
     public String getPassword() {
       return passwd;
     }
 
+    @Override
     public boolean promptYesNo(String str) {
       Object[] options = {"yes", "no"};
       int foo = JOptionPane.showOptionDialog(null, str, "Warning", JOptionPane.DEFAULT_OPTION,
@@ -80,16 +83,19 @@ public class JumpHosts {
     }
 
     String passwd;
-    JTextField passwordField = (JTextField) new JPasswordField(20);
+    JTextField passwordField = new JPasswordField(20);
 
+    @Override
     public String getPassphrase() {
       return null;
     }
 
+    @Override
     public boolean promptPassphrase(String message) {
       return true;
     }
 
+    @Override
     public boolean promptPassword(String message) {
       Object[] ob = {passwordField};
       int result = JOptionPane.showConfirmDialog(null, ob, message, JOptionPane.OK_CANCEL_OPTION);
@@ -101,6 +107,7 @@ public class JumpHosts {
       }
     }
 
+    @Override
     public void showMessage(String message) {
       JOptionPane.showMessageDialog(null, message);
     }
@@ -109,6 +116,7 @@ public class JumpHosts {
         GridBagConstraints.NORTHWEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0);
     private Container panel;
 
+    @Override
     public String[] promptKeyboardInteractive(String destination, String name, String instruction,
         String[] prompt, boolean[] echo) {
       panel = new JPanel();
