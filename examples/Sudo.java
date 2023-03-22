@@ -33,7 +33,7 @@ public class Sudo {
 
       String sudo_pass = null;
       {
-        JTextField passwordField = (JTextField) new JPasswordField(8);
+        JTextField passwordField = new JPasswordField(8);
         Object[] ob = {passwordField};
         int result = JOptionPane.showConfirmDialog(null, ob, "Enter password for sudo",
             JOptionPane.OK_CANCEL_OPTION);
@@ -87,10 +87,12 @@ public class Sudo {
   }
 
   public static class MyUserInfo implements UserInfo, UIKeyboardInteractive {
+    @Override
     public String getPassword() {
       return passwd;
     }
 
+    @Override
     public boolean promptYesNo(String str) {
       Object[] options = {"yes", "no"};
       int foo = JOptionPane.showOptionDialog(null, str, "Warning", JOptionPane.DEFAULT_OPTION,
@@ -99,16 +101,19 @@ public class Sudo {
     }
 
     String passwd;
-    JTextField passwordField = (JTextField) new JPasswordField(20);
+    JTextField passwordField = new JPasswordField(20);
 
+    @Override
     public String getPassphrase() {
       return null;
     }
 
+    @Override
     public boolean promptPassphrase(String message) {
       return true;
     }
 
+    @Override
     public boolean promptPassword(String message) {
       Object[] ob = {passwordField};
       int result = JOptionPane.showConfirmDialog(null, ob, message, JOptionPane.OK_CANCEL_OPTION);
@@ -120,6 +125,7 @@ public class Sudo {
       }
     }
 
+    @Override
     public void showMessage(String message) {
       JOptionPane.showMessageDialog(null, message);
     }
@@ -128,6 +134,7 @@ public class Sudo {
         GridBagConstraints.NORTHWEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0);
     private Container panel;
 
+    @Override
     public String[] promptKeyboardInteractive(String destination, String name, String instruction,
         String[] prompt, boolean[] echo) {
       panel = new JPanel();

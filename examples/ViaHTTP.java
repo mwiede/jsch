@@ -1,7 +1,6 @@
 /**
- * This program will demonstrate the ssh session via HTTP proxy. $ CLASSPATH=.:../build javac
- * ViaHTTP.java $ CLASSPATH=.:../build java ViaHTTP You will be asked username, hostname,
- * proxy-server and passwd. If everything works fine, you will get the shell prompt.
+ * This program will demonstrate the ssh session via HTTP proxy. You will be asked username,
+ * hostname, proxy-server and passwd. If everything works fine, you will get the shell prompt.
  *
  */
 import com.jcraft.jsch.*;
@@ -53,10 +52,12 @@ public class ViaHTTP {
   }
 
   public static class MyUserInfo implements UserInfo, UIKeyboardInteractive {
+    @Override
     public String getPassword() {
       return passwd;
     }
 
+    @Override
     public boolean promptYesNo(String str) {
       Object[] options = {"yes", "no"};
       int foo = JOptionPane.showOptionDialog(null, str, "Warning", JOptionPane.DEFAULT_OPTION,
@@ -65,16 +66,19 @@ public class ViaHTTP {
     }
 
     String passwd;
-    JTextField passwordField = (JTextField) new JPasswordField(20);
+    JTextField passwordField = new JPasswordField(20);
 
+    @Override
     public String getPassphrase() {
       return null;
     }
 
+    @Override
     public boolean promptPassphrase(String message) {
       return true;
     }
 
+    @Override
     public boolean promptPassword(String message) {
       Object[] ob = {passwordField};
       int result = JOptionPane.showConfirmDialog(null, ob, message, JOptionPane.OK_CANCEL_OPTION);
@@ -86,6 +90,7 @@ public class ViaHTTP {
       }
     }
 
+    @Override
     public void showMessage(String message) {
       JOptionPane.showMessageDialog(null, message);
     }
@@ -94,6 +99,7 @@ public class ViaHTTP {
         GridBagConstraints.NORTHWEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0);
     private Container panel;
 
+    @Override
     public String[] promptKeyboardInteractive(String destination, String name, String instruction,
         String[] prompt, boolean[] echo) {
       panel = new JPanel();

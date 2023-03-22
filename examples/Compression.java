@@ -1,6 +1,5 @@
 /**
- * This program will demonstrate the packet compression. $ CLASSPATH=.:../build javac
- * Compression.java $ CLASSPATH=.:../build java Compression You will be asked username, hostname and
+ * This program will demonstrate the packet compression. You will be asked username, hostname and
  * passwd. If everything works fine, you will get the shell prompt. In this program, all data from
  * sshd server to jsch will be compressed.
  *
@@ -49,10 +48,12 @@ public class Compression {
   }
 
   public static class MyUserInfo implements UserInfo, UIKeyboardInteractive {
+    @Override
     public String getPassword() {
       return passwd;
     }
 
+    @Override
     public boolean promptYesNo(String str) {
       Object[] options = {"yes", "no"};
       int foo = JOptionPane.showOptionDialog(null, str, "Warning", JOptionPane.DEFAULT_OPTION,
@@ -61,16 +62,19 @@ public class Compression {
     }
 
     String passwd;
-    JTextField passwordField = (JTextField) new JPasswordField(20);
+    JTextField passwordField = new JPasswordField(20);
 
+    @Override
     public String getPassphrase() {
       return null;
     }
 
+    @Override
     public boolean promptPassphrase(String message) {
       return true;
     }
 
+    @Override
     public boolean promptPassword(String message) {
       Object[] ob = {passwordField};
       int result = JOptionPane.showConfirmDialog(null, ob, message, JOptionPane.OK_CANCEL_OPTION);
@@ -82,6 +86,7 @@ public class Compression {
       }
     }
 
+    @Override
     public void showMessage(String message) {
       JOptionPane.showMessageDialog(null, message);
     }
@@ -90,6 +95,7 @@ public class Compression {
         GridBagConstraints.NORTHWEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0);
     private Container panel;
 
+    @Override
     public String[] promptKeyboardInteractive(String destination, String name, String instruction,
         String[] prompt, boolean[] echo) {
       panel = new JPanel();

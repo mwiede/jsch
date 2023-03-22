@@ -1,8 +1,7 @@
 /**
- * This program will demonstrate the user authentification by public key. $ CLASSPATH=.:../build
- * javac UserAuthPubKey.java $ CLASSPATH=.:../build java UserAuthPubKey You will be asked username,
- * hostname, privatekey(id_dsa) and passphrase. If everything works fine, you will get the shell
- * prompt
+ * This program will demonstrate the user authentification by public key. You will be asked
+ * username, hostname, privatekey(id_dsa) and passphrase. If everything works fine, you will get the
+ * shell prompt.
  *
  */
 import com.jcraft.jsch.*;
@@ -56,10 +55,12 @@ public class UserAuthPubKey {
 
 
   public static class MyUserInfo implements UserInfo, UIKeyboardInteractive {
+    @Override
     public String getPassword() {
       return null;
     }
 
+    @Override
     public boolean promptYesNo(String str) {
       Object[] options = {"yes", "no"};
       int foo = JOptionPane.showOptionDialog(null, str, "Warning", JOptionPane.DEFAULT_OPTION,
@@ -68,12 +69,14 @@ public class UserAuthPubKey {
     }
 
     String passphrase;
-    JTextField passphraseField = (JTextField) new JPasswordField(20);
+    JTextField passphraseField = new JPasswordField(20);
 
+    @Override
     public String getPassphrase() {
       return passphrase;
     }
 
+    @Override
     public boolean promptPassphrase(String message) {
       Object[] ob = {passphraseField};
       int result = JOptionPane.showConfirmDialog(null, ob, message, JOptionPane.OK_CANCEL_OPTION);
@@ -85,10 +88,12 @@ public class UserAuthPubKey {
       }
     }
 
+    @Override
     public boolean promptPassword(String message) {
       return true;
     }
 
+    @Override
     public void showMessage(String message) {
       JOptionPane.showMessageDialog(null, message);
     }
@@ -97,6 +102,7 @@ public class UserAuthPubKey {
         GridBagConstraints.NORTHWEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0);
     private Container panel;
 
+    @Override
     public String[] promptKeyboardInteractive(String destination, String name, String instruction,
         String[] prompt, boolean[] echo) {
       panel = new JPanel();

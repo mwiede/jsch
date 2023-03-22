@@ -1,7 +1,6 @@
 /**
- * This program will demonstrate the file transfer from local to remote. $ CLASSPATH=.:../build
- * javac ScpTo.java $ CLASSPATH=.:../build java ScpTo file1 user@remotehost:file2 You will be asked
- * passwd. If everything works fine, a local file 'file1' will copied to 'file2' on 'remotehost'.
+ * This program will demonstrate the file transfer from local to remote. You will be asked passwd.
+ * If everything works fine, a local file 'file1' will copied to 'file2' on 'remotehost'.
  *
  */
 import com.jcraft.jsch.*;
@@ -16,7 +15,6 @@ public class ScpTo {
       System.exit(-1);
     }
 
-    FileInputStream fis = null;
     try {
 
       String lfile = arg[0];
@@ -33,12 +31,10 @@ public class ScpTo {
       session.setUserInfo(ui);
       session.connect();
 
-      boolean ptimestamp = true;
-
       // exec 'scp -t rfile' remotely
       rfile = rfile.replace("'", "'\"'\"'");
       rfile = "'" + rfile + "'";
-      String command = "scp " + (ptimestamp ? "-p" : "") + " -t " + rfile;
+      String command = "scp -p -t " + rfile;
       Channel channel = session.openChannel("exec");
       ((ChannelExec) channel).setCommand(command);
 
@@ -54,16 +50,14 @@ public class ScpTo {
 
       File _lfile = new File(lfile);
 
-      if (ptimestamp) {
-        command = "T " + (_lfile.lastModified() / 1000) + " 0";
-        // The access time should be sent here,
-        // but it is not accessible with JavaAPI ;-<
-        command += (" " + (_lfile.lastModified() / 1000) + " 0\n");
-        out.write(command.getBytes());
-        out.flush();
-        if (checkAck(in) != 0) {
-          System.exit(0);
-        }
+      command = "T " + (_lfile.lastModified() / 1000) + " 0";
+      // The access time should be sent here,
+      // but it is not accessible with JavaAPI ;-<
+      command += " " + (_lfile.lastModified() / 1000) + " 0\n";
+      out.write(command.getBytes());
+      out.flush();
+      if (checkAck(in) != 0) {
+        System.exit(0);
       }
 
       // send "C0644 filesize filename", where filename should not include '/'
@@ -77,41 +71,38 @@ public class ScpTo {
       command += "\n";
       out.write(command.getBytes());
       out.flush();
+
       if (checkAck(in) != 0) {
         System.exit(0);
       }
 
-      // send a content of lfile
-      fis = new FileInputStream(lfile);
       byte[] buf = new byte[1024];
-      while (true) {
-        int len = fis.read(buf, 0, buf.length);
-        if (len <= 0)
-          break;
-        out.write(buf, 0, len); // out.flush();
+
+      // send a content of lfile
+      try (InputStream fis = new FileInputStream(lfile)) {
+        while (true) {
+          int len = fis.read(buf, 0, buf.length);
+          if (len <= 0)
+            break;
+          out.write(buf, 0, len);
+          // out.flush();
+        }
       }
-      fis.close();
-      fis = null;
+
       // send '\0'
       buf[0] = 0;
       out.write(buf, 0, 1);
       out.flush();
+
       if (checkAck(in) != 0) {
         System.exit(0);
       }
-      out.close();
 
-      channel.disconnect();
       session.disconnect();
 
       System.exit(0);
     } catch (Exception e) {
       System.out.println(e);
-      try {
-        if (fis != null)
-          fis.close();
-      } catch (Exception ee) {
-      }
     }
   }
 
@@ -127,27 +118,29 @@ public class ScpTo {
       return b;
 
     if (b == 1 || b == 2) {
-      StringBuffer sb = new StringBuffer();
+      StringBuilder sb = new StringBuilder();
       int c;
       do {
         c = in.read();
         sb.append((char) c);
       } while (c != '\n');
       if (b == 1) { // error
-        System.out.print(sb.toString());
+        System.out.print(sb);
       }
       if (b == 2) { // fatal error
-        System.out.print(sb.toString());
+        System.out.print(sb);
       }
     }
     return b;
   }
 
   public static class MyUserInfo implements UserInfo, UIKeyboardInteractive {
+    @Override
     public String getPassword() {
       return passwd;
     }
 
+    @Override
     public boolean promptYesNo(String str) {
       Object[] options = {"yes", "no"};
       int foo = JOptionPane.showOptionDialog(null, str, "Warning", JOptionPane.DEFAULT_OPTION,
@@ -156,16 +149,19 @@ public class ScpTo {
     }
 
     String passwd;
-    JTextField passwordField = (JTextField) new JPasswordField(20);
+    JTextField passwordField = new JPasswordField(20);
 
+    @Override
     public String getPassphrase() {
       return null;
     }
 
+    @Override
     public boolean promptPassphrase(String message) {
       return true;
     }
 
+    @Override
     public boolean promptPassword(String message) {
       Object[] ob = {passwordField};
       int result = JOptionPane.showConfirmDialog(null, ob, message, JOptionPane.OK_CANCEL_OPTION);
@@ -177,6 +173,7 @@ public class ScpTo {
       }
     }
 
+    @Override
     public void showMessage(String message) {
       JOptionPane.showMessageDialog(null, message);
     }
@@ -185,6 +182,7 @@ public class ScpTo {
         GridBagConstraints.NORTHWEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0);
     private Container panel;
 
+    @Override
     public String[] promptKeyboardInteractive(String destination, String name, String instruction,
         String[] prompt, boolean[] echo) {
       panel = new JPanel();

@@ -1,9 +1,8 @@
 /**
  * This program will demonstrate the port forwarding like option -R of ssh command; the given port
- * on the remote host will be forwarded to the given host and port on the local side. $
- * CLASSPATH=.:../build javac PortForwardingR.java $ CLASSPATH=.:../build java PortForwardingR You
- * will be asked username, hostname, port:host:hostport and passwd. If everything works fine, you
- * will get the shell prompt. Try the port on remote host.
+ * on the remote host will be forwarded to the given host and port on the local side. You will be
+ * asked username, hostname, port:host:hostport and passwd. If everything works fine, you will get
+ * the shell prompt. Try the port on remote host.
  *
  */
 import com.jcraft.jsch.*;
@@ -44,7 +43,7 @@ public class PortForwardingR {
 
       session.connect();
 
-      // Channel channel=session.openChannel("shell");
+      // Channel channel = session.openChannel("shell");
       // channel.connect();
 
       session.setPortForwardingR(rport, lhost, lport);
@@ -56,10 +55,12 @@ public class PortForwardingR {
   }
 
   public static class MyUserInfo implements UserInfo, UIKeyboardInteractive {
+    @Override
     public String getPassword() {
       return passwd;
     }
 
+    @Override
     public boolean promptYesNo(String str) {
       Object[] options = {"yes", "no"};
       int foo = JOptionPane.showOptionDialog(null, str, "Warning", JOptionPane.DEFAULT_OPTION,
@@ -68,16 +69,19 @@ public class PortForwardingR {
     }
 
     String passwd;
-    JTextField passwordField = (JTextField) new JPasswordField(20);
+    JTextField passwordField = new JPasswordField(20);
 
+    @Override
     public String getPassphrase() {
       return null;
     }
 
+    @Override
     public boolean promptPassphrase(String message) {
       return true;
     }
 
+    @Override
     public boolean promptPassword(String message) {
       Object[] ob = {passwordField};
       int result = JOptionPane.showConfirmDialog(null, ob, message, JOptionPane.OK_CANCEL_OPTION);
@@ -89,6 +93,7 @@ public class PortForwardingR {
       }
     }
 
+    @Override
     public void showMessage(String message) {
       JOptionPane.showMessageDialog(null, message);
     }
@@ -97,6 +102,7 @@ public class PortForwardingR {
         GridBagConstraints.NORTHWEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0);
     private Container panel;
 
+    @Override
     public String[] promptKeyboardInteractive(String destination, String name, String instruction,
         String[] prompt, boolean[] echo) {
       panel = new JPanel();

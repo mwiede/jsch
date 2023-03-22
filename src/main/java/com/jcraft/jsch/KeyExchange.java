@@ -39,6 +39,9 @@ public abstract class KeyExchange {
   static final int PROPOSAL_LANG_CTOS = 8;
   static final int PROPOSAL_LANG_STOC = 9;
   static final int PROPOSAL_MAX = 10;
+  static final String[] PROPOSAL_NAMES =
+      {"KEX algorithms", "host key algorithms", "ciphers c2s", "ciphers s2c", "MACs c2s",
+          "MACs s2c", "compression c2s", "compression s2c", "languages c2s", "languages s2c"};
 
   // static String kex_algs="diffie-hellman-group-exchange-sha1"+
   // ",diffie-hellman-group1-sha1";
@@ -106,10 +109,12 @@ public abstract class KeyExchange {
 
     if (session.getLogger().isEnabled(Logger.INFO)) {
       for (int i = 0; i < PROPOSAL_MAX; i++) {
-        session.getLogger().log(Logger.INFO, "kex: server: " + Util.byte2str(sb.getString()));
+        session.getLogger().log(Logger.INFO,
+            "server proposal: " + PROPOSAL_NAMES[i] + ": " + Util.byte2str(sb.getString()));
       }
       for (int i = 0; i < PROPOSAL_MAX; i++) {
-        session.getLogger().log(Logger.INFO, "kex: client: " + Util.byte2str(cb.getString()));
+        session.getLogger().log(Logger.INFO,
+            "client proposal: " + PROPOSAL_NAMES[i] + ": " + Util.byte2str(cb.getString()));
       }
       sb.setOffSet(17);
       cb.setOffSet(17);

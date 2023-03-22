@@ -1,7 +1,6 @@
 /**
- * This program will demonstrate the keyboard-interactive authentication. $ CLASSPATH=.:../build
- * javac UserAuthKI.java $ CLASSPATH=.:../build java UserAuthKI If the remote sshd supports
- * keyboard-interactive authentication, you will be prompted.
+ * This program will demonstrate the keyboard-interactive authentication. If the remote sshd
+ * supports keyboard-interactive authentication, you will be prompted.
  *
  */
 import com.jcraft.jsch.*;
@@ -43,10 +42,12 @@ public class UserAuthKI {
   }
 
   public static class MyUserInfo implements UserInfo, UIKeyboardInteractive {
+    @Override
     public String getPassword() {
       return passwd;
     }
 
+    @Override
     public boolean promptYesNo(String str) {
       Object[] options = {"yes", "no"};
       int foo = JOptionPane.showOptionDialog(null, str, "Warning", JOptionPane.DEFAULT_OPTION,
@@ -55,16 +56,19 @@ public class UserAuthKI {
     }
 
     String passwd;
-    JTextField passwordField = (JTextField) new JPasswordField(20);
+    JTextField passwordField = new JPasswordField(20);
 
+    @Override
     public String getPassphrase() {
       return null;
     }
 
+    @Override
     public boolean promptPassphrase(String message) {
       return false;
     }
 
+    @Override
     public boolean promptPassword(String message) {
       Object[] ob = {passwordField};
       int result = JOptionPane.showConfirmDialog(null, ob, message, JOptionPane.OK_CANCEL_OPTION);
@@ -76,6 +80,7 @@ public class UserAuthKI {
       }
     }
 
+    @Override
     public void showMessage(String message) {
       JOptionPane.showMessageDialog(null, message);
     }
@@ -84,15 +89,15 @@ public class UserAuthKI {
         GridBagConstraints.NORTHWEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0);
     private Container panel;
 
+    @Override
     public String[] promptKeyboardInteractive(String destination, String name, String instruction,
         String[] prompt, boolean[] echo) {
-      /*
-       * //System.out.println("promptKeyboardInteractive");
-       * System.out.println("destination: "+destination); System.out.println("name: "+name);
-       * System.out.println("instruction: "+instruction);
-       * System.out.println("prompt.length: "+prompt.length);
-       * System.out.println("prompt: "+prompt[0]);
-       */
+      // System.out.println("promptKeyboardInteractive");
+      // System.out.println("destination: " + destination);
+      // System.out.println("name: " + name);
+      // System.out.println("instruction: " + instruction);
+      // System.out.println("prompt.length: " + prompt.length);
+      // System.out.println("prompt: " + prompt[0]);
       panel = new JPanel();
       panel.setLayout(new GridBagLayout());
 

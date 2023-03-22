@@ -1,7 +1,6 @@
 /**
- * This program will demonstrate X11 forwarding. $ CLASSPATH=.:../build javac X11Forwarding.java $
- * CLASSPATH=.:../build java X11Forwarding You will be asked username, hostname, displayname and
- * passwd. If your X server does not run at 127.0.0.1, please enter correct displayname. If
+ * This program will demonstrate X11 forwarding. You will be asked username, hostname, displayname
+ * and passwd. If your X server does not run at 127.0.0.1, please enter correct displayname. If
  * everything works fine, you will get the shell prompt. Try X applications; for example, xlogo.
  *
  */
@@ -57,10 +56,12 @@ public class X11Forwarding {
   }
 
   public static class MyUserInfo implements UserInfo, UIKeyboardInteractive {
+    @Override
     public String getPassword() {
       return passwd;
     }
 
+    @Override
     public boolean promptYesNo(String str) {
       Object[] options = {"yes", "no"};
       int foo = JOptionPane.showOptionDialog(null, str, "Warning", JOptionPane.DEFAULT_OPTION,
@@ -69,16 +70,19 @@ public class X11Forwarding {
     }
 
     String passwd;
-    JTextField passwordField = (JTextField) new JPasswordField(20);
+    JTextField passwordField = new JPasswordField(20);
 
+    @Override
     public String getPassphrase() {
       return null;
     }
 
+    @Override
     public boolean promptPassphrase(String message) {
       return true;
     }
 
+    @Override
     public boolean promptPassword(String message) {
       Object[] ob = {passwordField};
       int result = JOptionPane.showConfirmDialog(null, ob, message, JOptionPane.OK_CANCEL_OPTION);
@@ -90,6 +94,7 @@ public class X11Forwarding {
       }
     }
 
+    @Override
     public void showMessage(String message) {
       JOptionPane.showMessageDialog(null, message);
     }
@@ -98,6 +103,7 @@ public class X11Forwarding {
         GridBagConstraints.NORTHWEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0);
     private Container panel;
 
+    @Override
     public String[] promptKeyboardInteractive(String destination, String name, String instruction,
         String[] prompt, boolean[] echo) {
       panel = new JPanel();

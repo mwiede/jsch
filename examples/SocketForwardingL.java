@@ -1,10 +1,9 @@
 /**
- * This program enables you to connect to sshd server and forward the docker socket. $
- * CLASSPATH=.:../build javac SocketForwardingL.java $ CLASSPATH=.:../build java SocketForwardingL
- * You will be asked username, hostname and passwd. If everything works fine, you will get the
- * response code to the _ping endpoint of the dockerd.
+ * This program enables you to connect to sshd server and forward the docker socket. You will be
+ * asked username, hostname and passwd. If everything works fine, you will get the response code to
+ * the _ping endpoint of the dockerd.
+ *
  */
-
 import com.jcraft.jsch.*;
 
 import javax.swing.*;
@@ -33,10 +32,12 @@ public class SocketForwardingL {
       session.setPassword(passwd);
 
       UserInfo ui = new MyUserInfo() {
+        @Override
         public void showMessage(String message) {
           JOptionPane.showMessageDialog(null, message);
         }
 
+        @Override
         public boolean promptYesNo(String message) {
           Object[] options = {"yes", "no"};
           int foo = JOptionPane.showOptionDialog(null, message, "Warning",
@@ -81,28 +82,27 @@ public class SocketForwardingL {
   }
 
   public static abstract class MyUserInfo implements UserInfo, UIKeyboardInteractive {
+    @Override
     public String getPassword() {
       return null;
     }
 
-    public boolean promptYesNo(String str) {
-      return false;
-    }
-
+    @Override
     public String getPassphrase() {
       return null;
     }
 
+    @Override
     public boolean promptPassphrase(String message) {
       return false;
     }
 
+    @Override
     public boolean promptPassword(String message) {
       return false;
     }
 
-    public void showMessage(String message) {}
-
+    @Override
     public String[] promptKeyboardInteractive(String destination, String name, String instruction,
         String[] prompt, boolean[] echo) {
       return null;

@@ -1,7 +1,6 @@
 /**
- * This program will demonstrate the file transfer from remote to local $ CLASSPATH=.:../build javac
- * ScpFrom.java $ CLASSPATH=.:../build java ScpFrom user@remotehost:file1 file2 You will be asked
- * passwd. If everything works fine, a file 'file1' on 'remotehost' will copied to local 'file1'.
+ * This program will demonstrate the file transfer from remote to local. If everything works fine, a
+ * file 'file1' on 'remotehost' will copied to local 'file1'.
  *
  */
 import com.jcraft.jsch.*;
@@ -16,7 +15,6 @@ public class ScpFrom {
       System.exit(-1);
     }
 
-    FileOutputStream fos = null;
     try {
 
       String user = arg[0].substring(0, arg[0].indexOf('@'));
@@ -87,7 +85,7 @@ public class ScpFrom {
           }
         }
 
-        // System.out.println("filesize="+filesize+", file="+file);
+        // System.out.println("filesize=" + filesize + ", file=" + file);
 
         // send '\0'
         buf[0] = 0;
@@ -95,25 +93,24 @@ public class ScpFrom {
         out.flush();
 
         // read a content of lfile
-        fos = new FileOutputStream(prefix == null ? lfile : prefix + file);
-        int foo;
-        while (true) {
-          if (buf.length < filesize)
-            foo = buf.length;
-          else
-            foo = (int) filesize;
-          foo = in.read(buf, 0, foo);
-          if (foo < 0) {
-            // error
-            break;
+        try (OutputStream fos = new FileOutputStream(prefix == null ? lfile : prefix + file)) {
+          int foo;
+          while (true) {
+            if (buf.length < filesize)
+              foo = buf.length;
+            else
+              foo = (int) filesize;
+            foo = in.read(buf, 0, foo);
+            if (foo < 0) {
+              // error
+              break;
+            }
+            fos.write(buf, 0, foo);
+            filesize -= foo;
+            if (filesize == 0L)
+              break;
           }
-          fos.write(buf, 0, foo);
-          filesize -= foo;
-          if (filesize == 0L)
-            break;
         }
-        fos.close();
-        fos = null;
 
         if (checkAck(in) != 0) {
           System.exit(0);
@@ -130,11 +127,6 @@ public class ScpFrom {
       System.exit(0);
     } catch (Exception e) {
       System.out.println(e);
-      try {
-        if (fos != null)
-          fos.close();
-      } catch (Exception ee) {
-      }
     }
   }
 
@@ -150,27 +142,29 @@ public class ScpFrom {
       return b;
 
     if (b == 1 || b == 2) {
-      StringBuffer sb = new StringBuffer();
+      StringBuilder sb = new StringBuilder();
       int c;
       do {
         c = in.read();
         sb.append((char) c);
       } while (c != '\n');
       if (b == 1) { // error
-        System.out.print(sb.toString());
+        System.out.print(sb);
       }
       if (b == 2) { // fatal error
-        System.out.print(sb.toString());
+        System.out.print(sb);
       }
     }
     return b;
   }
 
   public static class MyUserInfo implements UserInfo, UIKeyboardInteractive {
+    @Override
     public String getPassword() {
       return passwd;
     }
 
+    @Override
     public boolean promptYesNo(String str) {
       Object[] options = {"yes", "no"};
       int foo = JOptionPane.showOptionDialog(null, str, "Warning", JOptionPane.DEFAULT_OPTION,
@@ -179,16 +173,19 @@ public class ScpFrom {
     }
 
     String passwd;
-    JTextField passwordField = (JTextField) new JPasswordField(20);
+    JTextField passwordField = new JPasswordField(20);
 
+    @Override
     public String getPassphrase() {
       return null;
     }
 
+    @Override
     public boolean promptPassphrase(String message) {
       return true;
     }
 
+    @Override
     public boolean promptPassword(String message) {
       Object[] ob = {passwordField};
       int result = JOptionPane.showConfirmDialog(null, ob, message, JOptionPane.OK_CANCEL_OPTION);
@@ -200,6 +197,7 @@ public class ScpFrom {
       }
     }
 
+    @Override
     public void showMessage(String message) {
       JOptionPane.showMessageDialog(null, message);
     }
@@ -208,6 +206,7 @@ public class ScpFrom {
         GridBagConstraints.NORTHWEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0);
     private Container panel;
 
+    @Override
     public String[] promptKeyboardInteractive(String destination, String name, String instruction,
         String[] prompt, boolean[] echo) {
       panel = new JPanel();
