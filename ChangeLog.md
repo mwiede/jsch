@@ -1,6 +1,11 @@
 * [0.2.9](https://github.com/mwiede/jsch/releases/tag/jsch-0.2.9)
   * [#293](https://github.com/mwiede/jsch/issues/293) allow UserAuthNone to be extended.
   * Make JGSS module optional.
+  * Tweak OSGi bundle manifest:
+    * Avoid self-import.
+    * Avoid `uses:="com.sun.jna"` on export.
+    * Mark JGSS as optional.
+    * Loosen import versions of dependencies.
 * [0.2.8](https://github.com/mwiede/jsch/releases/tag/jsch-0.2.8)
   * [#287](https://github.com/mwiede/jsch/issues/287) add algorithm type information to algorithm negotiation logs.
   * [#289](https://github.com/mwiede/jsch/issues/289) wrap NoClassDefFoundError's for invalid private keys.

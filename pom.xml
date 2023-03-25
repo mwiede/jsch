@@ -391,7 +391,17 @@
                 <version>5.1.8</version>
                 <configuration>
                     <instructions>
-                        <Export-Package>com.jcraft.jsch</Export-Package>
+                        <Export-Package>com.jcraft.jsch;-noimport:=true</Export-Package>
+                        <!-- Avoid uses:="com.sun.jna" on export -->
+                        <_nouses>true</_nouses>
+                        <Import-Package><![CDATA[
+                            com.sun.jna*;version="${range;[=0,+)}",
+                            org.apache.logging.log4j*;version="${range;[=0,+)}",
+                            org.bouncycastle*;version="[1.69,${versionmask;+})",
+                            org.slf4j*;version="[1.7,${versionmask;+})",
+                            org.ietf.jgss;resolution:=optional,
+                            *
+                            ]]></Import-Package>
                     </instructions>
                 </configuration>
                 <executions>
