@@ -312,9 +312,9 @@
                     <release>8</release>
                     <showDeprecation>true</showDeprecation>
                     <showWarnings>true</showWarnings>
+                    <failOnWarning>true</failOnWarning>
                     <compilerArgs>
                         <arg>-Xlint:all,-processing,-classfile</arg>
-                        <arg>-Werror</arg>
                     </compilerArgs>
                 </configuration>
                 <executions>
