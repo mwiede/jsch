@@ -24,8 +24,31 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package com.jcraft.jsch;
+package com.jcraft.jsch.jce;
 
-public interface KeyPairGenXEC {
-  void init(String name) throws Exception;
+public class XDH implements com.jcraft.jsch.XDH {
+
+  public XDH() {
+    throw new UnsupportedOperationException("XDH requires Java11+.");
+  }
+
+  @Override
+  public void init(String name, int keylen) throws Exception {
+    throw new UnsupportedOperationException("XDH requires Java11+.");
+  }
+
+  @Override
+  public byte[] getQ() throws Exception {
+    throw new UnsupportedOperationException("XDH requires Java11+.");
+  }
+
+  @Override
+  public byte[] getSecret(byte[] Q) throws Exception {
+    throw new UnsupportedOperationException("XDH requires Java11+.");
+  }
+
+  @Override
+  public boolean validate(byte[] u) throws Exception {
+    throw new UnsupportedOperationException("XDH requires Java11+.");
+  }
 }

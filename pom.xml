@@ -620,7 +620,12 @@
                 <configuration>
                     <excludes>
                         <exclude>com/jcraft/jsch/JavaVersion.class</exclude>
+                        <exclude>com/jcraft/jsch/JplLogger.class</exclude>
                         <exclude>com/jcraft/jsch/UnixDomainSocketFactory.class</exclude>
+                        <exclude>com/jcraft/jsch/jce/KeyPairGenEdDSA.class</exclude>
+                        <exclude>com/jcraft/jsch/jce/SignatureEd25519.class</exclude>
+                        <exclude>com/jcraft/jsch/jce/SignatureEd448.class</exclude>
+                        <exclude>com/jcraft/jsch/jce/XDH.class</exclude>
                         <exclude>META-INF/versions/9/com/jcraft/jsch/JavaVersion.class</exclude>
                         <exclude>META-INF/versions/10/com/jcraft/jsch/JavaVersion.class</exclude>
                     </excludes>

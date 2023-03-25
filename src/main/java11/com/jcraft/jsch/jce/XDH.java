@@ -27,11 +27,11 @@
 package com.jcraft.jsch.jce;
 
 import java.math.BigInteger;
-import java.util.Arrays;
 import java.security.*;
-import javax.crypto.*;
 import java.security.spec.*;
 import java.security.interfaces.*;
+import java.util.Arrays;
+import javax.crypto.*;
 
 public class XDH implements com.jcraft.jsch.XDH {
   byte[] Q_array;
@@ -44,11 +44,13 @@ public class XDH implements com.jcraft.jsch.XDH {
   public void init(String name, int keylen) throws Exception {
     this.keylen = keylen;
     myKeyAgree = KeyAgreement.getInstance("XDH");
-    KeyPairGenXEC kpair = new KeyPairGenXEC();
-    kpair.init(name);
-    publicKey = kpair.getPublicKey();
+    KeyPairGenerator kpg = KeyPairGenerator.getInstance("XDH");
+    NamedParameterSpec paramSpec = new NamedParameterSpec(name);
+    kpg.initialize(paramSpec);
+    KeyPair kp = kpg.genKeyPair();
+    publicKey = (XECPublicKey) kp.getPublic();
     Q_array = rotate(publicKey.getU().toByteArray());
-    myKeyAgree.init(kpair.getPrivateKey());
+    myKeyAgree.init(kp.getPrivate());
   }
 
   @Override
