@@ -26,6 +26,8 @@
 
 package com.jcraft.jsch.jce;
 
+import com.jcraft.jsch.JSch;
+import com.jcraft.jsch.Logger;
 import com.jcraft.jsch.MAC;
 import javax.crypto.*;
 import javax.crypto.spec.*;
@@ -75,7 +77,9 @@ abstract class HMAC implements MAC {
     try {
       mac.doFinal(buf, offset);
     } catch (ShortBufferException e) {
-      System.err.println(e);
+      if (JSch.getLogger().isEnabled(Logger.ERROR)) {
+        JSch.getLogger().log(Logger.ERROR, e.getMessage(), e);
+      }
     }
   }
 

@@ -40,11 +40,7 @@ public class MD5 implements HASH {
 
   @Override
   public void init() throws Exception {
-    try {
-      md = MessageDigest.getInstance("MD5");
-    } catch (Exception e) {
-      System.err.println(e);
-    }
+    md = MessageDigest.getInstance("MD5");
   }
 
   @Override

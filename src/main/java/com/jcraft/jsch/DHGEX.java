@@ -68,7 +68,7 @@ abstract class DHGEX extends KeyExchange {
       sha = c.getDeclaredConstructor().newInstance();
       sha.init();
     } catch (Exception e) {
-      System.err.println(e);
+      throw new JSchException(e.toString(), e);
     }
 
     buf = new Buffer();
@@ -87,7 +87,7 @@ abstract class DHGEX extends KeyExchange {
       dh = c.getDeclaredConstructor().newInstance();
       dh.init();
     } catch (Exception e) {
-      throw e;
+      throw new JSchException(e.toString(), e);
     }
 
     packet.reset();
@@ -118,7 +118,9 @@ abstract class DHGEX extends KeyExchange {
         _buf.getByte();
         j = _buf.getByte();
         if (j != SSH_MSG_KEX_DH_GEX_GROUP) {
-          System.err.println("type: must be SSH_MSG_KEX_DH_GEX_GROUP " + j);
+          if (session.getLogger().isEnabled(Logger.ERROR)) {
+            session.getLogger().log(Logger.ERROR, "type: must be SSH_MSG_KEX_DH_GEX_GROUP " + j);
+          }
           return false;
         }
 
@@ -158,7 +160,9 @@ abstract class DHGEX extends KeyExchange {
         j = _buf.getByte();
         j = _buf.getByte();
         if (j != SSH_MSG_KEX_DH_GEX_REPLY) {
-          System.err.println("type: must be SSH_MSG_KEX_DH_GEX_REPLY " + j);
+          if (session.getLogger().isEnabled(Logger.ERROR)) {
+            session.getLogger().log(Logger.ERROR, "type: must be SSH_MSG_KEX_DH_GEX_REPLY " + j);
+          }
           return false;
         }
 

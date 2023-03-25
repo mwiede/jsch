@@ -202,7 +202,9 @@ public abstract class KeyExchange {
       Class<? extends HASH> c = Class.forName(session.getConfig(_c)).asSubclass(HASH.class);
       hash = c.getDeclaredConstructor().newInstance();
     } catch (Exception e) {
-      System.err.println("getFingerPrint: " + e);
+      if (session.getLogger().isEnabled(Logger.ERROR)) {
+        session.getLogger().log(Logger.ERROR, "getFingerPrint: " + e.getMessage(), e);
+      }
     }
     return Util.getFingerPrint(hash, getHostKey(), true, false);
   }
@@ -274,7 +276,7 @@ public abstract class KeyExchange {
         sig = c.getDeclaredConstructor().newInstance();
         sig.init();
       } catch (Exception e) {
-        System.err.println(e);
+        throw new JSchException(e.toString(), e);
       }
       sig.setPubKey(ee, n);
       sig.update(H);
@@ -325,7 +327,7 @@ public abstract class KeyExchange {
         sig = c.getDeclaredConstructor().newInstance();
         sig.init();
       } catch (Exception e) {
-        System.err.println(e);
+        throw new JSchException(e.toString(), e);
       }
       sig.setPubKey(f, p, q, g);
       sig.update(H);
@@ -368,7 +370,7 @@ public abstract class KeyExchange {
         sig = c.getDeclaredConstructor().newInstance();
         sig.init();
       } catch (Exception e) {
-        System.err.println(e);
+        throw new JSchException(e.toString(), e);
       }
 
       sig.setPubKey(r, s);
@@ -400,7 +402,7 @@ public abstract class KeyExchange {
         sig = c.getDeclaredConstructor().newInstance();
         sig.init();
       } catch (Exception | NoClassDefFoundError e) {
-        System.err.println(e);
+        throw new JSchException(e.toString(), e);
       }
 
       sig.setPubKey(tmp);
@@ -413,7 +415,9 @@ public abstract class KeyExchange {
         session.getLogger().log(Logger.INFO, "ssh_eddsa_verify: " + alg + " signature " + result);
       }
     } else {
-      System.err.println("unknown alg");
+      if (session.getLogger().isEnabled(Logger.ERROR)) {
+        session.getLogger().log(Logger.ERROR, "unknown alg: " + alg);
+      }
     }
 
     return result;

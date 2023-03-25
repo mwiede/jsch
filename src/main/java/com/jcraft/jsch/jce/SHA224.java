@@ -40,11 +40,7 @@ public class SHA224 implements HASH {
 
   @Override
   public void init() throws Exception {
-    try {
-      md = MessageDigest.getInstance("SHA-224");
-    } catch (Exception e) {
-      System.err.println(e);
-    }
+    md = MessageDigest.getInstance("SHA-224");
   }
 
   @Override

@@ -38,11 +38,7 @@ public class SHA512 implements com.jcraft.jsch.HASH {
 
   @Override
   public void init() throws Exception {
-    try {
-      md = MessageDigest.getInstance("SHA-512");
-    } catch (Exception e) {
-      System.err.println(e);
-    }
+    md = MessageDigest.getInstance("SHA-512");
   }
 
   @Override

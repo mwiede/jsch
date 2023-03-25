@@ -1185,7 +1185,9 @@ public class Session {
           buf.buffer = foo;
           buf.index = 5 + uncompress_len[0];
         } else {
-          System.err.println("fail in inflater");
+          if (getLogger().isEnabled(Logger.ERROR)) {
+            getLogger().log(Logger.ERROR, "fail in inflater");
+          }
           break;
         }
       }
@@ -1324,7 +1326,7 @@ public class Session {
     } catch (IOException e) {
       ioe = e;
       if (getLogger().isEnabled(Logger.ERROR)) {
-        getLogger().log(Logger.ERROR, "start_discard finished early due to " + e.getMessage());
+        getLogger().log(Logger.ERROR, "start_discard finished early due to " + e.getMessage(), e);
       }
     }
 
