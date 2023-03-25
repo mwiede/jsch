@@ -379,16 +379,16 @@ public class Session {
       boolean auth = false;
       boolean auth_cancel = false;
 
-      UserAuth ua = null;
+      UserAuthNone uan = null;
       try {
-        Class<? extends UserAuth> c =
-            Class.forName(getConfig("userauth.none")).asSubclass(UserAuth.class);
-        ua = c.getDeclaredConstructor().newInstance();
+        Class<? extends UserAuthNone> c =
+            Class.forName(getConfig("userauth.none")).asSubclass(UserAuthNone.class);
+        uan = c.getDeclaredConstructor().newInstance();
       } catch (Exception e) {
         throw new JSchException(e.toString(), e);
       }
 
-      auth = ua.start(this);
+      auth = uan.start(this);
 
       String cmethods = getConfig("PreferredAuthentications");
 
@@ -396,12 +396,12 @@ public class Session {
 
       String smethods = null;
       if (!auth) {
-        smethods = ((UserAuthNone) ua).getMethods();
+        smethods = uan.getMethods();
         if (smethods != null) {
           smethods = smethods.toLowerCase();
         } else {
           // methods: publickey,password,keyboard-interactive
-          // smethods="publickey,password,keyboard-interactive";
+          // smethods = "publickey,password,keyboard-interactive";
           smethods = cmethods;
         }
       }
@@ -426,7 +426,7 @@ public class Session {
             continue;
           }
 
-          // System.err.println(" method: "+method);
+          // System.err.println(" method: " + method);
 
           if (getLogger().isEnabled(Logger.INFO)) {
             String str = "Authentications that can continue: ";
@@ -439,7 +439,7 @@ public class Session {
             getLogger().log(Logger.INFO, "Next authentication method: " + method);
           }
 
-          ua = null;
+          UserAuth ua = null;
           try {
             Class<? extends UserAuth> c = null;
             if (getConfig("userauth." + method) != null) {
@@ -468,7 +468,7 @@ public class Session {
               if (!tmp.equals(smethods)) {
                 methodi = 0;
               }
-              // System.err.println("PartialAuth: "+methods);
+              // System.err.println("PartialAuth: " + methods);
               auth_cancel = false;
               continue loop;
             } catch (RuntimeException ee) {
@@ -476,8 +476,8 @@ public class Session {
             } catch (JSchException ee) {
               throw ee;
             } catch (Exception ee) {
-              // System.err.println("ee: "+ee); // SSH_MSG_DISCONNECT: 2 Too many authentication
-              // failures
+              // SSH_MSG_DISCONNECT: Too many authentication failures
+              // System.err.println("ee: " + ee);
               if (getLogger().isEnabled(Logger.WARN)) {
                 getLogger().log(Logger.WARN,
                     "an exception during authentication\n" + ee.toString());
