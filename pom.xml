@@ -392,8 +392,6 @@
                 <configuration>
                     <instructions>
                         <Export-Package>com.jcraft.jsch;-noimport:=true</Export-Package>
-                        <!-- Avoid uses:="com.sun.jna" on export -->
-                        <_nouses>true</_nouses>
                         <Import-Package><![CDATA[
                             com.sun.jna*;version="${range;[=0,+)}",
                             org.apache.logging.log4j*;version="${range;[=0,+)}",

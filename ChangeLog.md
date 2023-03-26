@@ -3,7 +3,6 @@
   * Make JGSS module optional.
   * Tweak OSGi bundle manifest:
     * Avoid self-import.
-    * Avoid `uses:="com.sun.jna"` on export.
     * Mark JGSS as optional.
     * Loosen import versions of dependencies.
   * Correctly adhere to the Multi-release JAR spec by ensuring all public classes under versioned directories preside over classes present in the top-level directory.
