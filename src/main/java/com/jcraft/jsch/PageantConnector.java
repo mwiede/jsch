@@ -26,33 +26,28 @@
 
 package com.jcraft.jsch;
 
-import com.sun.jna.Platform;
-import com.sun.jna.Native;
 import com.sun.jna.Memory;
 import com.sun.jna.Pointer;
-import com.sun.jna.Structure;
-
-import com.sun.jna.win32.W32APIOptions;
-
-import com.sun.jna.platform.win32.WinNT.HANDLE;
-import com.sun.jna.platform.win32.WinDef.HWND;
+import com.sun.jna.platform.win32.BaseTSD.ULONG_PTR;
+import com.sun.jna.platform.win32.Kernel32;
+import com.sun.jna.platform.win32.User32;
 import com.sun.jna.platform.win32.WinBase;
 import com.sun.jna.platform.win32.WinBase.SECURITY_ATTRIBUTES;
-import com.sun.jna.platform.win32.Kernel32;
+import com.sun.jna.platform.win32.WinDef.HWND;
+import com.sun.jna.platform.win32.WinDef.LPARAM;
+import com.sun.jna.platform.win32.WinDef.LRESULT;
 import com.sun.jna.platform.win32.WinNT;
+import com.sun.jna.platform.win32.WinNT.HANDLE;
 import com.sun.jna.platform.win32.WinUser;
-
-import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
-import java.util.List;
+import com.sun.jna.platform.win32.WinUser.COPYDATASTRUCT;
 
 public class PageantConnector implements AgentConnector {
 
   private static final int AGENT_MAX_MSGLEN = 262144;
-  private static final int AGENT_COPYDATA_ID = 0x804e50ba;
+  private static final long AGENT_COPYDATA_ID = 0x804e50baL;
 
-  private User32 libU = null;
-  private Kernel32 libK = null;
+  private final User32 user32;
+  private final Kernel32 kernel32;
 
   public PageantConnector() throws AgentProxyException {
     if (!Util.getSystemProperty("os.name", "").startsWith("Windows")) {
@@ -60,8 +55,8 @@ public class PageantConnector implements AgentConnector {
     }
 
     try {
-      libU = User32.INSTANCE;
-      libK = Kernel32.INSTANCE;
+      user32 = User32.INSTANCE;
+      kernel32 = Kernel32.INSTANCE;
     } catch (UnsatisfiedLinkError | NoClassDefFoundError e) {
       throw new AgentProxyException(e.toString(), e);
     }
@@ -74,35 +69,7 @@ public class PageantConnector implements AgentConnector {
 
   @Override
   public boolean isAvailable() {
-    return libU.FindWindow("Pageant", "Pageant") != null;
-  }
-
-  private interface User32 extends com.sun.jna.platform.win32.User32 {
-    User32 INSTANCE = Native.load("user32", User32.class, W32APIOptions.DEFAULT_OPTIONS);
-
-    long SendMessage(HWND hWnd, int msg, WPARAM num1, byte[] num2);
-  }
-
-  public static class COPYDATASTRUCT32 extends Structure {
-    public int dwData;
-    public int cbData;
-    public Pointer lpData;
-
-    @Override
-    protected List<String> getFieldOrder() {
-      return Arrays.asList(new String[] {"dwData", "cbData", "lpData"});
-    }
-  }
-
-  public static class COPYDATASTRUCT64 extends Structure {
-    public int dwData;
-    public long cbData;
-    public Pointer lpData;
-
-    @Override
-    protected List<String> getFieldOrder() {
-      return Arrays.asList(new String[] {"dwData", "cbData", "lpData"});
-    }
+    return user32.FindWindow("Pageant", "Pageant") != null;
   }
 
   @Override
@@ -111,40 +78,37 @@ public class PageantConnector implements AgentConnector {
       throw new AgentProxyException("Query too large.");
     }
 
-    HWND hwnd = libU.FindWindow("Pageant", "Pageant");
+    HWND hwnd = user32.FindWindow("Pageant", "Pageant");
 
     if (hwnd == null) {
       throw new AgentProxyException("Pageant is not runnning.");
     }
 
-    String mapname = String.format("PageantRequest%08x", libK.GetCurrentThreadId());
+    String mapname = String.format("PageantRequest%08x", kernel32.GetCurrentThreadId());
 
-    // TODO
-    SECURITY_ATTRIBUTES psa = null;
-
-    HANDLE sharedFile = libK.CreateFileMapping(WinBase.INVALID_HANDLE_VALUE, psa,
-        WinNT.PAGE_READWRITE, 0, AGENT_MAX_MSGLEN, mapname);
-    if (sharedFile == null || sharedFile == WinBase.INVALID_HANDLE_VALUE) {
-      throw new AgentProxyException("Unable to create shared file mapping.");
-    }
-
-    Pointer sharedMemory =
-        Kernel32.INSTANCE.MapViewOfFile(sharedFile, WinNT.SECTION_MAP_WRITE, 0, 0, 0);
-
-    byte[] data = null;
-    long rcode = 0;
+    HANDLE sharedFile = null;
+    Pointer sharedMemory = null;
     try {
+      // TODO
+      SECURITY_ATTRIBUTES psa = null;
+
+      sharedFile = kernel32.CreateFileMapping(WinBase.INVALID_HANDLE_VALUE, psa,
+          WinNT.PAGE_READWRITE, 0, AGENT_MAX_MSGLEN, mapname);
+      if (sharedFile == null || sharedFile == WinBase.INVALID_HANDLE_VALUE) {
+        throw new AgentProxyException("Unable to create shared file mapping.");
+      }
+
+      sharedMemory = kernel32.MapViewOfFile(sharedFile, WinNT.SECTION_MAP_WRITE, 0, 0, 0);
+      if (sharedMemory == null) {
+        throw new AgentProxyException("Unable to create shared file mapping.");
+      }
+
       sharedMemory.write(0, buffer.buffer, 0, buffer.getLength());
 
-      if (Platform.is64Bit()) {
-        COPYDATASTRUCT64 cds64 = new COPYDATASTRUCT64();
-        data = install64(mapname, cds64);
-        rcode = sendMessage(hwnd, data);
-      } else {
-        COPYDATASTRUCT32 cds32 = new COPYDATASTRUCT32();
-        data = install32(mapname, cds32);
-        rcode = sendMessage(hwnd, data);
-      }
+      COPYDATASTRUCT cds = createCDS(mapname);
+      long rcode = sendMessage(hwnd, cds);
+      // Dummy read to make sure COPYDATASTRUCT isn't GC'd early
+      long foo = cds.dwData.longValue();
 
       buffer.rewind();
       if (rcode != 0) {
@@ -157,50 +121,31 @@ public class PageantConnector implements AgentConnector {
         buffer.checkFreeSize(i);
         sharedMemory.read(4, buffer.buffer, 0, i);
       } else {
-        throw new AgentProxyException("User32.SendMessage() returned 0");
+        throw new AgentProxyException(
+            "User32.SendMessage() returned 0 with cds.dwData: " + Long.toHexString(foo));
       }
     } finally {
       if (sharedMemory != null)
-        libK.UnmapViewOfFile(sharedMemory);
+        kernel32.UnmapViewOfFile(sharedMemory);
       if (sharedFile != null)
-        libK.CloseHandle(sharedFile);
+        kernel32.CloseHandle(sharedFile);
     }
   }
 
-  private static byte[] install32(String mapname, COPYDATASTRUCT32 cds) {
-    cds.dwData = AGENT_COPYDATA_ID;
-    cds.cbData = mapname.length() + 1;
-    cds.lpData = new Memory(mapname.length() + 1);
-    {
-      byte[] foo = Util.str2byte(mapname, StandardCharsets.US_ASCII);
-      cds.lpData.write(0, foo, 0, foo.length);
-      cds.lpData.setByte(foo.length, (byte) 0);
-      cds.write();
-    }
-    byte[] data = new byte[12];
-    Pointer cdsp = cds.getPointer();
-    cdsp.read(0, data, 0, 12);
-    return data;
+  static COPYDATASTRUCT createCDS(String mapname) {
+    Memory foo = new Memory(mapname.length() + 1);
+    foo.setString(0, mapname, "US-ASCII");
+    COPYDATASTRUCT cds = new COPYDATASTRUCT();
+    cds.dwData = new ULONG_PTR(AGENT_COPYDATA_ID);
+    cds.cbData = (int) foo.size();
+    cds.lpData = foo;
+    cds.write();
+    return cds;
   }
 
-  private static byte[] install64(String mapname, COPYDATASTRUCT64 cds) {
-    cds.dwData = AGENT_COPYDATA_ID;
-    cds.cbData = mapname.length() + 1;
-    cds.lpData = new Memory(mapname.length() + 1);
-    {
-      byte[] foo = Util.str2byte(mapname, StandardCharsets.US_ASCII);
-      cds.lpData.write(0, foo, 0, foo.length);
-      cds.lpData.setByte(foo.length, (byte) 0);
-      cds.write();
-    }
-    byte[] data = new byte[24];
-    Pointer cdsp = cds.getPointer();
-    cdsp.read(0, data, 0, 24);
-    return data;
-  }
-
-  long sendMessage(HWND hwnd, byte[] data) {
-
-    return libU.SendMessage(hwnd, WinUser.WM_COPYDATA, null, data);
+  long sendMessage(HWND hwnd, COPYDATASTRUCT cds) {
+    LPARAM data = new LPARAM(Pointer.nativeValue(cds.getPointer()));
+    LRESULT result = user32.SendMessage(hwnd, WinUser.WM_COPYDATA, null, data);
+    return result.longValue();
   }
 }
