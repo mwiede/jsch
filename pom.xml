@@ -314,7 +314,7 @@
                     <showWarnings>true</showWarnings>
                     <failOnWarning>true</failOnWarning>
                     <compilerArgs>
-                        <arg>-Xlint:all,-processing,-classfile</arg>
+                        <arg>-Xlint:all,-processing,-classfile,-options</arg>
                     </compilerArgs>
                 </configuration>
                 <executions>

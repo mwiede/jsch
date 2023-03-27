@@ -50,7 +50,7 @@ public class KeyPairGenEdDSA implements com.jcraft.jsch.KeyPairGenEdDSA {
     prv = prvKey.getBytes().get();
     pub = rotate(point.getY().toByteArray());
     if (point.isXOdd()) {
-      pub[pub.length - 1] |= 0x80;
+      pub[pub.length - 1] |= (byte) 0x80;
     }
   }
 

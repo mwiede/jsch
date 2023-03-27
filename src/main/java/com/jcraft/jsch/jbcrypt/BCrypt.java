@@ -325,7 +325,7 @@ public class BCrypt {
       if (c1 == -1 || c2 == -1)
         break;
       o = (byte) (c1 << 2);
-      o |= (c2 & 0x30) >> 4;
+      o |= (byte) ((c2 & 0x30) >> 4);
       rs.append((char) o);
       if (++olen >= maxolen || off >= slen)
         break;
@@ -333,7 +333,7 @@ public class BCrypt {
       if (c3 == -1)
         break;
       o = (byte) ((c2 & 0x0f) << 4);
-      o |= (c3 & 0x3c) >> 2;
+      o |= (byte) ((c3 & 0x3c) >> 2);
       rs.append((char) o);
       if (++olen >= maxolen || off >= slen)
         break;
@@ -710,7 +710,7 @@ public class BCrypt {
       return false;
     byte ret = 0;
     for (int i = 0; i < try_bytes.length; i++)
-      ret |= hashed_bytes[i] ^ try_bytes[i];
+      ret |= (byte) (hashed_bytes[i] ^ try_bytes[i]);
     return ret == 0;
   }
 }

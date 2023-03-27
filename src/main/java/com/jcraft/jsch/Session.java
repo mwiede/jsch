@@ -1554,7 +1554,7 @@ public class Session {
           }
           command = packet.buffer.getCommand();
           recipient = c.getRecipient();
-          length -= len;
+          length -= (int) len;
           c.rwsize -= len;
           sendit = true;
         }

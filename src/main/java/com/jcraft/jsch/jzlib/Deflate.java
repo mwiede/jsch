@@ -435,7 +435,7 @@ final class Deflate implements Cloneable {
       if (++count < max_count && curlen == nextlen) {
         continue;
       } else if (count < min_count) {
-        bl_tree[curlen * 2] += count;
+        bl_tree[curlen * 2] += (short) count;
       } else if (curlen != 0) {
         if (curlen != prevlen)
           bl_tree[curlen * 2]++;
@@ -591,13 +591,13 @@ final class Deflate implements Cloneable {
     if (bi_valid > Buf_size - len) {
       int val = value;
       // bi_buf |= (val << bi_valid);
-      bi_buf |= ((val << bi_valid) & 0xffff);
+      bi_buf |= (short) ((val << bi_valid) & 0xffff);
       put_short(bi_buf);
       bi_buf = (short) (val >>> (Buf_size - bi_valid));
       bi_valid += len - Buf_size;
     } else {
       // bi_buf |= (value) << bi_valid;
-      bi_buf |= (((value) << bi_valid) & 0xffff);
+      bi_buf |= (short) (((value) << bi_valid) & 0xffff);
       bi_valid += len;
     }
   }
@@ -659,7 +659,7 @@ final class Deflate implements Cloneable {
       int in_length = strstart - block_start;
       int dcode;
       for (dcode = 0; dcode < D_CODES; dcode++) {
-        out_length += (int) dyn_dtree[dcode * 2] * (5L + Tree.extra_dbits[dcode]);
+        out_length += (int) dyn_dtree[dcode * 2] * (5 + Tree.extra_dbits[dcode]);
       }
       out_length >>>= 3;
       if ((matches < (last_lit / 2)) && out_length < in_length / 2)
