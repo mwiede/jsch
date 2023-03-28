@@ -522,7 +522,7 @@
                     <doclint>none</doclint>
                     <subpackages>com.jcraft.jsch</subpackages>
                     <excludePackageNames>com.jcraft.jsch.*</excludePackageNames>
-                    <sourcepath>${project.build.sourceDirectory}:${project.build.directory}/generated-sources/java-templates:${project.basedir}/src/main/java9:${project.basedir}/src/main/java11:${project.basedir}/src/main/java15:${project.basedir}/src/main/java16</sourcepath>
+                    <sourcepath>${project.build.sourceDirectory}:${project.build.directory}/generated-sources/java-templates:${project.basedir}/src/main/java9:${project.basedir}/src/main/java10:${project.basedir}/src/main/java11:${project.basedir}/src/main/java15:${project.basedir}/src/main/java16</sourcepath>
                 </configuration>
                 <executions>
                     <execution>
