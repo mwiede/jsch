@@ -54,7 +54,7 @@ class KnownHosts implements HostKeyRepository {
   void setKnownHosts(String filename) throws JSchException {
     try {
       known_hosts = filename;
-      FileInputStream fis = new FileInputStream(Util.checkTilde(filename));
+      InputStream fis = new FileInputStream(Util.checkTilde(filename));
       setKnownHosts(fis);
     } catch (FileNotFoundException e) {
       // The non-existing file should be allowed.
@@ -67,8 +67,7 @@ class KnownHosts implements HostKeyRepository {
     byte i;
     int j;
     boolean error = false;
-    try {
-      InputStream fis = input;
+    try (InputStream fis = input) {
       String host;
       String key = null;
       int type;
@@ -265,12 +264,6 @@ class KnownHosts implements HostKeyRepository {
       if (e instanceof JSchException)
         throw (JSchException) e;
       throw new JSchException(e.toString(), e);
-    } finally {
-      try {
-        input.close();
-      } catch (IOException e) {
-        throw new JSchException(e.toString(), e);
-      }
     }
   }
 

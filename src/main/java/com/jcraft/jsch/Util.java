@@ -29,6 +29,7 @@ package com.jcraft.jsch;
 import java.net.Socket;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.InputStream;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
@@ -512,8 +513,7 @@ class Util {
   static byte[] fromFile(String _file) throws IOException {
     _file = checkTilde(_file);
     File file = new File(_file);
-    FileInputStream fis = new FileInputStream(_file);
-    try {
+    try (InputStream fis = new FileInputStream(_file)) {
       byte[] result = new byte[(int) (file.length())];
       int len = 0;
       while (true) {
@@ -522,11 +522,7 @@ class Util {
           break;
         len += i;
       }
-      fis.close();
       return result;
-    } finally {
-      if (fis != null)
-        fis.close();
     }
   }
 
