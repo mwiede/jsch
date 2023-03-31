@@ -1,7 +1,7 @@
 module com.jcraft.jsch {
     exports com.jcraft.jsch;
 
-    requires java.security.jgss;
+    requires static java.security.jgss;
     requires static java.logging;
     requires static org.apache.logging.log4j;
     requires static org.slf4j;

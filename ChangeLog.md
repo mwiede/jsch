@@ -1,3 +1,13 @@
+* [0.2.9](https://github.com/mwiede/jsch/releases/tag/jsch-0.2.9)
+  * [#293](https://github.com/mwiede/jsch/issues/293) allow UserAuthNone to be extended.
+  * Make JGSS module optional.
+  * Tweak OSGi bundle manifest:
+    * Avoid self-import.
+    * Mark JGSS as optional.
+    * Loosen import versions of dependencies.
+  * Correctly adhere to the Multi-release JAR spec by ensuring all public classes under versioned directories preside over classes present in the top-level directory.
+  * Eliminate stray `System.err.println()` calls.
+  * Change PageantConnector to use JNA's built-in support for `User32.SendMessage()`.
 * [0.2.8](https://github.com/mwiede/jsch/releases/tag/jsch-0.2.8)
   * [#287](https://github.com/mwiede/jsch/issues/287) add algorithm type information to algorithm negotiation logs.
   * [#289](https://github.com/mwiede/jsch/issues/289) wrap NoClassDefFoundError's for invalid private keys.

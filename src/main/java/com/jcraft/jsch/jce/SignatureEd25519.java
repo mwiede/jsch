@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2018 ymnk, JCraft,Inc. All rights reserved.
+ * Copyright (c) 2015-2018 ymnk, JCraft,Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification, are permitted
  * provided that the following conditions are met:
@@ -26,52 +26,39 @@
 
 package com.jcraft.jsch.jce;
 
-import java.security.*;
-import java.security.interfaces.*;
-import java.security.spec.*;
-import java.util.Arrays;
+public class SignatureEd25519 implements com.jcraft.jsch.SignatureEdDSA {
 
-public class KeyPairGenEdDSA implements com.jcraft.jsch.KeyPairGenEdDSA {
-  byte[] prv; // private
-  byte[] pub; // public
-  int keylen;
-
-  @Override
-  public void init(String name, int keylen) throws Exception {
-    this.keylen = keylen;
-
-    KeyPairGenerator keyGen = KeyPairGenerator.getInstance(name);
-    KeyPair pair = keyGen.generateKeyPair();
-
-    EdECPublicKey pubKey = (EdECPublicKey) pair.getPublic();
-    EdECPrivateKey prvKey = (EdECPrivateKey) pair.getPrivate();
-    EdECPoint point = pubKey.getPoint();
-
-    prv = prvKey.getBytes().get();
-    pub = rotate(point.getY().toByteArray());
-    if (point.isXOdd()) {
-      pub[pub.length - 1] |= (byte) 0x80;
-    }
+  public SignatureEd25519() {
+    throw new UnsupportedOperationException("SignatureEd25519 requires Java15+.");
   }
 
   @Override
-  public byte[] getPrv() {
-    return prv;
+  public void init() throws Exception {
+    throw new UnsupportedOperationException("SignatureEd25519 requires Java15+.");
   }
 
   @Override
-  public byte[] getPub() {
-    return pub;
+  public void setPubKey(byte[] y_arr) throws Exception {
+    throw new UnsupportedOperationException("SignatureEd25519 requires Java15+.");
   }
 
-  private byte[] rotate(byte[] in) {
-    int len = in.length;
-    byte[] out = new byte[len];
+  @Override
+  public void setPrvKey(byte[] bytes) throws Exception {
+    throw new UnsupportedOperationException("SignatureEd25519 requires Java15+.");
+  }
 
-    for (int i = 0; i < len; i++) {
-      out[i] = in[len - i - 1];
-    }
+  @Override
+  public byte[] sign() throws Exception {
+    throw new UnsupportedOperationException("SignatureEd25519 requires Java15+.");
+  }
 
-    return Arrays.copyOf(out, keylen);
+  @Override
+  public void update(byte[] foo) throws Exception {
+    throw new UnsupportedOperationException("SignatureEd25519 requires Java15+.");
+  }
+
+  @Override
+  public boolean verify(byte[] sig) throws Exception {
+    throw new UnsupportedOperationException("SignatureEd25519 requires Java15+.");
   }
 }

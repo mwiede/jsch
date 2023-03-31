@@ -249,9 +249,9 @@ public abstract class KeyPair {
    */
   public void writePublicKey(String name, String comment)
       throws FileNotFoundException, IOException {
-    FileOutputStream fos = new FileOutputStream(name);
-    writePublicKey(fos, comment);
-    fos.close();
+    try (OutputStream fos = new FileOutputStream(name)) {
+      writePublicKey(fos, comment);
+    }
   }
 
   /**
@@ -297,9 +297,9 @@ public abstract class KeyPair {
    */
   public void writeSECSHPublicKey(String name, String comment)
       throws FileNotFoundException, IOException {
-    FileOutputStream fos = new FileOutputStream(name);
-    writeSECSHPublicKey(fos, comment);
-    fos.close();
+    try (OutputStream fos = new FileOutputStream(name)) {
+      writeSECSHPublicKey(fos, comment);
+    }
   }
 
   /**
@@ -321,9 +321,9 @@ public abstract class KeyPair {
    */
   public void writePrivateKey(String name, byte[] passphrase)
       throws FileNotFoundException, IOException {
-    FileOutputStream fos = new FileOutputStream(name);
-    writePrivateKey(fos, passphrase);
-    fos.close();
+    try (OutputStream fos = new FileOutputStream(name)) {
+      writePrivateKey(fos, passphrase);
+    }
   }
 
   /**

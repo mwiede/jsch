@@ -40,11 +40,7 @@ public class SHA1 implements HASH {
 
   @Override
   public void init() throws Exception {
-    try {
-      md = MessageDigest.getInstance("SHA-1");
-    } catch (Exception e) {
-      System.err.println(e);
-    }
+    md = MessageDigest.getInstance("SHA-1");
   }
 
   @Override

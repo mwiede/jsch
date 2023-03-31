@@ -64,7 +64,7 @@ abstract class DHGN extends KeyExchange {
       sha = c.getDeclaredConstructor().newInstance();
       sha.init();
     } catch (Exception e) {
-      System.err.println(e);
+      throw new JSchException(e.toString(), e);
     }
 
     buf = new Buffer();
@@ -75,8 +75,7 @@ abstract class DHGN extends KeyExchange {
       dh = c.getDeclaredConstructor().newInstance();
       dh.init();
     } catch (Exception e) {
-      // System.err.println(e);
-      throw e;
+      throw new JSchException(e.toString(), e);
     }
 
     dh.setP(P());
@@ -119,8 +118,10 @@ abstract class DHGN extends KeyExchange {
         j = _buf.getInt();
         j = _buf.getByte();
         j = _buf.getByte();
-        if (j != 31) {
-          System.err.println("type: must be 31 " + j);
+        if (j != SSH_MSG_KEXDH_REPLY) {
+          if (session.getLogger().isEnabled(Logger.ERROR)) {
+            session.getLogger().log(Logger.ERROR, "type: must be SSH_MSG_KEXDH_REPLY " + j);
+          }
           return false;
         }
 

@@ -432,14 +432,8 @@ public class ChannelSftp extends ChannelSession {
             monitor.count(size_of_dst);
           }
         }
-        FileInputStream fis = null;
-        try {
-          fis = new FileInputStream(_src);
+        try (InputStream fis = new FileInputStream(_src)) {
           _put(fis, _dst, monitor, mode);
-        } finally {
-          if (fis != null) {
-            fis.close();
-          }
         }
       }
     } catch (Exception e) {
@@ -604,8 +598,10 @@ public class ChannelSftp extends ChannelSession {
                 int _ackid = ackid[0];
                 if (startid > _ackid || _ackid > seq - 1) {
                   if (_ackid == seq) {
-                    System.err.println(
-                        "ack error: startid=" + startid + " seq=" + seq + " _ackid=" + _ackid);
+                    if (getSession().getLogger().isEnabled(Logger.ERROR)) {
+                      getSession().getLogger().log(Logger.ERROR,
+                          "ack error: startid=" + startid + " seq=" + seq + " _ackid=" + _ackid);
+                    }
                   } else {
                     throw new SftpException(SSH_FX_FAILURE,
                         "ack error: startid=" + startid + " seq=" + seq + " _ackid=" + _ackid);
@@ -929,20 +925,11 @@ public class ChannelSftp extends ChannelSession {
           }
         }
 
-        FileOutputStream fos = null;
         _dstExist = _dstFile.exists();
-        try {
-          if (mode == OVERWRITE) {
-            fos = new FileOutputStream(_dst);
-          } else {
-            fos = new FileOutputStream(_dst, true); // append
-          }
+        try (OutputStream fos = mode == OVERWRITE ? new FileOutputStream(_dst)
+            : new FileOutputStream(_dst, true) /* append */) {
           // System.err.println("_get: "+_src+", "+_dst);
           _get(_src, fos, monitor, mode, new File(_dst).length());
-        } finally {
-          if (fos != null) {
-            fos.close();
-          }
         }
       }
     } catch (Exception e) {

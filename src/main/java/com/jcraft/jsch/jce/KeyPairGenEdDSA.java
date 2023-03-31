@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015-2018 ymnk, JCraft,Inc. All rights reserved.
+ * Copyright (c) 2002-2018 ymnk, JCraft,Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification, are permitted
  * provided that the following conditions are met:
@@ -26,29 +26,24 @@
 
 package com.jcraft.jsch.jce;
 
-import java.security.*;
-import java.security.interfaces.*;
-import java.security.spec.*;
+public class KeyPairGenEdDSA implements com.jcraft.jsch.KeyPairGenEdDSA {
 
-public class KeyPairGenXEC implements com.jcraft.jsch.KeyPairGenXEC {
-  XECPublicKey pubKey;
-  XECPrivateKey prvKey;
+  public KeyPairGenEdDSA() {
+    throw new UnsupportedOperationException("KeyPairGenEdDSA requires Java15+.");
+  }
 
   @Override
-  public void init(String name) throws Exception {
-    KeyPairGenerator kpg = KeyPairGenerator.getInstance("XDH");
-    NamedParameterSpec paramSpec = new NamedParameterSpec(name);
-    kpg.initialize(paramSpec);
-    KeyPair kp = kpg.genKeyPair();
-    prvKey = (XECPrivateKey) kp.getPrivate();
-    pubKey = (XECPublicKey) kp.getPublic();
+  public void init(String name, int keylen) throws Exception {
+    throw new UnsupportedOperationException("KeyPairGenEdDSA requires Java15+.");
   }
 
-  XECPublicKey getPublicKey() {
-    return pubKey;
+  @Override
+  public byte[] getPrv() {
+    throw new UnsupportedOperationException("KeyPairGenEdDSA requires Java15+.");
   }
 
-  XECPrivateKey getPrivateKey() {
-    return prvKey;
+  @Override
+  public byte[] getPub() {
+    throw new UnsupportedOperationException("KeyPairGenEdDSA requires Java15+.");
   }
 }
