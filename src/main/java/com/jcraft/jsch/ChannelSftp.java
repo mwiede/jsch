@@ -32,6 +32,9 @@ import java.nio.charset.StandardCharsets;
 import java.util.Hashtable;
 import java.util.Vector;
 
+import com.jcraft.jsch.Channel.MyPipedInputStream;
+
+
 public class ChannelSftp extends ChannelSession {
 
   static private final int LOCAL_MAXIMUM_PACKET_SIZE = 32 * 1024;
@@ -158,6 +161,7 @@ public class ChannelSftp extends ChannelSession {
   private boolean fEncoding_is_utf8 = true;
 
   private RequestQueue rq = new RequestQueue(16);
+  private String chunkStart = null;
 
   /**
    * Specify how many requests may be sent at any one time. Increasing this value may slightly
@@ -516,7 +520,13 @@ public class ChannelSftp extends ChannelSession {
           // System.err.println(eee);
         }
       }
-      if (mode == RESUME && skip > 0) {
+    if((mode==RESUME&& chunkStart!=null) && skip>0){
+  	    long skipped=src.skip(skip-Long.parseLong(chunkStart));
+  	    if(skipped<(skip-Long.parseLong(chunkStart))){
+  	    	throw new SftpException(SSH_FX_FAILURE, "failed to resume for "+dst);
+  	    }
+  	 }
+  	else if(mode==RESUME && skip>0){
         long skipped = src.skip(skip);
         if (skipped < skip) {
           throw new SftpException(SSH_FX_FAILURE, "failed to resume for " + dst);
@@ -643,6 +653,32 @@ public class ChannelSftp extends ChannelSession {
         throw (SftpException) e;
       throw new SftpException(SSH_FX_FAILURE, e.toString(), e);
     }
+  
+  public boolean checkChunkFailed(InputStream src, String dst, String ChunkStart)throws SftpException{
+	  try{
+	      ((MyPipedInputStream)io_in).updateReadSide();
+
+	      byte[] dstb=Util.str2byte(dst, fEncoding);
+	      long skip=0;
+	      try{
+		  SftpATTRS attr=_stat(dstb);
+		  skip=attr.getSize();
+	      }
+	      catch(Exception eee){
+		  //System.err.println(eee);
+	      }
+	      
+	      if(skip>0){
+	    	  if(skip == Long.parseLong(ChunkStart))
+	    		  return false;
+	    	  else return true;
+	      }
+	      else return false;
+	  }
+	  catch(Exception e){
+		  throw new SftpException(SSH_FX_FAILURE, "Cannot check-" + e.toString());
+	  }
+	  
   }
 
   public OutputStream put(String dst) throws SftpException {
@@ -2952,6 +2988,10 @@ public class ChannelSftp extends ChannelSession {
         throw (SftpException) e;
       throw new SftpException(SSH_FX_FAILURE, e.toString(), e);
     }
+  }	  
+
+  public void setChunkStart(String chunkStart) {
+	  this.chunkStart= chunkStart;
   }
 
   public static class LsEntry implements Comparable<LsEntry> {
