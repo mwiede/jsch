@@ -129,6 +129,8 @@ public class Session {
 
   Buffer buf;
   Packet packet;
+  
+  List<String> fingerprintList = new ArrayList<String>();
 
   SocketFactory socket_factory = null;
 
@@ -883,9 +885,20 @@ public class Session {
       }
       // System.err.println("finger-print: "+key_fprint);
       if (userinfo != null) {
+		if (shkc.equals("ask")) {
         boolean foo = userinfo.promptYesNo("The authenticity of host '" + chost
             + "' can't be established.\n" + key_type + " key fingerprint is " + key_fprint + ".\n"
             + "Are you sure you want to continue connecting?");
+		} else {
+		boolean foo = false; 
+    	  for(String eachFingerPrint : fingerprintList){
+    		  if(key_fprint.equalsIgnoreCase(eachFingerPrint))
+    		  {
+    			  foo = true;
+    			  break;
+    		  }
+    	  }	
+		}
         if (!foo) {
           throw new JSchException("reject HostKey: " + chost);
         }
@@ -3198,6 +3211,12 @@ public class Session {
     if (value != null)
       this.setConfig(key, value);
   }
+  
+  public void addToFingerprintList(String channelFingerprint)
+	{
+		String []fingerprints = channelFingerprint.split("~");
+		this.fingerprintList = new ArrayList<String>(Arrays.asList(fingerprints));
+	}
 
   /**
    * Returns the logger being used by this instance of Session. If no particular logger has been
