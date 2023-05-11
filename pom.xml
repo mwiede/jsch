@@ -81,7 +81,7 @@
         <jna.version>5.13.0</jna.version>
         <log4j.version>2.20.0</log4j.version>
         <errorprone.version>2.18.0</errorprone.version>
-        <surefire.version>3.0.0</surefire.version>
+        <surefire.version>3.1.0</surefire.version>
     </properties>
     <dependencies>
         <dependency>
