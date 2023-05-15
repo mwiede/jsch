@@ -648,7 +648,7 @@ public class ChannelSftp extends ChannelSession {
       throw new SftpException(SSH_FX_FAILURE, e.toString(), e);
     }
   
-	public boolean checkChunkFailed(InputStream src, String dst, Long startChunk)throws SftpException{
+	public boolean checkChunkFailed(String dst, Long startChunk)throws SftpException{
 	  try{
 	      ((MyPipedInputStream)io_in).updateReadSide();
 
