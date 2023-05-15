@@ -130,7 +130,7 @@ public class Session {
   Buffer buf;
   Packet packet;
   
-  List<String> fingerprintList = new ArrayList<String>();
+  List<String> fingerprintList = new ArrayList<>();
 
   SocketFactory socket_factory = null;
 
@@ -885,11 +885,7 @@ public class Session {
       }
       // System.err.println("finger-print: "+key_fprint);
       if (userinfo != null) {
-		if (shkc.equals("ask")) {
-        boolean foo = userinfo.promptYesNo("The authenticity of host '" + chost
-            + "' can't be established.\n" + key_type + " key fingerprint is " + key_fprint + ".\n"
-            + "Are you sure you want to continue connecting?");
-		} else {
+		  //Support for Multiple Fingerprints
 		boolean foo = false; 
     	  for(String eachFingerPrint : fingerprintList){
     		  if(key_fprint.equalsIgnoreCase(eachFingerPrint))
@@ -898,12 +894,18 @@ public class Session {
     			  break;
     		  }
     	  }	
-		}
+		
         if (!foo) {
-          throw new JSchException("reject HostKey: " + chost);
+		throw new JSchException(
+				"Fingerprint invalid. Fingerprint is: "
+						+ key_fprint);
         }
         insert = true;
-      } else {
+	if(!foo){
+	  throw new JSchException("reject HostKey: "+chost);
+	}
+	insert=true;
+      } else{
         if (i == HostKeyRepository.NOT_INCLUDED)
           throw new JSchException(
               "UnknownHostKey: " + chost + ". " + key_type + " key fingerprint is " + key_fprint);
@@ -3214,7 +3216,7 @@ public class Session {
   
   public void addToFingerprintList(String channelFingerprint)
 	{
-		String []fingerprints = channelFingerprint.split("~");
+		String []fingerprints = channelFingerprint.split(",");
 		this.fingerprintList = new ArrayList<String>(Arrays.asList(fingerprints));
 	}
 

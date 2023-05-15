@@ -32,7 +32,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.Hashtable;
 import java.util.Vector;
 
-import com.jcraft.jsch.Channel.MyPipedInputStream;
 
 
 public class ChannelSftp extends ChannelSession {
@@ -161,7 +160,7 @@ public class ChannelSftp extends ChannelSession {
   private boolean fEncoding_is_utf8 = true;
 
   private RequestQueue rq = new RequestQueue(16);
-  private String chunkStart = null;
+  private Long chunkStart = null;
 
   /**
    * Specify how many requests may be sent at any one time. Increasing this value may slightly
@@ -520,15 +519,10 @@ public class ChannelSftp extends ChannelSession {
           // System.err.println(eee);
         }
       }
-    if((mode==RESUME&& chunkStart!=null) && skip>0){
-  	    long skipped=src.skip(skip-Long.parseLong(chunkStart));
-  	    if(skipped<(skip-Long.parseLong(chunkStart))){
-  	    	throw new SftpException(SSH_FX_FAILURE, "failed to resume for "+dst);
-  	    }
-  	 }
-  	else if(mode==RESUME && skip>0){
-        long skipped = src.skip(skip);
-        if (skipped < skip) {
+    if (mode == RESUME && skip > 0) {
+          long srcSkip = chunkStart != null ? skip - chunkStart : skip;
+          long skipped = src.skip(srcSkip);
+          if (skipped < srcSkip) {
           throw new SftpException(SSH_FX_FAILURE, "failed to resume for " + dst);
         }
       }
@@ -654,7 +648,7 @@ public class ChannelSftp extends ChannelSession {
       throw new SftpException(SSH_FX_FAILURE, e.toString(), e);
     }
   
-  public boolean checkChunkFailed(InputStream src, String dst, String ChunkStart)throws SftpException{
+	public boolean checkChunkFailed(InputStream src, String dst, Long startChunk)throws SftpException{
 	  try{
 	      ((MyPipedInputStream)io_in).updateReadSide();
 
@@ -669,7 +663,7 @@ public class ChannelSftp extends ChannelSession {
 	      }
 	      
 	      if(skip>0){
-	    	  if(skip == Long.parseLong(ChunkStart))
+	    	  if(skip == startChunk)
 	    		  return false;
 	    	  else return true;
 	      }
