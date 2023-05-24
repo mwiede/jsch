@@ -1495,8 +1495,10 @@ public class ChannelSftp extends ChannelSession {
           rq.cancel(header, buf);
           try {
             _sendCLOSE(handle, header);
+          } catch (IOException e) {
+            throw e;
           } catch (Exception e) {
-            throw new IOException("error");
+            throw new IOException(e.toString(), e);
           }
         }
       };
