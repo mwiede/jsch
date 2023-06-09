@@ -403,10 +403,10 @@
                     <instructions>
                         <Export-Package>com.jcraft.jsch;-noimport:=true</Export-Package>
                         <Import-Package><![CDATA[
-                            com.sun.jna*;version="${range;[=0,+)}",
-                            org.apache.logging.log4j*;version="${range;[=0,+)}",
-                            org.bouncycastle*;version="[1.69,${versionmask;+})",
-                            org.slf4j*;version="[1.7,${versionmask;+})",
+                            com.sun.jna*;resolution:=optional;version="${range;[=0,+)}",
+                            org.apache.logging.log4j*;resolution:=optional;version="${range;[=0,+)}",
+                            org.bouncycastle*;resolution:=optional;version="[1.69,${versionmask;+})",
+                            org.slf4j*;resolution:=optional;version="[1.7,${versionmask;+})",
                             org.ietf.jgss;resolution:=optional,
                             *
                             ]]></Import-Package>
