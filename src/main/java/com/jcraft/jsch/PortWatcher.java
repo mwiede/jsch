@@ -37,6 +37,9 @@ import java.util.Vector;
 class PortWatcher {
   private static Vector<PortWatcher> pool = new Vector<>();
   private static InetAddress anyLocalAddress = null;
+
+  public PortWatcherConfig config;
+
   static {
     // 0.0.0.0
     /*
@@ -134,13 +137,13 @@ class PortWatcher {
   }
 
   static PortWatcher addPort(Session session, String address, int lport, String host, int rport,
-      ServerSocketFactory ssf) throws JSchException {
+      ServerSocketFactory ssf, PortWatcherConfig config) throws JSchException {
     address = normalize(address);
     if (getPort(session, address, lport) != null) {
       throw new JSchException(
           "PortForwardingL: local port " + address + ":" + lport + " is already registered.");
     }
-    PortWatcher pw = new PortWatcher(session, address, lport, host, rport, ssf);
+    PortWatcher pw = new PortWatcher(session, address, lport, host, rport, ssf, config);
     pool.addElement(pw);
     return pw;
   }
@@ -175,12 +178,13 @@ class PortWatcher {
   }
 
   PortWatcher(Session session, String address, int lport, String host, int rport,
-      ServerSocketFactory factory) throws JSchException {
+      ServerSocketFactory factory, PortWatcherConfig config) throws JSchException {
     this.session = session;
     this.lport = lport;
     this.host = host;
     this.rport = rport;
     bindLocalPort(address, lport, factory);
+    this.config = config;
   }
 
   public static PortWatcher addSocket(Session session, String bindAddress, int lport,
@@ -200,7 +204,7 @@ class PortWatcher {
     try {
       while (thread != null) {
         Socket socket = ss.accept();
-        socket.setTcpNoDelay(true);
+        socket.setTcpNoDelay(config != null ? config.noDelay : true);
         InputStream in = socket.getInputStream();
         OutputStream out = socket.getOutputStream();
         if (socketPath != null && socketPath.length() > 0) {
@@ -215,7 +219,9 @@ class PortWatcher {
           channel.setOrgPort(socket.getPort());
           channel.connect(connectTimeout);
         } else {
-          ChannelDirectTCPIP channel = new ChannelDirectTCPIP();
+          ChannelDirectTCPIP channel = this.config != null ?
+                  new ChannelDirectTCPIP(this.config.windowSize, this.config.maxWindowSize, this.config.maxPacketSize):
+                  new ChannelDirectTCPIP();
           channel.setSession(session);
           channel.init();
           channel.setInputStream(in);
