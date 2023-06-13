@@ -47,6 +47,14 @@ public class ChannelDirectTCPIP extends Channel {
     setLocalPacketSize(LOCAL_MAXIMUM_PACKET_SIZE);
   }
 
+  ChannelDirectTCPIP(int localWindowSize, int localWindowSizeMax, int localMaxPacketSize) {
+    super();
+    type = _type;
+    setLocalWindowSizeMax(localWindowSizeMax);
+    setLocalWindowSize(localWindowSize);
+    setLocalPacketSize(localMaxPacketSize);
+  }
+
   @Override
   void init() {
     io = new IO();
