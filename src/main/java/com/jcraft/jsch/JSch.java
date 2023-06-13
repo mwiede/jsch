@@ -35,7 +35,7 @@ public class JSch {
   /**
    * The version number.
    */
-  public static final String VERSION = Version.getVersion();
+  public static final String VERSION = "${versionWithoutMinus}";
 
   static Hashtable<String, String> config = new Hashtable<>();
   static {
