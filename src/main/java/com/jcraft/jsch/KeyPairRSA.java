@@ -41,12 +41,12 @@ class KeyPairRSA extends KeyPair {
 
   private int key_size = 1024;
 
-  KeyPairRSA(JSch jsch) {
-    this(jsch, null, null, null);
+  KeyPairRSA(JSch.InstanceLogger instLogger) {
+    this(instLogger, null, null, null);
   }
 
-  KeyPairRSA(JSch jsch, byte[] n_array, byte[] pub_array, byte[] prv_array) {
-    super(jsch);
+  KeyPairRSA(JSch.InstanceLogger instLogger, byte[] n_array, byte[] pub_array, byte[] prv_array) {
+    super(instLogger);
     this.n_array = n_array;
     this.pub_array = pub_array;
     this.prv_array = prv_array;
@@ -139,8 +139,8 @@ class KeyPairRSA extends KeyPair {
           q_array = tmp[2];
           c_array = tmp[3];
         } catch (JSchException e) {
-          if (jsch.getInstanceLogger().isEnabled(Logger.ERROR)) {
-            jsch.getInstanceLogger().log(Logger.ERROR, "failed to parse key", e);
+          if (instLogger.getLogger().isEnabled(Logger.ERROR)) {
+            instLogger.getLogger().log(Logger.ERROR, "failed to parse key", e);
           }
           return false;
         }
@@ -170,8 +170,8 @@ class KeyPairRSA extends KeyPair {
 
           return true;
         }
-        if (jsch.getInstanceLogger().isEnabled(Logger.ERROR)) {
-          jsch.getInstanceLogger().log(Logger.ERROR, "failed to parse key");
+        if (instLogger.getLogger().isEnabled(Logger.ERROR)) {
+          instLogger.getLogger().log(Logger.ERROR, "failed to parse key");
         }
         return false;
       }
@@ -342,8 +342,8 @@ class KeyPairRSA extends KeyPair {
       }
 
     } catch (Exception e) {
-      if (jsch.getInstanceLogger().isEnabled(Logger.ERROR)) {
-        jsch.getInstanceLogger().log(Logger.ERROR, "failed to parse key", e);
+      if (instLogger.getLogger().isEnabled(Logger.ERROR)) {
+        instLogger.getLogger().log(Logger.ERROR, "failed to parse key", e);
       }
       return false;
     }
@@ -403,8 +403,8 @@ class KeyPairRSA extends KeyPair {
       tmp[1] = sig;
       return Buffer.fromBytes(tmp).buffer;
     } catch (Exception e) {
-      if (jsch.getInstanceLogger().isEnabled(Logger.ERROR)) {
-        jsch.getInstanceLogger().log(Logger.ERROR, "failed to generate signature", e);
+      if (instLogger.getLogger().isEnabled(Logger.ERROR)) {
+        instLogger.getLogger().log(Logger.ERROR, "failed to generate signature", e);
       }
     }
     return null;
@@ -433,21 +433,21 @@ class KeyPairRSA extends KeyPair {
       rsa.setPubKey(pub_array, n_array);
       return rsa;
     } catch (Exception e) {
-      if (jsch.getInstanceLogger().isEnabled(Logger.ERROR)) {
-        jsch.getInstanceLogger().log(Logger.ERROR, "failed to create verifier", e);
+      if (instLogger.getLogger().isEnabled(Logger.ERROR)) {
+        instLogger.getLogger().log(Logger.ERROR, "failed to create verifier", e);
       }
     }
     return null;
   }
 
-  static KeyPair fromSSHAgent(JSch jsch, Buffer buf) throws JSchException {
+  static KeyPair fromSSHAgent(JSch.InstanceLogger instLogger, Buffer buf) throws JSchException {
 
     byte[][] tmp = buf.getBytes(8, "invalid key format");
 
     byte[] n_array = tmp[1];
     byte[] pub_array = tmp[2];
     byte[] prv_array = tmp[3];
-    KeyPairRSA kpair = new KeyPairRSA(jsch, n_array, pub_array, prv_array);
+    KeyPairRSA kpair = new KeyPairRSA(instLogger, n_array, pub_array, prv_array);
     kpair.c_array = tmp[4]; // iqmp
     kpair.p_array = tmp[5];
     kpair.q_array = tmp[6];

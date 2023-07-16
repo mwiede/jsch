@@ -66,9 +66,9 @@ class ChannelAgentForwarding extends Channel {
   ChannelAgentForwarding() {
     super();
 
-    setLocalWindowSizeMax(LOCAL_WINDOW_SIZE_MAX);
-    setLocalWindowSize(LOCAL_WINDOW_SIZE_MAX);
-    setLocalPacketSize(LOCAL_MAXIMUM_PACKET_SIZE);
+    lwsize_max = LOCAL_WINDOW_SIZE_MAX;
+    lwsize = LOCAL_WINDOW_SIZE_MAX;
+    lmpsize = LOCAL_MAXIMUM_PACKET_SIZE;
 
     type = Util.str2byte("auth-agent@openssh.com");
     rbuf = new Buffer();

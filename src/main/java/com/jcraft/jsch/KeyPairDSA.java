@@ -38,13 +38,13 @@ class KeyPairDSA extends KeyPair {
   // private int key_size=0;
   private int key_size = 1024;
 
-  KeyPairDSA(JSch jsch) {
-    this(jsch, null, null, null, null, null);
+  KeyPairDSA(JSch.InstanceLogger instLogger) {
+    this(instLogger, null, null, null, null, null);
   }
 
-  KeyPairDSA(JSch jsch, byte[] P_array, byte[] Q_array, byte[] G_array, byte[] pub_array,
-      byte[] prv_array) {
-    super(jsch);
+  KeyPairDSA(JSch.InstanceLogger instLogger, byte[] P_array, byte[] Q_array, byte[] G_array,
+      byte[] pub_array, byte[] prv_array) {
+    super(instLogger);
     this.P_array = P_array;
     this.Q_array = Q_array;
     this.G_array = G_array;
@@ -136,8 +136,8 @@ class KeyPairDSA extends KeyPair {
           byte[][] tmp = buf.getBytes(1, "");
           prv_array = tmp[0];
         } catch (JSchException e) {
-          if (jsch.getInstanceLogger().isEnabled(Logger.ERROR)) {
-            jsch.getInstanceLogger().log(Logger.ERROR, "failed to parse key", e);
+          if (instLogger.getLogger().isEnabled(Logger.ERROR)) {
+            instLogger.getLogger().log(Logger.ERROR, "failed to parse key", e);
           }
           return false;
         }
@@ -264,8 +264,8 @@ class KeyPairDSA extends KeyPair {
       if (P_array != null)
         key_size = (new BigInteger(P_array)).bitLength();
     } catch (Exception e) {
-      if (jsch.getInstanceLogger().isEnabled(Logger.ERROR)) {
-        jsch.getInstanceLogger().log(Logger.ERROR, "failed to parse key", e);
+      if (instLogger.getLogger().isEnabled(Logger.ERROR)) {
+        instLogger.getLogger().log(Logger.ERROR, "failed to parse key", e);
       }
       return false;
     }
@@ -322,8 +322,8 @@ class KeyPairDSA extends KeyPair {
       tmp[1] = sig;
       return Buffer.fromBytes(tmp).buffer;
     } catch (Exception e) {
-      if (jsch.getInstanceLogger().isEnabled(Logger.ERROR)) {
-        jsch.getInstanceLogger().log(Logger.ERROR, "failed to generate signature", e);
+      if (instLogger.getLogger().isEnabled(Logger.ERROR)) {
+        instLogger.getLogger().log(Logger.ERROR, "failed to generate signature", e);
       }
     }
     return null;
@@ -354,8 +354,8 @@ class KeyPairDSA extends KeyPair {
       dsa.setPubKey(pub_array, P_array, Q_array, G_array);
       return dsa;
     } catch (Exception e) {
-      if (jsch.getInstanceLogger().isEnabled(Logger.ERROR)) {
-        jsch.getInstanceLogger().log(Logger.ERROR, "failed to create verifier", e);
+      if (instLogger.getLogger().isEnabled(Logger.ERROR)) {
+        instLogger.getLogger().log(Logger.ERROR, "failed to create verifier", e);
       }
     }
     return null;
@@ -366,7 +366,7 @@ class KeyPairDSA extends KeyPair {
     return getVerifier();
   }
 
-  static KeyPair fromSSHAgent(JSch jsch, Buffer buf) throws JSchException {
+  static KeyPair fromSSHAgent(JSch.InstanceLogger instLogger, Buffer buf) throws JSchException {
 
     byte[][] tmp = buf.getBytes(7, "invalid key format");
 
@@ -375,7 +375,7 @@ class KeyPairDSA extends KeyPair {
     byte[] G_array = tmp[3];
     byte[] pub_array = tmp[4];
     byte[] prv_array = tmp[5];
-    KeyPairDSA kpair = new KeyPairDSA(jsch, P_array, Q_array, G_array, pub_array, prv_array);
+    KeyPairDSA kpair = new KeyPairDSA(instLogger, P_array, Q_array, G_array, pub_array, prv_array);
     kpair.publicKeyComment = Util.byte2str(tmp[6]);
     kpair.vendor = VENDOR_OPENSSH;
     return kpair;

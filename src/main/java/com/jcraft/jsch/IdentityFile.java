@@ -29,24 +29,23 @@ package com.jcraft.jsch;
 import java.io.*;
 
 class IdentityFile implements Identity {
-  private JSch jsch;
   private KeyPair kpair;
   private String identity;
 
-  static IdentityFile newInstance(String prvfile, String pubfile, JSch jsch) throws JSchException {
-    KeyPair kpair = KeyPair.load(jsch, prvfile, pubfile);
-    return new IdentityFile(jsch, prvfile, kpair);
-  }
-
-  static IdentityFile newInstance(String name, byte[] prvkey, byte[] pubkey, JSch jsch)
+  static IdentityFile newInstance(String prvfile, String pubfile, JSch.InstanceLogger instLogger)
       throws JSchException {
-
-    KeyPair kpair = KeyPair.load(jsch, prvkey, pubkey);
-    return new IdentityFile(jsch, name, kpair);
+    KeyPair kpair = KeyPair.load(instLogger, prvfile, pubfile);
+    return new IdentityFile(prvfile, kpair);
   }
 
-  private IdentityFile(JSch jsch, String name, KeyPair kpair) throws JSchException {
-    this.jsch = jsch;
+  static IdentityFile newInstance(String name, byte[] prvkey, byte[] pubkey,
+      JSch.InstanceLogger instLogger) throws JSchException {
+
+    KeyPair kpair = KeyPair.load(instLogger, prvkey, pubkey);
+    return new IdentityFile(name, kpair);
+  }
+
+  private IdentityFile(String name, KeyPair kpair) throws JSchException {
     this.identity = name;
     this.kpair = kpair;
   }

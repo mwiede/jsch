@@ -32,10 +32,10 @@ class LocalIdentityRepository implements IdentityRepository {
   private static final String name = "Local Identity Repository";
 
   private Vector<Identity> identities = new Vector<>();
-  private JSch jsch;
+  private JSch.InstanceLogger instLogger;
 
-  LocalIdentityRepository(JSch jsch) {
-    this.jsch = jsch;
+  LocalIdentityRepository(JSch.InstanceLogger instLogger) {
+    this.instLogger = instLogger;
   }
 
   @Override
@@ -82,7 +82,7 @@ class LocalIdentityRepository implements IdentityRepository {
   @Override
   public synchronized boolean add(byte[] identity) {
     try {
-      Identity _identity = IdentityFile.newInstance("from remote:", identity, null, jsch);
+      Identity _identity = IdentityFile.newInstance("from remote:", identity, null, instLogger);
       add(_identity);
       return true;
     } catch (JSchException e) {
