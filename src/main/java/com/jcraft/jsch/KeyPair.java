@@ -117,10 +117,6 @@ public abstract class KeyPair {
 
   private byte[] passphrase;
 
-  public KeyPair(JSch jsch) {
-    this(jsch.instLogger);
-  }
-
   KeyPair(JSch.InstanceLogger instLogger) {
     this.instLogger = instLogger;
   }
