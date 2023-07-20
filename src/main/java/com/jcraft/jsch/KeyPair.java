@@ -64,15 +64,15 @@ public abstract class KeyPair {
   public static KeyPair genKeyPair(JSch jsch, int type, int key_size) throws JSchException {
     KeyPair kpair = null;
     if (type == DSA) {
-      kpair = new KeyPairDSA(jsch);
+      kpair = new KeyPairDSA(jsch.instLogger);
     } else if (type == RSA) {
-      kpair = new KeyPairRSA(jsch);
+      kpair = new KeyPairRSA(jsch.instLogger);
     } else if (type == ECDSA) {
-      kpair = new KeyPairECDSA(jsch);
+      kpair = new KeyPairECDSA(jsch.instLogger);
     } else if (type == ED25519) {
-      kpair = new KeyPairEd25519(jsch);
+      kpair = new KeyPairEd25519(jsch.instLogger);
     } else if (type == ED448) {
-      kpair = new KeyPairEd448(jsch);
+      kpair = new KeyPairEd448(jsch.instLogger);
     }
     if (kpair != null) {
       kpair.generate(key_size);
@@ -108,7 +108,7 @@ public abstract class KeyPair {
 
   protected String publicKeyComment = "no comment";
 
-  JSch jsch = null;
+  JSch.InstanceLogger instLogger;
   protected Cipher cipher;
   private KDF kdf;
   private HASH sha1;
@@ -117,8 +117,8 @@ public abstract class KeyPair {
 
   private byte[] passphrase;
 
-  public KeyPair(JSch jsch) {
-    this.jsch = jsch;
+  KeyPair(JSch.InstanceLogger instLogger) {
+    this.instLogger = instLogger;
   }
 
   static byte[][] header =
@@ -184,8 +184,8 @@ public abstract class KeyPair {
       out.write(cr);
       // out.close();
     } catch (Exception e) {
-      if (jsch.getInstanceLogger().isEnabled(Logger.ERROR)) {
-        jsch.getInstanceLogger().log(Logger.ERROR, "failed to write private key", e);
+      if (instLogger.getLogger().isEnabled(Logger.ERROR)) {
+        instLogger.getLogger().log(Logger.ERROR, "failed to write private key", e);
       }
     }
   }
@@ -234,8 +234,8 @@ public abstract class KeyPair {
       out.write(Util.str2byte(comment));
       out.write(cr);
     } catch (Exception e) {
-      if (jsch.getInstanceLogger().isEnabled(Logger.ERROR)) {
-        jsch.getInstanceLogger().log(Logger.ERROR, "failed to write public key", e);
+      if (instLogger.getLogger().isEnabled(Logger.ERROR)) {
+        instLogger.getLogger().log(Logger.ERROR, "failed to write public key", e);
       }
     }
   }
@@ -281,8 +281,8 @@ public abstract class KeyPair {
       out.write(Util.str2byte("---- END SSH2 PUBLIC KEY ----"));
       out.write(cr);
     } catch (Exception e) {
-      if (jsch.getInstanceLogger().isEnabled(Logger.ERROR)) {
-        jsch.getInstanceLogger().log(Logger.ERROR, "failed to write public key", e);
+      if (instLogger.getLogger().isEnabled(Logger.ERROR)) {
+        instLogger.getLogger().log(Logger.ERROR, "failed to write public key", e);
       }
     }
   }
@@ -372,8 +372,8 @@ public abstract class KeyPair {
       cipher.init(Cipher.ENCRYPT_MODE, key, iv);
       cipher.update(encoded, 0, encoded.length, encoded, 0);
     } catch (Exception e) {
-      if (jsch.getInstanceLogger().isEnabled(Logger.ERROR)) {
-        jsch.getInstanceLogger().log(Logger.ERROR, "failed to encrypt key", e);
+      if (instLogger.getLogger().isEnabled(Logger.ERROR)) {
+        instLogger.getLogger().log(Logger.ERROR, "failed to encrypt key", e);
       }
     }
     Util.bzero(key);
@@ -392,8 +392,8 @@ public abstract class KeyPair {
       cipher.update(data, 0, data.length, plain, 0);
       return plain;
     } catch (Exception e) {
-      if (jsch.getInstanceLogger().isEnabled(Logger.ERROR)) {
-        jsch.getInstanceLogger().log(Logger.ERROR, "failed to decrypt key", e);
+      if (instLogger.getLogger().isEnabled(Logger.ERROR)) {
+        instLogger.getLogger().log(Logger.ERROR, "failed to decrypt key", e);
       }
     }
     return null;
@@ -463,8 +463,8 @@ public abstract class KeyPair {
             Class.forName(JSch.getConfig("random")).asSubclass(Random.class);
         random = c.getDeclaredConstructor().newInstance();
       } catch (Exception e) {
-        if (jsch.getInstanceLogger().isEnabled(Logger.ERROR)) {
-          jsch.getInstanceLogger().log(Logger.ERROR, "failed to create random", e);
+        if (instLogger.getLogger().isEnabled(Logger.ERROR)) {
+          instLogger.getLogger().log(Logger.ERROR, "failed to create random", e);
         }
       }
     }
@@ -477,8 +477,8 @@ public abstract class KeyPair {
       hash = c.getDeclaredConstructor().newInstance();
       hash.init();
     } catch (Exception e) {
-      if (jsch.getInstanceLogger().isEnabled(Logger.ERROR)) {
-        jsch.getInstanceLogger().log(Logger.ERROR, "failed to create hash", e);
+      if (instLogger.getLogger().isEnabled(Logger.ERROR)) {
+        instLogger.getLogger().log(Logger.ERROR, "failed to create hash", e);
       }
     }
     return hash;
@@ -490,8 +490,8 @@ public abstract class KeyPair {
           Class.forName(JSch.getConfig("3des-cbc")).asSubclass(Cipher.class);
       cipher = c.getDeclaredConstructor().newInstance();
     } catch (Exception e) {
-      if (jsch.getInstanceLogger().isEnabled(Logger.ERROR)) {
-        jsch.getInstanceLogger().log(Logger.ERROR, "failed to create cipher", e);
+      if (instLogger.getLogger().isEnabled(Logger.ERROR)) {
+        instLogger.getLogger().log(Logger.ERROR, "failed to create cipher", e);
       }
     }
     return cipher;
@@ -562,8 +562,8 @@ public abstract class KeyPair {
         Util.bzero(tmp);
       }
     } catch (Exception e) {
-      if (jsch.getInstanceLogger().isEnabled(Logger.ERROR)) {
-        jsch.getInstanceLogger().log(Logger.ERROR, "failed to generate key from passphrase", e);
+      if (instLogger.getLogger().isEnabled(Logger.ERROR)) {
+        instLogger.getLogger().log(Logger.ERROR, "failed to generate key from passphrase", e);
       }
     }
     return key;
@@ -637,10 +637,15 @@ public abstract class KeyPair {
     if (!new File(pubkey).exists()) {
       pubkey = null;
     }
-    return load(jsch, prvkey, pubkey);
+    return load(jsch.instLogger, prvkey, pubkey);
   }
 
   public static KeyPair load(JSch jsch, String prvfile, String pubfile) throws JSchException {
+    return load(jsch.instLogger, prvfile, pubfile);
+  }
+
+  static KeyPair load(JSch.InstanceLogger instLogger, String prvfile, String pubfile)
+      throws JSchException {
 
     byte[] prvkey = null;
     byte[] pubkey = null;
@@ -665,13 +670,18 @@ public abstract class KeyPair {
     }
 
     try {
-      return load(jsch, prvkey, pubkey);
+      return load(instLogger, prvkey, pubkey);
     } finally {
       Util.bzero(prvkey);
     }
   }
 
   public static KeyPair load(JSch jsch, byte[] prvkey, byte[] pubkey) throws JSchException {
+    return load(jsch.instLogger, prvkey, pubkey);
+  }
+
+  static KeyPair load(JSch.InstanceLogger instLogger, byte[] prvkey, byte[] pubkey)
+      throws JSchException {
 
     byte[] iv = new byte[8]; // 8
     boolean encrypted = true;
@@ -697,16 +707,16 @@ public abstract class KeyPair {
 
       KeyPair kpair = null;
       if (_type.equals("ssh-rsa")) {
-        kpair = KeyPairRSA.fromSSHAgent(jsch, buf);
+        kpair = KeyPairRSA.fromSSHAgent(instLogger, buf);
       } else if (_type.equals("ssh-dss")) {
-        kpair = KeyPairDSA.fromSSHAgent(jsch, buf);
+        kpair = KeyPairDSA.fromSSHAgent(instLogger, buf);
       } else if (_type.equals("ecdsa-sha2-nistp256") || _type.equals("ecdsa-sha2-nistp384")
           || _type.equals("ecdsa-sha2-nistp521")) {
-        kpair = KeyPairECDSA.fromSSHAgent(jsch, buf);
+        kpair = KeyPairECDSA.fromSSHAgent(instLogger, buf);
       } else if (_type.equals("ssh-ed25519")) {
-        kpair = KeyPairEd25519.fromSSHAgent(jsch, buf);
+        kpair = KeyPairEd25519.fromSSHAgent(instLogger, buf);
       } else if (_type.equals("ssh-ed448")) {
-        kpair = KeyPairEd448.fromSSHAgent(jsch, buf);
+        kpair = KeyPairEd448.fromSSHAgent(instLogger, buf);
       } else {
         throw new JSchException("privatekey: invalid key " + _type);
       }
@@ -717,7 +727,7 @@ public abstract class KeyPair {
       byte[] buf = prvkey;
 
       if (buf != null) {
-        KeyPair ppk = loadPPK(jsch, buf);
+        KeyPair ppk = loadPPK(instLogger, buf);
         if (ppk != null)
           return ppk;
       }
@@ -906,7 +916,7 @@ public abstract class KeyPair {
       }
 
       if (vendor == VENDOR_OPENSSH_V1) {
-        return loadOpenSSHKeyv1(jsch, data);
+        return loadOpenSSHKeyv1(instLogger, data);
       } else if (data != null && data.length > 4 && // FSecure
           data[0] == (byte) 0x3f && data[1] == (byte) 0x6f && data[2] == (byte) 0xf9
           && data[3] == (byte) 0xeb) {
@@ -1077,25 +1087,25 @@ public abstract class KeyPair {
             }
           }
         } catch (Exception ee) {
-          if (jsch.getInstanceLogger().isEnabled(Logger.WARN)) {
-            jsch.getInstanceLogger().log(Logger.WARN, "failed to parse public key", ee);
+          if (instLogger.getLogger().isEnabled(Logger.WARN)) {
+            instLogger.getLogger().log(Logger.WARN, "failed to parse public key", ee);
           }
         }
       }
 
       KeyPair kpair = null;
       if (type == DSA) {
-        kpair = new KeyPairDSA(jsch);
+        kpair = new KeyPairDSA(instLogger);
       } else if (type == RSA) {
-        kpair = new KeyPairRSA(jsch);
+        kpair = new KeyPairRSA(instLogger);
       } else if (type == ECDSA) {
-        kpair = new KeyPairECDSA(jsch, pubkey);
+        kpair = new KeyPairECDSA(instLogger, pubkey);
       } else if (type == ED25519) {
-        kpair = new KeyPairEd25519(jsch, pubkey, null);
+        kpair = new KeyPairEd25519(instLogger, pubkey, null);
       } else if (type == ED448) {
-        kpair = new KeyPairEd448(jsch, pubkey, null);
+        kpair = new KeyPairEd448(instLogger, pubkey, null);
       } else if (vendor == VENDOR_PKCS8) {
-        kpair = new KeyPairPKCS8(jsch);
+        kpair = new KeyPairPKCS8(instLogger);
       }
 
       if (kpair != null) {
@@ -1127,7 +1137,8 @@ public abstract class KeyPair {
     }
   }
 
-  static KeyPair loadOpenSSHKeyv1(JSch jsch, byte[] data) throws JSchException {
+  static KeyPair loadOpenSSHKeyv1(JSch.InstanceLogger instLogger, byte[] data)
+      throws JSchException {
     if (data == null) {
       throw new JSchException("invalid privatekey");
     }
@@ -1149,7 +1160,7 @@ public abstract class KeyPair {
     }
 
     byte[] publickeyblob = buffer.getString();
-    KeyPair kpair = parsePubkeyBlob(jsch, publickeyblob, null);
+    KeyPair kpair = parsePubkeyBlob(instLogger, publickeyblob, null);
     kpair.encrypted = !"none".equals(cipherName);
     kpair.publickeyblob = publickeyblob;
     kpair.vendor = VENDOR_OPENSSH_V1;
@@ -1226,7 +1237,7 @@ public abstract class KeyPair {
     dispose();
   }
 
-  static KeyPair loadPPK(JSch jsch, byte[] buf) throws JSchException {
+  static KeyPair loadPPK(JSch.InstanceLogger instLogger, byte[] buf) throws JSchException {
     byte[] pubkey = null;
     byte[] prvkey = null;
     byte[] _prvkey = null;
@@ -1273,7 +1284,7 @@ public abstract class KeyPair {
       prvkey = Util.fromBase64(_prvkey, 0, _prvkey.length);
       pubkey = Util.fromBase64(pubkey, 0, pubkey.length);
 
-      KeyPair kpair = parsePubkeyBlob(jsch, pubkey, typ);
+      KeyPair kpair = parsePubkeyBlob(instLogger, pubkey, typ);
       kpair.encrypted = !v.get("Encryption").equals("none");
       kpair.publickeyblob = pubkey;
       kpair.vendor = ppkVersion;
@@ -1367,8 +1378,8 @@ public abstract class KeyPair {
     }
   }
 
-  private static KeyPair parsePubkeyBlob(JSch jsch, byte[] pubkeyblob, String typ)
-      throws JSchException {
+  private static KeyPair parsePubkeyBlob(JSch.InstanceLogger instLogger, byte[] pubkeyblob,
+      String typ) throws JSchException {
     Buffer _buf = new Buffer(pubkeyblob);
     _buf.skip(pubkeyblob.length);
 
@@ -1386,7 +1397,7 @@ public abstract class KeyPair {
       byte[] n_array = new byte[_buf.getInt()];
       _buf.getByte(n_array);
 
-      return new KeyPairRSA(jsch, n_array, pub_array, null);
+      return new KeyPairRSA(instLogger, n_array, pub_array, null);
     } else if (typ.equals("ssh-dss")) {
       byte[] p_array = new byte[_buf.getInt()];
       _buf.getByte(p_array);
@@ -1397,7 +1408,7 @@ public abstract class KeyPair {
       byte[] y_array = new byte[_buf.getInt()];
       _buf.getByte(y_array);
 
-      return new KeyPairDSA(jsch, p_array, q_array, g_array, y_array, null);
+      return new KeyPairDSA(instLogger, p_array, q_array, g_array, y_array, null);
     } else if (typ.equals("ecdsa-sha2-nistp256") || typ.equals("ecdsa-sha2-nistp384")
         || typ.equals("ecdsa-sha2-nistp521")) {
       byte[] name = _buf.getString(); // nistpXXX
@@ -1410,15 +1421,15 @@ public abstract class KeyPair {
       _buf.getByte(r_array);
       _buf.getByte(s_array);
 
-      return new KeyPairECDSA(jsch, name, r_array, s_array, null);
+      return new KeyPairECDSA(instLogger, name, r_array, s_array, null);
     } else if (typ.equals("ssh-ed25519") || typ.equals("ssh-ed448")) {
       byte[] pub_array = new byte[_buf.getInt()];
       _buf.getByte(pub_array);
 
       if (typ.equals("ssh-ed25519")) {
-        return new KeyPairEd25519(jsch, pub_array, null);
+        return new KeyPairEd25519(instLogger, pub_array, null);
       } else {
-        return new KeyPairEd448(jsch, pub_array, null);
+        return new KeyPairEd448(instLogger, pub_array, null);
       }
     } else {
       throw new JSchException("key type " + typ + " is not supported");

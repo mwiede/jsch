@@ -242,9 +242,11 @@ public class JSch {
     config.put("ClearAllForwardings", "no");
   }
 
+  final InstanceLogger instLogger = new InstanceLogger();
+
   private Vector<Session> sessionPool = new Vector<>();
 
-  private IdentityRepository defaultIdentityRepository = new LocalIdentityRepository(this);
+  private IdentityRepository defaultIdentityRepository = new LocalIdentityRepository(instLogger);
 
   private IdentityRepository identityRepository = defaultIdentityRepository;
 
@@ -291,7 +293,6 @@ public class JSch {
     public void log(int level, String message) {}
   };
   static Logger logger = DEVNULL;
-  private Logger instLogger;
 
   public JSch() {}
 
@@ -480,7 +481,7 @@ public class JSch {
    * @see #addIdentity(String prvkey, String pubkey, byte[] passphrase)
    */
   public void addIdentity(String prvkey, byte[] passphrase) throws JSchException {
-    Identity identity = IdentityFile.newInstance(prvkey, null, this);
+    Identity identity = IdentityFile.newInstance(prvkey, null, instLogger);
     addIdentity(identity, passphrase);
   }
 
@@ -495,7 +496,7 @@ public class JSch {
    * @throws JSchException if <code>passphrase</code> is not right.
    */
   public void addIdentity(String prvkey, String pubkey, byte[] passphrase) throws JSchException {
-    Identity identity = IdentityFile.newInstance(prvkey, pubkey, this);
+    Identity identity = IdentityFile.newInstance(prvkey, pubkey, instLogger);
     addIdentity(identity, passphrase);
   }
 
@@ -511,7 +512,7 @@ public class JSch {
    */
   public void addIdentity(String name, byte[] prvkey, byte[] pubkey, byte[] passphrase)
       throws JSchException {
-    Identity identity = IdentityFile.newInstance(name, prvkey, pubkey, this);
+    Identity identity = IdentityFile.newInstance(name, prvkey, pubkey, instLogger);
     addIdentity(identity, passphrase);
   }
 
@@ -669,10 +670,7 @@ public class JSch {
    *         statically set logger is returned.
    */
   public Logger getInstanceLogger() {
-    if (this.instLogger == null) {
-      return logger;
-    }
-    return instLogger;
+    return instLogger.getLogger();
   }
 
   /**
@@ -682,7 +680,7 @@ public class JSch {
    *        used
    */
   public void setInstanceLogger(Logger logger) {
-    this.instLogger = logger;
+    instLogger.setLogger(logger);
   }
 
   /**
@@ -693,5 +691,22 @@ public class JSch {
    */
   public static Logger getLogger() {
     return logger;
+  }
+
+  static class InstanceLogger {
+    private Logger logger;
+
+    private InstanceLogger() {}
+
+    Logger getLogger() {
+      if (logger == null) {
+        return JSch.logger;
+      }
+      return logger;
+    }
+
+    void setLogger(Logger logger) {
+      this.logger = logger;
+    }
   }
 }

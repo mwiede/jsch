@@ -3108,7 +3108,7 @@ public class Session {
           }
           if (ifile == null)
             continue;
-          Identity identity = IdentityFile.newInstance(ifile, null, jsch);
+          Identity identity = IdentityFile.newInstance(ifile, null, jsch.instLogger);
           ir.add(identity);
         }
         this.setIdentityRepository(ir);

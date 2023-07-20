@@ -156,7 +156,7 @@ class KeyPairTest {
     final String prvkey =
         Paths.get(ClassLoader.getSystemResource(keyFile).toURI()).toFile().getAbsolutePath();
     assertTrue(new File(prvkey).exists());
-    IdentityFile identity = IdentityFile.newInstance(prvkey, null, jSch);
+    IdentityFile identity = IdentityFile.newInstance(prvkey, null, jSch.instLogger);
 
     // Decrypt the key file
     assertTrue(identity.getKeyPair().decrypt("secret123"));

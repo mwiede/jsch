@@ -183,9 +183,9 @@ public class ChannelSftp extends ChannelSession {
 
   public ChannelSftp() {
     super();
-    setLocalWindowSizeMax(LOCAL_WINDOW_SIZE_MAX);
-    setLocalWindowSize(LOCAL_WINDOW_SIZE_MAX);
-    setLocalPacketSize(LOCAL_MAXIMUM_PACKET_SIZE);
+    lwsize_max = LOCAL_WINDOW_SIZE_MAX;
+    lwsize = LOCAL_WINDOW_SIZE_MAX;
+    lmpsize = LOCAL_MAXIMUM_PACKET_SIZE;
   }
 
   @Override

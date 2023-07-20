@@ -5,6 +5,10 @@ import org.junit.jupiter.params.provider.CsvSource;
 
 public class PktSize32768IT extends AbstractBufferMargin {
 
+  public PktSize32768IT() {
+    super(32768);
+  }
+
   @ParameterizedTest
   @CsvSource(value = {
       // 16 byte tag (MAC doesn't matter)
@@ -39,10 +43,5 @@ public class PktSize32768IT extends AbstractBufferMargin {
       "aes128-ctr,hmac-sha2-512,none", "aes128-ctr,hmac-sha2-512,zlib@openssh.com"})
   public void testScp(String cipher, String mac, String compression) throws Exception {
     doTestScp(cipher, mac, compression);
-  }
-
-  @Override
-  protected int maxPktSize() {
-    return 32768;
   }
 }

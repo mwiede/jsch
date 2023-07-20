@@ -219,7 +219,7 @@
         <dependency>
             <groupId>com.github.valfirst</groupId>
             <artifactId>slf4j-test</artifactId>
-            <version>2.9.0</version>
+            <version>3.0.1</version>
             <scope>test</scope>
         </dependency>
     </dependencies>
@@ -404,7 +404,7 @@
                         <Export-Package>com.jcraft.jsch;-noimport:=true</Export-Package>
                         <Import-Package><![CDATA[
                             com.sun.jna*;version="${range;[=0,+)}",
-                            org.apache.logging.log4j*;version="${range;[=0,+)}",
+                            org.apache.logging.log4j*;version="${range;[=0,4)}",
                             org.bouncycastle*;version="[1.69,${versionmask;+})",
                             org.slf4j*;version="[1.7,${versionmask;+})",
                             org.ietf.jgss;resolution:=optional,

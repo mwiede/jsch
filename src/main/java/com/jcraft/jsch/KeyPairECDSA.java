@@ -46,12 +46,12 @@ class KeyPairECDSA extends KeyPair {
 
   private int key_size = 256;
 
-  KeyPairECDSA(JSch jsch) {
-    this(jsch, null, null, null, null);
+  KeyPairECDSA(JSch.InstanceLogger instLogger) {
+    this(instLogger, null, null, null, null);
   }
 
-  KeyPairECDSA(JSch jsch, byte[] pubkey) {
-    this(jsch, null, null, null, null);
+  KeyPairECDSA(JSch.InstanceLogger instLogger, byte[] pubkey) {
+    this(instLogger, null, null, null, null);
 
     if (pubkey != null) {
       byte[] name = new byte[8];
@@ -67,8 +67,9 @@ class KeyPairECDSA extends KeyPair {
     }
   }
 
-  KeyPairECDSA(JSch jsch, byte[] name, byte[] r_array, byte[] s_array, byte[] prv_array) {
-    super(jsch);
+  KeyPairECDSA(JSch.InstanceLogger instLogger, byte[] name, byte[] r_array, byte[] s_array,
+      byte[] prv_array) {
+    super(instLogger);
     if (name != null)
       this.name = name;
     this.r_array = r_array;
@@ -166,8 +167,8 @@ class KeyPairECDSA extends KeyPair {
           prv_array = tmp[0];
           key_size = prv_array.length >= 64 ? 521 : (prv_array.length >= 48 ? 384 : 256);
         } catch (JSchException e) {
-          if (jsch.getInstanceLogger().isEnabled(Logger.ERROR)) {
-            jsch.getInstanceLogger().log(Logger.ERROR, "failed to parse key", e);
+          if (instLogger.getLogger().isEnabled(Logger.ERROR)) {
+            instLogger.getLogger().log(Logger.ERROR, "failed to parse key", e);
           }
           return false;
         }
@@ -300,8 +301,8 @@ class KeyPairECDSA extends KeyPair {
       if (prv_array != null)
         key_size = prv_array.length >= 64 ? 521 : (prv_array.length >= 48 ? 384 : 256);
     } catch (Exception e) {
-      if (jsch.getInstanceLogger().isEnabled(Logger.ERROR)) {
-        jsch.getInstanceLogger().log(Logger.ERROR, "failed to parse key", e);
+      if (instLogger.getLogger().isEnabled(Logger.ERROR)) {
+        instLogger.getLogger().log(Logger.ERROR, "failed to parse key", e);
       }
       return false;
     }
@@ -362,8 +363,8 @@ class KeyPairECDSA extends KeyPair {
       tmp[1] = sig;
       return Buffer.fromBytes(tmp).buffer;
     } catch (Exception e) {
-      if (jsch.getInstanceLogger().isEnabled(Logger.ERROR)) {
-        jsch.getInstanceLogger().log(Logger.ERROR, "failed to generate signature", e);
+      if (instLogger.getLogger().isEnabled(Logger.ERROR)) {
+        instLogger.getLogger().log(Logger.ERROR, "failed to generate signature", e);
       }
     }
     return null;
@@ -394,8 +395,8 @@ class KeyPairECDSA extends KeyPair {
       ecdsa.setPubKey(r_array, s_array);
       return ecdsa;
     } catch (Exception e) {
-      if (jsch.getInstanceLogger().isEnabled(Logger.ERROR)) {
-        jsch.getInstanceLogger().log(Logger.ERROR, "failed to create verifier", e);
+      if (instLogger.getLogger().isEnabled(Logger.ERROR)) {
+        instLogger.getLogger().log(Logger.ERROR, "failed to create verifier", e);
       }
     }
     return null;
@@ -406,7 +407,7 @@ class KeyPairECDSA extends KeyPair {
     return getVerifier();
   }
 
-  static KeyPair fromSSHAgent(JSch jsch, Buffer buf) throws JSchException {
+  static KeyPair fromSSHAgent(JSch.InstanceLogger instLogger, Buffer buf) throws JSchException {
 
     byte[][] tmp = buf.getBytes(5, "invalid key format");
 
@@ -416,7 +417,7 @@ class KeyPairECDSA extends KeyPair {
     byte[] s_array = foo[1];
 
     byte[] prv_array = tmp[3];
-    KeyPairECDSA kpair = new KeyPairECDSA(jsch, name, r_array, s_array, prv_array);
+    KeyPairECDSA kpair = new KeyPairECDSA(instLogger, name, r_array, s_array, prv_array);
     kpair.publicKeyComment = Util.byte2str(tmp[4]);
     kpair.vendor = VENDOR_OPENSSH;
     return kpair;
