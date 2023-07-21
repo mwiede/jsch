@@ -891,6 +891,7 @@ public abstract class KeyPair {
 
         start = 0;
         i = 0;
+        int xds = 0;
 
         int _len = _buf.length;
         while (i < _len) {
@@ -898,8 +899,10 @@ public abstract class KeyPair {
             boolean xd = (_buf[i - 1] == '\r');
             // ignore \n (or \r\n)
             System.arraycopy(_buf, i + 1, _buf, i - (xd ? 1 : 0), _len - (i + 1));
-            if (xd)
+            if (xd) {
               _len--;
+              xds++;
+            }
             _len--;
             continue;
           }
@@ -909,8 +912,8 @@ public abstract class KeyPair {
           i++;
         }
 
-        if (i - start > 0)
-          data = Util.fromBase64(_buf, start, i - start);
+        if (i - xds - start > 0)
+          data = Util.fromBase64(_buf, start, i - xds - start);
 
         Util.bzero(_buf);
       }
