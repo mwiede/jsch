@@ -83,22 +83,30 @@ public interface Identity {
   }
 
   /**
+   * This method is deprecated and the default implmentation of this method will throw an
+   * {@link UnsupportedOperationException}.
+   *
    * @deprecated The decryption should be done automatically in {@link #setPassphrase(byte[])}
+   * @return <code>true</code> if the decryption is succeeded or this identity is not cyphered.
    * @see #setPassphrase(byte[])
    */
   @Deprecated
-  public boolean decrypt();
+  public default boolean decrypt() {
+    throw new UnsupportedOperationException("not implemented");
+  }
 
   /**
    * Returns the name of the key algorithm.
    *
-   * @return "ssh-rsa" or "ssh-dss"
+   * @return the name of the key algorithm
    */
   public String getAlgName();
 
   /**
    * Returns the name of this identity. It will be useful to identify this object in the
    * {@link IdentityRepository}.
+   *
+   * @return the name of this identity
    */
   public String getName();
 

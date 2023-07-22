@@ -61,12 +61,6 @@ class AgentIdentity implements Identity {
   }
 
   @Override
-  @Deprecated
-  public boolean decrypt() {
-    throw new RuntimeException("not implemented");
-  }
-
-  @Override
   public String getAlgName() {
     return algname;
   }

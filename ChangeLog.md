@@ -3,6 +3,7 @@
   * Tweak OSGi bundle manifest to allow Log4j 3.
   * [#362](https://github.com/mwiede/jsch/issues/362) fix PEM key parsing to work with windows line endings.
   * [#361](https://github.com/mwiede/jsch/issues/361) guard against `UIKeyboardInteractive` implementations that include NULL elements in the `String[]` returned from `promptKeyboardInteractive()`.
+  * Add a default implmentation of the deprecated `decrypt()` method to the `Identity` interface that throws an `UnsupportedOperationException`.
 * [0.2.9](https://github.com/mwiede/jsch/releases/tag/jsch-0.2.9)
   * [#293](https://github.com/mwiede/jsch/issues/293) allow UserAuthNone to be extended.
   * Make JGSS module optional.
