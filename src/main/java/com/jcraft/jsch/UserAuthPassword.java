@@ -127,7 +127,7 @@ class UserAuthPassword extends UserAuth {
               throw new JSchAuthCancelException("password");
             }
 
-            byte[] newpassword = Util.str2byte(response[0]);
+            byte[] newpassword = response[0] != null ? Util.str2byte(response[0]) : Util.empty;
 
             // send
             // byte SSH_MSG_USERAUTH_REQUEST(50)

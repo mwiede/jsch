@@ -6,7 +6,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import com.github.valfirst.slf4jtest.LoggingEvent;
 import com.github.valfirst.slf4jtest.TestLogger;
 import com.github.valfirst.slf4jtest.TestLoggerFactory;
-import com.google.common.io.ByteStreams;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -17,6 +16,7 @@ import java.util.Base64;
 import java.util.List;
 import java.util.Random;
 import org.apache.commons.codec.digest.DigestUtils;
+import org.apache.commons.io.input.BoundedInputStream;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -209,7 +209,7 @@ public abstract class AbstractBufferMargin {
             byte[] buf = new byte[17];
             is.read(buf, 0, 17);
             sendAck(os);
-            Files.copy(ByteStreams.limit(is, 100L * 1024L), out);
+            Files.copy(new BoundedInputStream(is, 100L * 1024L), out);
             checkAck(is);
             sendAck(os);
           }

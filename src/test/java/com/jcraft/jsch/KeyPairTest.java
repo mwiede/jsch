@@ -35,6 +35,8 @@ class KeyPairTest {
         Arguments.of("docker/ssh_host_dsa_key", null, "ssh-dss"),
         // encrypted dsa
         Arguments.of("encrypted_openssh_private_key_dsa", "secret123", "ssh-dss"),
+        // unencrypted RSA with windows (\r\n) line endings
+        Arguments.of("issue362_rsa", null, "ssh-rsa"),
         // ecdsa EC private key format
         Arguments.of("docker/id_ecdsa256", null, "ecdsa-sha2-nistp256"), //
         Arguments.of("docker/id_ecdsa384", null, "ecdsa-sha2-nistp384"), //

@@ -141,7 +141,7 @@ class UserAuthKeyboardInteractive extends UserAuth {
               if (_response != null) {
                 response = new byte[_response.length][];
                 for (int i = 0; i < _response.length; i++) {
-                  response[i] = Util.str2byte(_response[i]);
+                  response[i] = _response[i] != null ? Util.str2byte(_response[i]) : Util.empty;
                 }
               }
             }
