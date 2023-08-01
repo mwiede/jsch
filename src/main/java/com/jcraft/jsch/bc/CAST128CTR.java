@@ -28,13 +28,15 @@ package com.jcraft.jsch.bc;
 
 import com.jcraft.jsch.Cipher;
 import org.bouncycastle.crypto.engines.CAST5Engine;
+import org.bouncycastle.crypto.modes.CTRModeCipher;
 import org.bouncycastle.crypto.modes.SICBlockCipher;
-import org.bouncycastle.crypto.params.*;
+import org.bouncycastle.crypto.params.KeyParameter;
+import org.bouncycastle.crypto.params.ParametersWithIV;
 
 public class CAST128CTR implements Cipher {
   private static final int ivsize = 8;
   private static final int bsize = 16;
-  private SICBlockCipher cipher;
+  private CTRModeCipher cipher;
 
   @Override
   public int getIVSize() {
@@ -63,7 +65,7 @@ public class CAST128CTR implements Cipher {
     try {
       ParametersWithIV keyspec =
           new ParametersWithIV(new KeyParameter(key, 0, key.length), iv, 0, iv.length);
-      cipher = new SICBlockCipher(new CAST5Engine());
+      cipher = SICBlockCipher.newInstance(new CAST5Engine());
       cipher.init(mode == ENCRYPT_MODE, keyspec);
     } catch (Exception e) {
       cipher = null;

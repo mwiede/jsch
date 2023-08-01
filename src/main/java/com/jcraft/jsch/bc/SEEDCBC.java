@@ -28,9 +28,11 @@ package com.jcraft.jsch.bc;
 
 import com.jcraft.jsch.Cipher;
 import org.bouncycastle.crypto.BufferedBlockCipher;
+import org.bouncycastle.crypto.DefaultBufferedBlockCipher;
 import org.bouncycastle.crypto.engines.SEEDEngine;
 import org.bouncycastle.crypto.modes.CBCBlockCipher;
-import org.bouncycastle.crypto.params.*;
+import org.bouncycastle.crypto.params.KeyParameter;
+import org.bouncycastle.crypto.params.ParametersWithIV;
 
 public class SEEDCBC implements Cipher {
   private static final int ivsize = 16;
@@ -64,7 +66,7 @@ public class SEEDCBC implements Cipher {
     try {
       ParametersWithIV keyspec =
           new ParametersWithIV(new KeyParameter(key, 0, key.length), iv, 0, iv.length);
-      cipher = new BufferedBlockCipher(new CBCBlockCipher(new SEEDEngine()));
+      cipher = new DefaultBufferedBlockCipher(CBCBlockCipher.newInstance(new SEEDEngine()));
       cipher.init(mode == ENCRYPT_MODE, keyspec);
     } catch (Exception e) {
       cipher = null;

@@ -28,12 +28,14 @@ package com.jcraft.jsch.bc;
 
 import com.jcraft.jsch.Cipher;
 import org.bouncycastle.crypto.engines.TwofishEngine;
+import org.bouncycastle.crypto.modes.CTRModeCipher;
 import org.bouncycastle.crypto.modes.SICBlockCipher;
-import org.bouncycastle.crypto.params.*;
+import org.bouncycastle.crypto.params.KeyParameter;
+import org.bouncycastle.crypto.params.ParametersWithIV;
 
 abstract class TwofishCTR implements Cipher {
   private static final int ivsize = 16;
-  private SICBlockCipher cipher;
+  private CTRModeCipher cipher;
 
   @Override
   public int getIVSize() {
@@ -58,7 +60,7 @@ abstract class TwofishCTR implements Cipher {
     try {
       ParametersWithIV keyspec =
           new ParametersWithIV(new KeyParameter(key, 0, key.length), iv, 0, iv.length);
-      cipher = new SICBlockCipher(new TwofishEngine());
+      cipher = SICBlockCipher.newInstance(new TwofishEngine());
       cipher.init(mode == ENCRYPT_MODE, keyspec);
     } catch (Exception e) {
       cipher = null;

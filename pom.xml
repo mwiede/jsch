@@ -87,7 +87,7 @@
         <dependency>
             <groupId>org.bouncycastle</groupId>
             <artifactId>bcprov-jdk18on</artifactId>
-            <version>1.75</version>
+            <version>1.76</version>
             <optional>true</optional>
         </dependency>
         <dependency>
@@ -405,7 +405,7 @@
                         <Import-Package><![CDATA[
                             com.sun.jna*;version="${range;[=0,+)}",
                             org.apache.logging.log4j*;version="${range;[=0,4)}",
-                            org.bouncycastle*;version="[1.69,${versionmask;+})",
+                            org.bouncycastle*;version="[1.76,${versionmask;+})",
                             org.slf4j*;version="[1.7,${versionmask;+})",
                             org.ietf.jgss;resolution:=optional,
                             *

@@ -37,6 +37,10 @@ class KeyPairTest {
         Arguments.of("encrypted_openssh_private_key_dsa", "secret123", "ssh-dss"),
         // unencrypted RSA with windows (\r\n) line endings
         Arguments.of("issue362_rsa", null, "ssh-rsa"),
+        Arguments.of("issue_369_rsa_opensshv1", null, "ssh-rsa"),
+        Arguments.of("issue_369_rsa_pem", null, "ssh-rsa"),
+        Arguments.of("encrypted_issue_369_rsa_opensshv1", "secret123", "ssh-rsa"),
+        Arguments.of("encrypted_issue_369_rsa_pem", "secret123", "ssh-rsa"),
         // ecdsa EC private key format
         Arguments.of("docker/id_ecdsa256", null, "ecdsa-sha2-nistp256"), //
         Arguments.of("docker/id_ecdsa384", null, "ecdsa-sha2-nistp384"), //
