@@ -1,3 +1,5 @@
+* [0.2.11](https://github.com/mwiede/jsch/releases/tag/jsch-0.2.11)
+  * [#369](https://github.com/mwiede/jsch/issues/369) fix multi-line PEM key parsing to work with windows line endings due to regression from previous fix for [#362](https://github.com/mwiede/jsch/issues/362).
 * [0.2.10](https://github.com/mwiede/jsch/releases/tag/jsch-0.2.10)
   * Fix new Java 21 compiler warning: `possible 'this' escape before subclass is fully initialized`.
   * Tweak OSGi bundle manifest to allow Log4j 3.
