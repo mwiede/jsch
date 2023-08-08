@@ -77,7 +77,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <skipITs>true</skipITs>
-        <junixsocket.version>2.6.2</junixsocket.version>
+        <junixsocket.version>2.7.0</junixsocket.version>
         <jna.version>5.13.0</jna.version>
         <log4j.version>2.20.0</log4j.version>
         <errorprone.version>2.21.1</errorprone.version>
@@ -94,6 +94,13 @@
             <groupId>com.kohlschutter.junixsocket</groupId>
             <artifactId>junixsocket-common</artifactId>
             <version>${junixsocket.version}</version>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>com.kohlschutter</groupId>
+            <artifactId>compiler-annotations</artifactId>
+            <version>1.5.6</version>
+            <scope>provided</scope>
             <optional>true</optional>
         </dependency>
         <dependency>
@@ -537,6 +544,10 @@
                 <groupId>org.cyclonedx</groupId>
                 <artifactId>cyclonedx-maven-plugin</artifactId>
                 <version>2.7.9</version>
+                <configuration>
+                    <includeProvidedScope>false</includeProvidedScope>
+                    <includeSystemScope>false</includeSystemScope>
+                </configuration>
                 <executions>
                     <execution>
                         <goals>
