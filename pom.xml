@@ -99,7 +99,7 @@
         <dependency>
             <groupId>com.kohlschutter</groupId>
             <artifactId>compiler-annotations</artifactId>
-            <version>1.5.6</version>
+            <version>1.5.7</version>
             <scope>provided</scope>
             <optional>true</optional>
         </dependency>
