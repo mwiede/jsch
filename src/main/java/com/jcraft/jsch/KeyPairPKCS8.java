@@ -862,6 +862,13 @@ class KeyPairPKCS8 extends KeyPair {
   }
 
   static int parseASN1IntegerAsInt(byte[] content) {
-    return new BigInteger(content).intValueExact();
+    BigInteger b = new BigInteger(content);
+    // https://github.com/mwiede/jsch/issues/392 not using intValueExact() because of Android
+    // incompatibility.
+    if (b.bitLength() <= 31) {
+      return b.intValue();
+    } else {
+      throw new ArithmeticException("BigInteger out of int range");
+    }
   }
 }
