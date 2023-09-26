@@ -108,7 +108,10 @@ public class UserAuthNone extends UserAuth {
         buf.getByte();
         byte[] foo = buf.getString();
         int partial_success = buf.getByte();
-        setMethods(Util.byte2str(foo));
+        if (foo.length > 0 ) {
+          // Session.java expects methods to be null if we dont get a response from the server
+          setMethods(Util.byte2str(foo));
+        }
         // System.err.println("UserAuthNone: " + methods + " partial_success:" + (partial_success !=
         // 0));
         // if (partial_success != 0) {
