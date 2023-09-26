@@ -115,7 +115,9 @@ public class UserAuthNone extends UserAuth {
           // Session.java expects methods to be null if we don't get a response from the server
           setMethods(Util.byte2str(foo));
           if (session.getLogger().isEnabled(Logger.INFO)) {
-            session.getLogger().log(Logger.INFO, "server will allow auth methods: " + getMethods());
+            session.getLogger().log(Logger.INFO, "server will allow auth methods: "
+                    + getMethods()
+                    + " after auth_none authentication failed");
           }
         }
         // System.err.println("UserAuthNone: " + methods + " partial_success:" + (partial_success !=
