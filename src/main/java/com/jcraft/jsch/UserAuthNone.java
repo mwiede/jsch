@@ -103,14 +103,20 @@ public class UserAuthNone extends UserAuth {
         continue loop;
       }
       if (command == UserAuth.SSH_MSG_USERAUTH_FAILURE) {
+        if (session.getLogger().isEnabled(Logger.INFO)) {
+          session.getLogger().log(Logger.INFO, "auth_none authentication failed");
+        }
         buf.getInt();
         buf.getByte();
         buf.getByte();
         byte[] foo = buf.getString();
         int partial_success = buf.getByte();
         if (foo.length > 0 ) {
-          // Session.java expects methods to be null if we dont get a response from the server
+          // Session.java expects methods to be null if we don't get a response from the server
           setMethods(Util.byte2str(foo));
+          if (session.getLogger().isEnabled(Logger.INFO)) {
+            session.getLogger().log(Logger.INFO, "server will allow auth methods: " + getMethods());
+          }
         }
         // System.err.println("UserAuthNone: " + methods + " partial_success:" + (partial_success !=
         // 0));
