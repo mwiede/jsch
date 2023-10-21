@@ -892,10 +892,10 @@ public class Session {
         insert = true;
       } else {
         if (i == HostKeyRepository.NOT_INCLUDED)
-          throw new JSchException(
+          throw new JSchUnknownHostKeyException(
               "UnknownHostKey: " + chost + ". " + key_type + " key fingerprint is " + key_fprint);
         else
-          throw new JSchException("HostKey has been changed: " + chost);
+          throw new JSchChangedHostKeyException("HostKey has been changed: " + chost);
       }
     }
 
@@ -916,7 +916,7 @@ public class Session {
           if (getLogger().isEnabled(Logger.INFO)) {
             getLogger().log(Logger.INFO, "Host '" + chost + "' has provided revoked key.");
           }
-          throw new JSchException("revoked HostKey: " + chost);
+          throw new JSchRevokedHostKeyException("revoked HostKey: " + chost);
         }
       }
     }
