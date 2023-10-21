@@ -93,6 +93,8 @@ public class Session {
   private byte[] MACc2s;
   private byte[] MACs2c;
 
+  // RFC 4253 6.4. each direction must run independently hence we have an incoming and outgoing
+  // sequence number
   private int seqi = 0;
   private int seqo = 0;
 
@@ -1998,6 +2000,13 @@ public class Session {
     }
     io = null;
     socket = null;
+
+    // RFC 4253 6.4. the 'sequence_number' is never reset, even if keys/algorithms are renegotiated
+    // later. Hence we only reset these on session disconnect as the sequence has to start at zero
+    // for the first packet during (re)connect.
+    seqi = 0;
+    seqo = 0;
+
     // synchronized(jsch.pool){
     // jsch.pool.removeElement(this);
     // }
