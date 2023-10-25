@@ -33,7 +33,7 @@ with
 <dependency>
   <groupId>com.github.mwiede</groupId>
   <artifactId>jsch</artifactId>
-  <version>0.2.11</version>
+  <version>0.2.12</version>
 </dependency>
 ```
 
@@ -43,7 +43,7 @@ When you have an artifact `foo:bar`, which contains `com.jcraft:jsch` as a trans
 <dependency>
   <groupId>com.github.mwiede</groupId>
   <artifactId>jsch</artifactId>
-  <version>0.2.11</version>
+  <version>0.2.12</version>
 </dependency>
 <dependency>
   <groupId>foo</groupId>
