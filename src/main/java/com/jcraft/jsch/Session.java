@@ -1201,10 +1201,13 @@ public class Session {
         buf.getInt();
         buf.getShort();
         int reason_code = buf.getInt();
-        byte[] description = buf.getString();
-        byte[] language_tag = buf.getString();
-        throw new JSchException("SSH_MSG_DISCONNECT: " + reason_code + " "
-            + Util.byte2str(description) + " " + Util.byte2str(language_tag));
+        byte[] description_array = buf.getString();
+        byte[] language_tag_array = buf.getString();
+        String description = Util.byte2str(description_array);
+        String language_tag = Util.byte2str(language_tag_array);
+        throw new JSchSessionDisconnectException(
+            "SSH_MSG_DISCONNECT: " + reason_code + " " + description + " " + language_tag,
+            reason_code, description, language_tag);
         // break;
       } else if (type == SSH_MSG_IGNORE) {
       } else if (type == SSH_MSG_UNIMPLEMENTED) {
