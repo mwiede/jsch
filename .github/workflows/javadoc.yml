@@ -19,7 +19,7 @@ jobs:
           java-version: '21'
           check-latest: true
       - name: Build Javadoc
-        run: mvn -B -V javadoc:javadoc --file pom.xml
+        run: ./mvnw -B -V -e javadoc:javadoc
       - name: Deploy 🚀
         uses: JamesIves/github-pages-deploy-action@v4
         with:
