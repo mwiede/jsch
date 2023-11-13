@@ -3069,6 +3069,7 @@ public class Session {
     checkConfig(config, "enable_pubkey_auth_query");
     checkConfig(config, "try_additional_pubkey_algorithms");
     checkConfig(config, "enable_auth_none");
+    checkConfig(config, "use_sftp_write_flush_workaround");
 
     checkConfig(config, "cipher.c2s");
     checkConfig(config, "cipher.s2c");

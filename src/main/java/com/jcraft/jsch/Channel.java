@@ -67,7 +67,11 @@ public abstract class Channel {
       ret = new ChannelForwardedTCPIP();
     }
     if (type.equals("sftp")) {
-      ret = new ChannelSftp();
+      ChannelSftp sftp = new ChannelSftp();
+      boolean useWriteFlushWorkaround =
+          session.getConfig("use_sftp_write_flush_workaround").equals("yes");
+      sftp.setUseWriteFlushWorkaround(useWriteFlushWorkaround);
+      ret = sftp;
     }
     if (type.equals("subsystem")) {
       ret = new ChannelSubsystem();
@@ -204,6 +208,11 @@ public abstract class Channel {
   }
 
   public InputStream getInputStream() throws IOException {
+    Session _session = this.session;
+    if (_session != null && isConnected() && _session.getLogger().isEnabled(Logger.WARN)) {
+      _session.getLogger().log(Logger.WARN, "getInputStream() should be called before connect()");
+    }
+
     int max_input_buffer_size = 32 * 1024;
     try {
       max_input_buffer_size = Integer.parseInt(getSession().getConfig("max_input_buffer_size"));
@@ -217,6 +226,12 @@ public abstract class Channel {
   }
 
   public InputStream getExtInputStream() throws IOException {
+    Session _session = this.session;
+    if (_session != null && isConnected() && _session.getLogger().isEnabled(Logger.WARN)) {
+      _session.getLogger().log(Logger.WARN,
+          "getExtInputStream() should be called before connect()");
+    }
+
     int max_input_buffer_size = 32 * 1024;
     try {
       max_input_buffer_size = Integer.parseInt(getSession().getConfig("max_input_buffer_size"));
