@@ -228,6 +228,8 @@ public class JSch {
     config.put("try_additional_pubkey_algorithms",
         Util.getSystemProperty("jsch.try_additional_pubkey_algorithms", "yes"));
     config.put("enable_auth_none", Util.getSystemProperty("jsch.enable_auth_none", "yes"));
+    config.put("use_sftp_write_flush_workaround",
+        Util.getSystemProperty("jsch.use_sftp_write_flush_workaround", "yes"));
 
     config.put("CheckCiphers",
         Util.getSystemProperty("jsch.check_ciphers", "chacha20-poly1305@openssh.com"));

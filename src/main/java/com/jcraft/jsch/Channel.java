@@ -67,7 +67,11 @@ public abstract class Channel {
       ret = new ChannelForwardedTCPIP();
     }
     if (type.equals("sftp")) {
-      ret = new ChannelSftp();
+      ChannelSftp sftp = new ChannelSftp();
+      boolean useWriteFlushWorkaround =
+          session.getConfig("use_sftp_write_flush_workaround").equals("yes");
+      sftp.setUseWriteFlushWorkaround(useWriteFlushWorkaround);
+      ret = sftp;
     }
     if (type.equals("subsystem")) {
       ret = new ChannelSubsystem();

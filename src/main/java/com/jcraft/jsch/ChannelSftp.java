@@ -157,6 +157,8 @@ public class ChannelSftp extends ChannelSession {
   private Charset fEncoding = StandardCharsets.UTF_8;
   private boolean fEncoding_is_utf8 = true;
 
+  private boolean useWriteFlushWorkaround = true;
+
   private RequestQueue rq = new RequestQueue(16);
 
   /**
@@ -179,6 +181,14 @@ public class ChannelSftp extends ChannelSession {
    */
   public int getBulkRequests() {
     return rq.size();
+  }
+
+  public void setUseWriteFlushWorkaround(boolean useWriteFlushWorkaround) {
+    this.useWriteFlushWorkaround = useWriteFlushWorkaround;
+  }
+
+  public boolean getUseWriteFlushWorkaround() {
+    return useWriteFlushWorkaround;
   }
 
   public ChannelSftp() {
@@ -754,6 +764,9 @@ public class ChannelSftp extends ChannelSession {
           try {
             int _len = len;
             while (_len > 0) {
+              if (useWriteFlushWorkaround && rwsize < 21 + handle.length + _len + 4) {
+                flush();
+              }
               int sent = sendWRITE(handle, _offset[0], d, s, _len);
               writecount++;
               _offset[0] += sent;
