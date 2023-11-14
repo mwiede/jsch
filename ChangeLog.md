@@ -1,3 +1,6 @@
+* [0.2.13](https://github.com/mwiede/jsch/releases/tag/jsch-0.2.13)
+  * #411 Add flush operation from Fix added is/jsch#39, with new config option to allow disabling in case it causes regressions.
+  * #403 add a warning when Channel.getInputStream() or Channel.getExtInputStream() is called after Channel.connect().
 * [0.2.12](https://github.com/mwiede/jsch/releases/tag/jsch-0.2.12)
   * Further refine previous fixes for windows line endings in PEM keys from [#369](https://github.com/mwiede/jsch/issues/369) & [#362](https://github.com/mwiede/jsch/issues/362).
   * replace call to BigInteger.intValueExact to remain comptaible with Android [#397](https://github.com/mwiede/jsch/pull/397)
