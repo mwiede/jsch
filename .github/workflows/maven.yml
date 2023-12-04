@@ -28,7 +28,7 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-${{ matrix.java }}-maven-
     - name: Set up build JDK
-      uses: actions/setup-java@v3
+      uses: actions/setup-java@v4
       with:
         distribution: 'zulu'
         java-version: '21'
@@ -43,7 +43,7 @@ jobs:
           **/target/bom.*
       if: always()
     - name: Set up test JDK ${{ matrix.java }}
-      uses: actions/setup-java@v3
+      uses: actions/setup-java@v4
       with:
         distribution: 'zulu'
         java-version: ${{ matrix.java }}
