@@ -1,3 +1,5 @@
+* [0.2.14](https://github.com/mwiede/jsch/releases/tag/jsch-0.2.14)
+  * [#450](https://github.com/mwiede/jsch/issues/450) use Socket.connect() with a timeout that has been supported since Java 1.4 instead of using old method of creating a separate thread and joining to that thread with timeout.
 * [0.2.13](https://github.com/mwiede/jsch/releases/tag/jsch-0.2.13)
   * #411 Add flush operation from Fix added is/jsch#39, with new config option to allow disabling in case it causes regressions.
   * #403 add a warning when Channel.getInputStream() or Channel.getExtInputStream() is called after Channel.connect().
