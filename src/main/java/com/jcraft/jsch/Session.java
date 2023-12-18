@@ -37,6 +37,7 @@ import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Properties;
 import java.util.Vector;
 
@@ -400,7 +401,7 @@ public class Session {
       if (!auth) {
         smethods = uan.getMethods();
         if (smethods != null) {
-          smethods = smethods.toLowerCase();
+          smethods = smethods.toLowerCase(Locale.ROOT);
         } else {
           // methods: publickey,password,keyboard-interactive
           // smethods = "publickey,password,keyboard-interactive";

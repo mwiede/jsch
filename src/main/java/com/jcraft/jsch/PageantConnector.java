@@ -40,6 +40,7 @@ import com.sun.jna.platform.win32.WinNT;
 import com.sun.jna.platform.win32.WinNT.HANDLE;
 import com.sun.jna.platform.win32.WinUser;
 import com.sun.jna.platform.win32.WinUser.COPYDATASTRUCT;
+import java.util.Locale;
 
 public class PageantConnector implements AgentConnector {
 
@@ -84,7 +85,8 @@ public class PageantConnector implements AgentConnector {
       throw new AgentProxyException("Pageant is not runnning.");
     }
 
-    String mapname = String.format("PageantRequest%08x", kernel32.GetCurrentThreadId());
+    String mapname =
+        String.format(Locale.ROOT, "PageantRequest%08x", kernel32.GetCurrentThreadId());
 
     HANDLE sharedFile = null;
     Pointer sharedMemory = null;

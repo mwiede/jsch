@@ -26,6 +26,8 @@
 
 package com.jcraft.jsch;
 
+import java.util.Locale;
+
 class UserAuthKeyboardInteractive extends UserAuth {
   @Override
   public boolean start(Session session) throws Exception {
@@ -129,7 +131,7 @@ class UserAuthKeyboardInteractive extends UserAuth {
           byte[][] response = null;
 
           if (password != null && prompt.length == 1 && !echo[0]
-              && prompt[0].toLowerCase().indexOf("password:") >= 0) {
+              && prompt[0].toLowerCase(Locale.ROOT).indexOf("password:") >= 0) {
             response = new byte[1][];
             response[0] = password;
             password = null;

@@ -1,6 +1,7 @@
 package com.jcraft.jsch.jzlib;
 
 import static com.jcraft.jsch.jzlib.JZlib.*;
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -90,7 +91,7 @@ public class DeflateInflateTest {
 
   @Test
   public void testDeflaterAndInflaterCanDeflateAndInflateDataInSmallBuffer() {
-    byte[] data = "hello, hello!".getBytes();
+    byte[] data = "hello, hello!".getBytes(UTF_8);
 
     err = deflater.init(Z_DEFAULT_COMPRESSION);
     assertEquals(Z_OK, err);
@@ -142,8 +143,8 @@ public class DeflateInflateTest {
 
   @Test
   public void testDeflaterAndInflaterSupportDictionary() {
-    byte[] hello = "hello".getBytes();
-    byte[] dictionary = "hello, hello!".getBytes();
+    byte[] hello = "hello".getBytes(UTF_8);
+    byte[] dictionary = "hello, hello!".getBytes(UTF_8);
 
     err = deflater.init(Z_DEFAULT_COMPRESSION);
     assertEquals(Z_OK, err);
@@ -198,7 +199,7 @@ public class DeflateInflateTest {
 
   @Test
   public void testDeflaterAndInflaterSupportSync() {
-    byte[] hello = "hello".getBytes();
+    byte[] hello = "hello".getBytes(UTF_8);
 
     err = deflater.init(Z_DEFAULT_COMPRESSION);
     assertEquals(Z_OK, err);
@@ -244,12 +245,12 @@ public class DeflateInflateTest {
     byte[] actual = new byte[total_out];
     System.arraycopy(uncompr, 0, actual, 0, total_out);
 
-    assertEquals(new String(hello), "hel" + new String(actual));
+    assertEquals(new String(hello, UTF_8), "hel" + new String(actual, UTF_8));
   }
 
   @Test
   public void testInflaterCanInflateGzipData() {
-    byte[] hello = "foo".getBytes();
+    byte[] hello = "foo".getBytes(UTF_8);
     byte[] data = {(byte) 0x1f, (byte) 0x8b, (byte) 0x08, (byte) 0x18, (byte) 0x08, (byte) 0xeb,
         (byte) 0x7a, (byte) 0x0b, (byte) 0x00, (byte) 0x0b, (byte) 0x58, (byte) 0x00, (byte) 0x59,
         (byte) 0x00, (byte) 0x4b, (byte) 0xcb, (byte) 0xcf, (byte) 0x07, (byte) 0x00, (byte) 0x21,
@@ -284,7 +285,7 @@ public class DeflateInflateTest {
 
   @Test
   public void testInflaterAndDeflaterCanSupportGzipData() {
-    byte[] data = "hello, hello!".getBytes();
+    byte[] data = "hello, hello!".getBytes(UTF_8);
 
     err = deflater.init(Z_DEFAULT_COMPRESSION, 15 + 16);
     assertEquals(Z_OK, err);

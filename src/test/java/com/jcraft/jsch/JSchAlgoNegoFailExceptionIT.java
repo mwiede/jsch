@@ -8,6 +8,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Base64;
 import java.util.List;
+import java.util.Locale;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.testcontainers.containers.GenericContainer;
@@ -62,7 +63,7 @@ public class JSchAlgoNegoFailExceptionIT {
     if (algorithmName.equals("kex")) {
       jschProposal += ",ext-info-c";
     }
-    String message = String.format(
+    String message = String.format(Locale.ROOT,
         "Algorithm negotiation fail: algorithmName=\"%s\" jschProposal=\"%s\" serverProposal=\"%s\"",
         algorithmName, jschProposal, serverProposal);
 
@@ -83,7 +84,8 @@ public class JSchAlgoNegoFailExceptionIT {
   private HostKey readHostKey(String fileName) throws Exception {
     List<String> lines = Files.readAllLines(Paths.get(fileName), UTF_8);
     String[] split = lines.get(0).split("\\s+");
-    String hostname = String.format("[%s]:%d", sshd.getHost(), sshd.getFirstMappedPort());
+    String hostname =
+        String.format(Locale.ROOT, "[%s]:%d", sshd.getHost(), sshd.getFirstMappedPort());
     return new HostKey(hostname, Base64.getDecoder().decode(split[1]));
   }
 
