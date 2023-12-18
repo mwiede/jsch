@@ -1,7 +1,6 @@
 package com.jcraft.jsch;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.nio.file.Files;
@@ -9,15 +8,14 @@ import java.nio.file.Paths;
 import java.util.Base64;
 import java.util.List;
 import java.util.Locale;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.images.builder.ImageFromDockerfile;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
 @Testcontainers
-public class JSchAlgoNegoFailExceptionIT {
+public class JSchStrictKexExceptionIT {
 
   private static final int timeout = 2000;
 
@@ -40,37 +38,28 @@ public class JSchAlgoNegoFailExceptionIT {
           .withFileFromClasspath("Dockerfile", "docker/Dockerfile"))
       .withExposedPorts(22);
 
-  @ParameterizedTest
-  @CsvSource(delimiter = '|', value = {
-      "kex|curve25519-sha256,curve25519-sha256@libssh.org,ecdh-sha2-nistp521,ecdh-sha2-nistp384,ecdh-sha2-nistp256,diffie-hellman-group18-sha512,diffie-hellman-group16-sha512,diffie-hellman-group14-sha256,diffie-hellman-group-exchange-sha256,diffie-hellman-group-exchange-sha1,diffie-hellman-group14-sha1,diffie-hellman-group1-sha1",
-      "server_host_key|ecdsa-sha2-nistp256,ecdsa-sha2-nistp384,ecdsa-sha2-nistp521,ssh-ed25519,ssh-rsa,rsa-sha2-512,rsa-sha2-256,ssh-dss",
-      "cipher.c2s|chacha20-poly1305@openssh.com,aes256-gcm@openssh.com,aes128-gcm@openssh.com,aes256-ctr,aes192-ctr,aes128-ctr,aes256-cbc,aes192-cbc,aes128-cbc,3des-cbc,blowfish-cbc,arcfour,arcfour256,arcfour128,rijndael-cbc@lysator.liu.se,cast128-cbc",
-      "cipher.s2c|chacha20-poly1305@openssh.com,aes256-gcm@openssh.com,aes128-gcm@openssh.com,aes256-ctr,aes192-ctr,aes128-ctr,aes256-cbc,aes192-cbc,aes128-cbc,3des-cbc,blowfish-cbc,arcfour,arcfour256,arcfour128,rijndael-cbc@lysator.liu.se,cast128-cbc",
-      "mac.c2s|hmac-sha2-512-etm@openssh.com,hmac-sha2-256-etm@openssh.com,hmac-sha1-etm@openssh.com,hmac-sha2-512,hmac-sha2-256,hmac-sha1,hmac-sha1-96-etm@openssh.com,hmac-sha1-96,hmac-md5-etm@openssh.com,hmac-md5,hmac-md5-96-etm@openssh.com,hmac-md5-96,hmac-ripemd160,hmac-ripemd160@openssh.com,hmac-ripemd160-etm@openssh.com",
-      "mac.s2c|hmac-sha2-512-etm@openssh.com,hmac-sha2-256-etm@openssh.com,hmac-sha1-etm@openssh.com,hmac-sha2-512,hmac-sha2-256,hmac-sha1,hmac-sha1-96-etm@openssh.com,hmac-sha1-96,hmac-md5-etm@openssh.com,hmac-md5,hmac-md5-96-etm@openssh.com,hmac-md5-96,hmac-ripemd160,hmac-ripemd160@openssh.com,hmac-ripemd160-etm@openssh.com",
-      "compression.c2s|none,zlib@openssh.com", "compression.s2c|none,zlib@openssh.com",
-      "lang.c2s|''", "lang.s2c|''"})
-  public void testJSchAlgoNegoFailException(String algorithmName, String serverProposal)
-      throws Exception {
-    String jschProposal = "foo";
+  @Test
+  public void testEnableStrictKexRequireStrictKex() throws Exception {
     JSch ssh = createRSAIdentity();
     Session session = createSession(ssh);
-    session.setConfig(algorithmName, jschProposal);
+    session.setConfig("enable_strict_kex", "yes");
+    session.setConfig("require_strict_kex", "yes");
     session.setTimeout(timeout);
 
-    JSchAlgoNegoFailException e = assertThrows(JSchAlgoNegoFailException.class, session::connect);
+    assertThrows(JSchStrictKexException.class, session::connect,
+        "Strict KEX not supported by server");
+  }
 
-    if (algorithmName.equals("kex")) {
-      jschProposal += ",ext-info-c,kex-strict-c-v00@openssh.com";
-    }
-    String message = String.format(Locale.ROOT,
-        "Algorithm negotiation fail: algorithmName=\"%s\" jschProposal=\"%s\" serverProposal=\"%s\"",
-        algorithmName, jschProposal, serverProposal);
+  @Test
+  public void testNoEnableStrictKexRequireStrictKex() throws Exception {
+    JSch ssh = createRSAIdentity();
+    Session session = createSession(ssh);
+    session.setConfig("enable_strict_kex", "no");
+    session.setConfig("require_strict_kex", "yes");
+    session.setTimeout(timeout);
 
-    assertEquals(message, e.getMessage());
-    assertEquals(algorithmName, e.getAlgorithmName());
-    assertEquals(jschProposal, e.getJSchProposal());
-    assertEquals(serverProposal, e.getServerProposal());
+    assertThrows(JSchStrictKexException.class, session::connect,
+        "Strict KEX not supported by server");
   }
 
   private JSch createRSAIdentity() throws Exception {

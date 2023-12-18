@@ -45,6 +45,8 @@ public class JSch {
         "ssh-ed25519,ecdsa-sha2-nistp256,ecdsa-sha2-nistp384,ecdsa-sha2-nistp521,rsa-sha2-512,rsa-sha2-256"));
     config.put("prefer_known_host_key_types",
         Util.getSystemProperty("jsch.prefer_known_host_key_types", "yes"));
+    config.put("enable_strict_kex", Util.getSystemProperty("jsch.enable_strict_kex", "yes"));
+    config.put("require_strict_kex", Util.getSystemProperty("jsch.require_strict_kex", "no"));
     config.put("enable_server_sig_algs",
         Util.getSystemProperty("jsch.enable_server_sig_algs", "yes"));
     config.put("cipher.s2c", Util.getSystemProperty("jsch.cipher",
