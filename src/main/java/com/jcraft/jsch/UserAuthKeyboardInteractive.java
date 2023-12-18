@@ -129,7 +129,8 @@ class UserAuthKeyboardInteractive extends UserAuth {
           byte[][] response = null;
 
           if (password != null && prompt.length == 1 && !echo[0]
-              && prompt[0].toLowerCase().indexOf("password:") >= 0) {
+              && (prompt[0].toLowerCase().indexOf("password:") >= 0
+            		 || prompt[0].toLowerCase().indexOf("password") >= 0)){
             response = new byte[1][];
             response[0] = password;
             password = null;

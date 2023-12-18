@@ -32,6 +32,8 @@ import java.nio.charset.StandardCharsets;
 import java.util.Hashtable;
 import java.util.Vector;
 
+
+
 public class ChannelSftp extends ChannelSession {
 
   static private final int LOCAL_MAXIMUM_PACKET_SIZE = 32 * 1024;
@@ -160,6 +162,7 @@ public class ChannelSftp extends ChannelSession {
   private boolean useWriteFlushWorkaround = true;
 
   private RequestQueue rq = new RequestQueue(16);
+  private Long chunkStart = null;
 
   /**
    * Specify how many requests may be sent at any one time. Increasing this value may slightly
@@ -526,9 +529,10 @@ public class ChannelSftp extends ChannelSession {
           // System.err.println(eee);
         }
       }
-      if (mode == RESUME && skip > 0) {
-        long skipped = src.skip(skip);
-        if (skipped < skip) {
+    if (mode == RESUME && skip > 0) {
+          long srcSkip = chunkStart != null ? skip - chunkStart : skip;
+          long skipped = src.skip(srcSkip);
+          if (skipped < srcSkip) {
           throw new SftpException(SSH_FX_FAILURE, "failed to resume for " + dst);
         }
       }
@@ -653,6 +657,32 @@ public class ChannelSftp extends ChannelSession {
         throw (SftpException) e;
       throw new SftpException(SSH_FX_FAILURE, e.toString(), e);
     }
+  
+	public boolean checkChunkFailed(String dst, Long startChunk)throws SftpException{
+	  try{
+	      ((MyPipedInputStream)io_in).updateReadSide();
+
+	      byte[] dstb=Util.str2byte(dst, fEncoding);
+	      long skip=0;
+	      try{
+		  SftpATTRS attr=_stat(dstb);
+		  skip=attr.getSize();
+	      }
+	      catch(Exception eee){
+		  //System.err.println(eee);
+	      }
+	      
+	      if(skip>0){
+	    	  if(skip == startChunk)
+	    		  return false;
+	    	  else return true;
+	      }
+	      else return false;
+	  }
+	  catch(Exception e){
+		  throw new SftpException(SSH_FX_FAILURE, "Cannot check-" + e.toString());
+	  }
+	  
   }
 
   public OutputStream put(String dst) throws SftpException {
@@ -2967,6 +2997,10 @@ public class ChannelSftp extends ChannelSession {
         throw (SftpException) e;
       throw new SftpException(SSH_FX_FAILURE, e.toString(), e);
     }
+  }	  
+
+  public void setChunkStart(String chunkStart) {
+	  this.chunkStart= chunkStart;
   }
 
   public static class LsEntry implements Comparable<LsEntry> {
