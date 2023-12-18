@@ -34,7 +34,7 @@ jobs:
         java-version: '21'
         check-latest: true
     - name: Build with Maven
-      run: ./mvnw -B -V -e -DskipTests=true verify
+      run: ./mvnw -B -V -e -DskipTests=true package
     - uses: actions/upload-artifact@v3
       with:
         name: java-${{ matrix.java }}-jars
@@ -48,10 +48,8 @@ jobs:
         distribution: 'zulu'
         java-version: ${{ matrix.java }}
         check-latest: true
-    - name: Unit Tests with Maven
-      run: ./mvnw -B -V -e jacoco:prepare-agent surefire:test jacoco:report
-    - name: Integration Tests with Maven
-      run: ./mvnw -B -V -e -DskipITs=false jacoco:prepare-agent-integration failsafe:integration-test failsafe:verify jacoco:report-integration
+    - name: Test with Maven
+      run: ./mvnw -B -V -e -P coverage verify -Denforcer.skip=true -Dmaven.resources.skip=true -Dmaven.main.skip=true -Dassembly.skipAssembly=true -Dmaven.javadoc.skip=true -DskipITs=false
     - uses: actions/upload-artifact@v3
       with:
         name: java-${{ matrix.java }}-testresults
