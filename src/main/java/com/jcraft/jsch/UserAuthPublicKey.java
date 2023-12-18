@@ -115,6 +115,7 @@ class UserAuthPublicKey extends UserAuth {
     }
   }
 
+  @SuppressWarnings("fallthrough")
   private boolean _start(Session session, List<Identity> identities, List<String> pkmethods,
       List<String> not_available_pks) throws Exception {
     if (session.auth_failures >= session.max_auth_tries) {
@@ -124,17 +125,40 @@ class UserAuthPublicKey extends UserAuth {
     boolean use_pk_auth_query = session.getConfig("enable_pubkey_auth_query").equals("yes");
     boolean try_other_pkmethods =
         session.getConfig("try_additional_pubkey_algorithms").equals("yes");
+    boolean use_openssh_rsa_pubkey_order =
+        session.getConfig("use_openssh_rsa_pubkey_order").equals("yes");
+
+    String[] server_sig_algs = session.getServerSigAlgs();
+    boolean has_server_sig_algs = server_sig_algs != null && server_sig_algs.length > 0;
 
     List<String> rsamethods = new ArrayList<>();
     List<String> nonrsamethods = new ArrayList<>();
     for (String pkmethod : pkmethods) {
-      if (pkmethod.equals("ssh-rsa") || pkmethod.equals("rsa-sha2-256")
-          || pkmethod.equals("rsa-sha2-512") || pkmethod.equals("ssh-rsa-sha224@ssh.com")
-          || pkmethod.equals("ssh-rsa-sha256@ssh.com") || pkmethod.equals("ssh-rsa-sha384@ssh.com")
-          || pkmethod.equals("ssh-rsa-sha512@ssh.com")) {
-        rsamethods.add(pkmethod);
-      } else {
-        nonrsamethods.add(pkmethod);
+      switch (pkmethod) {
+        case "ssh-rsa":
+          if (!has_server_sig_algs && use_openssh_rsa_pubkey_order) {
+            // "Servers that accept rsa-sha2-* signatures for client authentication
+            // SHOULD implement the extension negotiation mechanism defined in
+            // [RFC8308], including especially the "server-sig-algs" extension."
+            //
+            // OpenSSH 8.0 and newer implementations will only attempt the "ssh-rsa" signature
+            // algorithm. To match this behaviour Jsch will force the first attempt, irrespective of
+            // the clients PubkeyAcceptedKeyTypes order, to the "ssh-rsa" signature algorithm. Any
+            // subsequent retries will respect the order as defined by the client.
+            rsamethods.add(0, pkmethod);
+            break;
+          }
+        case "rsa-sha2-256":
+        case "rsa-sha2-512":
+        case "ssh-rsa-sha224@ssh.com":
+        case "ssh-rsa-sha256@ssh.com":
+        case "ssh-rsa-sha384@ssh.com":
+        case "ssh-rsa-sha512@ssh.com":
+          rsamethods.add(pkmethod);
+          break;
+        default:
+          nonrsamethods.add(pkmethod);
+          break;
       }
     }
 

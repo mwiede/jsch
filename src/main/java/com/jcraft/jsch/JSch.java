@@ -227,6 +227,8 @@ public class JSch {
         Util.getSystemProperty("jsch.enable_pubkey_auth_query", "yes"));
     config.put("try_additional_pubkey_algorithms",
         Util.getSystemProperty("jsch.try_additional_pubkey_algorithms", "yes"));
+    config.put("use_openssh_rsa_pubkey_order",
+        Util.getSystemProperty("jsch.use_openssh_rsa_pubkey_order", "yes"));
     config.put("enable_auth_none", Util.getSystemProperty("jsch.enable_auth_none", "yes"));
     config.put("use_sftp_write_flush_workaround",
         Util.getSystemProperty("jsch.use_sftp_write_flush_workaround", "yes"));

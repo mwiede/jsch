@@ -3067,6 +3067,7 @@ public class Session {
     checkConfig(config, "server_host_key");
     checkConfig(config, "prefer_known_host_key_types");
     checkConfig(config, "enable_pubkey_auth_query");
+    checkConfig(config, "use_openssh_rsa_pubkey_order");
     checkConfig(config, "try_additional_pubkey_algorithms");
     checkConfig(config, "enable_auth_none");
     checkConfig(config, "use_sftp_write_flush_workaround");
