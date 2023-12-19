@@ -1,6 +1,7 @@
 package com.jcraft.jsch.jzlib;
 
 import static com.jcraft.jsch.jzlib.Package.*;
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -94,7 +95,7 @@ public class DeflaterInflaterStreamTest {
 
     Arrays.asList(randombuf(10240),
         "{\"color\":2,\"id\":\"EvLd4UG.CXjnk35o1e8LrYYQfHu0h.d*SqVJPoqmzXM::Ly::Snaps::Store::Commit\"}"
-            .getBytes())
+            .getBytes(UTF_8))
         .forEach(uncheckedConsumer(data1 -> {
           Deflater deflater = new Deflater(JZlib.Z_DEFAULT_COMPRESSION, JZlib.MAX_WBITS, true);
 

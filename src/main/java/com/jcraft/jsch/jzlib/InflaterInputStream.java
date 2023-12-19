@@ -27,6 +27,7 @@
 package com.jcraft.jsch.jzlib;
 
 import java.io.*;
+import java.nio.charset.StandardCharsets;
 
 final class InflaterInputStream extends FilterInputStream {
   protected final Inflater inflater;
@@ -223,7 +224,7 @@ final class InflaterInputStream extends FilterInputStream {
 
   void readHeader() throws IOException {
 
-    byte[] empty = "".getBytes();
+    byte[] empty = "".getBytes(StandardCharsets.UTF_8);
     inflater.setInput(empty, 0, 0, false);
     inflater.setOutput(empty, 0, 0);
 

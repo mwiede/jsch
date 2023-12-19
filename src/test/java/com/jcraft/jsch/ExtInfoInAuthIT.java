@@ -2,6 +2,8 @@ package com.jcraft.jsch;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.github.valfirst.slf4jtest.LoggingEvent;
@@ -22,7 +24,6 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.condition.EnabledOnOs;
 import org.junit.jupiter.api.io.TempDir;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.output.Slf4jLogConsumer;
@@ -30,15 +31,14 @@ import org.testcontainers.images.builder.ImageFromDockerfile;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
-@EnabledOnOs(architectures = "x86_64")
 @Testcontainers
-public class OpenSSH74ServerSigAlgsIT {
+public class ExtInfoInAuthIT {
 
   private static final int timeout = 2000;
   private static final DigestUtils sha256sum = new DigestUtils(DigestUtils.getSha256Digest());
   private static final TestLogger jschLogger = TestLoggerFactory.getTestLogger(JSch.class);
   private static final TestLogger sshdLogger =
-      TestLoggerFactory.getTestLogger(OpenSSH74ServerSigAlgsIT.class);
+      TestLoggerFactory.getTestLogger(ServerSigAlgsIT.class);
 
   @TempDir
   public Path tmpDir;
@@ -61,9 +61,9 @@ public class OpenSSH74ServerSigAlgsIT {
           .withFileFromClasspath("ssh_host_ed25519_key.pub", "docker/ssh_host_ed25519_key.pub")
           .withFileFromClasspath("ssh_host_dsa_key", "docker/ssh_host_dsa_key")
           .withFileFromClasspath("ssh_host_dsa_key.pub", "docker/ssh_host_dsa_key.pub")
-          .withFileFromClasspath("sshd_config", "docker/sshd_config")
+          .withFileFromClasspath("sshd_config", "docker/sshd_config.ExtInfoInAuthIT")
           .withFileFromClasspath("authorized_keys", "docker/authorized_keys")
-          .withFileFromClasspath("Dockerfile", "docker/Dockerfile.openssh74"))
+          .withFileFromClasspath("Dockerfile", "docker/Dockerfile.ExtInfoInAuthIT"))
       .withExposedPorts(22);
 
   @BeforeAll
@@ -102,35 +102,53 @@ public class OpenSSH74ServerSigAlgsIT {
   }
 
   @Test
-  public void testServerSigAlgs() throws Exception {
-    String algos =
-        "ssh-rsa-sha512@ssh.com,ssh-rsa-sha384@ssh.com,ssh-rsa-sha256@ssh.com,ssh-rsa-sha224@ssh.com,rsa-sha2-512,rsa-sha2-256,ssh-rsa";
+  public void testExtInfoInAuthYes() throws Exception {
     JSch ssh = createRSAIdentity();
-    Session session = createSession(ssh);
-    session.setConfig("PubkeyAcceptedAlgorithms", algos);
-    session.setConfig("server_host_key", algos);
-    doSftp(session, true);
+    Session session = createSession(ssh, "rsa");
+    session.setConfig("enable_ext_info_in_auth", "yes");
+    session.setConfig("PubkeyAcceptedAlgorithms", "ssh-rsa");
+    doSftp(session, "rsa", true);
 
-    String expectedKex = "kex: host key algorithm: rsa-sha2-512";
-    String expectedExtInfo = "SSH_MSG_EXT_INFO received";
-    String expectedServerSigAlgs =
-        "server-sig-algs=<ssh-ed25519,ssh-rsa,ssh-dss,ecdsa-sha2-nistp256,ecdsa-sha2-nistp384,ecdsa-sha2-nistp521>";
-    String expectedOpenSSH74Bug =
-        "OpenSSH 7.4 detected: adding rsa-sha2-256 & rsa-sha2-512 to server-sig-algs";
-    String expectedPubkeysKnown =
-        "PubkeyAcceptedAlgorithms in server-sig-algs = \\[rsa-sha2-512, rsa-sha2-256, ssh-rsa\\]";
-    String expectedPubkeysUnknown =
-        "PubkeyAcceptedAlgorithms not in server-sig-algs = \\[ssh-rsa-sha512@ssh.com, ssh-rsa-sha384@ssh.com, ssh-rsa-sha256@ssh.com, ssh-rsa-sha224@ssh.com\\]";
-    String expectedPreauth = "rsa-sha2-512 preauth success";
-    String expectedAuth = "rsa-sha2-512 auth success";
-    checkLogs(expectedKex);
-    checkLogs(expectedExtInfo);
-    checkLogs(expectedServerSigAlgs);
-    checkLogs(expectedOpenSSH74Bug);
-    checkLogs(expectedPubkeysKnown);
-    checkLogs(expectedPubkeysUnknown);
-    checkLogs(expectedPreauth);
-    checkLogs(expectedAuth);
+    String expectedServerKex = "server proposal: KEX algorithms: .*,ext-info-s,.*";
+    String expectedClientKex = "client proposal: KEX algorithms: .*,ext-info-c,.*";
+    String expected1 = "ext-info messaging supported by server";
+    String expected2 = "SSH_MSG_EXT_INFO sent";
+    String expectedServerSigAlgs1 = "server-sig-algs=<ssh-ed25519>";
+    String expectedServerSigAlgs2 = "server-sig-algs=<.*ssh-rsa.*>";
+    String expectedServerSigAlgs3 = "server-sig-algs=<.*ecdsa.*>";
+    checkLogs(expectedServerKex);
+    checkLogs(expectedClientKex);
+    checkLogs(expected1);
+    checkLogs(expected2);
+    checkLogs(expectedServerSigAlgs1);
+    checkLogs(expectedServerSigAlgs2);
+    checkNoLogs(expectedServerSigAlgs3);
+  }
+
+  @Test
+  public void testExtInfoInAuthNo() throws Exception {
+    JSch ssh = createRSAIdentity();
+    Session session = createSession(ssh, "ecdsa");
+    session.setConfig("enable_ext_info_in_auth", "no");
+    session.setConfig("PubkeyAcceptedAlgorithms", "ssh-rsa");
+    session.setTimeout(timeout);
+
+    assertThrows(JSchException.class, session::connect, "Auth fail for methods 'publickey'");
+
+    String expectedServerKex = "server proposal: KEX algorithms: .*,ext-info-s,.*";
+    String expectedClientKex = "client proposal: KEX algorithms: .*,ext-info-c,.*";
+    String expected1 = "ext-info messaging supported by server";
+    String expected2 = "SSH_MSG_EXT_INFO sent";
+    String expectedServerSigAlgs1 = "server-sig-algs=<ssh-ed25519>";
+    String expectedServerSigAlgs2 = "server-sig-algs=<.*ssh-rsa.*>";
+    String expectedServerSigAlgs3 = "server-sig-algs=<.*ecdsa.*>";
+    checkLogs(expectedServerKex);
+    checkLogs(expectedClientKex);
+    checkLogs(expected1);
+    checkNoLogs(expected2);
+    checkLogs(expectedServerSigAlgs1);
+    checkNoLogs(expectedServerSigAlgs2);
+    checkNoLogs(expectedServerSigAlgs3);
   }
 
   private JSch createRSAIdentity() throws Exception {
@@ -149,21 +167,22 @@ public class OpenSSH74ServerSigAlgsIT {
     return new HostKey(hostname, Base64.getDecoder().decode(split[1]));
   }
 
-  private Session createSession(JSch ssh) throws Exception {
-    Session session = ssh.getSession("root", sshd.getHost(), sshd.getFirstMappedPort());
+  private Session createSession(JSch ssh, String username) throws Exception {
+    Session session = ssh.getSession(username, sshd.getHost(), sshd.getFirstMappedPort());
     session.setConfig("StrictHostKeyChecking", "yes");
     session.setConfig("PreferredAuthentications", "publickey");
     return session;
   }
 
-  private void doSftp(Session session, boolean debugException) throws Exception {
+  private void doSftp(Session session, String username, boolean debugException) throws Exception {
+    String testFile = String.format(Locale.ROOT, "/%s/test", username);
     try {
       session.setTimeout(timeout);
       session.connect();
       ChannelSftp sftp = (ChannelSftp) session.openChannel("sftp");
       sftp.connect(timeout);
-      sftp.put(in.toString(), "/root/test");
-      sftp.get("/root/test", out.toString());
+      sftp.put(in.toString(), testFile);
+      sftp.get(testFile, out.toString());
       sftp.disconnect();
       session.disconnect();
     } catch (Exception e) {
@@ -192,6 +211,17 @@ public class OpenSSH74ServerSigAlgsIT {
         .map(LoggingEvent::getFormattedMessage).filter(msg -> msg.matches(expected)).findFirst();
     try {
       assertTrue(actualJsch.isPresent(), () -> "JSch: " + expected);
+    } catch (AssertionError e) {
+      printInfo();
+      throw e;
+    }
+  }
+
+  private void checkNoLogs(String expected) {
+    Optional<String> actualJsch = jschLogger.getAllLoggingEvents().stream()
+        .map(LoggingEvent::getFormattedMessage).filter(msg -> msg.matches(expected)).findFirst();
+    try {
+      assertFalse(actualJsch.isPresent(), () -> "JSch: " + expected);
     } catch (AssertionError e) {
       printInfo();
       throw e;

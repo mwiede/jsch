@@ -14,6 +14,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Base64;
 import java.util.List;
+import java.util.Locale;
 import java.util.Random;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.junit.jupiter.api.AfterAll;
@@ -144,7 +145,8 @@ public class UserAuthIT {
   private HostKey readHostKey(String fileName) throws Exception {
     List<String> lines = Files.readAllLines(Paths.get(fileName), UTF_8);
     String[] split = lines.get(0).split("\\s+");
-    String hostname = String.format("[%s]:%d", sshd.getHost(), sshd.getFirstMappedPort());
+    String hostname =
+        String.format(Locale.ROOT, "[%s]:%d", sshd.getHost(), sshd.getFirstMappedPort());
     return new HostKey(hostname, Base64.getDecoder().decode(split[1]));
   }
 

@@ -1,0 +1,36 @@
+FROM alpine:3.19
+RUN apk update && \
+    apk upgrade && \
+    apk add openssh && \
+    rm /var/cache/apk/* && \
+    addgroup -g 1000 rsa && \
+    adduser -Du 1000 -G rsa -Hh /rsa -s /bin/sh -g rsa rsa && \
+    mkdir -p /rsa/.ssh && \
+    chown -R rsa:rsa /rsa && \
+    chmod 700 /rsa /rsa/.ssh && \
+    passwd -u rsa && \
+    addgroup -g 1001 ecdsa && \
+    adduser -Du 1001 -G ecdsa -Hh /ecdsa -s /bin/sh -g ecdsa ecdsa && \
+    mkdir -p /ecdsa/.ssh && \
+    chown -R ecdsa:ecdsa /ecdsa && \
+    chmod 700 /ecdsa /ecdsa/.ssh && \
+    passwd -u ecdsa
+COPY ssh_host_rsa_key /etc/ssh/
+COPY ssh_host_rsa_key.pub /etc/ssh/
+COPY ssh_host_ecdsa256_key /etc/ssh/
+COPY ssh_host_ecdsa256_key.pub /etc/ssh/
+COPY ssh_host_ecdsa384_key /etc/ssh/
+COPY ssh_host_ecdsa384_key.pub /etc/ssh/
+COPY ssh_host_ecdsa521_key /etc/ssh/
+COPY ssh_host_ecdsa521_key.pub /etc/ssh/
+COPY ssh_host_ed25519_key /etc/ssh/
+COPY ssh_host_ed25519_key.pub /etc/ssh/
+COPY ssh_host_dsa_key /etc/ssh/
+COPY ssh_host_dsa_key.pub /etc/ssh/
+COPY sshd_config /etc/ssh/
+COPY authorized_keys /rsa/.ssh/
+COPY authorized_keys /ecdsa/.ssh/
+RUN chown rsa:rsa /rsa/.ssh/authorized_keys && \
+    chown ecdsa:ecdsa /ecdsa/.ssh/authorized_keys && \
+    chmod 600 /etc/ssh/ssh_*_key /rsa/.ssh/authorized_keys /ecdsa/.ssh/authorized_keys
+ENTRYPOINT ["/usr/sbin/sshd", "-D", "-e"]

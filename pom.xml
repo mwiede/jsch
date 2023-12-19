@@ -650,6 +650,19 @@
                     </excludes>
                 </configuration>
             </plugin>
+            <plugin>
+                <groupId>de.thetaphi</groupId>
+                <artifactId>forbiddenapis</artifactId>
+                <version>3.6</version>
+                <configuration>
+                    <bundledSignatures>
+                        <bundledSignature>jdk-unsafe</bundledSignature>
+                        <bundledSignature>jdk-deprecated</bundledSignature>
+                        <bundledSignature>jdk-non-portable</bundledSignature>
+                        <bundledSignature>jdk-reflection</bundledSignature>
+                    </bundledSignatures>
+                </configuration>
+            </plugin>
         </plugins>
     </build>
     <profiles>
@@ -799,6 +812,47 @@
                                 <goals>
                                     <goal>check</goal>
                                 </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <profile>
+            <id>forbiddenapis</id>
+            <activation>
+                <jdk>[16,)</jdk>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>de.thetaphi</groupId>
+                        <artifactId>forbiddenapis</artifactId>
+                        <configuration>
+                            <releaseVersion>16</releaseVersion>
+                        </configuration>
+                        <executions>
+                            <execution>
+                                <id>check</id>
+                                <goals>
+                                    <goal>check</goal>
+                                </goals>
+                                <configuration>
+                                    <bundledSignatures combine.children="append">
+                                        <bundledSignature>jdk-system-out</bundledSignature>
+                                    </bundledSignatures>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>testCheck</id>
+                                <goals>
+                                    <goal>testCheck</goal>
+                                </goals>
+                                <configuration>
+                                    <bundledSignatures combine.children="append">
+                                        <bundledSignature>commons-io-unsafe-2.14.0</bundledSignature>
+                                    </bundledSignatures>
+                                </configuration>
                             </execution>
                         </executions>
                     </plugin>

@@ -26,6 +26,8 @@
 
 package com.jcraft.jsch;
 
+import java.util.Locale;
+
 public abstract class KeyExchange {
 
   static final int PROPOSAL_KEX_ALGS = 0;
@@ -198,7 +200,7 @@ public abstract class KeyExchange {
   public String getFingerPrint() {
     HASH hash = null;
     try {
-      String _c = session.getConfig("FingerprintHash").toLowerCase();
+      String _c = session.getConfig("FingerprintHash").toLowerCase(Locale.ROOT);
       Class<? extends HASH> c = Class.forName(session.getConfig(_c)).asSubclass(HASH.class);
       hash = c.getDeclaredConstructor().newInstance();
     } catch (Exception e) {

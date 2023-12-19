@@ -37,6 +37,7 @@ import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Properties;
 import java.util.Vector;
 
@@ -116,6 +117,15 @@ public class Session {
 
   private volatile boolean isConnected = false;
 
+  private volatile boolean doExtInfo = false;
+  private boolean enable_server_sig_algs = true;
+  private boolean enable_ext_info_in_auth = true;
+
+  private volatile boolean initialKex = true;
+  private volatile boolean doStrictKex = false;
+  private boolean enable_strict_kex = true;
+  private boolean require_strict_kex = false;
+
   private volatile boolean isAuthed = false;
 
   private Thread connectThread = null;
@@ -193,6 +203,7 @@ public class Session {
     if (isConnected) {
       throw new JSchException("session is already connected");
     }
+    initialKex = true;
 
     io = new IO();
     if (random == null) {
@@ -307,6 +318,10 @@ public class Session {
         getLogger().log(Logger.INFO, "Local version string: " + Util.byte2str(V_C));
       }
 
+      enable_server_sig_algs = getConfig("enable_server_sig_algs").equals("yes");
+      enable_ext_info_in_auth = getConfig("enable_ext_info_in_auth").equals("yes");
+      enable_strict_kex = getConfig("enable_strict_kex").equals("yes");
+      require_strict_kex = getConfig("require_strict_kex").equals("yes");
       send_kexinit();
 
       buf = read(buf);
@@ -364,9 +379,14 @@ public class Session {
         }
 
         receive_newkeys(buf, kex);
+        initialKex = false;
       } else {
         in_kex = false;
-        throw new JSchException("invalid protocol(newkyes): " + buf.getCommand());
+        throw new JSchException("invalid protocol(newkeys): " + buf.getCommand());
+      }
+
+      if (enable_server_sig_algs && enable_ext_info_in_auth && doExtInfo) {
+        send_extinfo();
       }
 
       try {
@@ -400,7 +420,7 @@ public class Session {
       if (!auth) {
         smethods = uan.getMethods();
         if (smethods != null) {
-          smethods = smethods.toLowerCase();
+          smethods = smethods.toLowerCase(Locale.ROOT);
         } else {
           // methods: publickey,password,keyboard-interactive
           // smethods = "publickey,password,keyboard-interactive";
@@ -564,6 +584,30 @@ public class Session {
     }
     System.arraycopy(buf.buffer, buf.s, I_S, 0, I_S.length);
 
+    if (initialKex) {
+      if (enable_strict_kex || require_strict_kex) {
+        doStrictKex = checkServerStrictKex();
+        if (doStrictKex) {
+          if (getLogger().isEnabled(Logger.INFO)) {
+            getLogger().log(Logger.INFO, "Doing strict KEX");
+          }
+
+          if (seqi != 1) {
+            throw new JSchStrictKexException("KEXINIT not first packet from server");
+          }
+        } else if (require_strict_kex) {
+          throw new JSchStrictKexException("Strict KEX not supported by server");
+        }
+      }
+
+      if (enable_server_sig_algs) {
+        doExtInfo = checkServerExtInfo();
+        if (getLogger().isEnabled(Logger.INFO)) {
+          getLogger().log(Logger.INFO, "ext-info messaging supported by server");
+        }
+      }
+    }
+
     if (!in_kex) { // We are in rekeying activated by the remote!
       send_kexinit();
     }
@@ -571,7 +615,9 @@ public class Session {
     guess = KeyExchange.guess(this, I_S, I_C);
 
     if (guess[KeyExchange.PROPOSAL_KEX_ALGS].equals("ext-info-c")
-        || guess[KeyExchange.PROPOSAL_KEX_ALGS].equals("ext-info-s")) {
+        || guess[KeyExchange.PROPOSAL_KEX_ALGS].equals("ext-info-s")
+        || guess[KeyExchange.PROPOSAL_KEX_ALGS].equals("kex-strict-c-v00@openssh.com")
+        || guess[KeyExchange.PROPOSAL_KEX_ALGS].equals("kex-strict-s-v00@openssh.com")) {
       throw new JSchException("Invalid Kex negotiated: " + guess[KeyExchange.PROPOSAL_KEX_ALGS]);
     }
 
@@ -592,6 +638,50 @@ public class Session {
 
     kex.doInit(this, V_S, V_C, I_S, I_C);
     return kex;
+  }
+
+  private boolean checkServerStrictKex() {
+    Buffer sb = new Buffer(I_S);
+    sb.setOffSet(17);
+    byte[] sp = sb.getString(); // server proposal
+
+    int l = 0;
+    int m = 0;
+    while (l < sp.length) {
+      while (l < sp.length && sp[l] != ',')
+        l++;
+      if (m == l)
+        continue;
+      if ("kex-strict-s-v00@openssh.com".equals(Util.byte2str(sp, m, l - m))) {
+        return true;
+      }
+      l++;
+      m = l;
+    }
+
+    return false;
+  }
+
+  private boolean checkServerExtInfo() {
+    Buffer sb = new Buffer(I_S);
+    sb.setOffSet(17);
+    byte[] sp = sb.getString(); // server proposal
+
+    int l = 0;
+    int m = 0;
+    while (l < sp.length) {
+      while (l < sp.length && sp[l] != ',')
+        l++;
+      if (m == l)
+        continue;
+      if ("ext-info-s".equals(Util.byte2str(sp, m, l - m))) {
+        return true;
+      }
+      l++;
+      m = l;
+    }
+
+    return false;
   }
 
   private volatile boolean in_kex = false;
@@ -677,9 +767,12 @@ public class Session {
       }
     }
 
-    String enable_server_sig_algs = getConfig("enable_server_sig_algs");
-    if (enable_server_sig_algs.equals("yes") && !isAuthed) {
+    if (enable_server_sig_algs && !isAuthed) {
       kex += ",ext-info-c";
+    }
+
+    if ((enable_strict_kex || require_strict_kex) && initialKex) {
+      kex += ",kex-strict-c-v00@openssh.com";
     }
 
     String server_host_key = getConfig("server_host_key");
@@ -806,6 +899,20 @@ public class Session {
 
     if (getLogger().isEnabled(Logger.INFO)) {
       getLogger().log(Logger.INFO, "SSH_MSG_NEWKEYS sent");
+    }
+  }
+
+  private void send_extinfo() throws Exception {
+    // send SSH_MSG_EXT_INFO(7)
+    packet.reset();
+    buf.putByte((byte) SSH_MSG_EXT_INFO);
+    buf.putInt(1);
+    buf.putString(Util.str2byte("ext-info-in-auth@openssh.com"));
+    buf.putString(Util.str2byte("0"));
+    write(packet);
+
+    if (getLogger().isEnabled(Logger.INFO)) {
+      getLogger().log(Logger.INFO, "SSH_MSG_EXT_INFO sent");
     }
   }
 
@@ -1176,7 +1283,9 @@ public class Session {
         }
       }
 
-      seqi++;
+      if (++seqi == 0 && (enable_strict_kex || require_strict_kex) && initialKex) {
+        throw new JSchStrictKexException("incoming sequence number wrapped during initial KEX");
+      }
 
       if (inflater != null) {
         // inflater.uncompress(buf);
@@ -1209,6 +1318,8 @@ public class Session {
             "SSH_MSG_DISCONNECT: " + reason_code + " " + description + " " + language_tag,
             reason_code, description, language_tag);
         // break;
+      } else if (initialKex && doStrictKex) {
+        break;
       } else if (type == SSH_MSG_IGNORE) {
       } else if (type == SSH_MSG_UNIMPLEMENTED) {
         buf.rewind();
@@ -1241,8 +1352,7 @@ public class Session {
         buf.getInt();
         buf.getShort();
         boolean ignore = false;
-        String enable_server_sig_algs = getConfig("enable_server_sig_algs");
-        if (!enable_server_sig_algs.equals("yes")) {
+        if (!enable_server_sig_algs) {
           ignore = true;
           if (getLogger().isEnabled(Logger.INFO)) {
             getLogger().log(Logger.INFO,
@@ -1353,6 +1463,13 @@ public class Session {
   private void receive_newkeys(Buffer buf, KeyExchange kex) throws Exception {
     updateKeys(kex);
     in_kex = false;
+    if (doStrictKex) {
+      seqi = 0;
+      if (getLogger().isEnabled(Logger.INFO)) {
+        getLogger().log(Logger.INFO,
+            "Reset incoming sequence number after receiving SSH_MSG_NEWKEYS for strict KEX");
+      }
+    }
   }
 
   private void updateKeys(KeyExchange kex) throws Exception {
@@ -1620,12 +1737,28 @@ public class Session {
   }
 
   private void _write(Packet packet) throws Exception {
+    boolean initialKex = this.initialKex;
+    boolean doStrictKex = this.doStrictKex;
+    boolean enable_strict_kex = this.enable_strict_kex;
+    boolean require_strict_kex = this.require_strict_kex;
+    boolean resetSeqo = packet.buffer.getCommand() == SSH_MSG_NEWKEYS && doStrictKex;
+
     synchronized (lock) {
       encode(packet);
       if (io != null) {
         io.put(packet);
-        seqo++;
+        if (++seqo == 0 && (enable_strict_kex || require_strict_kex) && initialKex) {
+          throw new JSchStrictKexException("outgoing sequence number wrapped during initial KEX");
+        }
+        if (resetSeqo) {
+          seqo = 0;
+        }
       }
+    }
+
+    if (resetSeqo && io != null && getLogger().isEnabled(Logger.INFO)) {
+      getLogger().log(Logger.INFO,
+          "Reset outgoing sequence number after sending SSH_MSG_NEWKEYS for strict KEX");
     }
   }
 
@@ -2009,6 +2142,10 @@ public class Session {
     // for the first packet during (re)connect.
     seqi = 0;
     seqo = 0;
+    initialKex = true;
+    doStrictKex = false;
+    doExtInfo = false;
+    serverSigAlgs = null;
 
     // synchronized(jsch.pool){
     // jsch.pool.removeElement(this);
@@ -2631,9 +2768,6 @@ public class Session {
         String key =
             (newkey.equals("PubkeyAcceptedKeyTypes") ? "PubkeyAcceptedAlgorithms" : newkey);
         String value = newconf.get(newkey);
-        if (key.equals("enable_server_sig_algs") && !value.equals("yes")) {
-          serverSigAlgs = null;
-        }
         config.put(key, value);
       }
     }
@@ -2647,9 +2781,6 @@ public class Session {
       if (key.equals("PubkeyAcceptedKeyTypes")) {
         config.put("PubkeyAcceptedAlgorithms", value);
       } else {
-        if (key.equals("enable_server_sig_algs") && !value.equals("yes")) {
-          serverSigAlgs = null;
-        }
         config.put(key, value);
       }
     }
@@ -3066,6 +3197,10 @@ public class Session {
     checkConfig(config, "kex");
     checkConfig(config, "server_host_key");
     checkConfig(config, "prefer_known_host_key_types");
+    checkConfig(config, "enable_server_sig_algs");
+    checkConfig(config, "enable_ext_info_in_auth");
+    checkConfig(config, "enable_strict_kex");
+    checkConfig(config, "require_strict_kex");
     checkConfig(config, "enable_pubkey_auth_query");
     checkConfig(config, "try_additional_pubkey_algorithms");
     checkConfig(config, "enable_auth_none");

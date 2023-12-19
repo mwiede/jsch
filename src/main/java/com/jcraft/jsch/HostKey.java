@@ -26,6 +26,8 @@
 
 package com.jcraft.jsch;
 
+import java.util.Locale;
+
 public class HostKey {
 
   private static final byte[][] names =
@@ -118,7 +120,7 @@ public class HostKey {
   public String getFingerPrint(JSch jsch) {
     HASH hash = null;
     try {
-      String _c = JSch.getConfig("FingerprintHash").toLowerCase();
+      String _c = JSch.getConfig("FingerprintHash").toLowerCase(Locale.ROOT);
       Class<? extends HASH> c = Class.forName(JSch.getConfig(_c)).asSubclass(HASH.class);
       hash = c.getDeclaredConstructor().newInstance();
     } catch (Exception e) {

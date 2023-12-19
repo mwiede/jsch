@@ -7,6 +7,7 @@ import org.junit.jupiter.params.provider.ValueSource;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.nio.file.Paths;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -15,8 +16,8 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class OpenSSHConfigTest {
 
-  Map<String, String> keyMap = OpenSSHConfig.getKeymap().entrySet().stream().collect(
-      Collectors.toMap(entry -> entry.getValue().toUpperCase(), Map.Entry::getKey, (s, s2) -> s2));
+  Map<String, String> keyMap = OpenSSHConfig.getKeymap().entrySet().stream().collect(Collectors
+      .toMap(entry -> entry.getValue().toUpperCase(Locale.ROOT), Map.Entry::getKey, (s, s2) -> s2));
 
   @Test
   void parseFile() throws IOException, URISyntaxException {
@@ -52,7 +53,7 @@ class OpenSSHConfigTest {
   void appendAlgorithms(String key) throws IOException {
     OpenSSHConfig parse = OpenSSHConfig.parse(key + " +someValue,someValue1");
     ConfigRepository.Config config = parse.getConfig("");
-    String mappedKey = Optional.ofNullable(keyMap.get(key.toUpperCase())).orElse(key);
+    String mappedKey = Optional.ofNullable(keyMap.get(key.toUpperCase(Locale.ROOT))).orElse(key);
     assertEquals(JSch.getConfig(mappedKey) + "," + "someValue,someValue1",
         config.getValue(mappedKey));
   }
@@ -63,7 +64,7 @@ class OpenSSHConfigTest {
   void prependAlgorithms(String key) throws IOException {
     OpenSSHConfig parse = OpenSSHConfig.parse(key + " ^someValue,someValue1");
     ConfigRepository.Config config = parse.getConfig("");
-    String mappedKey = Optional.ofNullable(keyMap.get(key.toUpperCase())).orElse(key);
+    String mappedKey = Optional.ofNullable(keyMap.get(key.toUpperCase(Locale.ROOT))).orElse(key);
     assertEquals("someValue,someValue1," + JSch.getConfig(mappedKey), config.getValue(mappedKey));
   }
 
