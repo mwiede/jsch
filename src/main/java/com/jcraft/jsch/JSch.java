@@ -49,6 +49,8 @@ public class JSch {
     config.put("require_strict_kex", Util.getSystemProperty("jsch.require_strict_kex", "no"));
     config.put("enable_server_sig_algs",
         Util.getSystemProperty("jsch.enable_server_sig_algs", "yes"));
+    config.put("enable_ext_info_in_auth",
+        Util.getSystemProperty("jsch.enable_ext_info_in_auth", "yes"));
     config.put("cipher.s2c", Util.getSystemProperty("jsch.cipher",
         "aes128-ctr,aes192-ctr,aes256-ctr,aes128-gcm@openssh.com,aes256-gcm@openssh.com"));
     config.put("cipher.c2s", Util.getSystemProperty("jsch.cipher",

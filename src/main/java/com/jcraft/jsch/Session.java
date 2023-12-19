@@ -117,6 +117,10 @@ public class Session {
 
   private volatile boolean isConnected = false;
 
+  private volatile boolean doExtInfo = false;
+  private boolean enable_server_sig_algs = true;
+  private boolean enable_ext_info_in_auth = true;
+
   private volatile boolean initialKex = true;
   private volatile boolean doStrictKex = false;
   private boolean enable_strict_kex = true;
@@ -314,6 +318,8 @@ public class Session {
         getLogger().log(Logger.INFO, "Local version string: " + Util.byte2str(V_C));
       }
 
+      enable_server_sig_algs = getConfig("enable_server_sig_algs").equals("yes");
+      enable_ext_info_in_auth = getConfig("enable_ext_info_in_auth").equals("yes");
       enable_strict_kex = getConfig("enable_strict_kex").equals("yes");
       require_strict_kex = getConfig("require_strict_kex").equals("yes");
       send_kexinit();
@@ -376,7 +382,11 @@ public class Session {
         initialKex = false;
       } else {
         in_kex = false;
-        throw new JSchException("invalid protocol(newkyes): " + buf.getCommand());
+        throw new JSchException("invalid protocol(newkeys): " + buf.getCommand());
+      }
+
+      if (enable_server_sig_algs && enable_ext_info_in_auth && doExtInfo) {
+        send_extinfo();
       }
 
       try {
@@ -574,18 +584,27 @@ public class Session {
     }
     System.arraycopy(buf.buffer, buf.s, I_S, 0, I_S.length);
 
-    if ((enable_strict_kex || require_strict_kex) && initialKex) {
-      doStrictKex = checkServerStrictKex();
-      if (doStrictKex) {
-        if (getLogger().isEnabled(Logger.INFO)) {
-          getLogger().log(Logger.INFO, "Doing strict KEX");
-        }
+    if (initialKex) {
+      if (enable_strict_kex || require_strict_kex) {
+        doStrictKex = checkServerStrictKex();
+        if (doStrictKex) {
+          if (getLogger().isEnabled(Logger.INFO)) {
+            getLogger().log(Logger.INFO, "Doing strict KEX");
+          }
 
-        if (seqi != 1) {
-          throw new JSchStrictKexException("KEXINIT not first packet from server");
+          if (seqi != 1) {
+            throw new JSchStrictKexException("KEXINIT not first packet from server");
+          }
+        } else if (require_strict_kex) {
+          throw new JSchStrictKexException("Strict KEX not supported by server");
         }
-      } else if (require_strict_kex) {
-        throw new JSchStrictKexException("Strict KEX not supported by server");
+      }
+
+      if (enable_server_sig_algs) {
+        doExtInfo = checkServerExtInfo();
+        if (getLogger().isEnabled(Logger.INFO)) {
+          getLogger().log(Logger.INFO, "ext-info messaging supported by server");
+        }
       }
     }
 
@@ -634,6 +653,28 @@ public class Session {
       if (m == l)
         continue;
       if ("kex-strict-s-v00@openssh.com".equals(Util.byte2str(sp, m, l - m))) {
+        return true;
+      }
+      l++;
+      m = l;
+    }
+
+    return false;
+  }
+
+  private boolean checkServerExtInfo() {
+    Buffer sb = new Buffer(I_S);
+    sb.setOffSet(17);
+    byte[] sp = sb.getString(); // server proposal
+
+    int l = 0;
+    int m = 0;
+    while (l < sp.length) {
+      while (l < sp.length && sp[l] != ',')
+        l++;
+      if (m == l)
+        continue;
+      if ("ext-info-s".equals(Util.byte2str(sp, m, l - m))) {
         return true;
       }
       l++;
@@ -726,8 +767,7 @@ public class Session {
       }
     }
 
-    String enable_server_sig_algs = getConfig("enable_server_sig_algs");
-    if (enable_server_sig_algs.equals("yes") && !isAuthed) {
+    if (enable_server_sig_algs && !isAuthed) {
       kex += ",ext-info-c";
     }
 
@@ -859,6 +899,20 @@ public class Session {
 
     if (getLogger().isEnabled(Logger.INFO)) {
       getLogger().log(Logger.INFO, "SSH_MSG_NEWKEYS sent");
+    }
+  }
+
+  private void send_extinfo() throws Exception {
+    // send SSH_MSG_EXT_INFO(7)
+    packet.reset();
+    buf.putByte((byte) SSH_MSG_EXT_INFO);
+    buf.putInt(1);
+    buf.putString(Util.str2byte("ext-info-in-auth@openssh.com"));
+    buf.putString(Util.str2byte("0"));
+    write(packet);
+
+    if (getLogger().isEnabled(Logger.INFO)) {
+      getLogger().log(Logger.INFO, "SSH_MSG_EXT_INFO sent");
     }
   }
 
@@ -1298,8 +1352,7 @@ public class Session {
         buf.getInt();
         buf.getShort();
         boolean ignore = false;
-        String enable_server_sig_algs = getConfig("enable_server_sig_algs");
-        if (!enable_server_sig_algs.equals("yes")) {
+        if (!enable_server_sig_algs) {
           ignore = true;
           if (getLogger().isEnabled(Logger.INFO)) {
             getLogger().log(Logger.INFO,
@@ -2091,6 +2144,8 @@ public class Session {
     seqo = 0;
     initialKex = true;
     doStrictKex = false;
+    doExtInfo = false;
+    serverSigAlgs = null;
 
     // synchronized(jsch.pool){
     // jsch.pool.removeElement(this);
@@ -2713,9 +2768,6 @@ public class Session {
         String key =
             (newkey.equals("PubkeyAcceptedKeyTypes") ? "PubkeyAcceptedAlgorithms" : newkey);
         String value = newconf.get(newkey);
-        if (key.equals("enable_server_sig_algs") && !value.equals("yes")) {
-          serverSigAlgs = null;
-        }
         config.put(key, value);
       }
     }
@@ -2729,9 +2781,6 @@ public class Session {
       if (key.equals("PubkeyAcceptedKeyTypes")) {
         config.put("PubkeyAcceptedAlgorithms", value);
       } else {
-        if (key.equals("enable_server_sig_algs") && !value.equals("yes")) {
-          serverSigAlgs = null;
-        }
         config.put(key, value);
       }
     }
@@ -3148,6 +3197,8 @@ public class Session {
     checkConfig(config, "kex");
     checkConfig(config, "server_host_key");
     checkConfig(config, "prefer_known_host_key_types");
+    checkConfig(config, "enable_server_sig_algs");
+    checkConfig(config, "enable_ext_info_in_auth");
     checkConfig(config, "enable_strict_kex");
     checkConfig(config, "require_strict_kex");
     checkConfig(config, "enable_pubkey_auth_query");
