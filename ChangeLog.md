@@ -1,3 +1,6 @@
+* [0.2.15](https://github.com/mwiede/jsch/releases/tag/jsch-0.2.15)
+  * address [CVE-2023-48795](https://nvd.nist.gov/vuln/detail/CVE-2023-48795) by adding support for new strict key exchange extension
+  * Add support for `ext-info-in-auth@openssh.com` extension
 * [0.2.14](https://github.com/mwiede/jsch/releases/tag/jsch-0.2.14)
   * [#450](https://github.com/mwiede/jsch/issues/450) use Socket.connect() with a timeout that has been supported since Java 1.4 instead of using old method of creating a separate thread and joining to that thread with timeout.
 * [0.2.13](https://github.com/mwiede/jsch/releases/tag/jsch-0.2.13)
