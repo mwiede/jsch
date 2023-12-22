@@ -134,7 +134,7 @@ abstract class DHGN extends KeyExchange {
 
         dh.checkRange();
 
-        K = normalize(dh.getK());
+        K = encodeAsMPInt(normalize(dh.getK()));
 
         // The hash H is computed as the HASH hash of the concatenation of the
         // following:
@@ -156,10 +156,11 @@ abstract class DHGN extends KeyExchange {
         buf.putString(K_S);
         buf.putMPInt(e);
         buf.putMPInt(f);
-        buf.putMPInt(K);
         byte[] foo = new byte[buf.getLength()];
         buf.getByte(foo);
+
         sha.update(foo, 0, foo.length);
+        sha.update(K, 0, K.length);
         H = sha.digest();
         // System.err.print("H -> "); //dump(H, 0, H.length);
 

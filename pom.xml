@@ -661,6 +661,9 @@
                         <bundledSignature>jdk-non-portable</bundledSignature>
                         <bundledSignature>jdk-reflection</bundledSignature>
                     </bundledSignatures>
+                    <suppressAnnotations>
+                        <suppressAnnotation>com.jcraft.jsch.annotations.SuppressForbiddenApi</suppressAnnotation>
+                    </suppressAnnotations>
                 </configuration>
             </plugin>
         </plugins>

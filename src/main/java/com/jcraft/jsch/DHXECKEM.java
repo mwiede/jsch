@@ -26,7 +26,7 @@
 
 package com.jcraft.jsch;
 
-abstract class DHECN extends KeyExchange {
+abstract class DHXECKEM extends KeyExchange {
 
   private static final int SSH_MSG_KEX_ECDH_INIT = 30;
   private static final int SSH_MSG_KEX_ECDH_REPLY = 31;
@@ -44,10 +44,15 @@ abstract class DHECN extends KeyExchange {
   private Buffer buf;
   private Packet packet;
 
-  private ECDH ecdh;
+  private KEM kem;
+  private XDH xdh;
 
+  protected String kem_name;
   protected String sha_name;
-  protected int key_size;
+  protected String curve_name;
+  protected int kem_pubkey_len;
+  protected int kem_encap_len;
+  protected int xec_key_len;
 
   @Override
   public void init(Session session, byte[] V_S, byte[] V_C, byte[] I_S, byte[] I_C)
@@ -69,17 +74,26 @@ abstract class DHECN extends KeyExchange {
     packet = new Packet(buf);
 
     packet.reset();
+    // command + string len + Q_C len
+    buf.checkFreeSize(1 + 4 + kem_pubkey_len + xec_key_len);
     buf.putByte((byte) SSH_MSG_KEX_ECDH_INIT);
 
     try {
-      Class<? extends ECDH> c =
-          Class.forName(session.getConfig("ecdh-sha2-nistp")).asSubclass(ECDH.class);
-      ecdh = c.getDeclaredConstructor().newInstance();
-      ecdh.init(key_size);
+      Class<? extends KEM> k = Class.forName(session.getConfig(kem_name)).asSubclass(KEM.class);
+      kem = k.getDeclaredConstructor().newInstance();
+      kem.init();
 
-      Q_C = ecdh.getQ();
+      Class<? extends XDH> c = Class.forName(session.getConfig("xdh")).asSubclass(XDH.class);
+      xdh = c.getDeclaredConstructor().newInstance();
+      xdh.init(curve_name, xec_key_len);
+
+      byte[] kem_public_key_C = kem.getPublicKey();
+      byte[] xec_public_key_C = xdh.getQ();
+      Q_C = new byte[kem_pubkey_len + xec_key_len];
+      System.arraycopy(kem_public_key_C, 0, Q_C, 0, kem_pubkey_len);
+      System.arraycopy(xec_public_key_C, 0, Q_C, kem_pubkey_len, xec_key_len);
       buf.putString(Q_C);
-    } catch (Exception e) {
+    } catch (Exception | NoClassDefFoundError e) {
       throw new JSchException(e.toString(), e);
     }
 
@@ -120,8 +134,14 @@ abstract class DHECN extends KeyExchange {
         K_S = _buf.getString();
 
         byte[] Q_S = _buf.getString();
+        if (Q_S.length != kem_encap_len + xec_key_len) {
+          return false;
+        }
 
-        byte[][] r_s = KeyPairECDSA.fromPoint(Q_S);
+        byte[] encapsulation = new byte[kem_encap_len];
+        byte[] xec_public_key_S = new byte[xec_key_len];
+        System.arraycopy(Q_S, 0, encapsulation, 0, kem_encap_len);
+        System.arraycopy(Q_S, kem_encap_len, xec_public_key_S, 0, xec_key_len);
 
         // RFC 5656,
         // 4. ECDH Key Exchange
@@ -129,11 +149,24 @@ abstract class DHECN extends KeyExchange {
         // received. An example of a validation algorithm can be found in
         // Section 3.2.2 of [SEC1]. If a key fails validation,
         // the key exchange MUST fail.
-        if (!ecdh.validate(r_s[0], r_s[1])) {
+        if (!xdh.validate(xec_public_key_S)) {
           return false;
         }
 
-        K = encodeAsMPInt(normalize(ecdh.getSecret(r_s[0], r_s[1])));
+        byte[] tmp = null;
+        try {
+          tmp = kem.decapsulate(encapsulation);
+          sha.update(tmp, 0, tmp.length);
+        } finally {
+          Util.bzero(tmp);
+        }
+        try {
+          tmp = normalize(xdh.getSecret(xec_public_key_S));
+          sha.update(tmp, 0, tmp.length);
+        } finally {
+          Util.bzero(tmp);
+        }
+        K = encodeAsString(sha.digest());
 
         byte[] sig_of_H = _buf.getString();
 
@@ -146,10 +179,19 @@ abstract class DHECN extends KeyExchange {
         // string K_S, server's public host key
         // string Q_C, client's ephemeral public key octet string
         // string Q_S, server's ephemeral public key octet string
-        // mpint K, shared secret
+        // string K, shared secret
 
-        // This value is called the exchange hash, and it is used to authenti-
-        // cate the key exchange.
+        // draft-josefsson-ntruprime-ssh-02,
+        // 3. Key Exchange Method: sntrup761x25519-sha512
+        // ...
+        // The SSH_MSG_KEX_ECDH_REPLY's signature value is computed as described
+        // in [RFC5656] with the following changes. Instead of encoding the
+        // shared secret K as 'mpint', it MUST be encoded as 'string'. The
+        // shared secret K value MUST be the 64-byte output octet string of the
+        // SHA-512 hash computed with the input as the 32-byte octet string key
+        // output from the key encapsulation mechanism of sntrup761 concatenated
+        // with the 32-byte octet string of X25519(a, X25519(b, 9)) = X25519(b,
+        // X25519(a, 9)).
         buf.reset();
         buf.putString(V_C);
         buf.putString(V_S);

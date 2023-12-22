@@ -425,4 +425,30 @@ public abstract class KeyExchange {
     return result;
   }
 
+  protected byte[] encodeAsMPInt(byte[] raw) {
+    int i = (raw[0] & 0x80) >>> 7;
+    int len = raw.length + i;
+    byte[] foo = new byte[len + 4];
+    // Try to remain timing safe by performing an extra allocation when i == 0
+    byte[] bar = new byte[i ^ 0x1];
+    foo[0] = (byte) (len >>> 24);
+    foo[1] = (byte) (len >>> 16);
+    foo[2] = (byte) (len >>> 8);
+    foo[3] = (byte) (len);
+    System.arraycopy(raw, 0, foo, 4 + i, len - i);
+    Util.bzero(raw);
+    return foo;
+  }
+
+  protected byte[] encodeAsString(byte[] raw) {
+    int len = raw.length;
+    byte[] foo = new byte[len + 4];
+    foo[0] = (byte) (len >>> 24);
+    foo[1] = (byte) (len >>> 16);
+    foo[2] = (byte) (len >>> 8);
+    foo[3] = (byte) (len);
+    System.arraycopy(raw, 0, foo, 4, len);
+    Util.bzero(raw);
+    return foo;
+  }
 }
