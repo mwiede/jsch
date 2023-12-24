@@ -39,8 +39,6 @@ public class DH implements com.jcraft.jsch.DH {
   BigInteger e; // my public key
   byte[] e_array;
   BigInteger f; // your public key
-  BigInteger K; // shared secret key
-  byte[] K_array;
 
   private KeyPairGenerator myKpairGen;
   private KeyAgreement myKeyAgree;
@@ -66,17 +64,11 @@ public class DH implements com.jcraft.jsch.DH {
 
   @Override
   public byte[] getK() throws Exception {
-    if (K == null) {
-      KeyFactory myKeyFac = KeyFactory.getInstance("DH");
-      DHPublicKeySpec keySpec = new DHPublicKeySpec(f, p, g);
-      PublicKey yourPubKey = myKeyFac.generatePublic(keySpec);
-      myKeyAgree.doPhase(yourPubKey, true);
-      byte[] mySharedSecret = myKeyAgree.generateSecret();
-      K = new BigInteger(1, mySharedSecret);
-      K_array = K.toByteArray();
-      K_array = mySharedSecret;
-    }
-    return K_array;
+    KeyFactory myKeyFac = KeyFactory.getInstance("DH");
+    DHPublicKeySpec keySpec = new DHPublicKeySpec(f, p, g);
+    PublicKey yourPubKey = myKeyFac.generatePublic(keySpec);
+    myKeyAgree.doPhase(yourPubKey, true);
+    return myKeyAgree.generateSecret();
   }
 
   @Override
