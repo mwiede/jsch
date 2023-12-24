@@ -1461,7 +1461,11 @@ public class Session {
   }
 
   private void receive_newkeys(Buffer buf, KeyExchange kex) throws Exception {
-    updateKeys(kex);
+    try {
+      updateKeys(kex);
+    } finally {
+      kex.clearK();
+    }
     in_kex = false;
     if (doStrictKex) {
       seqi = 0;

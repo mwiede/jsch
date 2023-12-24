@@ -215,6 +215,11 @@ public abstract class KeyExchange {
     return K;
   }
 
+  void clearK() {
+    Util.bzero(K);
+    K = null;
+  }
+
   byte[] getH() {
     return H;
   }
