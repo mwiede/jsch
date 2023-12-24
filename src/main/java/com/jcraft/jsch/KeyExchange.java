@@ -236,6 +236,7 @@ public abstract class KeyExchange {
     if (secret.length > 1 && secret[0] == 0 && (secret[1] & 0x80) == 0) {
       byte[] tmp = new byte[secret.length - 1];
       System.arraycopy(secret, 1, tmp, 0, tmp.length);
+      Util.bzero(secret);
       return normalize(tmp);
     } else {
       return secret;
