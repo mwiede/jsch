@@ -163,7 +163,7 @@ public class ProxyHTTP implements Proxy {
       } catch (Exception eee) {
       }
       String message = "ProxyHTTP: " + e.toString();
-      throw new JSchException(message, e);
+      throw new JSchProxyException(message, e);
     }
   }
 
