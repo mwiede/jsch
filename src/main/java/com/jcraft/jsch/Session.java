@@ -602,7 +602,7 @@ public class Session {
 
       if (enable_server_sig_algs) {
         doExtInfo = checkServerExtInfo();
-        if (getLogger().isEnabled(Logger.INFO)) {
+        if (doExtInfo && getLogger().isEnabled(Logger.INFO)) {
           getLogger().log(Logger.INFO, "ext-info messaging supported by server");
         }
       }
