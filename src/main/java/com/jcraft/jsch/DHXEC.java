@@ -131,8 +131,7 @@ abstract class DHXEC extends KeyExchange {
           return false;
         }
 
-        K = xdh.getSecret(Q_S);
-        K = normalize(K);
+        K = encodeAsMPInt(normalize(xdh.getSecret(Q_S)));
 
         byte[] sig_of_H = _buf.getString();
 
@@ -171,11 +170,11 @@ abstract class DHXEC extends KeyExchange {
         buf.putString(K_S);
         buf.putString(Q_C);
         buf.putString(Q_S);
-        buf.putMPInt(K);
         byte[] foo = new byte[buf.getLength()];
         buf.getByte(foo);
 
         sha.update(foo, 0, foo.length);
+        sha.update(K, 0, K.length);
         H = sha.digest();
 
         i = 0;

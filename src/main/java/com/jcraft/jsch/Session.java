@@ -1461,7 +1461,11 @@ public class Session {
   }
 
   private void receive_newkeys(Buffer buf, KeyExchange kex) throws Exception {
-    updateKeys(kex);
+    try {
+      updateKeys(kex);
+    } finally {
+      kex.clearK();
+    }
     in_kex = false;
     if (doStrictKex) {
       seqi = 0;
@@ -1491,7 +1495,7 @@ public class Session {
      */
 
     buf.reset();
-    buf.putMPInt(K);
+    buf.putByte(K);
     buf.putByte(H);
     buf.putByte((byte) 0x41);
     buf.putByte(session_id);
@@ -1530,7 +1534,7 @@ public class Session {
       s2ccipher = cc.getDeclaredConstructor().newInstance();
       while (s2ccipher.getBlockSize() > Es2c.length) {
         buf.reset();
-        buf.putMPInt(K);
+        buf.putByte(K);
         buf.putByte(H);
         buf.putByte(Es2c);
         hash.update(buf.buffer, 0, buf.index);
@@ -1559,7 +1563,7 @@ public class Session {
       c2scipher = cc.getDeclaredConstructor().newInstance();
       while (c2scipher.getBlockSize() > Ec2s.length) {
         buf.reset();
-        buf.putMPInt(K);
+        buf.putByte(K);
         buf.putByte(H);
         buf.putByte(Ec2s);
         hash.update(buf.buffer, 0, buf.index);
@@ -1608,7 +1612,7 @@ public class Session {
     int size = hash.getBlockSize();
     while (result.length < required_length) {
       buf.reset();
-      buf.putMPInt(K);
+      buf.putByte(K);
       buf.putByte(H);
       buf.putByte(result);
       hash.update(buf.buffer, 0, buf.index);
