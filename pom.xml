@@ -47,12 +47,14 @@
             <timezone>+9</timezone>
         </developer>
         <developer>
+            <id>mwiede</id>
             <name>Matthias Wiedemann</name>
             <email>mwiede@gmx.de</email>
             <organization>Community</organization>
             <organizationUrl>https://github.com/mwiede</organizationUrl>
         </developer>
         <developer>
+            <id>norrisjeremy</id>
             <name>Jeremy Norris</name>
             <organization>Community</organization>
             <organizationUrl>https://github.com/norrisjeremy</organizationUrl>
@@ -254,7 +256,7 @@
                         <configuration>
                             <rules>
                                 <requireJavaVersion>
-                                    <version>16</version>
+                                    <version>17</version>
                                 </requireJavaVersion>
                                 <dependencyConvergence />
                                 <banDuplicatePomDependencyVersions />
@@ -403,31 +405,32 @@
                 </executions>
             </plugin>
             <plugin>
-                <groupId>org.apache.felix</groupId>
-                <artifactId>maven-bundle-plugin</artifactId>
-                <version>5.1.9</version>
+                <groupId>biz.aQute.bnd</groupId>
+                <artifactId>bnd-maven-plugin</artifactId>
+                <version>7.0.0</version>
                 <configuration>
-                    <instructions>
-                        <Export-Package>com.jcraft.jsch;-noimport:=true</Export-Package>
-                        <Import-Package><![CDATA[
-                            com.sun.jna*;version="${range;[=0,+)}",
-                            org.apache.logging.log4j*;version="${range;[=0,4)}",
-                            org.bouncycastle*;version="[1.76,${versionmask;+})",
-                            org.slf4j*;version="[1.7,${versionmask;+})",
-                            org.ietf.jgss;resolution:=optional,
+                    <bnd><![CDATA[
+                        -noextraheaders: false
+                        -removeheaders: \
+                            Bnd-LastModified,\
+                            Bundle-Developers,\
+                            Bundle-DocURL,\
+                            Bundle-SCM,\
+                            Created-By,\
+                            Private-Package
+                        Bundle-SymbolicName: ${project.groupId}.${project.artifactId}
+                        Export-Package: com.jcraft.jsch;-noimport:=true
+                        Import-Package: \
+                            com.sun.jna*;version="${range;[=0,+)}";resolution:=optional,\
+                            org.apache.logging.log4j*;version="${range;[=0,4)}";resolution:=optional,\
+                            org.bouncycastle*;version="[1.76,${versionmask;+})";resolution:=optional,\
+                            org.slf4j*;version="[1.7,${versionmask;+})";resolution:=optional,\
+                            org.newsclub.net.unix;resolution:=optional,\
+                            org.ietf.jgss;resolution:=optional,\
+                            !java.*,\
                             *
-                            ]]></Import-Package>
-                    </instructions>
+                        ]]></bnd>
                 </configuration>
-                <executions>
-                    <execution>
-                        <id>bundle-manifest</id>
-                        <phase>process-classes</phase>
-                        <goals>
-                            <goal>manifest</goal>
-                        </goals>
-                    </execution>
-                </executions>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -856,6 +859,29 @@
                                         <bundledSignature>commons-io-unsafe-2.14.0</bundledSignature>
                                     </bundledSignatures>
                                 </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <profile>
+            <id>bnd</id>
+            <activation>
+                <jdk>[17,)</jdk>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>biz.aQute.bnd</groupId>
+                        <artifactId>bnd-maven-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>bnd-process</id>
+                                <phase>process-classes</phase>
+                                <goals>
+                                    <goal>bnd-process</goal>
+                                </goals>
                             </execution>
                         </executions>
                     </plugin>
