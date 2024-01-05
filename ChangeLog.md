@@ -1,3 +1,7 @@
+* [0.2.16](https://github.com/mwiede/jsch/releases/tag/jsch-0.2.16)
+  * Add support for sntrup761x25519-sha512@openssh.com KEX algorithm.
+  * Switch to bnd-maven-plugin in order to support Multi-Release OSGi bundle JAR's via supplemental manifest files.
+  * Introduce JSchProxyException to replace generic JschException in Proxy implementations by @mvegter in https://github.com/mwiede/jsch/pull/467
 * [0.2.15](https://github.com/mwiede/jsch/releases/tag/jsch-0.2.15)
   * address [CVE-2023-48795](https://nvd.nist.gov/vuln/detail/CVE-2023-48795) by adding support for new strict key exchange extension
   * Add support for `ext-info-in-auth@openssh.com` extension
