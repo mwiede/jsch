@@ -975,8 +975,12 @@ public class ChannelSftp extends ChannelSession {
       src = remoteAbsolutePath(src);
       src = isUnique(src);
 
+      SftpATTRS attr = _stat(src);
+      if (attr.isDir()) {
+        throw new SftpException(SSH_FX_FAILURE, "not supported to get directory " + src);
+      }
+
       if (monitor != null) {
-        SftpATTRS attr = _stat(src);
         monitor.init(SftpProgressMonitor.GET, src, "??", attr.getSize());
         if (mode == RESUME) {
           monitor.count(skip);
