@@ -26,11 +26,12 @@
 
 package com.jcraft.jsch.jce;
 
+import javax.crypto.Mac;
+import javax.crypto.ShortBufferException;
+import javax.crypto.spec.SecretKeySpec;
 import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.Logger;
 import com.jcraft.jsch.MAC;
-import javax.crypto.*;
-import javax.crypto.spec.*;
 
 abstract class HMAC implements MAC {
   protected String name;

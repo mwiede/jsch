@@ -27,7 +27,7 @@
 package com.jcraft.jsch;
 
 import java.io.IOException;
-import java.net.*;
+import java.net.Socket;
 import java.util.Hashtable;
 
 class ChannelX11 extends Channel {

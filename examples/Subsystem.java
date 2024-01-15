@@ -2,9 +2,21 @@
  * This program will demonstrate how to use the Subsystem channel.
  *
  */
-import com.jcraft.jsch.*;
-import java.awt.*;
-import javax.swing.*;
+import com.jcraft.jsch.Channel;
+import com.jcraft.jsch.ChannelSubsystem;
+import com.jcraft.jsch.JSch;
+import com.jcraft.jsch.Session;
+import com.jcraft.jsch.UIKeyboardInteractive;
+import com.jcraft.jsch.UserInfo;
+import java.awt.Container;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Insets;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JPasswordField;
+import javax.swing.JTextField;
 
 public class Subsystem {
   public static void main(String[] arg) {

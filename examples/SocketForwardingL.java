@@ -4,11 +4,13 @@
  * the _ping endpoint of the dockerd.
  *
  */
-import com.jcraft.jsch.*;
-
-import javax.swing.*;
+import com.jcraft.jsch.JSch;
+import com.jcraft.jsch.Session;
+import com.jcraft.jsch.UIKeyboardInteractive;
+import com.jcraft.jsch.UserInfo;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import javax.swing.JOptionPane;
 
 public class SocketForwardingL {
   public static void main(String[] arg) {

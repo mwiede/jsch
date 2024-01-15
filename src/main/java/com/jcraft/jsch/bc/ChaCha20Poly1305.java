@@ -31,7 +31,8 @@ import java.nio.ByteBuffer;
 import javax.crypto.AEADBadTagException;
 import org.bouncycastle.crypto.engines.ChaChaEngine;
 import org.bouncycastle.crypto.macs.Poly1305;
-import org.bouncycastle.crypto.params.*;
+import org.bouncycastle.crypto.params.KeyParameter;
+import org.bouncycastle.crypto.params.ParametersWithIV;
 
 public class ChaCha20Poly1305 implements Cipher {
   // Actually the block size, not IV size

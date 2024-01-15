@@ -1,6 +1,18 @@
 package com.jcraft.jsch.jzlib;
 
-import static com.jcraft.jsch.jzlib.JZlib.*;
+import static com.jcraft.jsch.jzlib.JZlib.Z_BEST_COMPRESSION;
+import static com.jcraft.jsch.jzlib.JZlib.Z_BEST_SPEED;
+import static com.jcraft.jsch.jzlib.JZlib.Z_DATA_ERROR;
+import static com.jcraft.jsch.jzlib.JZlib.Z_DEFAULT_COMPRESSION;
+import static com.jcraft.jsch.jzlib.JZlib.Z_DEFAULT_STRATEGY;
+import static com.jcraft.jsch.jzlib.JZlib.Z_FILTERED;
+import static com.jcraft.jsch.jzlib.JZlib.Z_FINISH;
+import static com.jcraft.jsch.jzlib.JZlib.Z_FULL_FLUSH;
+import static com.jcraft.jsch.jzlib.JZlib.Z_NEED_DICT;
+import static com.jcraft.jsch.jzlib.JZlib.Z_NO_COMPRESSION;
+import static com.jcraft.jsch.jzlib.JZlib.Z_NO_FLUSH;
+import static com.jcraft.jsch.jzlib.JZlib.Z_OK;
+import static com.jcraft.jsch.jzlib.JZlib.Z_STREAM_END;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;

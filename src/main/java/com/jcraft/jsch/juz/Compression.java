@@ -1,7 +1,10 @@
 package com.jcraft.jsch.juz;
 
-import com.jcraft.jsch.*;
+import com.jcraft.jsch.JSch;
+import com.jcraft.jsch.Logger;
+import com.jcraft.jsch.Session;
 import java.util.function.Supplier;
+import java.util.zip.DataFormatException;
 import java.util.zip.Deflater;
 import java.util.zip.Inflater;
 
@@ -115,7 +118,7 @@ public class Compression implements com.jcraft.jsch.Compression {
         System.arraycopy(tmpbuf, 0, inflated_buf, inflated_end, result);
         inflated_end += result;
       } while (inflater.getRemaining() > 0);
-    } catch (java.util.zip.DataFormatException e) {
+    } catch (DataFormatException e) {
       logMessage(Logger.WARN, () -> "an exception during uncompress\n" + e.toString());
     }
 

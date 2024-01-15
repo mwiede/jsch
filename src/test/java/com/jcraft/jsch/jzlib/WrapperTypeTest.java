@@ -1,12 +1,26 @@
 package com.jcraft.jsch.jzlib;
 
-import static com.jcraft.jsch.jzlib.JZlib.*;
-import static com.jcraft.jsch.jzlib.Package.*;
+import static com.jcraft.jsch.jzlib.JZlib.DEF_WBITS;
+import static com.jcraft.jsch.jzlib.JZlib.W_ANY;
+import static com.jcraft.jsch.jzlib.JZlib.W_GZIP;
+import static com.jcraft.jsch.jzlib.JZlib.W_NONE;
+import static com.jcraft.jsch.jzlib.JZlib.W_ZLIB;
+import static com.jcraft.jsch.jzlib.JZlib.Z_BEST_SPEED;
+import static com.jcraft.jsch.jzlib.JZlib.Z_DATA_ERROR;
+import static com.jcraft.jsch.jzlib.JZlib.Z_DEFAULT_COMPRESSION;
+import static com.jcraft.jsch.jzlib.JZlib.Z_NO_FLUSH;
+import static com.jcraft.jsch.jzlib.JZlib.Z_OK;
+import static com.jcraft.jsch.jzlib.JZlib.Z_STREAM_END;
+import static com.jcraft.jsch.jzlib.Package.readArray;
+import static com.jcraft.jsch.jzlib.Package.readIS;
+import static com.jcraft.jsch.jzlib.Package.uncheckedConsumer;
+import static com.jcraft.jsch.jzlib.Package.uncheckedFunction;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import com.jcraft.jsch.jzlib.JZlib.WrapperType;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;

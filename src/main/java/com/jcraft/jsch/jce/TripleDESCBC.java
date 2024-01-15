@@ -27,8 +27,10 @@
 package com.jcraft.jsch.jce;
 
 import com.jcraft.jsch.Cipher;
-import javax.crypto.*;
-import javax.crypto.spec.*;
+import javax.crypto.SecretKey;
+import javax.crypto.SecretKeyFactory;
+import javax.crypto.spec.DESedeKeySpec;
+import javax.crypto.spec.IvParameterSpec;
 
 public class TripleDESCBC implements Cipher {
   private static final int ivsize = 8;

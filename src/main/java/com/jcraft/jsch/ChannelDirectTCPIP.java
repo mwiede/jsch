@@ -26,7 +26,8 @@
 
 package com.jcraft.jsch;
 
-import java.io.*;
+import java.io.InputStream;
+import java.io.OutputStream;
 
 public class ChannelDirectTCPIP extends Channel {
 

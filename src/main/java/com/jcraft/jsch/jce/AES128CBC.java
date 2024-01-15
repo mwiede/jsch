@@ -27,7 +27,8 @@
 package com.jcraft.jsch.jce;
 
 import com.jcraft.jsch.Cipher;
-import javax.crypto.spec.*;
+import javax.crypto.spec.IvParameterSpec;
+import javax.crypto.spec.SecretKeySpec;
 
 public class AES128CBC implements Cipher {
   private static final int ivsize = 16;

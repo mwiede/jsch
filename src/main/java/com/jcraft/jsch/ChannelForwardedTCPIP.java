@@ -26,8 +26,8 @@
 
 package com.jcraft.jsch;
 
-import java.net.*;
-import java.io.*;
+import java.io.PipedOutputStream;
+import java.net.Socket;
 import java.util.Vector;
 
 public class ChannelForwardedTCPIP extends Channel {

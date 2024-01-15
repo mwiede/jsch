@@ -27,11 +27,15 @@
 package com.jcraft.jsch.jce;
 
 import java.math.BigInteger;
-import java.security.*;
-import java.security.spec.*;
-import java.security.interfaces.*;
+import java.security.KeyFactory;
+import java.security.KeyPair;
+import java.security.KeyPairGenerator;
+import java.security.PublicKey;
+import java.security.interfaces.XECPublicKey;
+import java.security.spec.NamedParameterSpec;
+import java.security.spec.XECPublicKeySpec;
 import java.util.Arrays;
-import javax.crypto.*;
+import javax.crypto.KeyAgreement;
 
 public class XDH implements com.jcraft.jsch.XDH {
   byte[] Q_array;

@@ -6,9 +6,20 @@
  * will be forwared to remote port and you can send messages from command line.
  *
  */
-import com.jcraft.jsch.*;
-import java.awt.*;
-import javax.swing.*;
+import com.jcraft.jsch.Channel;
+import com.jcraft.jsch.JSch;
+import com.jcraft.jsch.Session;
+import com.jcraft.jsch.UIKeyboardInteractive;
+import com.jcraft.jsch.UserInfo;
+import java.awt.Container;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Insets;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JPasswordField;
+import javax.swing.JTextField;
 
 public class StreamForwarding {
   public static void main(String[] arg) {

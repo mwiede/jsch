@@ -26,7 +26,11 @@
 
 package com.jcraft.jsch;
 
-import java.io.*;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.PipedInputStream;
+import java.io.PipedOutputStream;
 import java.util.Vector;
 
 public abstract class Channel {

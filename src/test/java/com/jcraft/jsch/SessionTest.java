@@ -1,6 +1,7 @@
 package com.jcraft.jsch;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertSame;
 
 import com.jcraft.jsch.JSchTest.TestLogger;
 import java.util.stream.Stream;

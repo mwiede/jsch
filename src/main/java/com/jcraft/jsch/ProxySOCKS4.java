@@ -31,8 +31,11 @@
 
 package com.jcraft.jsch;
 
-import java.io.*;
-import java.net.*;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.InetAddress;
+import java.net.Socket;
+import java.net.UnknownHostException;
 
 public class ProxySOCKS4 implements Proxy {
   private static int DEFAULTPORT = 1080;

@@ -27,9 +27,13 @@
 package com.jcraft.jsch.jce;
 
 import com.jcraft.jsch.JSchException;
-import java.security.*;
-import java.security.interfaces.*;
-import java.security.spec.*;
+import java.security.KeyPair;
+import java.security.KeyPairGenerator;
+import java.security.interfaces.ECPrivateKey;
+import java.security.interfaces.ECPublicKey;
+import java.security.spec.ECGenParameterSpec;
+import java.security.spec.ECParameterSpec;
+import java.security.spec.ECPoint;
 
 public class KeyPairGenECDSA implements com.jcraft.jsch.KeyPairGenECDSA {
   byte[] d;

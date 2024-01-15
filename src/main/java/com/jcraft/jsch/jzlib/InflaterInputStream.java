@@ -26,7 +26,10 @@
 
 package com.jcraft.jsch.jzlib;
 
-import java.io.*;
+import java.io.EOFException;
+import java.io.FilterInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 
 final class InflaterInputStream extends FilterInputStream {

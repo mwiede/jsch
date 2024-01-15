@@ -28,10 +28,16 @@ package com.jcraft.jsch.bc;
 
 import com.jcraft.jsch.Buffer;
 import java.nio.charset.StandardCharsets;
-import java.security.*;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
+import java.security.SignatureException;
 import org.bouncycastle.crypto.Signer;
-import org.bouncycastle.crypto.params.*;
-import org.bouncycastle.crypto.signers.*;
+import org.bouncycastle.crypto.params.Ed25519PrivateKeyParameters;
+import org.bouncycastle.crypto.params.Ed25519PublicKeyParameters;
+import org.bouncycastle.crypto.params.Ed448PrivateKeyParameters;
+import org.bouncycastle.crypto.params.Ed448PublicKeyParameters;
+import org.bouncycastle.crypto.signers.Ed25519Signer;
+import org.bouncycastle.crypto.signers.Ed448Signer;
 
 abstract class SignatureEdDSA implements com.jcraft.jsch.SignatureEdDSA {
 

@@ -5,8 +5,11 @@
  * and the given private-key will be re-encrypted with that new passphrase.
  *
  */
-import com.jcraft.jsch.*;
-import javax.swing.*;
+import com.jcraft.jsch.JSch;
+import com.jcraft.jsch.KeyPair;
+import javax.swing.JOptionPane;
+import javax.swing.JPasswordField;
+import javax.swing.JTextField;
 
 public class ChangePassphrase {
   public static void main(String[] arg) {

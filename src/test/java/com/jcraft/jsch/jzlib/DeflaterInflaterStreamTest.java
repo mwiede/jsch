@@ -1,6 +1,9 @@
 package com.jcraft.jsch.jzlib;
 
-import static com.jcraft.jsch.jzlib.Package.*;
+import static com.jcraft.jsch.jzlib.Package.randombuf;
+import static com.jcraft.jsch.jzlib.Package.readArray;
+import static com.jcraft.jsch.jzlib.Package.readIS;
+import static com.jcraft.jsch.jzlib.Package.uncheckedConsumer;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;

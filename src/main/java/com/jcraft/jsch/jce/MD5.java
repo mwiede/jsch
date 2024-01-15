@@ -27,8 +27,7 @@
 package com.jcraft.jsch.jce;
 
 import com.jcraft.jsch.HASH;
-
-import java.security.*;
+import java.security.MessageDigest;
 
 public class MD5 implements HASH {
   MessageDigest md;

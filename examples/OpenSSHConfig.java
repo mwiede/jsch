@@ -4,9 +4,13 @@
  * lacks of terminal-emulation, but you can issue commands.
  *
  */
-import com.jcraft.jsch.*;
-import java.awt.*;
-import javax.swing.*;
+import com.jcraft.jsch.Channel;
+import com.jcraft.jsch.ConfigRepository;
+import com.jcraft.jsch.JSch;
+import com.jcraft.jsch.Session;
+import com.jcraft.jsch.UIKeyboardInteractive;
+import com.jcraft.jsch.UserInfo;
+import javax.swing.JOptionPane;
 
 public class OpenSSHConfig {
   public static void main(String[] arg) {

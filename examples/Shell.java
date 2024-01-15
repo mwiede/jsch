@@ -4,9 +4,12 @@
  * may be ugly because of lacks of terminal-emulation, but you can issue commands.
  *
  */
-import com.jcraft.jsch.*;
-import java.awt.*;
-import javax.swing.*;
+import com.jcraft.jsch.Channel;
+import com.jcraft.jsch.JSch;
+import com.jcraft.jsch.Session;
+import com.jcraft.jsch.UIKeyboardInteractive;
+import com.jcraft.jsch.UserInfo;
+import javax.swing.JOptionPane;
 
 public class Shell {
   public static void main(String[] arg) {

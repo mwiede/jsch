@@ -4,8 +4,11 @@
  * output_keyfile+".pub". The private key and public key are in the OpenSSH format.
  *
  */
-import com.jcraft.jsch.*;
-import javax.swing.*;
+import com.jcraft.jsch.JSch;
+import com.jcraft.jsch.KeyPair;
+import javax.swing.JOptionPane;
+import javax.swing.JPasswordField;
+import javax.swing.JTextField;
 
 public class KeyGen {
   public static void main(String[] arg) {

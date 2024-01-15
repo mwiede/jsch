@@ -26,8 +26,15 @@
 
 package com.jcraft.jsch.jce;
 
-import java.security.*;
-import java.security.interfaces.*;
+import java.security.KeyPair;
+import java.security.KeyPairGenerator;
+import java.security.PrivateKey;
+import java.security.PublicKey;
+import java.security.SecureRandom;
+import java.security.interfaces.DSAKey;
+import java.security.interfaces.DSAParams;
+import java.security.interfaces.DSAPrivateKey;
+import java.security.interfaces.DSAPublicKey;
 
 public class KeyPairGenDSA implements com.jcraft.jsch.KeyPairGenDSA {
   byte[] x; // private

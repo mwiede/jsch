@@ -28,7 +28,8 @@ package com.jcraft.jsch.jce;
 
 import com.jcraft.jsch.Cipher;
 import java.nio.ByteBuffer;
-import javax.crypto.spec.*;
+import javax.crypto.spec.GCMParameterSpec;
+import javax.crypto.spec.SecretKeySpec;
 
 abstract class AESGCM implements Cipher {
   // Actually the block size, not IV size

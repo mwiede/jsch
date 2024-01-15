@@ -26,8 +26,13 @@
 
 package com.jcraft.jsch.bc;
 
-import java.security.*;
-import org.bouncycastle.crypto.params.*;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
+import org.bouncycastle.crypto.params.X25519PrivateKeyParameters;
+import org.bouncycastle.crypto.params.X25519PublicKeyParameters;
+import org.bouncycastle.crypto.params.X448PrivateKeyParameters;
+import org.bouncycastle.crypto.params.X448PublicKeyParameters;
 
 public class XDH implements com.jcraft.jsch.XDH {
   byte[] Q_array;

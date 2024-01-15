@@ -27,7 +27,7 @@
 package com.jcraft.jsch.jce;
 
 import com.jcraft.jsch.Cipher;
-import javax.crypto.spec.*;
+import javax.crypto.spec.SecretKeySpec;
 
 public class ARCFOUR256 implements Cipher {
   private static final int ivsize = 8;
