@@ -26,12 +26,12 @@
 
 package com.jcraft.jsch.jce;
 
+import com.jcraft.jsch.JSchException;
 import java.math.BigInteger;
 import java.security.*;
 import javax.crypto.*;
 import javax.crypto.interfaces.*;
 import javax.crypto.spec.*;
-import com.jcraft.jsch.JSchException;
 
 public class DH implements com.jcraft.jsch.DH {
   BigInteger p;

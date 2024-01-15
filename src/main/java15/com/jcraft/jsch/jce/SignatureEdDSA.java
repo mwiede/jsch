@@ -26,12 +26,12 @@
 
 package com.jcraft.jsch.jce;
 
+import com.jcraft.jsch.Buffer;
 import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
 import java.security.*;
 import java.security.spec.*;
 import java.util.Arrays;
-import com.jcraft.jsch.Buffer;
 
 abstract class SignatureEdDSA implements com.jcraft.jsch.SignatureEdDSA {
 

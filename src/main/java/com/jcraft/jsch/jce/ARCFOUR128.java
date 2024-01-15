@@ -27,7 +27,6 @@
 package com.jcraft.jsch.jce;
 
 import com.jcraft.jsch.Cipher;
-import javax.crypto.*;
 import javax.crypto.spec.*;
 
 public class ARCFOUR128 implements Cipher {

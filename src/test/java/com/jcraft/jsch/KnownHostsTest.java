@@ -10,6 +10,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -36,7 +37,6 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import com.jcraft.jsch.KnownHosts.HashedHostKey;
-import com.jcraft.jsch.jce.HMACSHA1;
 import com.jcraft.jsch.jce.HMACSHA256;
 import com.jcraft.jsch.jce.HMACSHA512;
 

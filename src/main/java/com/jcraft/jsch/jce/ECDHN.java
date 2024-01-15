@@ -28,9 +28,9 @@ package com.jcraft.jsch.jce;
 
 import java.math.BigInteger;
 import java.security.*;
-import javax.crypto.*;
 import java.security.spec.*;
 import java.security.interfaces.*;
+import javax.crypto.*;
 
 public class ECDHN implements com.jcraft.jsch.ECDH {
   byte[] Q_array;

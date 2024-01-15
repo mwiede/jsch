@@ -27,7 +27,6 @@
 package com.jcraft.jsch.bc;
 
 import java.security.*;
-import java.util.Arrays;
 import org.bouncycastle.crypto.params.*;
 
 public class XDH implements com.jcraft.jsch.XDH {

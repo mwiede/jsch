@@ -31,7 +31,6 @@
 package com.jcraft.jsch.jzlib;
 
 import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
 
 /**
  * @see <a href="http://www.ietf.org/rfc/rfc1952.txt">http://www.ietf.org/rfc/rfc1952.txt</a>

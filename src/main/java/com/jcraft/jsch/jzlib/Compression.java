@@ -26,11 +26,11 @@
 
 package com.jcraft.jsch.jzlib;
 
-import java.util.function.Supplier;
 import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.Logger;
 import com.jcraft.jsch.Session;
 import java.io.UncheckedIOException;
+import java.util.function.Supplier;
 
 public class Compression implements com.jcraft.jsch.Compression {
   static private final int BUF_SIZE = 4096;

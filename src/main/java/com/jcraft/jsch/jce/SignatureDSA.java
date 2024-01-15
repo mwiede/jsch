@@ -26,11 +26,11 @@
 
 package com.jcraft.jsch.jce;
 
+import com.jcraft.jsch.Buffer;
 import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
 import java.security.*;
 import java.security.spec.*;
-import com.jcraft.jsch.Buffer;
 
 public class SignatureDSA implements com.jcraft.jsch.SignatureDSA {
 

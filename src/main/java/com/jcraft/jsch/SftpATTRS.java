@@ -26,7 +26,6 @@
 
 package com.jcraft.jsch;
 
-import java.text.SimpleDateFormat;
 import java.util.Date;
 
 /*

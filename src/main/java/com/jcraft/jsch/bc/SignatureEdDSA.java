@@ -26,13 +26,12 @@
 
 package com.jcraft.jsch.bc;
 
+import com.jcraft.jsch.Buffer;
 import java.nio.charset.StandardCharsets;
 import java.security.*;
-import java.util.Arrays;
 import org.bouncycastle.crypto.Signer;
 import org.bouncycastle.crypto.params.*;
 import org.bouncycastle.crypto.signers.*;
-import com.jcraft.jsch.Buffer;
 
 abstract class SignatureEdDSA implements com.jcraft.jsch.SignatureEdDSA {
 

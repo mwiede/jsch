@@ -27,7 +27,6 @@
 package com.jcraft.jsch;
 
 import java.io.*;
-import java.util.*;
 
 public class ChannelExec extends ChannelSession {
 

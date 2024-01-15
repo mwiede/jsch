@@ -1,16 +1,15 @@
 package com.jcraft.jsch;
 
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.net.URISyntaxException;
+import java.nio.file.Paths;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.images.builder.ImageFromDockerfile;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
-
-import java.net.URISyntaxException;
-import java.nio.file.Paths;
-
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @Testcontainers
 public class KeyPairIT {

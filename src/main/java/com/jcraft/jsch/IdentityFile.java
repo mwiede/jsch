@@ -26,8 +26,6 @@
 
 package com.jcraft.jsch;
 
-import java.io.*;
-
 class IdentityFile implements Identity {
   private KeyPair kpair;
   private String identity;

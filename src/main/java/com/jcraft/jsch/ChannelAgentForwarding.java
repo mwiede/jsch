@@ -27,7 +27,6 @@
 package com.jcraft.jsch;
 
 import java.io.IOException;
-import java.net.*;
 import java.util.Vector;
 
 class ChannelAgentForwarding extends Channel {

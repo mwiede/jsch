@@ -26,10 +26,10 @@
 
 package com.jcraft.jsch.jce;
 
+import com.jcraft.jsch.Buffer;
 import java.math.BigInteger;
 import java.security.*;
 import java.security.spec.*;
-import com.jcraft.jsch.Buffer;
 
 abstract class SignatureECDSAN implements com.jcraft.jsch.SignatureECDSA {
 
