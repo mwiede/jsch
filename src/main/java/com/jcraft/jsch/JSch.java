@@ -202,6 +202,8 @@ public class JSch {
     config.put("pbkdf2-hmac-sha256", "com.jcraft.jsch.jce.PBKDF2HMACSHA256");
     config.put("pbkdf2-hmac-sha384", "com.jcraft.jsch.jce.PBKDF2HMACSHA384");
     config.put("pbkdf2-hmac-sha512", "com.jcraft.jsch.jce.PBKDF2HMACSHA512");
+    config.put("pbkdf2-hmac-sha512-224", "com.jcraft.jsch.jce.PBKDF2HMACSHA512224");
+    config.put("pbkdf2-hmac-sha512-256", "com.jcraft.jsch.jce.PBKDF2HMACSHA512256");
     config.put("bcrypt", "com.jcraft.jsch.jbcrypt.JBCrypt");
     config.put("argon2", "com.jcraft.jsch.bc.Argon2");
     config.put("scrypt", "com.jcraft.jsch.bc.SCrypt");

@@ -797,9 +797,9 @@ class KeyPairPKCS8 extends KeyPair {
     } else if (Util.array_equals(id, hmacWithSha512)) {
       name = "pbkdf2-hmac-sha512";
     } else if (Util.array_equals(id, hmacWithSha512224)) {
-      throw new JSchException("unsupported pbkdf2 function: pbkdf2-hmac-sha512-224");
+      name = "pbkdf2-hmac-sha512-224";
     } else if (Util.array_equals(id, hmacWithSha512256)) {
-      throw new JSchException("unsupported pbkdf2 function: pbkdf2-hmac-sha512-256");
+      name = "pbkdf2-hmac-sha512-256";
     }
 
     if (name == null) {
