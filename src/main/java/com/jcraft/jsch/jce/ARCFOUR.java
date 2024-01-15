@@ -46,7 +46,6 @@ public class ARCFOUR implements Cipher {
 
   @Override
   public void init(int mode, byte[] key, byte[] iv) throws Exception {
-    String pad = "NoPadding";
     byte[] tmp;
     if (key.length > bsize) {
       tmp = new byte[bsize];
