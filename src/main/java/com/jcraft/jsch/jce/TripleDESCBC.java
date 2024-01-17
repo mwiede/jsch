@@ -49,8 +49,6 @@ public class TripleDESCBC implements Cipher {
 
   @Override
   public void init(int mode, byte[] key, byte[] iv) throws Exception {
-    String pad = "NoPadding";
-    // if(padding) pad="PKCS5Padding";
     byte[] tmp;
     if (iv.length > ivsize) {
       tmp = new byte[ivsize];
@@ -64,7 +62,7 @@ public class TripleDESCBC implements Cipher {
     }
 
     try {
-      cipher = javax.crypto.Cipher.getInstance("DESede/CBC/" + pad);
+      cipher = javax.crypto.Cipher.getInstance("DESede/CBC/NoPadding");
       /*
        * // The following code does not work on IBM's JDK 1.4.1 SecretKeySpec skeySpec = new
        * SecretKeySpec(key, "DESede"); cipher.init((mode==ENCRYPT_MODE?

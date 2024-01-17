@@ -53,7 +53,6 @@ abstract class AESGCM implements Cipher {
 
   @Override
   public void init(int mode, byte[] key, byte[] iv) throws Exception {
-    String pad = "NoPadding";
     byte[] tmp;
     if (iv.length > 12) {
       tmp = new byte[12];
@@ -72,7 +71,7 @@ abstract class AESGCM implements Cipher {
     this.initcounter = this.iv.getLong(4);
     try {
       keyspec = new SecretKeySpec(key, "AES");
-      cipher = javax.crypto.Cipher.getInstance("AES/GCM/" + pad);
+      cipher = javax.crypto.Cipher.getInstance("AES/GCM/NoPadding");
       cipher.init(this.mode, keyspec, new GCMParameterSpec(tagsize * 8, iv));
     } catch (Exception e) {
       cipher = null;

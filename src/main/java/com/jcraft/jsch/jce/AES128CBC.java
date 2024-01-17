@@ -47,7 +47,6 @@ public class AES128CBC implements Cipher {
 
   @Override
   public void init(int mode, byte[] key, byte[] iv) throws Exception {
-    String pad = "NoPadding";
     byte[] tmp;
     if (iv.length > ivsize) {
       tmp = new byte[ivsize];
@@ -62,7 +61,7 @@ public class AES128CBC implements Cipher {
 
     try {
       SecretKeySpec keyspec = new SecretKeySpec(key, "AES");
-      cipher = javax.crypto.Cipher.getInstance("AES/CBC/" + pad);
+      cipher = javax.crypto.Cipher.getInstance("AES/CBC/NoPadding");
       cipher.init((mode == ENCRYPT_MODE ? javax.crypto.Cipher.ENCRYPT_MODE
           : javax.crypto.Cipher.DECRYPT_MODE), keyspec, new IvParameterSpec(iv));
     } catch (Exception e) {
