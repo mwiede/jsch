@@ -26,14 +26,14 @@
 
 package com.jcraft.jsch.jce;
 
-import com.jcraft.jsch.Cipher;
+import javax.crypto.Cipher;
 import javax.crypto.spec.SecretKeySpec;
 
-public class ARCFOUR256 implements Cipher {
+public class ARCFOUR256 implements com.jcraft.jsch.Cipher {
   private static final int ivsize = 8;
   private static final int bsize = 32;
   private static final int skip = 1536;
-  private javax.crypto.Cipher cipher;
+  private Cipher cipher;
 
   @Override
   public int getIVSize() {
@@ -54,10 +54,11 @@ public class ARCFOUR256 implements Cipher {
       key = tmp;
     }
     try {
-      cipher = javax.crypto.Cipher.getInstance("RC4");
+      cipher = Cipher.getInstance("RC4");
       SecretKeySpec _key = new SecretKeySpec(key, "RC4");
-      cipher.init((mode == ENCRYPT_MODE ? javax.crypto.Cipher.ENCRYPT_MODE
-          : javax.crypto.Cipher.DECRYPT_MODE), _key);
+      cipher.init(
+          (mode == com.jcraft.jsch.Cipher.ENCRYPT_MODE ? Cipher.ENCRYPT_MODE : Cipher.DECRYPT_MODE),
+          _key);
       byte[] foo = new byte[1];
       for (int i = 0; i < skip; i++) {
         cipher.update(foo, 0, 1, foo, 0);
