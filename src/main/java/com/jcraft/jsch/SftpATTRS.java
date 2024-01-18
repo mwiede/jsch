@@ -26,7 +26,11 @@
 
 package com.jcraft.jsch;
 
-import java.util.Date;
+import java.time.Instant;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.Locale;
 
 /*
  * uint32 flags uint64 size present only if flag SSH_FILEXFER_ATTR_SIZE uint32 uid present only if
@@ -122,13 +126,20 @@ public class SftpATTRS {
   }
 
   public String getAtimeString() {
-    Date date = new Date(((long) atime) * 1000L);
-    return (date.toString());
+    return toDateString(Integer.toUnsignedLong(atime));
   }
 
   public String getMtimeString() {
-    Date date = new Date(((long) mtime) * 1000L);
-    return (date.toString());
+    return toDateString(Integer.toUnsignedLong(mtime));
+  }
+
+  private static DateTimeFormatter DTF =
+      DateTimeFormatter.ofPattern("EEE MMM dd HH:mm:ss zzz yyyy", Locale.ROOT);
+
+  static String toDateString(long epochSeconds) {
+    Instant instant = Instant.ofEpochSecond(epochSeconds);
+    ZonedDateTime zdt = ZonedDateTime.ofInstant(instant, ZoneId.systemDefault());
+    return DTF.format(zdt);
   }
 
   public static final int SSH_FILEXFER_ATTR_SIZE = 0x00000001;
