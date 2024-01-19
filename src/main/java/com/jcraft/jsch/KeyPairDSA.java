@@ -165,7 +165,6 @@ class KeyPairDSA extends KeyPair {
         publicKeyComment = Util.byte2str(prvKEyBuffer.getString());
         // if(P_array!=null) key_size = (new BigInteger(P_array)).bitLength();
         return true;
-
       }
 
       int index = 0;

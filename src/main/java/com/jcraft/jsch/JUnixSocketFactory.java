@@ -31,8 +31,8 @@ import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
 import java.nio.file.Path;
 import org.newsclub.net.unix.AFUNIXServerSocketChannel;
-import org.newsclub.net.unix.AFUNIXSocketChannel;
 import org.newsclub.net.unix.AFUNIXSocketAddress;
+import org.newsclub.net.unix.AFUNIXSocketChannel;
 
 public class JUnixSocketFactory implements USocketFactory {
 

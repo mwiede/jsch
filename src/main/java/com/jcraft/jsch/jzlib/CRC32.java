@@ -37,6 +37,7 @@ final class CRC32 implements Checksum {
    */
   private int v = 0;
   private static int[] crc_table = null;
+
   static {
     crc_table = new int[256];
     for (int n = 0; n < 256; n++) {

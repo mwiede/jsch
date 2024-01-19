@@ -2,7 +2,6 @@
  * This program will demonstrate the packet compression. You will be asked username, hostname and
  * passwd. If everything works fine, you will get the shell prompt. In this program, all data from
  * sshd server to jsch will be compressed.
- *
  */
 import com.jcraft.jsch.Channel;
 import com.jcraft.jsch.JSch;
@@ -152,5 +151,3 @@ public class Compression {
     }
   }
 }
-
-

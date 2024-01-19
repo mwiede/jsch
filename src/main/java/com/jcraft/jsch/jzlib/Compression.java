@@ -33,7 +33,7 @@ import java.io.UncheckedIOException;
 import java.util.function.Supplier;
 
 public class Compression implements com.jcraft.jsch.Compression {
-  static private final int BUF_SIZE = 4096;
+  private static final int BUF_SIZE = 4096;
   private final int buffer_margin = 32 + 20; // AES256 + HMACSHA1
   private Deflater deflater;
   private Inflater inflater;

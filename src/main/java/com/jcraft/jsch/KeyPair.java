@@ -41,6 +41,7 @@ public abstract class KeyPair {
 
   /** DEFERRED should not be be used. */
   public static final int DEFERRED = -1;
+
   public static final int ERROR = 0;
   public static final int DSA = 1;
   public static final int RSA = 2;
@@ -1221,13 +1222,13 @@ public abstract class KeyPair {
         && ident.equals(Util.byte2str(Arrays.copyOfRange(buf, i, i + ident.length())));
   }
 
-  static private byte a2b(byte c) {
+  private static byte a2b(byte c) {
     if ('0' <= c && c <= '9')
       return (byte) (c - '0');
     return (byte) (c - 'a' + 10);
   }
 
-  static private byte b2a(byte c) {
+  private static byte b2a(byte c) {
     if (0 <= c && c <= 9)
       return (byte) (c + '0');
     return (byte) (c - 10 + 'A');

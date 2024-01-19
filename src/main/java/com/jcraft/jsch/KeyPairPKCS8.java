@@ -122,7 +122,6 @@ class KeyPairPKCS8 extends KeyPair {
   private static final byte[] pbeWithSHA1AndRC2CBC = {(byte) 0x2a, (byte) 0x86, (byte) 0x48,
       (byte) 0x86, (byte) 0xf7, (byte) 0x0d, (byte) 0x01, (byte) 0x05, (byte) 0x0b};
 
-
   private KeyPair kpair = null;
 
   KeyPairPKCS8(JSch.InstanceLogger instLogger) {

@@ -3,7 +3,6 @@
  * to host2 and host3. java JumpHosts usr1@host1 usr2@host2 usr3@host3. You will be asked passwords
  * for those destinations. If everything works fine, you will get file lists of your home-directory
  * at host3.
- *
  */
 import com.jcraft.jsch.ChannelSftp;
 import com.jcraft.jsch.JSch;

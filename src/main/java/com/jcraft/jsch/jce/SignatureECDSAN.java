@@ -108,7 +108,7 @@ abstract class SignatureECDSAN implements SignatureECDSA {
     // so we have to convert it.
     if (sig[0] == 0x30 && // in ASN.1
         ((sig[1] + 2 == sig.length)
-            || ((sig[1] & 0x80) != 0 && (sig[2] & 0xff) + 3 == sig.length))) {// 2bytes for len
+            || ((sig[1] & 0x80) != 0 && (sig[2] & 0xff) + 3 == sig.length))) { // 2bytes for len
 
       int index = 3;
       if ((sig[1] & 0x80) != 0 && (sig[2] & 0xff) + 3 == sig.length)

@@ -4,7 +4,6 @@
  * command, but you don't have to assign and open a local tcp port. You will be asked username,
  * hostname, host:hostport and passwd. If everything works fine, System.in and System.out streams
  * will be forwared to remote port and you can send messages from command line.
- *
  */
 import com.jcraft.jsch.Channel;
 import com.jcraft.jsch.JSch;
@@ -155,5 +154,3 @@ public class StreamForwarding {
     }
   }
 }
-
-

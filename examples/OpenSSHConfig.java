@@ -2,7 +2,6 @@
  * This program demonsrates how to use OpenSSHConfig class. You will be asked username, hostname and
  * passwd. If everything works fine, you will get the shell prompt. Output may be ugly because of
  * lacks of terminal-emulation, but you can issue commands.
- *
  */
 import com.jcraft.jsch.Channel;
 import com.jcraft.jsch.ConfigRepository;
@@ -100,7 +99,7 @@ public class OpenSSHConfig {
     }
   }
 
-  public static abstract class MyUserInfo implements UserInfo, UIKeyboardInteractive {
+  public abstract static class MyUserInfo implements UserInfo, UIKeyboardInteractive {
     @Override
     public String getPassword() {
       return null;

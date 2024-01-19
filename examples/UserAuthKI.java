@@ -1,7 +1,6 @@
 /**
  * This program will demonstrate the keyboard-interactive authentication. If the remote sshd
  * supports keyboard-interactive authentication, you will be prompted.
- *
  */
 import com.jcraft.jsch.Channel;
 import com.jcraft.jsch.JSch;

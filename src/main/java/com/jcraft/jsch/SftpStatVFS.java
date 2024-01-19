@@ -71,8 +71,8 @@ public class SftpStatVFS {
     int flag = (int) buf.getLong();
     statvfs.namemax = buf.getLong();
 
-    statvfs.flag = (flag & 1/* SSH2_FXE_STATVFS_ST_RDONLY */) != 0 ? 1/* ST_RDONLY */ : 0;
-    statvfs.flag |= (flag & 2/* SSH2_FXE_STATVFS_ST_NOSUID */) != 0 ? 2/* ST_NOSUID */ : 0;
+    statvfs.flag = (flag & 1 /* SSH2_FXE_STATVFS_ST_RDONLY */) != 0 ? 1 /* ST_RDONLY */ : 0;
+    statvfs.flag |= (flag & 2 /* SSH2_FXE_STATVFS_ST_NOSUID */) != 0 ? 2 /* ST_NOSUID */ : 0;
 
     return statvfs;
   }

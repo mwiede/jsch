@@ -41,8 +41,8 @@ import java.util.Vector;
 
 public class ChannelSftp extends ChannelSession {
 
-  static private final int LOCAL_MAXIMUM_PACKET_SIZE = 32 * 1024;
-  static private final int LOCAL_WINDOW_SIZE_MAX = (64 * LOCAL_MAXIMUM_PACKET_SIZE);
+  private static final int LOCAL_MAXIMUM_PACKET_SIZE = 32 * 1024;
+  private static final int LOCAL_WINDOW_SIZE_MAX = (64 * LOCAL_MAXIMUM_PACKET_SIZE);
 
   private static final byte SSH_FXP_INIT = 1;
   private static final byte SSH_FXP_VERSION = 2;
@@ -1076,12 +1076,10 @@ public class ChannelSftp extends ChannelSession {
         length -= 4;
         int length_of_data = buf.getInt(); // length of data
 
-        /**
-         * Since sftp protocol version 6, "end-of-file" has been defined,
-         *
-         * byte SSH_FXP_DATA uint32 request-id string data bool end-of-file [optional]
-         *
-         * but some sftpd server will send such a field in the sftp protocol 3 ;-(
+        /*
+         * Since sftp protocol version 6, "end-of-file" has been defined, byte SSH_FXP_DATA uint32
+         * request-id string data bool end-of-file [optional] but some sftpd server will send such a
+         * field in the sftp protocol 3 ;-(
          */
         int optional_data = length - length_of_data;
 
@@ -1110,7 +1108,6 @@ public class ChannelSftp extends ChannelSession {
               break loop;
             }
           }
-
         }
         // System.err.println("length: "+length); // length should be 0
 
@@ -1143,7 +1140,6 @@ public class ChannelSftp extends ChannelSession {
     }
   }
 
-
   private class RequestQueue {
     class OutOfOrderException extends Exception {
       private static final long serialVersionUID = -1L;
@@ -1153,6 +1149,7 @@ public class ChannelSftp extends ChannelSession {
         this.offset = offset;
       }
     }
+
     class Request {
       int id;
       long offset;
@@ -1435,12 +1432,10 @@ public class ChannelSftp extends ChannelSession {
           int length_of_data = buf.getInt();
           rest_length -= 4;
 
-          /**
-           * Since sftp protocol version 6, "end-of-file" has been defined,
-           *
-           * byte SSH_FXP_DATA uint32 request-id string data bool end-of-file [optional]
-           *
-           * but some sftpd server will send such a field in the sftp protocol 3 ;-(
+          /*
+           * Since sftp protocol version 6, "end-of-file" has been defined, byte SSH_FXP_DATA uint32
+           * request-id string data bool end-of-file [optional] but some sftpd server will send such
+           * a field in the sftp protocol 3 ;-(
            */
           int optional_data = rest_length - length_of_data;
 
@@ -1593,7 +1588,6 @@ public class ChannelSftp extends ChannelSession {
             _pattern = Util.unquote(_pattern);
             pattern = Util.str2byte(_pattern, fEncoding);
           }
-
         }
       }
 
@@ -2522,7 +2516,7 @@ public class ChannelSftp extends ChannelSession {
   }
 
   private void sendOPENA(byte[] path) throws Exception {
-    sendOPEN(path, SSH_FXF_WRITE | /* SSH_FXF_APPEND| */SSH_FXF_CREAT);
+    sendOPEN(path, SSH_FXF_WRITE | /* SSH_FXF_APPEND | */ SSH_FXF_CREAT);
   }
 
   private void sendOPEN(byte[] path, int mode) throws Exception {
@@ -3034,7 +3028,6 @@ public class ChannelSftp extends ChannelSession {
     public final int BREAK = 1;
 
     /**
-     * <p>
      * The <code>select</code> method will be invoked in <code>ls</code> method for each file entry.
      * If this method returns BREAK, <code>ls</code> will be canceled.
      *

@@ -1,7 +1,4 @@
-/**
- * This program will demonstrate how to enable logging mechanism and get logging messages.
- *
- */
+/** This program will demonstrate how to enable logging mechanism and get logging messages. */
 import com.jcraft.jsch.Channel;
 import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.Session;
@@ -55,6 +52,7 @@ public class Logger {
 
   public static class MyLogger implements com.jcraft.jsch.Logger {
     static java.util.Map<Integer, String> name = new java.util.HashMap<>();
+
     static {
       name.put(DEBUG, "DEBUG: ");
       name.put(INFO, "INFO: ");
@@ -169,5 +167,3 @@ public class Logger {
     }
   }
 }
-
-

@@ -11,6 +11,9 @@ import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
+import com.jcraft.jsch.KnownHosts.HashedHostKey;
+import com.jcraft.jsch.jce.HMACSHA256;
+import com.jcraft.jsch.jce.HMACSHA512;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -36,22 +39,19 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import com.jcraft.jsch.KnownHosts.HashedHostKey;
-import com.jcraft.jsch.jce.HMACSHA256;
-import com.jcraft.jsch.jce.HMACSHA512;
 
 class KnownHostsTest {
-  private final static String rsaKey =
+  private static final String rsaKey =
       "AAAAB3NzaC1yc2EAAAABIwAAAQEAq2A7hRGmdnm9tUDbO9IDSwBK6TbQa+PXYPCPy6rbTrTtw7PHkc"
           + "cKrpp0yVhp5HdEIcKr6pLlVDBfOLX9QUsyCOV0wzfjIJNlGEYsdlLJizHhbn2mUjvSAHQqZETYP81e"
           + "FzLQNnPHt4EVVUh7VfDESU84KezmD5QlWpXLmvU31/yMf+Se8xhHTvKSCZIFImWwoG6mbUoWf9nzpI"
           + "oaSjB+weqqUUmpaaasXVal72J+UX2B+2RPW3RcT0eOzQgqlJL3RKrTJvdsjE3JEAvGq3lGHSZXy28G"
           + "3skua2SmVi/w4yCE6gbODqnTWlg7+wC604ydGXA8VJiS5ap43JXiUFFAaQ==";
-  private final static String hashValue =
+  private static final String hashValue =
       "|1|F1E1KeoE/eEWhi10WpGv4OdiO6Y=|3988QV0VE8wmZL7suNrYQLITLCg=";
-  private final static String hostLine = "ssh.example.com,192.168.1.61";
-  private final static byte[] dsaKeyBytes = Util.str2byte("    ssh-dsa");
-  private final static byte[] rsaKeyBytes = Util.str2byte("    ssh-rsa");
+  private static final String hostLine = "ssh.example.com,192.168.1.61";
+  private static final byte[] dsaKeyBytes = Util.str2byte("    ssh-dsa");
+  private static final byte[] rsaKeyBytes = Util.str2byte("    ssh-rsa");
   private LinkedList<String> messages;
   private JSch jsch;
   private Hashtable<String, String> orgConfig;
@@ -201,7 +201,6 @@ class KnownHostsTest {
     assertEquals(HMACSHA512.class.getName(), kh.hmacsha1.getClass().getName(),
         "hmac class mismatch");
     assertEquals("", messages.stream().collect(Collectors.joining("\r\n")));
-
   }
 
   @Test
@@ -977,7 +976,6 @@ class KnownHostsTest {
     assertEquals(1, hosts.length, "unexpected number of host keys: " + getHostKeysString(hosts));
     assertEquals("[192.277.325.5]:123: key type ssh-rsa", getHostKeysString(hosts),
         "unexpected hosts");
-
   }
 
   private String getMessagesAsString() {
@@ -1142,5 +1140,4 @@ class KnownHostsTest {
       return true;
     }
   }
-
 }

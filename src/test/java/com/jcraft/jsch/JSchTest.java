@@ -64,7 +64,7 @@ class JSchTest {
     assertSame(JSch.DEVNULL, jsch.getInstanceLogger(), "instance logger should be DEVNULL");
   }
 
-  final static class TestLogger implements Logger {
+  static final class TestLogger implements Logger {
     @Override
     public boolean isEnabled(int level) {
       return true;

@@ -26,14 +26,12 @@
 
 package com.jcraft.jsch.jce;
 
-import java.security.spec.InvalidKeySpecException;
 import java.security.NoSuchAlgorithmException;
-import javax.crypto.spec.PBEKeySpec;
+import java.security.spec.InvalidKeySpecException;
 import javax.crypto.SecretKeyFactory;
+import javax.crypto.spec.PBEKeySpec;
 
-/**
- * Use PBKDF2 instead.
- */
+/** Use PBKDF2 instead. */
 @Deprecated
 public class PBKDF implements com.jcraft.jsch.PBKDF {
   @Override

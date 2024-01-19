@@ -123,9 +123,7 @@ class IdentityFile implements Identity {
     return kpair.isEncrypted();
   }
 
-  /**
-   * Disposes internally allocated data, like byte array for the private key.
-   */
+  /** Disposes internally allocated data, like byte array for the private key. */
   @Override
   public void clear() {
     kpair.dispose();

@@ -3,7 +3,6 @@
  * hostname, a path for 'known_hosts' and passwd. If everything works fine, you will get the shell
  * prompt. In current implementation, jsch only reads 'known_hosts' for checking and does not modify
  * it.
- *
  */
 import com.jcraft.jsch.Channel;
 import com.jcraft.jsch.HostKey;
@@ -173,5 +172,3 @@ public class KnownHosts {
     }
   }
 }
-
-

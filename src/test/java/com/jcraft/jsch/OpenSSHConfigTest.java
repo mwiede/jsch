@@ -88,5 +88,4 @@ class OpenSSHConfigTest {
     ConfigRepository.Config kex = parse.getConfig("");
     assertEquals("diffie-hellman-group1-sha1", kex.getValue("kex"));
   }
-
 }

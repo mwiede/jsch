@@ -40,7 +40,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Properties;
 import java.util.Vector;
-
 import javax.crypto.AEADBadTagException;
 
 public class Session {
@@ -1597,7 +1596,6 @@ public class Session {
     }
   }
 
-
   /*
    * RFC 4253 7.2. Output from Key Exchange If the key length needed is longer than the output of
    * the HASH, the key is extended by computing HASH of the concatenation of K and H and the entire
@@ -1639,7 +1637,6 @@ public class Session {
         continue;
       }
       synchronized (c) {
-
         if (c.rwsize < length) {
           try {
             c.notifyme++;
@@ -1658,7 +1655,6 @@ public class Session {
           c.rwsize -= length;
           break;
         }
-
       }
       if (c.close || !c.isConnected()) {
         throw new IOException("channel is broken");
@@ -1786,7 +1782,7 @@ public class Session {
         try {
           buf = read(buf);
           stimeout = 0;
-        } catch (InterruptedIOException/* SocketTimeoutException */ ee) {
+        } catch (InterruptedIOException /* SocketTimeoutException */ ee) {
           if (!in_kex && stimeout < serverAliveCountMax) {
             sendKeepAliveMsg();
             stimeout++;
@@ -3292,7 +3288,6 @@ public class Session {
     if (value != null) {
       setConfig("ClearAllForwardings", value);
     }
-
   }
 
   private void applyConfigChannel(ChannelSession channel) throws JSchException {

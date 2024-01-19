@@ -1,7 +1,4 @@
-/**
- * This program will demonstrate how to use the Subsystem channel.
- *
- */
+/** This program will demonstrate how to use the Subsystem channel. */
 import com.jcraft.jsch.Channel;
 import com.jcraft.jsch.ChannelSubsystem;
 import com.jcraft.jsch.JSch;

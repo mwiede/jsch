@@ -3,9 +3,7 @@ package com.jcraft.jsch;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/**
- * JSch logger to log entries using the SLF4J framework
- */
+/** JSch logger to log entries using the SLF4J framework */
 public class Slf4jLogger implements com.jcraft.jsch.Logger {
 
   private static final Logger logger = LoggerFactory.getLogger(JSch.class);

@@ -1,7 +1,4 @@
-/**
- * This program will demonstrate how to exec 'sudo' on the remote.
- *
- */
+/** This program will demonstrate how to exec 'sudo' on the remote. */
 import com.jcraft.jsch.Channel;
 import com.jcraft.jsch.ChannelExec;
 import com.jcraft.jsch.JSch;
@@ -64,7 +61,6 @@ public class Sudo {
       // -p The -p (prompt) option allows you to override the default
       // password prompt and use a custom one.
       ((ChannelExec) channel).setCommand("sudo -S -p '' " + command);
-
 
       InputStream in = channel.getInputStream();
       OutputStream out = channel.getOutputStream();

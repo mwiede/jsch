@@ -2,7 +2,6 @@
  * This program will demonstrate the user authentification by public key. You will be asked
  * username, hostname, privatekey(id_dsa) and passphrase. If everything works fine, you will get the
  * shell prompt.
- *
  */
 import com.jcraft.jsch.Channel;
 import com.jcraft.jsch.JSch;
@@ -64,7 +63,6 @@ public class UserAuthPubKey {
       System.out.println(e);
     }
   }
-
 
   public static class MyUserInfo implements UserInfo, UIKeyboardInteractive {
     @Override

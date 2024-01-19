@@ -2,7 +2,6 @@
  * This program enables you to connect to sshd server and get the shell prompt. You will be asked
  * username, hostname and passwd. If everything works fine, you will get the shell prompt. Output
  * may be ugly because of lacks of terminal-emulation, but you can issue commands.
- *
  */
 import com.jcraft.jsch.Channel;
 import com.jcraft.jsch.JSch;
@@ -94,7 +93,7 @@ public class Shell {
     }
   }
 
-  public static abstract class MyUserInfo implements UserInfo, UIKeyboardInteractive {
+  public abstract static class MyUserInfo implements UserInfo, UIKeyboardInteractive {
     @Override
     public String getPassword() {
       return null;

@@ -178,5 +178,4 @@ class KeyPairTest {
     assertTrue(identity.getKeyPair().decrypt((byte[]) null));
     assertTrue(identity.getKeyPair().decrypt((String) null));
   }
-
 }

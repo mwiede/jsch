@@ -31,9 +31,9 @@ import java.io.OutputStream;
 
 public class ChannelDirectTCPIP extends Channel {
 
-  static private final int LOCAL_WINDOW_SIZE_MAX = 0x20000;
-  static private final int LOCAL_MAXIMUM_PACKET_SIZE = 0x4000;
-  static private final byte[] _type = Util.str2byte("direct-tcpip");
+  private static final int LOCAL_WINDOW_SIZE_MAX = 0x20000;
+  private static final int LOCAL_MAXIMUM_PACKET_SIZE = 0x4000;
+  private static final byte[] _type = Util.str2byte("direct-tcpip");
   String host;
   int port;
 

@@ -201,7 +201,6 @@ class KeyPairECDSA extends KeyPair {
         prvKeyBuffer.getByte(x);
         prvKeyBuffer.getByte(y);
 
-
         prv_array = prvKeyBuffer.getString();
         publicKeyComment = Util.byte2str(prvKeyBuffer.getString());
         r_array = x;
@@ -209,7 +208,6 @@ class KeyPairECDSA extends KeyPair {
         key_size = x.length >= 64 ? 521 : (x.length >= 48 ? 384 : 256);
 
         return true;
-
       }
 
       int index = 0;

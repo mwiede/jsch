@@ -1,7 +1,6 @@
 /**
  * This program will demonstrate the file transfer from remote to local. If everything works fine, a
  * file 'file1' on 'remotehost' will copied to local 'file1'.
- *
  */
 import com.jcraft.jsch.Channel;
 import com.jcraft.jsch.ChannelExec;

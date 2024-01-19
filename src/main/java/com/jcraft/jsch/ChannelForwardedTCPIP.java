@@ -34,11 +34,11 @@ public class ChannelForwardedTCPIP extends Channel {
 
   private static Vector<Config> pool = new Vector<>();
 
-  static private final int LOCAL_WINDOW_SIZE_MAX = 0x20000;
+  private static final int LOCAL_WINDOW_SIZE_MAX = 0x20000;
   // static private final int LOCAL_WINDOW_SIZE_MAX=0x100000;
-  static private final int LOCAL_MAXIMUM_PACKET_SIZE = 0x4000;
+  private static final int LOCAL_MAXIMUM_PACKET_SIZE = 0x4000;
 
-  static private final int TIMEOUT = 10 * 1000;
+  private static final int TIMEOUT = 10 * 1000;
 
   private Socket socket = null;
   private ForwardedTCPIPDaemon daemon = null;
@@ -278,7 +278,7 @@ public class ChannelForwardedTCPIP extends Channel {
       // string address_to_bind (e.g. "127.0.0.1")
       // uint32 port number to bind
       packet.reset();
-      buf.putByte((byte) 80/* SSH_MSG_GLOBAL_REQUEST */);
+      buf.putByte((byte) 80 /* SSH_MSG_GLOBAL_REQUEST */);
       buf.putString(Util.str2byte("cancel-tcpip-forward"));
       buf.putByte((byte) 0);
       buf.putString(Util.str2byte(address_to_bind));
@@ -315,7 +315,7 @@ public class ChannelForwardedTCPIP extends Channel {
       ((ConfigLHost) config).factory = factory;
   }
 
-  static abstract class Config {
+  abstract static class Config {
     Session session;
     int rport;
     int allocated_rport;

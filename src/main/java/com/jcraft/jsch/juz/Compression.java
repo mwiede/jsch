@@ -11,6 +11,7 @@ import java.util.zip.Inflater;
 /**
  * This example demonstrates the packet compression without using jzlib[1].
  *
+ * <p>
  * The ssh protocol adopts zlib[2] for the packet compression. Fortunately, JDK has provided wrapper
  * classes for zlib(j.u.z.{Deflater, Inflater}), but it does not expose enough functionality of
  * zlib, unfortunately; it must not allow to compress data with SYNC_FLUSH. So, JSch has been using
@@ -18,12 +19,12 @@ import java.util.zip.Inflater;
  * j.u.z.Deflater, and SYNC_FLUSH has been supported at last. This example shows how to enable the
  * packet compression by using JDK's java.util.zip package.
  *
- *
+ * <p>
  * [1] http://www.jcraft.com/jzlib/ [2] http://www.zlib.net/ [3]
  * https://bugs.openjdk.java.net/browse/JDK-4206909
  */
 public class Compression implements com.jcraft.jsch.Compression {
-  static private final int BUF_SIZE = 4096;
+  private static final int BUF_SIZE = 4096;
   private final int buffer_margin = 32 + 20; // AES256 + HMACSHA1
   private Deflater deflater;
   private Inflater inflater;

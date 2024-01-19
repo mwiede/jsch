@@ -32,10 +32,10 @@ import java.util.Hashtable;
 
 class ChannelX11 extends Channel {
 
-  static private final int LOCAL_WINDOW_SIZE_MAX = 0x20000;
-  static private final int LOCAL_MAXIMUM_PACKET_SIZE = 0x4000;
+  private static final int LOCAL_WINDOW_SIZE_MAX = 0x20000;
+  private static final int LOCAL_MAXIMUM_PACKET_SIZE = 0x4000;
 
-  static private final int TIMEOUT = 10 * 1000;
+  private static final int TIMEOUT = 10 * 1000;
 
   private static String host = "127.0.0.1";
   private static int port = 6000;

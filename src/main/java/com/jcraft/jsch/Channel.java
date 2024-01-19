@@ -271,7 +271,6 @@ public abstract class Channel {
         } catch (JSchException e) {
           throw new IOException("failed to initialize the channel.", e);
         }
-
       }
 
       byte[] b = new byte[1];
@@ -340,7 +339,6 @@ public abstract class Channel {
           close();
           throw new IOException(e.toString(), e);
         }
-
       }
 
       @Override
@@ -701,6 +699,7 @@ public abstract class Channel {
       this.os = null;
     }
   }
+
   static class PassiveOutputStream extends PipedOutputStream {
     private MyPipedInputStream _sink = null;
 

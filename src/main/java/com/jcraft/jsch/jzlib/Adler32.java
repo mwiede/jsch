@@ -33,9 +33,9 @@ package com.jcraft.jsch.jzlib;
 final class Adler32 implements Checksum {
 
   // largest prime smaller than 65536
-  static final private int BASE = 65521;
+  private static final int BASE = 65521;
   // NMAX is the largest n such that 255n(n+1)/2 + (n+1)(BASE-1) <= 2^32-1
-  static final private int NMAX = 5552;
+  private static final int NMAX = 5552;
 
   private long s1 = 1L;
   private long s2 = 0L;

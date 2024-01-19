@@ -2,7 +2,6 @@
  * This program will demonstrate remote exec. You will be asked username, hostname, displayname,
  * passwd and command. If everything works fine, given command will be invoked on the remote side
  * and outputs will be printed out.
- *
  */
 import com.jcraft.jsch.Channel;
 import com.jcraft.jsch.ChannelExec;

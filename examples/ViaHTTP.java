@@ -1,7 +1,6 @@
 /**
  * This program will demonstrate the ssh session via HTTP proxy. You will be asked username,
  * hostname, proxy-server and passwd. If everything works fine, you will get the shell prompt.
- *
  */
 import com.jcraft.jsch.Channel;
 import com.jcraft.jsch.JSch;
@@ -156,7 +155,4 @@ public class ViaHTTP {
       }
     }
   }
-
 }
-
-

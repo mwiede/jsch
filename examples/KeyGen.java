@@ -2,7 +2,6 @@
  * This progam will demonstrate the keypair generation. You will be asked a passphrase for
  * output_keyfile. If everything works fine, you will get the keypair, output_keyfile and
  * output_keyfile+".pub". The private key and public key are in the OpenSSH format.
- *
  */
 import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.KeyPair;

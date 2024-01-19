@@ -2,7 +2,6 @@
  * This program will demonstrate X11 forwarding. You will be asked username, hostname, displayname
  * and passwd. If your X server does not run at 127.0.0.1, please enter correct displayname. If
  * everything works fine, you will get the shell prompt. Try X applications; for example, xlogo.
- *
  */
 import com.jcraft.jsch.Channel;
 import com.jcraft.jsch.JSch;
@@ -160,5 +159,3 @@ public class X11Forwarding {
     }
   }
 }
-
-

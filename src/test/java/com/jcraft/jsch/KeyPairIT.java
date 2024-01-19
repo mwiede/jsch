@@ -38,7 +38,6 @@ public class KeyPairIT {
     } finally {
       session.disconnect();
     }
-
   }
 
   @ParameterizedTest
@@ -79,9 +78,7 @@ public class KeyPairIT {
       }
 
       @Override
-      public void showMessage(String message) {
-
-      }
+      public void showMessage(String message) {}
     });
 
     if (keyType != null) {
@@ -93,7 +90,6 @@ public class KeyPairIT {
     } finally {
       session.disconnect();
     }
-
   }
 
   private JSch createIdentity(String path, String password)

@@ -1,7 +1,6 @@
 /**
  * This program will demonstrate how to provide a network service like inetd by using remote
  * port-forwarding functionality.
- *
  */
 import com.jcraft.jsch.ChannelForwardedTCPIP;
 import com.jcraft.jsch.ForwardedTCPIPDaemon;
