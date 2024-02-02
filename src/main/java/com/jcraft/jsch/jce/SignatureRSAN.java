@@ -26,15 +26,20 @@
 
 package com.jcraft.jsch.jce;
 
+import com.jcraft.jsch.Buffer;
+import com.jcraft.jsch.SignatureRSA;
 import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
-import java.security.*;
-import java.security.spec.*;
-import com.jcraft.jsch.Buffer;
+import java.security.KeyFactory;
+import java.security.PrivateKey;
+import java.security.PublicKey;
+import java.security.Signature;
+import java.security.spec.RSAPrivateKeySpec;
+import java.security.spec.RSAPublicKeySpec;
 
-abstract class SignatureRSAN implements com.jcraft.jsch.SignatureRSA {
+abstract class SignatureRSAN implements SignatureRSA {
 
-  java.security.Signature signature;
+  Signature signature;
   KeyFactory keyFactory;
 
   abstract String getName();
@@ -51,7 +56,7 @@ abstract class SignatureRSAN implements com.jcraft.jsch.SignatureRSA {
       foo = "SHA384withRSA";
     else if (name.equals("ssh-rsa-sha224@ssh.com"))
       foo = "SHA224withRSA";
-    signature = java.security.Signature.getInstance(foo);
+    signature = Signature.getInstance(foo);
     keyFactory = KeyFactory.getInstance("RSA");
   }
 

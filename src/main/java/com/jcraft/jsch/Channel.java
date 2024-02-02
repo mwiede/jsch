@@ -26,7 +26,11 @@
 
 package com.jcraft.jsch;
 
-import java.io.*;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.PipedInputStream;
+import java.io.PipedOutputStream;
 import java.util.Vector;
 
 public abstract class Channel {
@@ -267,7 +271,6 @@ public abstract class Channel {
         } catch (JSchException e) {
           throw new IOException("failed to initialize the channel.", e);
         }
-
       }
 
       byte[] b = new byte[1];
@@ -336,7 +339,6 @@ public abstract class Channel {
           close();
           throw new IOException(e.toString(), e);
         }
-
       }
 
       @Override
@@ -697,6 +699,7 @@ public abstract class Channel {
       this.os = null;
     }
   }
+
   static class PassiveOutputStream extends PipedOutputStream {
     private MyPipedInputStream _sink = null;
 

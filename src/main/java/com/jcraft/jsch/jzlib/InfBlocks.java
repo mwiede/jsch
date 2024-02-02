@@ -31,10 +31,10 @@
 package com.jcraft.jsch.jzlib;
 
 final class InfBlocks {
-  static final private int MANY = 1440;
+  private static final int MANY = 1440;
 
   // And'ing with mask[n] masks the lower n bits
-  static final private int[] inflate_mask = {0x00000000, 0x00000001, 0x00000003, 0x00000007,
+  private static final int[] inflate_mask = {0x00000000, 0x00000001, 0x00000003, 0x00000007,
       0x0000000f, 0x0000001f, 0x0000003f, 0x0000007f, 0x000000ff, 0x000001ff, 0x000003ff,
       0x000007ff, 0x00000fff, 0x00001fff, 0x00003fff, 0x00007fff, 0x0000ffff};
 
@@ -42,26 +42,26 @@ final class InfBlocks {
   static final int[] border = { // Order of the bit length code lengths
       16, 17, 18, 0, 8, 7, 9, 6, 10, 5, 11, 4, 12, 3, 13, 2, 14, 1, 15};
 
-  static final private int Z_OK = 0;
-  static final private int Z_STREAM_END = 1;
-  static final private int Z_NEED_DICT = 2;
-  static final private int Z_ERRNO = -1;
-  static final private int Z_STREAM_ERROR = -2;
-  static final private int Z_DATA_ERROR = -3;
-  static final private int Z_MEM_ERROR = -4;
-  static final private int Z_BUF_ERROR = -5;
-  static final private int Z_VERSION_ERROR = -6;
+  private static final int Z_OK = 0;
+  private static final int Z_STREAM_END = 1;
+  private static final int Z_NEED_DICT = 2;
+  private static final int Z_ERRNO = -1;
+  private static final int Z_STREAM_ERROR = -2;
+  private static final int Z_DATA_ERROR = -3;
+  private static final int Z_MEM_ERROR = -4;
+  private static final int Z_BUF_ERROR = -5;
+  private static final int Z_VERSION_ERROR = -6;
 
-  static final private int TYPE = 0; // get type bits (3, including end bit)
-  static final private int LENS = 1; // get lengths for stored
-  static final private int STORED = 2;// processing stored block
-  static final private int TABLE = 3; // get table lengths
-  static final private int BTREE = 4; // get bit lengths tree for a dynamic block
-  static final private int DTREE = 5; // get length, distance trees for a dynamic block
-  static final private int CODES = 6; // processing fixed or dynamic block
-  static final private int DRY = 7; // output remaining window bytes
-  static final private int DONE = 8; // finished last block, done
-  static final private int BAD = 9; // ot a data error--stuck here
+  private static final int TYPE = 0; // get type bits (3, including end bit)
+  private static final int LENS = 1; // get lengths for stored
+  private static final int STORED = 2; // processing stored block
+  private static final int TABLE = 3; // get table lengths
+  private static final int BTREE = 4; // get bit lengths tree for a dynamic block
+  private static final int DTREE = 5; // get length, distance trees for a dynamic block
+  private static final int CODES = 6; // processing fixed or dynamic block
+  private static final int DRY = 7; // output remaining window bytes
+  private static final int DONE = 8; // finished last block, done
+  private static final int BAD = 9; // ot a data error--stuck here
 
   int mode; // current inflate_block mode
 
@@ -151,7 +151,6 @@ final class InfBlocks {
     while (true) {
       switch (mode) {
         case TYPE:
-
           while (k < (3)) {
             if (n != 0) {
               r = Z_OK;
@@ -197,7 +196,6 @@ final class InfBlocks {
               mode = CODES;
               break;
             case 2: // dynamic
-
             {
               b >>>= (3);
               k -= (3);
@@ -206,7 +204,6 @@ final class InfBlocks {
               mode = TABLE;
               break;
             case 3: // illegal
-
             {
               b >>>= (3);
               k -= (3);
@@ -225,7 +222,6 @@ final class InfBlocks {
           }
           break;
         case LENS:
-
           while (k < (32)) {
             if (n != 0) {
               r = Z_OK;
@@ -313,7 +309,6 @@ final class InfBlocks {
           mode = last != 0 ? DRY : TYPE;
           break;
         case TABLE:
-
           while (k < (14)) {
             if (n != 0) {
               r = Z_OK;

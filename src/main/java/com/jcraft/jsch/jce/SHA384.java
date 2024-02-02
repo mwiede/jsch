@@ -26,9 +26,10 @@
 
 package com.jcraft.jsch.jce;
 
-import java.security.*;
+import com.jcraft.jsch.HASH;
+import java.security.MessageDigest;
 
-public class SHA384 implements com.jcraft.jsch.HASH {
+public class SHA384 implements HASH {
   MessageDigest md;
 
   @Override

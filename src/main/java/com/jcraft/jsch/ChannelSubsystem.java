@@ -26,7 +26,9 @@
 
 package com.jcraft.jsch;
 
-import java.io.*;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 
 public class ChannelSubsystem extends ChannelSession {
   boolean want_reply = true;

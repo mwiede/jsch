@@ -28,8 +28,8 @@ package com.jcraft.jsch;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.InputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.SocketTimeoutException;
@@ -152,7 +152,7 @@ class Util {
     return glob0(pattern, 0, name, 0);
   }
 
-  static private boolean glob0(byte[] pattern, int pattern_index, byte[] name, int name_index) {
+  private static boolean glob0(byte[] pattern, int pattern_index, byte[] name, int name_index) {
     if (name.length > 0 && name[0] == '.') {
       if (pattern.length > 0 && pattern[0] == '.') {
         if (pattern.length == 2 && pattern[1] == '*')
@@ -164,7 +164,7 @@ class Util {
     return glob(pattern, pattern_index, name, name_index);
   }
 
-  static private boolean glob(byte[] pattern, int pattern_index, byte[] name, int name_index) {
+  private static boolean glob(byte[] pattern, int pattern_index, byte[] name, int name_index) {
     // System.err.println("glob: "+new String(pattern)+", "+pattern_index+" "+new String(name)+",
     // "+name_index);
 

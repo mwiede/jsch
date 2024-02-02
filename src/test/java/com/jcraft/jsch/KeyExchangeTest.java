@@ -19,7 +19,6 @@ public class KeyExchangeTest {
 
   @Test
   public void testNormalize1() {
-    KeyExchange kex = new TestKex();
     byte[] secret = new byte[1];
     for (int i = 0; i <= 0xff; i++) {
       secret[0] = (byte) i;
@@ -29,7 +28,6 @@ public class KeyExchangeTest {
 
   @Test
   public void testNormalize2() {
-    KeyExchange kex = new TestKex();
     byte[] secret = new byte[2];
     for (int i = 0; i <= 0xff; i++) {
       secret[0] = (byte) i;
@@ -42,7 +40,6 @@ public class KeyExchangeTest {
 
   @Test
   public void testNormalize3() {
-    KeyExchange kex = new TestKex();
     byte[] secret = new byte[3];
     for (int i = 0; i <= 0xff; i++) {
       secret[0] = (byte) i;
@@ -58,7 +55,6 @@ public class KeyExchangeTest {
 
   @Test
   public void testNormalizeRandom() {
-    KeyExchange kex = new TestKex();
     for (int i = 0; i < 1000000; i++) {
       byte[] secret = new byte[64];
       random.nextBytes(secret);
@@ -68,7 +64,6 @@ public class KeyExchangeTest {
 
   @Test
   public void testEncodeAsMPInt1() {
-    KeyExchange kex = new TestKex();
     byte[] secret = new byte[1];
     for (int i = 0; i <= 0xff; i++) {
       secret[0] = (byte) i;
@@ -78,7 +73,6 @@ public class KeyExchangeTest {
 
   @Test
   public void testEncodeAsMPInt2() {
-    KeyExchange kex = new TestKex();
     byte[] secret = new byte[2];
     for (int i = 0; i <= 0xff; i++) {
       secret[0] = (byte) i;
@@ -91,7 +85,6 @@ public class KeyExchangeTest {
 
   @Test
   public void testEncodeAsMPInt3() {
-    KeyExchange kex = new TestKex();
     byte[] secret = new byte[3];
     for (int i = 0; i <= 0xff; i++) {
       secret[0] = (byte) i;
@@ -107,7 +100,6 @@ public class KeyExchangeTest {
 
   @Test
   public void testEncodeAsMPIntRandom() {
-    KeyExchange kex = new TestKex();
     for (int i = 0; i < 1000000; i++) {
       byte[] secret = new byte[64];
       random.nextBytes(secret);
@@ -117,14 +109,12 @@ public class KeyExchangeTest {
 
   @Test
   public void testEncodeAsString0() {
-    KeyExchange kex = new TestKex();
     byte[] secret = new byte[0];
     doEncodeAsString(secret);
   }
 
   @Test
   public void testEncodeAsString1() {
-    KeyExchange kex = new TestKex();
     byte[] secret = new byte[1];
     for (int i = 0; i <= 0xff; i++) {
       secret[0] = (byte) i;
@@ -134,7 +124,6 @@ public class KeyExchangeTest {
 
   @Test
   public void testEncodeAsString2() {
-    KeyExchange kex = new TestKex();
     byte[] secret = new byte[2];
     for (int i = 0; i <= 0xff; i++) {
       secret[0] = (byte) i;
@@ -147,7 +136,6 @@ public class KeyExchangeTest {
 
   @Test
   public void testEncodeAsString3() {
-    KeyExchange kex = new TestKex();
     byte[] secret = new byte[3];
     for (int i = 0; i <= 0xff; i++) {
       secret[0] = (byte) i;
@@ -163,7 +151,6 @@ public class KeyExchangeTest {
 
   @Test
   public void testEncodeAsStringRandom() {
-    KeyExchange kex = new TestKex();
     for (int i = 0; i < 1000000; i++) {
       byte[] secret = new byte[64];
       random.nextBytes(secret);

@@ -1,10 +1,18 @@
-/**
- * This program will demonstrate how to enable logging mechanism and get logging messages.
- *
- */
-import com.jcraft.jsch.*;
-import java.awt.*;
-import javax.swing.*;
+/** This program will demonstrate how to enable logging mechanism and get logging messages. */
+import com.jcraft.jsch.Channel;
+import com.jcraft.jsch.JSch;
+import com.jcraft.jsch.Session;
+import com.jcraft.jsch.UIKeyboardInteractive;
+import com.jcraft.jsch.UserInfo;
+import java.awt.Container;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Insets;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JPasswordField;
+import javax.swing.JTextField;
 
 public class Logger {
   public static void main(String[] arg) {
@@ -44,6 +52,7 @@ public class Logger {
 
   public static class MyLogger implements com.jcraft.jsch.Logger {
     static java.util.Map<Integer, String> name = new java.util.HashMap<>();
+
     static {
       name.put(DEBUG, "DEBUG: ");
       name.put(INFO, "INFO: ");
@@ -158,5 +167,3 @@ public class Logger {
     }
   }
 }
-
-

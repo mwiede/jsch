@@ -32,12 +32,11 @@ import java.util.Hashtable;
 import java.util.Vector;
 
 public class JSch {
-  /**
-   * The version number.
-   */
+  /** The version number. */
   public static final String VERSION = Version.getVersion();
 
   static Hashtable<String, String> config = new Hashtable<>();
+
   static {
     config.put("kex", Util.getSystemProperty("jsch.kex",
         "curve25519-sha256,curve25519-sha256@libssh.org,ecdh-sha2-nistp256,ecdh-sha2-nistp384,ecdh-sha2-nistp521,diffie-hellman-group-exchange-sha256,diffie-hellman-group16-sha512,diffie-hellman-group18-sha512,diffie-hellman-group14-sha256"));
@@ -202,6 +201,8 @@ public class JSch {
     config.put("pbkdf2-hmac-sha256", "com.jcraft.jsch.jce.PBKDF2HMACSHA256");
     config.put("pbkdf2-hmac-sha384", "com.jcraft.jsch.jce.PBKDF2HMACSHA384");
     config.put("pbkdf2-hmac-sha512", "com.jcraft.jsch.jce.PBKDF2HMACSHA512");
+    config.put("pbkdf2-hmac-sha512-224", "com.jcraft.jsch.jce.PBKDF2HMACSHA512224");
+    config.put("pbkdf2-hmac-sha512-256", "com.jcraft.jsch.jce.PBKDF2HMACSHA512256");
     config.put("bcrypt", "com.jcraft.jsch.jbcrypt.JBCrypt");
     config.put("argon2", "com.jcraft.jsch.bc.Argon2");
     config.put("scrypt", "com.jcraft.jsch.bc.SCrypt");
@@ -267,7 +268,6 @@ public class JSch {
    *
    * @param identityRepository if <code>null</code> is given, the default repository, which usually
    *        refers to ~/.ssh/, will be used.
-   *
    * @see #getIdentityRepository()
    */
   public synchronized void setIdentityRepository(IdentityRepository identityRepository) {
@@ -311,11 +311,8 @@ public class JSch {
    * "user.name" will be referred.
    *
    * @param host hostname
-   *
    * @throws JSchException if <code>username</code> or <code>host</code> are invalid.
-   *
    * @return the instance of <code>Session</code> class.
-   *
    * @see #getSession(String username, String host, int port)
    * @see com.jcraft.jsch.Session
    * @see com.jcraft.jsch.ConfigRepository
@@ -331,11 +328,8 @@ public class JSch {
    *
    * @param username user name
    * @param host hostname
-   *
    * @throws JSchException if <code>username</code> or <code>host</code> are invalid.
-   *
    * @return the instance of <code>Session</code> class.
-   *
    * @see #getSession(String username, String host, int port)
    * @see com.jcraft.jsch.Session
    */
@@ -351,11 +345,8 @@ public class JSch {
    * @param username user name
    * @param host hostname
    * @param port port number
-   *
    * @throws JSchException if <code>username</code> or <code>host</code> are invalid.
-   *
    * @return the instance of <code>Session</code> class.
-   *
    * @see #getSession(String username, String host, int port)
    * @see com.jcraft.jsch.Session
    */
@@ -383,7 +374,6 @@ public class JSch {
    * Sets the hostkey repository.
    *
    * @param hkrepo
-   *
    * @see com.jcraft.jsch.HostKeyRepository
    * @see com.jcraft.jsch.KnownHosts
    */
@@ -395,9 +385,7 @@ public class JSch {
    * Sets the instance of <code>KnownHosts</code>, which refers to <code>filename</code>.
    *
    * @param filename filename of known_hosts file.
-   *
    * @throws JSchException if the given filename is invalid.
-   *
    * @see com.jcraft.jsch.KnownHosts
    */
   public void setKnownHosts(String filename) throws JSchException {
@@ -414,9 +402,7 @@ public class JSch {
    * Sets the instance of <code>KnownHosts</code> generated with <code>stream</code>.
    *
    * @param stream the instance of InputStream from known_hosts file.
-   *
    * @throws JSchException if an I/O error occurs.
-   *
    * @see com.jcraft.jsch.KnownHosts
    */
   public void setKnownHosts(InputStream stream) throws JSchException {
@@ -434,7 +420,6 @@ public class JSch {
    * <code>KnownHosts</code>.
    *
    * @return current hostkey repository.
-   *
    * @see com.jcraft.jsch.HostKeyRepository
    * @see com.jcraft.jsch.KnownHosts
    */
@@ -448,9 +433,7 @@ public class JSch {
    * Sets the private key, which will be referred in the public key authentication.
    *
    * @param prvkey filename of the private key.
-   *
    * @throws JSchException if <code>prvkey</code> is invalid.
-   *
    * @see #addIdentity(String prvkey, String passphrase)
    */
   public void addIdentity(String prvkey) throws JSchException {
@@ -463,9 +446,7 @@ public class JSch {
    *
    * @param prvkey filename of the private key.
    * @param passphrase passphrase for <code>prvkey</code>.
-   *
    * @throws JSchException if <code>passphrase</code> is not right.
-   *
    * @see #addIdentity(String prvkey, byte[] passphrase)
    */
   public void addIdentity(String prvkey, String passphrase) throws JSchException {
@@ -484,9 +465,7 @@ public class JSch {
    *
    * @param prvkey filename of the private key.
    * @param passphrase passphrase for <code>prvkey</code>.
-   *
    * @throws JSchException if <code>passphrase</code> is not right.
-   *
    * @see #addIdentity(String prvkey, String pubkey, byte[] passphrase)
    */
   public void addIdentity(String prvkey, byte[] passphrase) throws JSchException {
@@ -501,7 +480,6 @@ public class JSch {
    * @param prvkey filename of the private key.
    * @param pubkey filename of the public key.
    * @param passphrase passphrase for <code>prvkey</code>.
-   *
    * @throws JSchException if <code>passphrase</code> is not right.
    */
   public void addIdentity(String prvkey, String pubkey, byte[] passphrase) throws JSchException {
@@ -517,7 +495,6 @@ public class JSch {
    * @param prvkey private key in byte array.
    * @param pubkey public key in byte array.
    * @param passphrase passphrase for <code>prvkey</code>.
-   *
    */
   public void addIdentity(String name, byte[] prvkey, byte[] pubkey, byte[] passphrase)
       throws JSchException {
@@ -531,7 +508,6 @@ public class JSch {
    *
    * @param identity private key.
    * @param passphrase passphrase for <code>identity</code>.
-   *
    * @throws JSchException if <code>passphrase</code> is not right.
    */
   public void addIdentity(Identity identity, byte[] passphrase) throws JSchException {
@@ -581,7 +557,6 @@ public class JSch {
    * Removes the identity from identityRepository.
    *
    * @param identity the indentity to be removed.
-   *
    * @throws JSchException if <code>identity</code> is invalid.
    */
   public void removeIdentity(Identity identity) throws JSchException {
@@ -592,7 +567,6 @@ public class JSch {
    * Lists names of identities included in the identityRepository.
    *
    * @return names of identities
-   *
    * @throws JSchException if identityReposory has problems.
    */
   public Vector<String> getIdentityNames() throws JSchException {
@@ -663,7 +637,6 @@ public class JSch {
    * Sets the logger
    *
    * @param logger logger or <code>null</code> if no logging should take place
-   *
    * @see com.jcraft.jsch.Logger
    */
   public static void setLogger(Logger logger) {

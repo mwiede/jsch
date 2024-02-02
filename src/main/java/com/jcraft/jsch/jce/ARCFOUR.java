@@ -26,14 +26,13 @@
 
 package com.jcraft.jsch.jce;
 
-import com.jcraft.jsch.Cipher;
-import javax.crypto.*;
-import javax.crypto.spec.*;
+import javax.crypto.Cipher;
+import javax.crypto.spec.SecretKeySpec;
 
-public class ARCFOUR implements Cipher {
+public class ARCFOUR implements com.jcraft.jsch.Cipher {
   private static final int ivsize = 8;
   private static final int bsize = 16;
-  private javax.crypto.Cipher cipher;
+  private Cipher cipher;
 
   @Override
   public int getIVSize() {
@@ -47,7 +46,6 @@ public class ARCFOUR implements Cipher {
 
   @Override
   public void init(int mode, byte[] key, byte[] iv) throws Exception {
-    String pad = "NoPadding";
     byte[] tmp;
     if (key.length > bsize) {
       tmp = new byte[bsize];
@@ -56,10 +54,11 @@ public class ARCFOUR implements Cipher {
     }
 
     try {
-      cipher = javax.crypto.Cipher.getInstance("RC4");
+      cipher = Cipher.getInstance("RC4");
       SecretKeySpec _key = new SecretKeySpec(key, "RC4");
-      cipher.init((mode == ENCRYPT_MODE ? javax.crypto.Cipher.ENCRYPT_MODE
-          : javax.crypto.Cipher.DECRYPT_MODE), _key);
+      cipher.init(
+          (mode == com.jcraft.jsch.Cipher.ENCRYPT_MODE ? Cipher.ENCRYPT_MODE : Cipher.DECRYPT_MODE),
+          _key);
     } catch (Exception e) {
       cipher = null;
       throw e;

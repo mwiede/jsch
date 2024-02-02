@@ -174,7 +174,6 @@ class UserAuthPassword extends UserAuth {
           Util.bzero(password);
           password = null;
         }
-
       }
 
     } finally {

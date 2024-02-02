@@ -140,8 +140,8 @@ public class ServerSigAlgsIT {
     doSftp(session, true);
 
     String expectedKex = "kex: host key algorithm: rsa-sha2-512";
-    String expectedPubkeysNoServerSigs = String.format(Locale.ROOT,
-        "No server-sig-algs found, using PubkeyAcceptedAlgorithms = %s", algos);
+    // String expectedPubkeysNoServerSigs = String.format(Locale.ROOT,
+    // "No server-sig-algs found, using PubkeyAcceptedAlgorithms = %s", algos);
     String expectedPreauthFail1 = "ssh-rsa-sha512@ssh.com preauth failure";
     String expectedPreauthFail2 = "ssh-rsa-sha384@ssh.com preauth failure";
     String expectedPreauthFail3 = "ssh-rsa-sha256@ssh.com preauth failure";

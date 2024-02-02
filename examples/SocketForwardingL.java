@@ -2,13 +2,14 @@
  * This program enables you to connect to sshd server and forward the docker socket. You will be
  * asked username, hostname and passwd. If everything works fine, you will get the response code to
  * the _ping endpoint of the dockerd.
- *
  */
-import com.jcraft.jsch.*;
-
-import javax.swing.*;
+import com.jcraft.jsch.JSch;
+import com.jcraft.jsch.Session;
+import com.jcraft.jsch.UIKeyboardInteractive;
+import com.jcraft.jsch.UserInfo;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import javax.swing.JOptionPane;
 
 public class SocketForwardingL {
   public static void main(String[] arg) {
@@ -75,13 +76,12 @@ public class SocketForwardingL {
       HttpURLConnection myURLConnection2 = (HttpURLConnection) myURL.openConnection();
       System.out.println("Docker Ping http response code: " + myURLConnection2.getResponseCode());
 
-
     } catch (Exception e) {
       System.out.println(e);
     }
   }
 
-  public static abstract class MyUserInfo implements UserInfo, UIKeyboardInteractive {
+  public abstract static class MyUserInfo implements UserInfo, UIKeyboardInteractive {
     @Override
     public String getPassword() {
       return null;

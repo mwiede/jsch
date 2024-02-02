@@ -1,6 +1,13 @@
-import com.jcraft.jsch.*;
-import java.io.*;
-import javax.swing.*;
+import com.jcraft.jsch.AgentIdentityRepository;
+import com.jcraft.jsch.Channel;
+import com.jcraft.jsch.ChannelShell;
+import com.jcraft.jsch.IdentityRepository;
+import com.jcraft.jsch.JSch;
+import com.jcraft.jsch.SSHAgentConnector;
+import com.jcraft.jsch.Session;
+import com.jcraft.jsch.UIKeyboardInteractive;
+import com.jcraft.jsch.UserInfo;
+import javax.swing.JOptionPane;
 
 public class JSchWithAgentProxy {
   public static void main(String[] arg) {

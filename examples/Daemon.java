@@ -1,12 +1,26 @@
 /**
  * This program will demonstrate how to provide a network service like inetd by using remote
  * port-forwarding functionality.
- *
  */
-import com.jcraft.jsch.*;
-import java.io.*;
-import java.awt.*;
-import javax.swing.*;
+import com.jcraft.jsch.ChannelForwardedTCPIP;
+import com.jcraft.jsch.ForwardedTCPIPDaemon;
+import com.jcraft.jsch.JSch;
+import com.jcraft.jsch.JSchException;
+import com.jcraft.jsch.Session;
+import com.jcraft.jsch.UIKeyboardInteractive;
+import com.jcraft.jsch.UserInfo;
+import java.awt.Container;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Insets;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JPasswordField;
+import javax.swing.JTextField;
 
 public class Daemon {
   public static void main(String[] arg) {

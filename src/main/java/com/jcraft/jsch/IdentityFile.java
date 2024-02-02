@@ -26,8 +26,6 @@
 
 package com.jcraft.jsch;
 
-import java.io.*;
-
 class IdentityFile implements Identity {
   private KeyPair kpair;
   private String identity;
@@ -125,9 +123,7 @@ class IdentityFile implements Identity {
     return kpair.isEncrypted();
   }
 
-  /**
-   * Disposes internally allocated data, like byte array for the private key.
-   */
+  /** Disposes internally allocated data, like byte array for the private key. */
   @Override
   public void clear() {
     kpair.dispose();

@@ -26,14 +26,16 @@
 
 package com.jcraft.jsch.jce;
 
-import com.jcraft.jsch.Cipher;
-import javax.crypto.*;
-import javax.crypto.spec.*;
+import javax.crypto.Cipher;
+import javax.crypto.SecretKey;
+import javax.crypto.SecretKeyFactory;
+import javax.crypto.spec.DESedeKeySpec;
+import javax.crypto.spec.IvParameterSpec;
 
-public class TripleDESCTR implements Cipher {
+public class TripleDESCTR implements com.jcraft.jsch.Cipher {
   private static final int ivsize = 8;
   private static final int bsize = 24;
-  private javax.crypto.Cipher cipher;
+  private Cipher cipher;
 
   @Override
   public int getIVSize() {
@@ -47,8 +49,6 @@ public class TripleDESCTR implements Cipher {
 
   @Override
   public void init(int mode, byte[] key, byte[] iv) throws Exception {
-    String pad = "NoPadding";
-    // if(padding) pad="PKCS5Padding";
     byte[] tmp;
     if (iv.length > ivsize) {
       tmp = new byte[ivsize];
@@ -62,18 +62,18 @@ public class TripleDESCTR implements Cipher {
     }
 
     try {
-      cipher = javax.crypto.Cipher.getInstance("DESede/CTR/" + pad);
+      cipher = Cipher.getInstance("DESede/CTR/NoPadding");
       /*
        * // The following code does not work on IBM's JDK 1.4.1 SecretKeySpec skeySpec = new
-       * SecretKeySpec(key, "DESede"); cipher.init((mode==ENCRYPT_MODE?
-       * javax.crypto.Cipher.ENCRYPT_MODE: javax.crypto.Cipher.DECRYPT_MODE), skeySpec, new
-       * IvParameterSpec(iv));
+       * SecretKeySpec(key, "DESede"); cipher.init((mode==com.jcraft.jsch.Cipher.ENCRYPT_MODE?
+       * Cipher.ENCRYPT_MODE: Cipher.DECRYPT_MODE), skeySpec, new IvParameterSpec(iv));
        */
       DESedeKeySpec keyspec = new DESedeKeySpec(key);
       SecretKeyFactory keyfactory = SecretKeyFactory.getInstance("DESede");
       SecretKey _key = keyfactory.generateSecret(keyspec);
-      cipher.init((mode == ENCRYPT_MODE ? javax.crypto.Cipher.ENCRYPT_MODE
-          : javax.crypto.Cipher.DECRYPT_MODE), _key, new IvParameterSpec(iv));
+      cipher.init(
+          (mode == com.jcraft.jsch.Cipher.ENCRYPT_MODE ? Cipher.ENCRYPT_MODE : Cipher.DECRYPT_MODE),
+          _key, new IvParameterSpec(iv));
     } catch (Exception e) {
       cipher = null;
       throw e;

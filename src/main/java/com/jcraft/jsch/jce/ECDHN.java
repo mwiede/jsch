@@ -26,13 +26,19 @@
 
 package com.jcraft.jsch.jce;
 
+import com.jcraft.jsch.ECDH;
 import java.math.BigInteger;
-import java.security.*;
-import javax.crypto.*;
-import java.security.spec.*;
-import java.security.interfaces.*;
+import java.security.KeyFactory;
+import java.security.PublicKey;
+import java.security.interfaces.ECPublicKey;
+import java.security.spec.ECFieldFp;
+import java.security.spec.ECParameterSpec;
+import java.security.spec.ECPoint;
+import java.security.spec.ECPublicKeySpec;
+import java.security.spec.EllipticCurve;
+import javax.crypto.KeyAgreement;
 
-public class ECDHN implements com.jcraft.jsch.ECDH {
+public class ECDHN implements ECDH {
   byte[] Q_array;
   ECPublicKey publicKey;
 

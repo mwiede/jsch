@@ -1,8 +1,7 @@
 package com.jcraft.jsch;
 
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.ValueSource;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -11,8 +10,9 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
-
-import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 class OpenSSHConfigTest {
 
@@ -88,5 +88,4 @@ class OpenSSHConfigTest {
     ConfigRepository.Config kex = parse.getConfig("");
     assertEquals("diffie-hellman-group1-sha1", kex.getValue("kex"));
   }
-
 }

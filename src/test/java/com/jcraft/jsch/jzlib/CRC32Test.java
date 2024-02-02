@@ -1,6 +1,6 @@
 package com.jcraft.jsch.jzlib;
 
-import static com.jcraft.jsch.jzlib.Package.*;
+import static com.jcraft.jsch.jzlib.Package.randombuf;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.util.Arrays;

@@ -26,15 +26,16 @@
 
 package com.jcraft.jsch.jce;
 
-import com.jcraft.jsch.Cipher;
 import java.nio.ByteBuffer;
-import javax.crypto.spec.*;
+import javax.crypto.Cipher;
+import javax.crypto.spec.GCMParameterSpec;
+import javax.crypto.spec.SecretKeySpec;
 
-abstract class AESGCM implements Cipher {
+abstract class AESGCM implements com.jcraft.jsch.Cipher {
   // Actually the block size, not IV size
   private static final int ivsize = 16;
   private static final int tagsize = 16;
-  private javax.crypto.Cipher cipher;
+  private Cipher cipher;
   private SecretKeySpec keyspec;
   private int mode;
   private ByteBuffer iv;
@@ -52,7 +53,6 @@ abstract class AESGCM implements Cipher {
 
   @Override
   public void init(int mode, byte[] key, byte[] iv) throws Exception {
-    String pad = "NoPadding";
     byte[] tmp;
     if (iv.length > 12) {
       tmp = new byte[12];
@@ -65,13 +65,13 @@ abstract class AESGCM implements Cipher {
       System.arraycopy(key, 0, tmp, 0, tmp.length);
       key = tmp;
     }
-    this.mode = ((mode == ENCRYPT_MODE) ? javax.crypto.Cipher.ENCRYPT_MODE
-        : javax.crypto.Cipher.DECRYPT_MODE);
+    this.mode =
+        ((mode == com.jcraft.jsch.Cipher.ENCRYPT_MODE) ? Cipher.ENCRYPT_MODE : Cipher.DECRYPT_MODE);
     this.iv = ByteBuffer.wrap(iv);
     this.initcounter = this.iv.getLong(4);
     try {
       keyspec = new SecretKeySpec(key, "AES");
-      cipher = javax.crypto.Cipher.getInstance("AES/GCM/" + pad);
+      cipher = Cipher.getInstance("AES/GCM/NoPadding");
       cipher.init(this.mode, keyspec, new GCMParameterSpec(tagsize * 8, iv));
     } catch (Exception e) {
       cipher = null;

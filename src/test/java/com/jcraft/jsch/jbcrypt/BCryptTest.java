@@ -15,7 +15,9 @@
 package com.jcraft.jsch.jbcrypt;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.Arrays;
 import org.junit.jupiter.api.Test;
@@ -69,9 +71,7 @@ public class BCryptTest {
       {"~!@#$%^&*()      ~!@#$%^&*()PNBFRD", "$2a$12$WApznUOJfkEGSmYRfnkrPO",
           "$2a$12$WApznUOJfkEGSmYRfnkrPOr466oFDCaj4b6HY3EXGvfxm43seyhgC"},};
 
-  /**
-   * Test method for 'BCrypt.hashpw(String, String)'
-   */
+  /** Test method for 'BCrypt.hashpw(String, String)' */
   @Test
   public void testHashpw() {
     // System.out.print("BCrypt.hashpw(): ");
@@ -86,9 +86,7 @@ public class BCryptTest {
     // System.out.println("");
   }
 
-  /**
-   * Test method for 'BCrypt.gensalt(int)'
-   */
+  /** Test method for 'BCrypt.gensalt(int)' */
   @Test
   public void testGensaltInt() {
     // System.out.print("BCrypt.gensalt(log_rounds):");
@@ -106,9 +104,7 @@ public class BCryptTest {
     // System.out.println("");
   }
 
-  /**
-   * Test method for 'BCrypt.gensalt()'
-   */
+  /** Test method for 'BCrypt.gensalt()' */
   @Test
   public void testGensalt() {
     // System.out.print("BCrypt.gensalt(): ");
@@ -123,9 +119,7 @@ public class BCryptTest {
     // System.out.println("");
   }
 
-  /**
-   * Test method for 'BCrypt.checkpw(String, String)' expecting success
-   */
+  /** Test method for 'BCrypt.checkpw(String, String)' expecting success */
   @Test
   public void testCheckpw_success() {
     // System.out.print("BCrypt.checkpw w/ good passwords: ");
@@ -138,9 +132,7 @@ public class BCryptTest {
     // System.out.println("");
   }
 
-  /**
-   * Test method for 'BCrypt.checkpw(String, String)' expecting failure
-   */
+  /** Test method for 'BCrypt.checkpw(String, String)' expecting failure */
   @Test
   public void testCheckpw_failure() {
     // System.out.print("BCrypt.checkpw w/ bad passwords: ");
@@ -154,9 +146,7 @@ public class BCryptTest {
     // System.out.println("");
   }
 
-  /**
-   * Test for correct hashing of non-US-ASCII passwords
-   */
+  /** Test for correct hashing of non-US-ASCII passwords */
   @Test
   public void testInternationalChars() {
     // System.out.print("BCrypt.hashpw w/ international chars: ");

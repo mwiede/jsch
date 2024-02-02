@@ -26,10 +26,9 @@
 
 package com.jcraft.jsch.jce;
 
-import javax.crypto.spec.PBEKeySpec;
-import javax.crypto.SecretKeyFactory;
 import java.security.spec.InvalidKeySpecException;
-import java.security.NoSuchAlgorithmException;
+import javax.crypto.SecretKeyFactory;
+import javax.crypto.spec.PBEKeySpec;
 
 abstract class PBKDF2 implements com.jcraft.jsch.PBKDF2 {
   private SecretKeyFactory skf;

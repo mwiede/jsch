@@ -26,20 +26,24 @@
 
 package com.jcraft.jsch.jce;
 
+import com.jcraft.jsch.Buffer;
 import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
-import java.security.*;
-import java.security.spec.*;
-import com.jcraft.jsch.Buffer;
+import java.security.KeyFactory;
+import java.security.PrivateKey;
+import java.security.PublicKey;
+import java.security.Signature;
+import java.security.spec.DSAPrivateKeySpec;
+import java.security.spec.DSAPublicKeySpec;
 
 public class SignatureDSA implements com.jcraft.jsch.SignatureDSA {
 
-  java.security.Signature signature;
+  Signature signature;
   KeyFactory keyFactory;
 
   @Override
   public void init() throws Exception {
-    signature = java.security.Signature.getInstance("SHA1withDSA");
+    signature = Signature.getInstance("SHA1withDSA");
     keyFactory = KeyFactory.getInstance("DSA");
   }
 

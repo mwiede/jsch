@@ -32,33 +32,33 @@ package com.jcraft.jsch.jzlib;
 
 final class InfCodes {
 
-  static final private int[] inflate_mask = {0x00000000, 0x00000001, 0x00000003, 0x00000007,
+  private static final int[] inflate_mask = {0x00000000, 0x00000001, 0x00000003, 0x00000007,
       0x0000000f, 0x0000001f, 0x0000003f, 0x0000007f, 0x000000ff, 0x000001ff, 0x000003ff,
       0x000007ff, 0x00000fff, 0x00001fff, 0x00003fff, 0x00007fff, 0x0000ffff};
 
-  static final private int Z_OK = 0;
-  static final private int Z_STREAM_END = 1;
-  static final private int Z_NEED_DICT = 2;
-  static final private int Z_ERRNO = -1;
-  static final private int Z_STREAM_ERROR = -2;
-  static final private int Z_DATA_ERROR = -3;
-  static final private int Z_MEM_ERROR = -4;
-  static final private int Z_BUF_ERROR = -5;
-  static final private int Z_VERSION_ERROR = -6;
+  private static final int Z_OK = 0;
+  private static final int Z_STREAM_END = 1;
+  private static final int Z_NEED_DICT = 2;
+  private static final int Z_ERRNO = -1;
+  private static final int Z_STREAM_ERROR = -2;
+  private static final int Z_DATA_ERROR = -3;
+  private static final int Z_MEM_ERROR = -4;
+  private static final int Z_BUF_ERROR = -5;
+  private static final int Z_VERSION_ERROR = -6;
 
   // waiting for "i:"=input,
   // "o:"=output,
   // "x:"=nothing
-  static final private int START = 0; // x: set up for LEN
-  static final private int LEN = 1; // i: get length/literal/eob next
-  static final private int LENEXT = 2; // i: getting length extra (have base)
-  static final private int DIST = 3; // i: get distance next
-  static final private int DISTEXT = 4;// i: getting distance extra
-  static final private int COPY = 5; // o: copying bytes in window, waiting for space
-  static final private int LIT = 6; // o: got literal, waiting for output space
-  static final private int WASH = 7; // o: got eob, possibly still output waiting
-  static final private int END = 8; // x: got eob and all data flushed
-  static final private int BADCODE = 9;// x: got error
+  private static final int START = 0; // x: set up for LEN
+  private static final int LEN = 1; // i: get length/literal/eob next
+  private static final int LENEXT = 2; // i: getting length extra (have base)
+  private static final int DIST = 3; // i: get distance next
+  private static final int DISTEXT = 4; // i: getting distance extra
+  private static final int COPY = 5; // o: copying bytes in window, waiting for space
+  private static final int LIT = 6; // o: got literal, waiting for output space
+  private static final int WASH = 7; // o: got eob, possibly still output waiting
+  private static final int END = 8; // x: got eob and all data flushed
+  private static final int BADCODE = 9; // x: got error
 
   int mode; // current inflate_codes mode
 
@@ -433,7 +433,6 @@ final class InfCodes {
           return s.inflate_flush(r);
 
         case BADCODE: // x: got error
-
           r = Z_DATA_ERROR;
 
           s.bitb = b;
@@ -599,7 +598,6 @@ final class InfCodes {
                   }
                   r = 0; // copy rest from start of window
                 }
-
               }
 
               // copy all or what's left

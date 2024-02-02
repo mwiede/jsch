@@ -45,6 +45,7 @@ import java.util.stream.Stream;
 /**
  * This class implements ConfigRepository interface, and parses OpenSSH's configuration file. The
  * following keywords will be recognized,
+ *
  * <ul>
  * <li>Host</li>
  * <li>User</li>
@@ -160,6 +161,7 @@ public class OpenSSHConfig implements ConfigRepository {
   }
 
   private static final Hashtable<String, String> keymap = new Hashtable<>();
+
   static {
     keymap.put("kex", "KexAlgorithms");
     keymap.put("server_host_key", "HostKeyAlgorithms");

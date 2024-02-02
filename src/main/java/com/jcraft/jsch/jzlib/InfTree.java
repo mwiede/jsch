@@ -32,17 +32,17 @@ package com.jcraft.jsch.jzlib;
 
 final class InfTree {
 
-  static final private int MANY = 1440;
+  private static final int MANY = 1440;
 
-  static final private int Z_OK = 0;
-  static final private int Z_STREAM_END = 1;
-  static final private int Z_NEED_DICT = 2;
-  static final private int Z_ERRNO = -1;
-  static final private int Z_STREAM_ERROR = -2;
-  static final private int Z_DATA_ERROR = -3;
-  static final private int Z_MEM_ERROR = -4;
-  static final private int Z_BUF_ERROR = -5;
-  static final private int Z_VERSION_ERROR = -6;
+  private static final int Z_OK = 0;
+  private static final int Z_STREAM_END = 1;
+  private static final int Z_NEED_DICT = 2;
+  private static final int Z_ERRNO = -1;
+  private static final int Z_STREAM_ERROR = -2;
+  private static final int Z_DATA_ERROR = -3;
+  private static final int Z_MEM_ERROR = -4;
+  private static final int Z_BUF_ERROR = -5;
+  private static final int Z_VERSION_ERROR = -6;
 
   static final int fixed_bl = 9;
   static final int fixed_bd = 5;
@@ -77,7 +77,6 @@ final class InfTree {
       8, 135, 0, 8, 71, 0, 9, 238, 80, 7, 9, 0, 8, 95, 0, 8, 31, 0, 9, 158, 84, 7, 99, 0, 8, 127, 0,
       8, 63, 0, 9, 222, 82, 7, 27, 0, 8, 111, 0, 8, 47, 0, 9, 190, 0, 8, 15, 0, 8, 143, 0, 8, 79, 0,
       9, 254, 96, 7, 256, 0, 8, 80, 0, 8, 16, 84, 8, 115, 82, 7, 31, 0, 8, 112, 0, 8, 48, 0, 9, 193,
-
       80, 7, 10, 0, 8, 96, 0, 8, 32, 0, 9, 161, 0, 8, 0, 0, 8, 128, 0, 8, 64, 0, 9, 225, 80, 7, 6,
       0, 8, 88, 0, 8, 24, 0, 9, 145, 83, 7, 59, 0, 8, 120, 0, 8, 56, 0, 9, 209, 81, 7, 17, 0, 8,
       104, 0, 8, 40, 0, 9, 177, 0, 8, 8, 0, 8, 136, 0, 8, 72, 0, 9, 241, 80, 7, 4, 0, 8, 84, 0, 8,

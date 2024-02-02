@@ -31,7 +31,12 @@ import com.jcraft.jsch.annotations.SuppressForbiddenApi;
 import java.lang.reflect.Constructor;
 import java.security.SecureRandom;
 import org.bouncycastle.crypto.AsymmetricCipherKeyPair;
-import org.bouncycastle.pqc.crypto.ntruprime.*;
+import org.bouncycastle.pqc.crypto.ntruprime.SNTRUPrimeKEMExtractor;
+import org.bouncycastle.pqc.crypto.ntruprime.SNTRUPrimeKeyGenerationParameters;
+import org.bouncycastle.pqc.crypto.ntruprime.SNTRUPrimeKeyPairGenerator;
+import org.bouncycastle.pqc.crypto.ntruprime.SNTRUPrimeParameters;
+import org.bouncycastle.pqc.crypto.ntruprime.SNTRUPrimePrivateKeyParameters;
+import org.bouncycastle.pqc.crypto.ntruprime.SNTRUPrimePublicKeyParameters;
 
 public class SNTRUP761 implements KEM {
   SNTRUPrimeKEMExtractor extractor;

@@ -26,13 +26,14 @@
 
 package com.jcraft.jsch.jce;
 
-import com.jcraft.jsch.Cipher;
-import javax.crypto.spec.*;
+import javax.crypto.Cipher;
+import javax.crypto.spec.IvParameterSpec;
+import javax.crypto.spec.SecretKeySpec;
 
-public class AES128CTR implements Cipher {
+public class AES128CTR implements com.jcraft.jsch.Cipher {
   private static final int ivsize = 16;
   private static final int bsize = 16;
-  private javax.crypto.Cipher cipher;
+  private Cipher cipher;
 
   @Override
   public int getIVSize() {
@@ -46,7 +47,6 @@ public class AES128CTR implements Cipher {
 
   @Override
   public void init(int mode, byte[] key, byte[] iv) throws Exception {
-    String pad = "NoPadding";
     byte[] tmp;
     if (iv.length > ivsize) {
       tmp = new byte[ivsize];
@@ -61,9 +61,10 @@ public class AES128CTR implements Cipher {
 
     try {
       SecretKeySpec keyspec = new SecretKeySpec(key, "AES");
-      cipher = javax.crypto.Cipher.getInstance("AES/CTR/" + pad);
-      cipher.init((mode == ENCRYPT_MODE ? javax.crypto.Cipher.ENCRYPT_MODE
-          : javax.crypto.Cipher.DECRYPT_MODE), keyspec, new IvParameterSpec(iv));
+      cipher = Cipher.getInstance("AES/CTR/NoPadding");
+      cipher.init(
+          (mode == com.jcraft.jsch.Cipher.ENCRYPT_MODE ? Cipher.ENCRYPT_MODE : Cipher.DECRYPT_MODE),
+          keyspec, new IvParameterSpec(iv));
     } catch (Exception e) {
       cipher = null;
       throw e;

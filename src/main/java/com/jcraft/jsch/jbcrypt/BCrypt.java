@@ -23,20 +23,25 @@ import java.security.SecureRandom;
 /**
  * BCrypt implements OpenBSD-style Blowfish password hashing using the scheme described in "A
  * Future-Adaptable Password Scheme" by Niels Provos and David Mazieres.
+ *
  * <p>
  * This password hashing system tries to thwart off-line password cracking using a
  * computationally-intensive hashing algorithm, based on Bruce Schneier's Blowfish cipher. The work
  * factor of the algorithm is parameterised, so it can be increased as computers get faster.
+ *
  * <p>
  * Usage is really simple. To hash a password for the first time, call the hashpw method with a
  * random salt, like this:
+ *
  * <p>
  * <code>
  * String pw_hash = BCrypt.hashpw(plain_password, BCrypt.gensalt()); <br>
  * </code>
+ *
  * <p>
  * To check whether a plaintext password matches one that has been hashed previously, use the
  * checkpw method:
+ *
  * <p>
  * <code>
  * if (BCrypt.checkpw(candidate_password, stored_hash))<br>
@@ -44,14 +49,17 @@ import java.security.SecureRandom;
  * else<br>
  * &nbsp;&nbsp;&nbsp;&nbsp;System.out.println("It does not match");<br>
  * </code>
+ *
  * <p>
  * The gensalt() method takes an optional parameter (log_rounds) that determines the computational
  * complexity of the hashing:
+ *
  * <p>
  * <code>
  * String strong_salt = BCrypt.gensalt(10)<br>
  * String stronger_salt = BCrypt.gensalt(12)<br>
  * </code>
+ *
  * <p>
  * The amount of work increases exponentially (2**log_rounds), so each increment is twice as much
  * work. The default log_rounds is 10, and the valid range is 4 to 30.
@@ -226,17 +234,17 @@ public class BCrypt {
   // bcrypt IV: "OrpheanBeholderScryDoubt". The C implementation calls
   // this "ciphertext", but it is really plaintext or an IV. We keep
   // the name to make code comparison easier.
-  static private final int bf_crypt_ciphertext[] =
+  private static final int bf_crypt_ciphertext[] =
       {0x4f727068, 0x65616e42, 0x65686f6c, 0x64657253, 0x63727944, 0x6f756274};
 
   // Table for Base64 encoding
-  static private final char base64_code[] = {'.', '/', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I',
+  private static final char base64_code[] = {'.', '/', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I',
       'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', 'a', 'b',
       'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u',
       'v', 'w', 'x', 'y', 'z', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9'};
 
   // Table for Base64 decoding
-  static private final byte index_64[] = {-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+  private static final byte index_64[] = {-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
       -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
       -1, -1, -1, -1, -1, -1, -1, -1, -1, 0, 1, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, -1, -1, -1,
       -1, -1, -1, -1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22,
@@ -400,9 +408,7 @@ public class BCrypt {
     return word;
   }
 
-  /**
-   * Initialise the Blowfish key schedule
-   */
+  /** Initialise the Blowfish key schedule */
   private void init_key() {
     P = P_orig.clone();
     S = S_orig.clone();
@@ -468,9 +474,7 @@ public class BCrypt {
     }
   }
 
-  /**
-   * Compatibility with new OpenBSD function.
-   */
+  /** Compatibility with new OpenBSD function. */
   public void hash(byte[] hpass, byte[] hsalt, byte[] output) {
     init_key();
     ekskey(hsalt, hpass);
@@ -496,9 +500,7 @@ public class BCrypt {
     }
   }
 
-  /**
-   * Compatibility with new OpenBSD function.
-   */
+  /** Compatibility with new OpenBSD function. */
   public void pbkdf(byte[] password, byte[] salt, int rounds, byte[] output) {
     try {
       MessageDigest sha512 = MessageDigest.getInstance("SHA-512");

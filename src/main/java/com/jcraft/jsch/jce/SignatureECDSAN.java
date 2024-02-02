@@ -26,12 +26,21 @@
 
 package com.jcraft.jsch.jce;
 
-import java.math.BigInteger;
-import java.security.*;
-import java.security.spec.*;
 import com.jcraft.jsch.Buffer;
+import com.jcraft.jsch.SignatureECDSA;
+import java.math.BigInteger;
+import java.security.AlgorithmParameters;
+import java.security.KeyFactory;
+import java.security.PrivateKey;
+import java.security.PublicKey;
+import java.security.Signature;
+import java.security.spec.ECGenParameterSpec;
+import java.security.spec.ECParameterSpec;
+import java.security.spec.ECPoint;
+import java.security.spec.ECPrivateKeySpec;
+import java.security.spec.ECPublicKeySpec;
 
-abstract class SignatureECDSAN implements com.jcraft.jsch.SignatureECDSA {
+abstract class SignatureECDSAN implements SignatureECDSA {
 
   Signature signature;
   KeyFactory keyFactory;
@@ -46,7 +55,7 @@ abstract class SignatureECDSAN implements com.jcraft.jsch.SignatureECDSA {
       foo = "SHA384withECDSA";
     else if (name.equals("ecdsa-sha2-nistp521"))
       foo = "SHA512withECDSA";
-    signature = java.security.Signature.getInstance(foo);
+    signature = Signature.getInstance(foo);
     keyFactory = KeyFactory.getInstance("EC");
   }
 
@@ -99,7 +108,7 @@ abstract class SignatureECDSAN implements com.jcraft.jsch.SignatureECDSA {
     // so we have to convert it.
     if (sig[0] == 0x30 && // in ASN.1
         ((sig[1] + 2 == sig.length)
-            || ((sig[1] & 0x80) != 0 && (sig[2] & 0xff) + 3 == sig.length))) {// 2bytes for len
+            || ((sig[1] & 0x80) != 0 && (sig[2] & 0xff) + 3 == sig.length))) { // 2bytes for len
 
       int index = 3;
       if ((sig[1] & 0x80) != 0 && (sig[2] & 0xff) + 3 == sig.length)

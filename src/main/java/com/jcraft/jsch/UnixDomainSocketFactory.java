@@ -26,9 +26,6 @@
 
 package com.jcraft.jsch;
 
-import com.jcraft.jsch.AgentProxyException;
-import com.jcraft.jsch.USocketFactory;
-
 import java.io.IOException;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 ymnk, JCraft,Inc. All rights reserved.
+ * Copyright (c) 2013-2018 ymnk, JCraft,Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification, are permitted
  * provided that the following conditions are met:
@@ -24,42 +24,11 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package com.jcraft.jsch;
+package com.jcraft.jsch.jce;
 
-import java.io.IOException;
-import java.nio.channels.ServerSocketChannel;
-import java.nio.channels.SocketChannel;
-import java.nio.file.Path;
-import org.newsclub.net.unix.AFUNIXServerSocketChannel;
-import org.newsclub.net.unix.AFUNIXSocketAddress;
-import org.newsclub.net.unix.AFUNIXSocketChannel;
-
-public class JUnixSocketFactory implements USocketFactory {
-
-  @SuppressWarnings("try")
-  public JUnixSocketFactory() throws AgentProxyException {
-    // Check to confirm that junixsocket library is available
-    try (AFUNIXSocketChannel foo = AFUNIXSocketChannel.open()) {
-    } catch (IOException | NoClassDefFoundError e) {
-      throw new AgentProxyException("junixsocket library unavailable", e);
-    }
-  }
-
+public class PBKDF2HMACSHA512224 extends PBKDF2 {
   @Override
-  public SocketChannel connect(Path path) throws IOException {
-    AFUNIXSocketAddress sockAddr = AFUNIXSocketAddress.of(path);
-    AFUNIXSocketChannel sock = AFUNIXSocketChannel.open();
-    sock.configureBlocking(true);
-    sock.connect(sockAddr);
-    return sock;
-  }
-
-  @Override
-  public ServerSocketChannel bind(Path path) throws IOException {
-    AFUNIXSocketAddress sockAddr = AFUNIXSocketAddress.of(path);
-    AFUNIXServerSocketChannel sock = AFUNIXServerSocketChannel.open();
-    sock.configureBlocking(true);
-    sock.bind(sockAddr);
-    return sock;
+  String getName() {
+    return "PBKDF2WithHmacSHA512/224";
   }
 }

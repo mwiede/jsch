@@ -1,11 +1,22 @@
 /**
  * This program will demonstrate the ssh session via SOCKS proxy. You will be asked username,
  * hostname, proxy-server and passwd. If everything works fine, you will get the shell prompt.
- *
  */
-import com.jcraft.jsch.*;
-import java.awt.*;
-import javax.swing.*;
+import com.jcraft.jsch.Channel;
+import com.jcraft.jsch.JSch;
+import com.jcraft.jsch.ProxySOCKS5;
+import com.jcraft.jsch.Session;
+import com.jcraft.jsch.UIKeyboardInteractive;
+import com.jcraft.jsch.UserInfo;
+import java.awt.Container;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Insets;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JPasswordField;
+import javax.swing.JTextField;
 
 public class ViaSOCKS5 {
   public static void main(String[] arg) {
@@ -145,5 +156,3 @@ public class ViaSOCKS5 {
     }
   }
 }
-
-

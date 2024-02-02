@@ -1,11 +1,11 @@
 package com.jcraft.jsch;
 
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertSame;
 
 import java.util.Hashtable;
-
-import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 class JSchTest {
 
@@ -64,7 +64,7 @@ class JSchTest {
     assertSame(JSch.DEVNULL, jsch.getInstanceLogger(), "instance logger should be DEVNULL");
   }
 
-  final static class TestLogger implements Logger {
+  static final class TestLogger implements Logger {
     @Override
     public boolean isEnabled(int level) {
       return true;

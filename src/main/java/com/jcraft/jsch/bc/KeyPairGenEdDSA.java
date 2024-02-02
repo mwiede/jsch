@@ -26,8 +26,10 @@
 
 package com.jcraft.jsch.bc;
 
-import java.security.*;
-import org.bouncycastle.crypto.params.*;
+import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
+import org.bouncycastle.crypto.params.Ed25519PrivateKeyParameters;
+import org.bouncycastle.crypto.params.Ed448PrivateKeyParameters;
 
 public class KeyPairGenEdDSA implements com.jcraft.jsch.KeyPairGenEdDSA {
   byte[] prv; // private

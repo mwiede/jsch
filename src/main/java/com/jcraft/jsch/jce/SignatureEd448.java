@@ -26,7 +26,9 @@
 
 package com.jcraft.jsch.jce;
 
-public class SignatureEd448 implements com.jcraft.jsch.SignatureEdDSA {
+import com.jcraft.jsch.SignatureEdDSA;
+
+public class SignatureEd448 implements SignatureEdDSA {
 
   public SignatureEd448() {
     throw new UnsupportedOperationException("SignatureEd448 requires Java15+.");

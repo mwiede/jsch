@@ -26,7 +26,10 @@
 
 package com.jcraft.jsch.jzlib;
 
-import java.io.*;
+import java.io.EOFException;
+import java.io.FilterInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 
 final class InflaterInputStream extends FilterInputStream {
@@ -240,7 +243,7 @@ final class InflaterInputStream extends FilterInputStream {
         throw new IOException("no input");
       inflater.setInput(b1);
       err = inflater.inflate(JZlib.Z_NO_FLUSH);
-      if (err != 0/* Z_OK */)
+      if (err != 0 /* Z_OK */)
         throw new IOException(inflater.msg);
     } while (inflater.istate.inParsingHeader());
   }

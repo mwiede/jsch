@@ -26,7 +26,9 @@
 
 package com.jcraft.jsch.jzlib;
 
-import java.io.*;
+import java.io.FilterOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
 
 final class DeflaterOutputStream extends FilterOutputStream {
 
