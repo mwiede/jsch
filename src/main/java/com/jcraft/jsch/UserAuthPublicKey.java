@@ -41,7 +41,8 @@ class UserAuthPublicKey extends UserAuth {
 
     Vector<Identity> identities = session.getIdentityRepository().getIdentities();
 
-    synchronized (identities) {
+    session.getSessionLock().lock();
+    try {
       if (identities.size() <= 0) {
         return false;
       }
@@ -117,6 +118,8 @@ class UserAuthPublicKey extends UserAuth {
       }
 
       return _start(session, identities, pkmethods, not_available_pks);
+    } finally {
+      session.getSessionLock().unlock();
     }
   }
 
