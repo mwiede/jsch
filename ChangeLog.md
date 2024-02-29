@@ -1,3 +1,5 @@
+* [0.2.17](https://github.com/mwiede/jsch/releases/tag/jsch-0.2.17)
+   * Add PBKDF2-HMAC-SHA512/256 & PBKDF2-HMAC-SHA512/224, which are both supported as of Java 21.
 * [0.2.16](https://github.com/mwiede/jsch/releases/tag/jsch-0.2.16)
   * Add support for sntrup761x25519-sha512@openssh.com KEX algorithm.
   * Switch to bnd-maven-plugin in order to support Multi-Release OSGi bundle JAR's via supplemental manifest files.
