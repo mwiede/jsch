@@ -656,7 +656,7 @@
             <plugin>
                 <groupId>de.thetaphi</groupId>
                 <artifactId>forbiddenapis</artifactId>
-                <version>3.6</version>
+                <version>3.7</version>
                 <configuration>
                     <bundledSignatures>
                         <bundledSignature>jdk-unsafe</bundledSignature>
