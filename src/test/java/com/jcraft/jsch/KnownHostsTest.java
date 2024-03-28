@@ -1057,6 +1057,8 @@ class KnownHostsTest {
     assertEquals(
         "9d:38:5b:83:a9:17:52:92:56:1a:5e:c4:d4:81:8e:0a:ca:51:a2:64:f1:74:20:11:2e:f8:8a:c3:a1:39:49:8f",
         key.getFingerPrint(jsch), "fingerprint mismatch");
+    assertEquals("SHA256:nThbg6kXUpJWGl7E1IGOCspRomTxdCARLviKw6E5SY8",
+        key.getFingerPrint(jsch, true), "fingerprint mismatch");
     assertEquals(expectedHostResult, key.getHost(), "host mismatch");
     assertEquals(rsaKey, key.getKey(), "key mismatch");
     assertEquals(expectedMarker, key.getMarker(), "marker mismatch");

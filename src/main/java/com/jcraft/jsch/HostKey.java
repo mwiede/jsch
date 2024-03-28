@@ -118,6 +118,10 @@ public class HostKey {
   }
 
   public String getFingerPrint(JSch jsch) {
+    return getFingerPrint(jsch, false);
+  }
+
+  public String getFingerPrint(JSch jsch, boolean isNewFormat) {
     HASH hash = null;
     try {
       String _c = JSch.getConfig("FingerprintHash").toLowerCase(Locale.ROOT);
@@ -128,7 +132,7 @@ public class HostKey {
         jsch.getInstanceLogger().log(Logger.ERROR, "getFingerPrint: " + e.getMessage(), e);
       }
     }
-    return Util.getFingerPrint(hash, key, false, true);
+    return Util.getFingerPrint(hash, key, isNewFormat, !isNewFormat);
   }
 
   public String getComment() {
