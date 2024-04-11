@@ -211,7 +211,9 @@ public abstract class AbstractBufferMargin {
             byte[] buf = new byte[17];
             is.read(buf, 0, 17);
             sendAck(os);
-            Files.copy(new BoundedInputStream(is, 100L * 1024L), out);
+            Files.copy(
+                BoundedInputStream.builder().setMaxCount(100L * 1024L).setInputStream(is).get(),
+                out);
             checkAck(is);
             sendAck(os);
           }
