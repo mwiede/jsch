@@ -92,7 +92,8 @@ class OpenSSHConfigTest {
   @Test
   void parseFileWithNegations() throws IOException, URISyntaxException {
     final String configFile =
-            Paths.get(ClassLoader.getSystemResource("config_with_negations").toURI()).toFile().getAbsolutePath();
+        Paths.get(ClassLoader.getSystemResource("config_with_negations").toURI()).toFile()
+            .getAbsolutePath();
     final OpenSSHConfig openSSHConfig = OpenSSHConfig.parseFile(configFile);
 
     assertUserEquals(openSSHConfig, "my.example.com", "u1");
@@ -105,6 +106,7 @@ class OpenSSHConfigTest {
     final ConfigRepository.Config config = openSSHConfig.getConfig(host);
     assertNotNull(config);
     String actual = config.getUser();
-    assertEquals(expected, actual, String.format("Expected user for host %s to be %s, but was %s", host, expected, actual));
+    assertEquals(expected, actual,
+        String.format("Expected user for host %s to be %s, but was %s", host, expected, actual));
   }
 }
