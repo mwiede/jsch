@@ -188,6 +188,8 @@ public class OpenSSHConfig implements ConfigRepository {
       byte[] _host = Util.str2byte(host);
       if (hosts.size() > 1) {
         for (int i = 1; i < hosts.size(); i++) {
+          boolean anyPositivePatternMatches = false;
+          boolean anyNegativePatternMatches = false;
           String patterns[] = hosts.elementAt(i).split("[ \t]");
           for (int j = 0; j < patterns.length; j++) {
             boolean negate = false;
@@ -197,12 +199,16 @@ public class OpenSSHConfig implements ConfigRepository {
               foo = foo.substring(1).trim();
             }
             if (Util.glob(Util.str2byte(foo), _host)) {
-              if (!negate) {
-                _configs.addElement(config.get(hosts.elementAt(i)));
+              if (negate) {
+                anyNegativePatternMatches = true;
+              } else {
+                anyPositivePatternMatches = true;
               }
-            } else if (negate) {
-              _configs.addElement(config.get(hosts.elementAt(i)));
             }
+          }
+
+          if (anyPositivePatternMatches && !anyNegativePatternMatches) {
+            _configs.addElement(config.get(hosts.elementAt(i)));
           }
         }
       }
