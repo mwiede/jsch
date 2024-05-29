@@ -106,7 +106,7 @@ class OpenSSHConfigTest {
     final ConfigRepository.Config config = openSSHConfig.getConfig(host);
     assertNotNull(config);
     String actual = config.getUser();
-    assertEquals(expected, actual,
-        String.format(Locale.ROOT, "Expected user for host %s to be %s, but was %s", host, expected, actual));
+    assertEquals(expected, actual, String.format(Locale.ROOT,
+        "Expected user for host %s to be %s, but was %s", host, expected, actual));
   }
 }
