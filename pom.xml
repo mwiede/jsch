@@ -615,7 +615,7 @@
             <plugin>
                 <groupId>net.revelc.code.formatter</groupId>
                 <artifactId>formatter-maven-plugin</artifactId>
-                <version>2.23.0</version>
+                <version>2.24.0</version>
                 <configuration>
                     <configFile>${project.basedir}/eclipse-java-google-style.xml</configFile>
                     <encoding>UTF-8</encoding>
@@ -782,7 +782,7 @@
         <profile>
             <id>formatvalidation</id>
             <activation>
-                <jdk>[11,)</jdk>
+                <jdk>[17,)</jdk>
             </activation>
             <build>
                 <plugins>
