@@ -4,7 +4,7 @@
     <groupId>com.github.mwiede</groupId>
     <artifactId>jsch</artifactId>
     <packaging>jar</packaging>
-    <version>0.2.18</version>
+    <version>0.2.19-SNAPSHOT</version>
     <name>JSch</name>
     <url>https://github.com/mwiede/jsch</url>
     <description>JSch is a pure Java implementation of SSH2</description>
@@ -12,7 +12,7 @@
         <connection>scm:git:https://github.com/mwiede/jsch.git</connection>
         <developerConnection>scm:git:https://github.com/mwiede/jsch.git</developerConnection>
         <url>https://github.com/mwiede/jsch</url>
-        <tag>jsch-0.2.18</tag>
+        <tag>HEAD</tag>
     </scm>
     <distributionManagement>
         <snapshotRepository>
@@ -75,7 +75,7 @@
         </license>
     </licenses>
     <properties>
-        <project.build.outputTimestamp>2024-06-07T22:11:52Z</project.build.outputTimestamp>
+        <project.build.outputTimestamp>2024-06-07T22:13:34Z</project.build.outputTimestamp>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <skipITs>true</skipITs>
