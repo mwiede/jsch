@@ -88,4 +88,25 @@ class OpenSSHConfigTest {
     ConfigRepository.Config kex = parse.getConfig("");
     assertEquals("diffie-hellman-group1-sha1", kex.getValue("kex"));
   }
+
+  @Test
+  void parseFileWithNegations() throws IOException, URISyntaxException {
+    final String configFile =
+        Paths.get(ClassLoader.getSystemResource("config_with_negations").toURI()).toFile()
+            .getAbsolutePath();
+    final OpenSSHConfig openSSHConfig = OpenSSHConfig.parseFile(configFile);
+
+    assertUserEquals(openSSHConfig, "my.example.com", "u1");
+    assertUserEquals(openSSHConfig, "my-jump.example.com", "jump-u1");
+    assertUserEquals(openSSHConfig, "my-proxy.example.com", "proxy-u1");
+    assertUserEquals(openSSHConfig, "my.example.org", "u2");
+  }
+
+  private void assertUserEquals(OpenSSHConfig openSSHConfig, String host, String expected) {
+    final ConfigRepository.Config config = openSSHConfig.getConfig(host);
+    assertNotNull(config);
+    String actual = config.getUser();
+    assertEquals(expected, actual, String.format(Locale.ROOT,
+        "Expected user for host %s to be %s, but was %s", host, expected, actual));
+  }
 }
