@@ -1,3 +1,5 @@
+* [0.2.18](https://github.com/mwiede/jsch/releases/tag/jsch-0.2.18)
+   * Handle negated patterns according to ssh_config(5) by @bmiddaugh in https://github.com/mwiede/jsch/pull/565
 * [0.2.17](https://github.com/mwiede/jsch/releases/tag/jsch-0.2.17)
    * Add PBKDF2-HMAC-SHA512/256 & PBKDF2-HMAC-SHA512/224, which are both supported as of Java 21.
 * [0.2.16](https://github.com/mwiede/jsch/releases/tag/jsch-0.2.16)
