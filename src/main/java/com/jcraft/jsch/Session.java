@@ -40,6 +40,8 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Properties;
 import java.util.Vector;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 import javax.crypto.AEADBadTagException;
 
 public class Session {
@@ -128,7 +130,7 @@ public class Session {
   private volatile boolean isAuthed = false;
 
   private Thread connectThread = null;
-  private Object lock = new Object();
+  private final Lock lock = new ReentrantLock();
 
   boolean x11_forwarding = false;
   boolean agent_forwarding = false;
@@ -526,7 +528,8 @@ public class Session {
 
       isAuthed = true;
 
-      synchronized (lock) {
+      lock.lock();
+      try {
         if (isConnected) {
           connectThread = new Thread(this::run);
           connectThread.setName("Connect thread " + host + " session");
@@ -540,6 +543,8 @@ public class Session {
           // The session has been already down and
           // we don't have to start new thread.
         }
+      } finally {
+        lock.unlock();
       }
     } catch (Exception e) {
       in_kex = false;
@@ -1743,7 +1748,8 @@ public class Session {
     boolean require_strict_kex = this.require_strict_kex;
     boolean resetSeqo = packet.buffer.getCommand() == SSH_MSG_NEWKEYS && doStrictKex;
 
-    synchronized (lock) {
+    lock.lock();
+    try {
       encode(packet);
       if (io != null) {
         io.put(packet);
@@ -1754,6 +1760,8 @@ public class Session {
           seqo = 0;
         }
       }
+    } finally {
+      lock.unlock();
     }
 
     if (resetSeqo && io != null && getLogger().isEnabled(Logger.INFO)) {
@@ -2105,12 +2113,15 @@ public class Session {
     ChannelForwardedTCPIP.delPort(this);
     ChannelX11.removeFakedCookie(this);
 
-    synchronized (lock) {
+    lock.lock();
+    try {
       if (connectThread != null) {
         Thread.yield();
         connectThread.interrupt();
         connectThread = null;
       }
+    } finally {
+      lock.unlock();
     }
     thread = null;
     try {
@@ -2760,7 +2771,8 @@ public class Session {
   }
 
   public void setConfig(Hashtable<String, String> newconf) {
-    synchronized (lock) {
+    lock.lock();
+    try {
       if (config == null)
         config = new Hashtable<>();
       for (Enumeration<String> e = newconf.keys(); e.hasMoreElements();) {
@@ -2770,11 +2782,14 @@ public class Session {
         String value = newconf.get(newkey);
         config.put(key, value);
       }
+    } finally {
+      lock.unlock();
     }
   }
 
   public void setConfig(String key, String value) {
-    synchronized (lock) {
+    lock.lock();
+    try {
       if (config == null) {
         config = new Hashtable<>();
       }
@@ -2783,6 +2798,8 @@ public class Session {
       } else {
         config.put(key, value);
       }
+    } finally {
+      lock.unlock();
     }
   }
 
@@ -3390,5 +3407,9 @@ public class Session {
     buffer_margin += mac_length;
 
     return buffer_margin;
+  }
+
+  public Lock getSessionLock() {
+    return lock;
   }
 }
