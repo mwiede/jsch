@@ -7,15 +7,15 @@ jobs:
   coverity:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
     - name: Set up build JDK
-      uses: actions/setup-java@v4
+      uses: actions/setup-java@99b8673ff64fbf99d8d325f52d9a5bdedb8483e9 # v4.2.1
       with:
         distribution: 'zulu'
         java-version: '21'
-        check-latest: true    
+        check-latest: true
         cache: 'maven'
-    - uses: vapier/coverity-scan-action@v1
+    - uses: vapier/coverity-scan-action@2068473c7bdf8c2fb984a6a40ae76ee7facd7a85 # v1.8.0
       with:
         email: ${{ secrets.COVERITY_SCAN_EMAIL }}
         token: ${{ secrets.COVERITY_SCAN_TOKEN }}

@@ -17,9 +17,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v4
+      uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
     - name: Cache local Maven repository
-      uses: actions/cache@v4
+      uses: actions/cache@0c45773b623bea8c8e75f6c82b208c3cf94ea4f9 # v4.0.2
       with:
         path: |
           ~/.m2/repository
@@ -28,7 +28,7 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-build-maven-
     - name: Set up JDK
-      uses: actions/setup-java@v4
+      uses: actions/setup-java@99b8673ff64fbf99d8d325f52d9a5bdedb8483e9 # v4.2.1
       with:
         distribution: 'zulu'
         java-version: '21'
@@ -38,7 +38,7 @@ jobs:
     - name: Archive target directory
       run: tar -cf target.tar target
     - name: Upload target directory archive
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@0b2256b8c012f0828dc542b3febcab082c67f72b # v4.3.4
       with:
         name: build_target
         path: target.tar
@@ -50,9 +50,9 @@ jobs:
         java: ['8', '11', '17', '21', '22']
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v4
+      uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
     - name: Cache local Maven repository
-      uses: actions/cache@v4
+      uses: actions/cache@0c45773b623bea8c8e75f6c82b208c3cf94ea4f9 # v4.0.2
       with:
         path: |
           ~/.m2/repository
@@ -61,13 +61,13 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-test-${{ matrix.java }}-maven-
     - name: Set up JDK
-      uses: actions/setup-java@v4
+      uses: actions/setup-java@99b8673ff64fbf99d8d325f52d9a5bdedb8483e9 # v4.2.1
       with:
         distribution: 'zulu'
         java-version: ${{ matrix.java }}
         check-latest: true
     - name: Download target directory archive
-      uses: actions/download-artifact@v4
+      uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
       with:
         name: build_target
     - name: Extract target directory archive
@@ -75,7 +75,7 @@ jobs:
     - name: Test with Maven
       run: ./mvnw -B -V -e -Pcoverage verify -Denforcer.skip=true -Dmaven.resources.skip=true -Dflatten.skip=true -Dmaven.main.skip=true -Dbnd.skip=true -Dassembly.skipAssembly=true -Dmaven.javadoc.skip=true -Dcyclonedx.skip=true -Dformatter.skip=true -Dforbiddenapis.skip=true -DskipTests=false -DskipITs=false
     - name: Upload test results
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@0b2256b8c012f0828dc542b3febcab082c67f72b # v4.3.4
       with:
         name: java-${{ matrix.java }}-testresults
         path: |
