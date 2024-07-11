@@ -47,7 +47,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        java: ['8', '11', '17', '21']
+        java: ['8', '11', '17', '21', '22']
     steps:
     - name: Checkout repository
       uses: actions/checkout@v4
