@@ -15,42 +15,67 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        java: ['8', '11', '17', '21']
     steps:
-    - uses: actions/checkout@v4
+    - name: Checkout repository
+      uses: actions/checkout@v4
     - name: Cache local Maven repository
       uses: actions/cache@v4
       with:
-        path: ~/.m2/repository
-        key: ${{ runner.os }}-${{ matrix.java }}-maven-${{ hashFiles('**/pom.xml') }}
+        path: |
+          ~/.m2/repository
+          ~/.m2/wrapper
+        key: ${{ runner.os }}-build-maven-${{ hashFiles('**/pom.xml', '**/maven-wrapper.properties') }}
         restore-keys: |
-          ${{ runner.os }}-${{ matrix.java }}-maven-
-    - name: Set up build JDK
+          ${{ runner.os }}-build-maven-
+    - name: Set up JDK
       uses: actions/setup-java@v4
       with:
         distribution: 'zulu'
         java-version: '21'
         check-latest: true
     - name: Build with Maven
-      run: ./mvnw -B -V -e -DskipTests=true package
-    - uses: actions/upload-artifact@v4
+      run: ./mvnw -B -V -e verify -DskipTests=true -DskipITs=true
+    - name: Archive target directory
+      run: tar -cf target.tar target
+    - name: Upload target directory archive
+      uses: actions/upload-artifact@v4
       with:
-        name: java-${{ matrix.java }}-jars
+        name: build_target
+        path: target.tar
+  test:
+    needs: build
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        java: ['8', '11', '17', '21']
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+    - name: Cache local Maven repository
+      uses: actions/cache@v4
+      with:
         path: |
-          **/target/*.jar
-          **/target/bom.*
-      if: always()
-    - name: Set up test JDK ${{ matrix.java }}
+          ~/.m2/repository
+          ~/.m2/wrapper
+        key: ${{ runner.os }}-test-${{ matrix.java }}-maven-${{ hashFiles('**/pom.xml', '**/maven-wrapper.properties') }}
+        restore-keys: |
+          ${{ runner.os }}-test-${{ matrix.java }}-maven-
+    - name: Set up JDK
       uses: actions/setup-java@v4
       with:
         distribution: 'zulu'
         java-version: ${{ matrix.java }}
         check-latest: true
+    - name: Download target directory archive
+      uses: actions/download-artifact@v4
+      with:
+        name: build_target
+    - name: Extract target directory archive
+      run: tar -xf target.tar
     - name: Test with Maven
-      run: ./mvnw -B -V -e -P coverage verify -Denforcer.skip=true -Dmaven.resources.skip=true -Dflatten.skip=true -Dmaven.main.skip=true -Dbnd.skip=true -Dassembly.skipAssembly=true -Dmaven.javadoc.skip=true -Dcyclonedx.skip=true -DskipITs=false
-    - uses: actions/upload-artifact@v4
+      run: ./mvnw -B -V -e -Pcoverage verify -Denforcer.skip=true -Dmaven.resources.skip=true -Dflatten.skip=true -Dmaven.main.skip=true -Dbnd.skip=true -Dassembly.skipAssembly=true -Dmaven.javadoc.skip=true -Dcyclonedx.skip=true -Dformatter.skip=true -Dforbiddenapis.skip=true -DskipTests=false -DskipITs=false
+    - name: Upload test results
+      uses: actions/upload-artifact@v4
       with:
         name: java-${{ matrix.java }}-testresults
         path: |
