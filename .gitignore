@@ -2,6 +2,7 @@
 *.geany
 nb-configuration.xml
 .flattened-pom.xml
+target.tar
 
 # Created by https://www.toptal.com/developers/gitignore/api/intellij+all,netbeans,eclipse,visualstudiocode,vim,emacs,macos,windows,linux,java,maven
 # Edit at https://www.toptal.com/developers/gitignore?templates=intellij+all,netbeans,eclipse,visualstudiocode,vim,emacs,macos,windows,linux,java,maven

@@ -1,3 +1,5 @@
+* [0.2.19](https://github.com/mwiede/jsch/releases/tag/jsch-0.2.19)
+   * Enforce DHGEX prime modulus bit length meets configured constraints.
 * [0.2.18](https://github.com/mwiede/jsch/releases/tag/jsch-0.2.18)
    * Handle negated patterns according to ssh_config(5) by @bmiddaugh in https://github.com/mwiede/jsch/pull/565
 * [0.2.17](https://github.com/mwiede/jsch/releases/tag/jsch-0.2.17)

@@ -26,6 +26,8 @@
 
 package com.jcraft.jsch;
 
+import java.math.BigInteger;
+
 abstract class DHGEX extends KeyExchange {
 
   private static final int SSH_MSG_KEX_DH_GEX_GROUP = 31;
@@ -79,8 +81,7 @@ abstract class DHGEX extends KeyExchange {
       min = Integer.parseInt(session.getConfig("dhgex_min"));
       max = Integer.parseInt(session.getConfig("dhgex_max"));
       preferred = Integer.parseInt(session.getConfig("dhgex_preferred"));
-      if (checkInvalidSize(min) || checkInvalidSize(max) || checkInvalidSize(preferred)
-          || preferred < min || max < preferred) {
+      if (min <= 0 || max <= 0 || preferred <= 0 || preferred < min || preferred > max) {
         throw new JSchException(
             "Invalid DHGEX sizes: min=" + min + " max=" + max + " preferred=" + preferred);
       }
@@ -126,6 +127,11 @@ abstract class DHGEX extends KeyExchange {
 
         p = _buf.getMPInt();
         g = _buf.getMPInt();
+
+        int bits = new BigInteger(1, p).bitLength();
+        if (bits < min || bits > max) {
+          return false;
+        }
 
         dh.setP(p);
         dh.setG(g);
@@ -236,9 +242,5 @@ abstract class DHGEX extends KeyExchange {
   @Override
   public int getState() {
     return state;
-  }
-
-  static boolean checkInvalidSize(int size) {
-    return (size < 1024 || size > 8192 || size % 1024 != 0);
   }
 }
