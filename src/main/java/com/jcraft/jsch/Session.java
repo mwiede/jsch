@@ -159,7 +159,7 @@ public class Session {
 
   protected boolean daemon_thread = false;
 
-  private long kex_start_time = 0L;
+  private volatile long kex_start_time = 0L;
 
   int max_auth_tries = 6;
   int auth_failures = 0;
@@ -843,8 +843,8 @@ public class Session {
       }
     }
 
-    in_kex = true;
     kex_start_time = System.currentTimeMillis();
+    in_kex = true;
 
     // byte SSH_MSG_KEXINIT(20)
     // byte[16] cookie (random bytes)
