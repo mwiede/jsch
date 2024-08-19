@@ -72,7 +72,15 @@ class UserAuthKeyboardInteractive extends UserAuth {
       session.write(packet);
 
       boolean firsttime = true;
+      final long timeout = System.currentTimeMillis() + session.getTimeout();
       loop: while (true) {
+        if (session.getTimeout() > 0 && System.currentTimeMillis() > timeout) {
+          throw new JSchAuthCancelException("keyboard-interactive");
+        }
+        if (session.auth_failures >= session.max_auth_tries) {
+          return false;
+        }
+
         buf = session.read(buf);
         int command = buf.getCommand() & 0xff;
 
