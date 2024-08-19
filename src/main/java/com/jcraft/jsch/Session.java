@@ -161,6 +161,8 @@ public class Session {
 
   private volatile long kex_start_time = 0L;
 
+  private String auth_method = null;
+
   int max_auth_tries = 6;
   int auth_failures = 0;
 
@@ -425,6 +427,8 @@ public class Session {
           // smethods = "publickey,password,keyboard-interactive";
           smethods = cmethods;
         }
+      } else {
+        auth_method = "none";
       }
 
       String[] smethoda = Util.split(smethods, ",");
@@ -477,6 +481,9 @@ public class Session {
             auth_cancel = false;
             try {
               auth = ua.start(this);
+              if (auth) {
+                auth_method = method;
+              }
               if (auth && getLogger().isEnabled(Logger.INFO)) {
                 getLogger().log(Logger.INFO, "Authentication succeeded (" + method + ").");
               }
@@ -2944,6 +2951,15 @@ public class Session {
 
   public void setDaemonThread(boolean enable) {
     this.daemon_thread = enable;
+  }
+
+  /**
+   * Get the authentication method used
+   *
+   * @return authenticate method or null if not authenticated
+   */
+  public String getAuthMethod() {
+    return auth_method;
   }
 
   private String[] checkCiphers(String ciphers) {
