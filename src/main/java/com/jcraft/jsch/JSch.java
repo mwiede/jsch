@@ -27,15 +27,15 @@
 package com.jcraft.jsch;
 
 import java.io.InputStream;
-import java.util.Enumeration;
-import java.util.Hashtable;
+import java.util.Map;
 import java.util.Vector;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class JSch {
   /** The version number. */
   public static final String VERSION = Version.getVersion();
 
-  static Hashtable<String, String> config = new Hashtable<>();
+  static Map<String, String> config = new ConcurrentHashMap<>();
 
   static {
     config.put("kex", Util.getSystemProperty("jsch.kex",
@@ -608,14 +608,10 @@ public class JSch {
    *
    * @param newconf configurations
    */
-  public static void setConfig(Hashtable<String, String> newconf) {
+  public static void setConfig(Map<String, String> newconf) {
     synchronized (config) {
-      for (Enumeration<String> e = newconf.keys(); e.hasMoreElements();) {
-        String newkey = e.nextElement();
-        String key =
-            (newkey.equals("PubkeyAcceptedKeyTypes") ? "PubkeyAcceptedAlgorithms" : newkey);
-        config.put(key, newconf.get(newkey));
-      }
+      newconf.forEach((key, value) -> config
+          .put(key.equals("PubkeyAcceptedKeyTypes") ? "PubkeyAcceptedAlgorithms" : key, value));
     }
   }
 

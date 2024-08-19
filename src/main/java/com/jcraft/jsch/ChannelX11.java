@@ -28,7 +28,8 @@ package com.jcraft.jsch;
 
 import java.io.IOException;
 import java.net.Socket;
-import java.util.Hashtable;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 class ChannelX11 extends Channel {
 
@@ -45,8 +46,8 @@ class ChannelX11 extends Channel {
   static byte[] cookie = null;
   private static byte[] cookie_hex = null;
 
-  private static Hashtable<Session, byte[]> faked_cookie_pool = new Hashtable<>();
-  private static Hashtable<Session, byte[]> faked_cookie_hex_pool = new Hashtable<>();
+  private static final Map<Session, byte[]> faked_cookie_pool = new ConcurrentHashMap<>();
+  private static final Map<Session, byte[]> faked_cookie_hex_pool = new ConcurrentHashMap<>();
 
   private static byte[] table = {0x30, 0x31, 0x32, 0x33, 0x34, 0x35, 0x36, 0x37, 0x38, 0x39, 0x61,
       0x62, 0x63, 0x64, 0x65, 0x66};
@@ -219,11 +220,8 @@ class ChannelX11 extends Channel {
 
       byte[] bar = new byte[dlen];
       System.arraycopy(foo, s + 12 + plen + ((-plen) & 3), bar, 0, dlen);
-      byte[] faked_cookie = null;
 
-      synchronized (faked_cookie_pool) {
-        faked_cookie = faked_cookie_pool.get(_session);
-      }
+      byte[] faked_cookie = faked_cookie_pool.get(_session);
 
       /*
        * System.err.print("faked_cookie: "); for(int i=0; i<faked_cookie.length; i++){

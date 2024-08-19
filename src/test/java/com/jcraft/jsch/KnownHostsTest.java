@@ -25,8 +25,9 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.util.Arrays;
-import java.util.Hashtable;
+import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.Map;
 import java.util.Properties;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -54,7 +55,7 @@ class KnownHostsTest {
   private static final byte[] rsaKeyBytes = Util.str2byte("    ssh-rsa");
   private LinkedList<String> messages;
   private JSch jsch;
-  private Hashtable<String, String> orgConfig;
+  private Map<String, String> orgConfig;
   private Properties orgProps;
 
   @BeforeEach
@@ -62,7 +63,7 @@ class KnownHostsTest {
     orgProps = System.getProperties();
     Properties myProps = new Properties(orgProps);
     System.setProperties(myProps);
-    orgConfig = new Hashtable<>(JSch.config);
+    orgConfig = new HashMap<>(JSch.config);
     messages = new LinkedList<>();
     jsch = new JSch();
     jsch.setInstanceLogger(new TestLogger(messages));

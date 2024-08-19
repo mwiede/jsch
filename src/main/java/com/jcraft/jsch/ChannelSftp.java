@@ -36,7 +36,8 @@ import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
-import java.util.Hashtable;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Vector;
 
 public class ChannelSftp extends ChannelSession {
@@ -135,7 +136,7 @@ public class ChannelSftp extends ChannelSession {
   private int server_version = 3;
   private String version = String.valueOf(client_version);
 
-  private Hashtable<String, String> extensions = null;
+  private Map<String, String> extensions = null;
   private InputStream io_in = null;
 
   private boolean extension_posix_rename = false;
@@ -255,7 +256,7 @@ public class ChannelSftp extends ChannelSession {
       type = header.type; // 2 -> SSH_FXP_VERSION
       server_version = header.rid;
       // System.err.println("SFTP protocol server-version="+server_version);
-      extensions = new Hashtable<>();
+      extensions = new HashMap<>();
       if (length > 0) {
         // extension data
         fill(buf, length);

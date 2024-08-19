@@ -3,9 +3,11 @@ package com.jcraft.jsch;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertSame;
 
-import java.util.Hashtable;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
+import java.util.HashMap;
+import java.util.Map;
 
 class JSchTest {
 
@@ -29,8 +31,8 @@ class JSchTest {
   }
 
   @Test
-  void setPubkeyAcceptedKeyTypesHashtable() throws JSchException {
-    Hashtable<String, String> newconf = new Hashtable<>();
+  void setPubkeyAcceptedKeyTypesHashtable() {
+    Map<String, String> newconf = new HashMap<>();
     newconf.put("PubkeyAcceptedKeyTypes", "JSchTest333");
     JSch.setConfig(newconf);
     assertEquals("JSchTest333", JSch.getConfig("PubkeyAcceptedKeyTypes"));

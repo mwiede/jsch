@@ -26,15 +26,16 @@
 
 package com.jcraft.jsch;
 
-import java.util.Enumeration;
 import java.util.Hashtable;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 class ChannelSession extends Channel {
   private static byte[] _session = Util.str2byte("session");
 
   protected boolean agent_forwarding = false;
   protected boolean xforwading = false;
-  protected Hashtable<byte[], byte[]> env = null;
+  protected Map<byte[], byte[]> env = null;
 
   protected boolean pty = false;
 
@@ -78,7 +79,7 @@ class ChannelSession extends Channel {
   @Deprecated
   public void setEnv(Hashtable<byte[], byte[]> env) {
     synchronized (this) {
-      this.env = env;
+      this.env = new ConcurrentHashMap<>(env);
     }
   }
 
@@ -103,14 +104,11 @@ class ChannelSession extends Channel {
    */
   public void setEnv(byte[] name, byte[] value) {
     synchronized (this) {
-      getEnv().put(name, value);
+      if (env == null) {
+        env = new ConcurrentHashMap<>();
+      }
+      env.put(name, value);
     }
-  }
-
-  private Hashtable<byte[], byte[]> getEnv() {
-    if (env == null)
-      env = new Hashtable<>();
-    return env;
   }
 
   /**
@@ -205,11 +203,9 @@ class ChannelSession extends Channel {
     }
 
     if (env != null) {
-      for (Enumeration<byte[]> _env = env.keys(); _env.hasMoreElements();) {
-        byte[] name = _env.nextElement();
-        byte[] value = env.get(name);
+      for (Map.Entry<byte[], byte[]> e : env.entrySet()) {
         request = new RequestEnv();
-        ((RequestEnv) request).setEnv(toByteArray(name), toByteArray(value));
+        ((RequestEnv) request).setEnv(toByteArray(e.getKey()), toByteArray(e.getValue()));
         request.request(_session, this);
       }
     }

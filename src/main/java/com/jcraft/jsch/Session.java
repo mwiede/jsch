@@ -34,12 +34,15 @@ import java.net.Socket;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Properties;
 import java.util.Vector;
+import java.util.concurrent.ConcurrentHashMap;
 import javax.crypto.AEADBadTagException;
 
 public class Session {
@@ -143,7 +146,7 @@ public class Session {
 
   SocketFactory socket_factory = null;
 
-  private Hashtable<String, String> config = null;
+  private Map<String, String> config = null;
 
   private Proxy proxy = null;
   private UserInfo userinfo;
@@ -2752,17 +2755,23 @@ public class Session {
   }
 
   public void setConfig(Properties newconf) {
-    Hashtable<String, String> foo = new Hashtable<>();
+    Map<String, String> foo = new HashMap<>();
     for (String key : newconf.stringPropertyNames()) {
       foo.put(key, newconf.getProperty(key));
     }
     setConfig(foo);
   }
 
+  /**
+   * Deprecated. Please use the {@link #setConfig(Map)}
+   *
+   * @param newconf
+   */
+  @Deprecated
   public void setConfig(Hashtable<String, String> newconf) {
     synchronized (lock) {
       if (config == null)
-        config = new Hashtable<>();
+        config = new ConcurrentHashMap<>();
       for (Enumeration<String> e = newconf.keys(); e.hasMoreElements();) {
         String newkey = e.nextElement();
         String key =
@@ -2773,10 +2782,21 @@ public class Session {
     }
   }
 
+  public void setConfig(Map<String, String> newconf) {
+    synchronized (lock) {
+      if (config == null) {
+        config = new ConcurrentHashMap<>();
+      }
+      newconf.forEach((key, value) -> {
+        config.put(key.equals("PubkeyAcceptedKeyTypes") ? "PubkeyAcceptedAlgorithms" : key, value);
+      });
+    }
+  }
+
   public void setConfig(String key, String value) {
     synchronized (lock) {
       if (config == null) {
-        config = new Hashtable<>();
+        config = new ConcurrentHashMap<>();
       }
       if (key.equals("PubkeyAcceptedKeyTypes")) {
         config.put("PubkeyAcceptedAlgorithms", value);

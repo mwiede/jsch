@@ -34,9 +34,10 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Arrays;
-import java.util.Hashtable;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Set;
 import java.util.Vector;
 import java.util.stream.Collectors;
@@ -113,7 +114,7 @@ public class OpenSSHConfig implements ConfigRepository {
     _parse(br);
   }
 
-  private final Hashtable<String, Vector<String[]>> config = new Hashtable<>();
+  private final Map<String, Vector<String[]>> config = new HashMap<>();
   private final Vector<String> hosts = new Vector<>();
 
   private void _parse(BufferedReader br) throws IOException {
@@ -156,11 +157,11 @@ public class OpenSSHConfig implements ConfigRepository {
    *
    * @return map
    */
-  static Hashtable<String, String> getKeymap() {
+  static Map<String, String> getKeymap() {
     return keymap;
   }
 
-  private static final Hashtable<String, String> keymap = new Hashtable<>();
+  private static final Map<String, String> keymap = new HashMap<>();
 
   static {
     keymap.put("kex", "KexAlgorithms");
