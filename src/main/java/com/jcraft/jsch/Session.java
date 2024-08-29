@@ -500,8 +500,8 @@ public class Session {
               // SSH_MSG_DISCONNECT: Too many authentication failures
               // System.err.println("ee: " + ee);
               if (getLogger().isEnabled(Logger.WARN)) {
-                getLogger().log(Logger.WARN,
-                    "an exception during authentication\n" + ee.toString());
+                getLogger().log(Logger.WARN, "an exception during authentication\n" + ee.toString(),
+                    ee);
               }
               break loop;
             }

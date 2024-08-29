@@ -1,5 +1,6 @@
 * [0.2.20](https://github.com/mwiede/jsch/releases/tag/jsch-0.2.20)
   * [#529](https://github.com/mwiede/jsch/pull/529) Update `Hostkey.getFingerprint()` method to output more moden format first introduced with OpenSSH 6.8.
+  * [#622](https://github.com/mwiede/jsch/pull/622) Add stack trace to log message when an exception occurs during authentication.
 * [0.2.19](https://github.com/mwiede/jsch/releases/tag/jsch-0.2.19)
   * Enforce DHGEX prime modulus bit length meets configured constraints.
   * #604 Fix possible rekeying timeouts.
