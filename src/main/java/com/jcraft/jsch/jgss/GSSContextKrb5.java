@@ -27,7 +27,6 @@
 package com.jcraft.jsch.jgss;
 
 import com.jcraft.jsch.JSchException;
-
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import org.ietf.jgss.GSSContext;

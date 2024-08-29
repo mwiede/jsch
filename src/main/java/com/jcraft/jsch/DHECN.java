@@ -62,7 +62,7 @@ abstract class DHECN extends KeyExchange {
       sha = c.getDeclaredConstructor().newInstance();
       sha.init();
     } catch (Exception e) {
-      System.err.println(e);
+      throw new JSchException(e.toString(), e);
     }
 
     buf = new Buffer();
@@ -111,7 +111,9 @@ abstract class DHECN extends KeyExchange {
         j = _buf.getByte();
         j = _buf.getByte();
         if (j != SSH_MSG_KEX_ECDH_REPLY) {
-          System.err.println("type: must be SSH_MSG_KEX_ECDH_REPLY " + j);
+          if (session.getLogger().isEnabled(Logger.ERROR)) {
+            session.getLogger().log(Logger.ERROR, "type: must be SSH_MSG_KEX_ECDH_REPLY " + j);
+          }
           return false;
         }
 
@@ -131,8 +133,7 @@ abstract class DHECN extends KeyExchange {
           return false;
         }
 
-        K = ecdh.getSecret(r_s[0], r_s[1]);
-        K = normalize(K);
+        K = encodeAsMPInt(normalize(ecdh.getSecret(r_s[0], r_s[1])));
 
         byte[] sig_of_H = _buf.getString();
 
@@ -157,11 +158,11 @@ abstract class DHECN extends KeyExchange {
         buf.putString(K_S);
         buf.putString(Q_C);
         buf.putString(Q_S);
-        buf.putMPInt(K);
         byte[] foo = new byte[buf.getLength()];
         buf.getByte(foo);
 
         sha.update(foo, 0, foo.length);
+        sha.update(K, 0, K.length);
         H = sha.digest();
 
         i = 0;

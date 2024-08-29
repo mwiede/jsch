@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015-2018 ymnk, JCraft,Inc. All rights reserved.
+ * Copyright (c) 2002-2018 ymnk, JCraft,Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification, are permitted
  * provided that the following conditions are met:
@@ -26,6 +26,14 @@
 
 package com.jcraft.jsch;
 
-public interface KeyPairGenXEC {
-  void init(String name) throws Exception;
+public class JSchUnknownHostKeyException extends JSchHostKeyException {
+  private static final long serialVersionUID = -1L;
+
+  JSchUnknownHostKeyException() {
+    super();
+  }
+
+  JSchUnknownHostKeyException(String s) {
+    super(s);
+  }
 }

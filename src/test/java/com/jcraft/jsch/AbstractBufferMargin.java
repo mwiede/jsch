@@ -6,7 +6,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import com.github.valfirst.slf4jtest.LoggingEvent;
 import com.github.valfirst.slf4jtest.TestLogger;
 import com.github.valfirst.slf4jtest.TestLoggerFactory;
-import com.google.common.io.ByteStreams;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -15,8 +14,10 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Base64;
 import java.util.List;
+import java.util.Locale;
 import java.util.Random;
 import org.apache.commons.codec.digest.DigestUtils;
+import org.apache.commons.io.input.BoundedInputStream;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -45,26 +46,30 @@ public abstract class AbstractBufferMargin {
   private Slf4jLogConsumer sshdLogConsumer;
 
   @Container
-  public GenericContainer<?> sshd = new GenericContainer<>(
-      new ImageFromDockerfile().withFileFromClasspath("asyncsshd.py", "docker/asyncsshd.py")
-          .withFileFromClasspath("ssh_host_ed448_key", "docker/ssh_host_ed448_key")
-          .withFileFromClasspath("ssh_host_ed448_key.pub", "docker/ssh_host_ed448_key.pub")
-          .withFileFromClasspath("ssh_host_rsa_key", "docker/ssh_host_rsa_key")
-          .withFileFromClasspath("ssh_host_rsa_key.pub", "docker/ssh_host_rsa_key.pub")
-          .withFileFromClasspath("ssh_host_ecdsa256_key", "docker/ssh_host_ecdsa256_key")
-          .withFileFromClasspath("ssh_host_ecdsa256_key.pub", "docker/ssh_host_ecdsa256_key.pub")
-          .withFileFromClasspath("ssh_host_ecdsa384_key", "docker/ssh_host_ecdsa384_key")
-          .withFileFromClasspath("ssh_host_ecdsa384_key.pub", "docker/ssh_host_ecdsa384_key.pub")
-          .withFileFromClasspath("ssh_host_ecdsa521_key", "docker/ssh_host_ecdsa521_key")
-          .withFileFromClasspath("ssh_host_ecdsa521_key.pub", "docker/ssh_host_ecdsa521_key.pub")
-          .withFileFromClasspath("ssh_host_ed25519_key", "docker/ssh_host_ed25519_key")
-          .withFileFromClasspath("ssh_host_ed25519_key.pub", "docker/ssh_host_ed25519_key.pub")
-          .withFileFromClasspath("ssh_host_dsa_key", "docker/ssh_host_dsa_key")
-          .withFileFromClasspath("ssh_host_dsa_key.pub", "docker/ssh_host_dsa_key.pub")
-          .withFileFromClasspath("authorized_keys", "docker/authorized_keys")
-          .withFileFromClasspath("Dockerfile", "docker/Dockerfile.asyncssh")
-          .withBuildArg("MAX_PKTSIZE", Integer.toString(maxPktSize())))
-      .withExposedPorts(22);
+  public GenericContainer<?> sshd;
+
+  protected AbstractBufferMargin(int maxPktSize) {
+    sshd = new GenericContainer<>(
+        new ImageFromDockerfile().withFileFromClasspath("asyncsshd.py", "docker/asyncsshd.py")
+            .withFileFromClasspath("ssh_host_ed448_key", "docker/ssh_host_ed448_key")
+            .withFileFromClasspath("ssh_host_ed448_key.pub", "docker/ssh_host_ed448_key.pub")
+            .withFileFromClasspath("ssh_host_rsa_key", "docker/ssh_host_rsa_key")
+            .withFileFromClasspath("ssh_host_rsa_key.pub", "docker/ssh_host_rsa_key.pub")
+            .withFileFromClasspath("ssh_host_ecdsa256_key", "docker/ssh_host_ecdsa256_key")
+            .withFileFromClasspath("ssh_host_ecdsa256_key.pub", "docker/ssh_host_ecdsa256_key.pub")
+            .withFileFromClasspath("ssh_host_ecdsa384_key", "docker/ssh_host_ecdsa384_key")
+            .withFileFromClasspath("ssh_host_ecdsa384_key.pub", "docker/ssh_host_ecdsa384_key.pub")
+            .withFileFromClasspath("ssh_host_ecdsa521_key", "docker/ssh_host_ecdsa521_key")
+            .withFileFromClasspath("ssh_host_ecdsa521_key.pub", "docker/ssh_host_ecdsa521_key.pub")
+            .withFileFromClasspath("ssh_host_ed25519_key", "docker/ssh_host_ed25519_key")
+            .withFileFromClasspath("ssh_host_ed25519_key.pub", "docker/ssh_host_ed25519_key.pub")
+            .withFileFromClasspath("ssh_host_dsa_key", "docker/ssh_host_dsa_key")
+            .withFileFromClasspath("ssh_host_dsa_key.pub", "docker/ssh_host_dsa_key.pub")
+            .withFileFromClasspath("authorized_keys", "docker/authorized_keys")
+            .withFileFromClasspath("Dockerfile", "docker/Dockerfile.asyncssh")
+            .withBuildArg("MAX_PKTSIZE", Integer.toString(maxPktSize)))
+        .withExposedPorts(22);
+  }
 
   @BeforeAll
   public static void beforeAll() {
@@ -101,8 +106,6 @@ public abstract class AbstractBufferMargin {
     sshdLogger.clearAll();
   }
 
-  protected abstract int maxPktSize();
-
   protected void doTestSftp(String cipher, String mac, String compression) throws Exception {
     JSch ssh = createRSAIdentity();
     Session session = createSession(ssh);
@@ -138,7 +141,8 @@ public abstract class AbstractBufferMargin {
   private HostKey readHostKey(String fileName) throws Exception {
     List<String> lines = Files.readAllLines(Paths.get(fileName), UTF_8);
     String[] split = lines.get(0).split("\\s+");
-    String hostname = String.format("[%s]:%d", sshd.getHost(), sshd.getFirstMappedPort());
+    String hostname =
+        String.format(Locale.ROOT, "[%s]:%d", sshd.getHost(), sshd.getFirstMappedPort());
     return new HostKey(hostname, Base64.getDecoder().decode(split[1]));
   }
 
@@ -207,7 +211,9 @@ public abstract class AbstractBufferMargin {
             byte[] buf = new byte[17];
             is.read(buf, 0, 17);
             sendAck(os);
-            Files.copy(ByteStreams.limit(is, 100L * 1024L), out);
+            Files.copy(
+                BoundedInputStream.builder().setMaxCount(100L * 1024L).setInputStream(is).get(),
+                out);
             checkAck(is);
             sendAck(os);
           }

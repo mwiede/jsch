@@ -1,5 +1,7 @@
 package com.jcraft.jsch;
 
+import java.util.Locale;
+
 /**
  * Extension of {@link JSchException} to indicate when a connection fails during algorithm
  * negotiation.
@@ -35,7 +37,7 @@ public class JSchAlgoNegoFailException extends JSchException {
   }
 
   private static String failString(int algorithmIndex, String jschProposal, String serverProposal) {
-    return String.format(
+    return String.format(Locale.ROOT,
         "Algorithm negotiation fail: algorithmName=\"%s\" jschProposal=\"%s\" serverProposal=\"%s\"",
         algorithmNameFromIndex(algorithmIndex), jschProposal, serverProposal);
   }

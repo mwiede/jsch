@@ -1,15 +1,14 @@
 package com.jcraft.jsch;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertSame;
+
+import com.jcraft.jsch.JSchTest.TestLogger;
+import java.util.stream.Stream;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
-
-import com.jcraft.jsch.JSchTest.TestLogger;
-
-import java.util.stream.Stream;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 class SessionTest {
 
@@ -37,7 +36,7 @@ class SessionTest {
         Arguments.of(":42 host:99", "0.0.0.0", "host", 99, null), // bind is empty
         Arguments.of("*:42 host:99", "0.0.0.0", "host", 99, null), // bind is asterisk
         Arguments.of("bind_adress:42 socket", "bind_adress", null, -1, "socket"), // socket
-        Arguments.of("42 socket", "127.0.0.1", null, -1, "socket")// socket wo bind
+        Arguments.of("42 socket", "127.0.0.1", null, -1, "socket") // socket wo bind
     );
   }
 

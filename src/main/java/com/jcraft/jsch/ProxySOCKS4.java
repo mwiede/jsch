@@ -31,8 +31,11 @@
 
 package com.jcraft.jsch;
 
-import java.io.*;
-import java.net.*;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.InetAddress;
+import java.net.Socket;
+import java.net.UnknownHostException;
 
 public class ProxySOCKS4 implements Proxy {
   private static int DEFAULTPORT = 1080;
@@ -120,7 +123,7 @@ public class ProxySOCKS4 implements Proxy {
           buf[index++] = byteAddress[i];
         }
       } catch (UnknownHostException uhe) {
-        throw new JSchException("ProxySOCKS4: " + uhe.toString(), uhe);
+        throw new JSchProxyException("ProxySOCKS4: " + uhe.toString(), uhe);
       }
 
       if (user != null) {
@@ -156,12 +159,12 @@ public class ProxySOCKS4 implements Proxy {
       while (s < len) {
         int i = in.read(buf, s, len - s);
         if (i <= 0) {
-          throw new JSchException("ProxySOCKS4: stream is closed");
+          throw new JSchProxyException("ProxySOCKS4: stream is closed");
         }
         s += i;
       }
       if (buf[0] != 0) {
-        throw new JSchException("ProxySOCKS4: server returns VN " + buf[0]);
+        throw new JSchProxyException("ProxySOCKS4: server returns VN " + buf[0]);
       }
       if (buf[1] != 90) {
         try {
@@ -169,7 +172,7 @@ public class ProxySOCKS4 implements Proxy {
         } catch (Exception eee) {
         }
         String message = "ProxySOCKS4: server returns CD " + buf[1];
-        throw new JSchException(message);
+        throw new JSchProxyException(message);
       }
     } catch (RuntimeException e) {
       throw e;
@@ -179,7 +182,7 @@ public class ProxySOCKS4 implements Proxy {
           socket.close();
       } catch (Exception eee) {
       }
-      throw new JSchException("ProxySOCKS4: " + e.toString(), e);
+      throw new JSchProxyException("ProxySOCKS4: " + e.toString(), e);
     }
   }
 

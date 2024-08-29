@@ -1,11 +1,26 @@
 package com.jcraft.jsch.jzlib;
 
-import static com.jcraft.jsch.jzlib.JZlib.*;
-import static com.jcraft.jsch.jzlib.Package.*;
+import static com.jcraft.jsch.jzlib.JZlib.DEF_WBITS;
+import static com.jcraft.jsch.jzlib.JZlib.W_ANY;
+import static com.jcraft.jsch.jzlib.JZlib.W_GZIP;
+import static com.jcraft.jsch.jzlib.JZlib.W_NONE;
+import static com.jcraft.jsch.jzlib.JZlib.W_ZLIB;
+import static com.jcraft.jsch.jzlib.JZlib.Z_BEST_SPEED;
+import static com.jcraft.jsch.jzlib.JZlib.Z_DATA_ERROR;
+import static com.jcraft.jsch.jzlib.JZlib.Z_DEFAULT_COMPRESSION;
+import static com.jcraft.jsch.jzlib.JZlib.Z_NO_FLUSH;
+import static com.jcraft.jsch.jzlib.JZlib.Z_OK;
+import static com.jcraft.jsch.jzlib.JZlib.Z_STREAM_END;
+import static com.jcraft.jsch.jzlib.Package.readArray;
+import static com.jcraft.jsch.jzlib.Package.readIS;
+import static com.jcraft.jsch.jzlib.Package.uncheckedConsumer;
+import static com.jcraft.jsch.jzlib.Package.uncheckedFunction;
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import com.jcraft.jsch.jzlib.JZlib.WrapperType;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -17,7 +32,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 public class WrapperTypeTest {
-  private final byte[] data = "hello, hello!".getBytes();
+  private final byte[] data = "hello, hello!".getBytes(UTF_8);
 
   private final int comprLen = 40000;
   private final int uncomprLen = comprLen;
@@ -92,7 +107,7 @@ public class WrapperTypeTest {
       c.good.forEach(w -> {
         ZStream inflater = inflate(compr, uncompr, w);
         int total_out = (int) inflater.total_out;
-        assertEquals(new String(data), new String(uncompr, 0, total_out));
+        assertEquals(new String(data, UTF_8), new String(uncompr, 0, total_out, UTF_8));
       });
 
       c.bad.forEach(w -> {
@@ -129,7 +144,7 @@ public class WrapperTypeTest {
     assertEquals(Z_OK, err);
 
     int total_out = (int) inflater.total_out;
-    assertEquals(new String(data), new String(uncompr, 0, total_out));
+    assertEquals(new String(data, UTF_8), new String(uncompr, 0, total_out, UTF_8));
 
     deflater = new Deflater();
     err = deflater.init(Z_BEST_SPEED, DEF_WBITS + 16, 9);
@@ -156,7 +171,7 @@ public class WrapperTypeTest {
     assertEquals(Z_OK, err);
 
     total_out = (int) inflater.total_out;
-    assertEquals(new String(data), new String(uncompr, 0, total_out));
+    assertEquals(new String(data, UTF_8), new String(uncompr, 0, total_out, UTF_8));
   }
 
   private void deflate(ZStream deflater, byte[] data, byte[] compr) {

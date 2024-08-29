@@ -122,11 +122,10 @@ class KeyPairPKCS8 extends KeyPair {
   private static final byte[] pbeWithSHA1AndRC2CBC = {(byte) 0x2a, (byte) 0x86, (byte) 0x48,
       (byte) 0x86, (byte) 0xf7, (byte) 0x0d, (byte) 0x01, (byte) 0x05, (byte) 0x0b};
 
-
   private KeyPair kpair = null;
 
-  KeyPairPKCS8(JSch jsch) {
-    super(jsch);
+  KeyPairPKCS8(JSch.InstanceLogger instLogger) {
+    super(instLogger);
   }
 
   @Override
@@ -218,7 +217,7 @@ class KeyPairPKCS8 extends KeyPair {
           throw new ASN1Exception();
         }
 
-        _kpair = new KeyPairRSA(jsch);
+        _kpair = new KeyPairRSA(instLogger);
         _kpair.copy(this);
         if (_kpair.parse(_data)) {
           kpair = _kpair;
@@ -306,10 +305,10 @@ class KeyPairPKCS8 extends KeyPair {
         byte[] pub_array = (new BigInteger(G_array))
             .modPow(new BigInteger(prv_array), new BigInteger(P_array)).toByteArray();
 
-        _key = new KeyPairDSA(jsch, P_array, Q_array, G_array, pub_array, prv_array);
+        _key = new KeyPairDSA(instLogger, P_array, Q_array, G_array, pub_array, prv_array);
         _plain = _key.getPrivateKey();
 
-        _kpair = new KeyPairDSA(jsch);
+        _kpair = new KeyPairDSA(instLogger);
         _kpair.copy(this);
         if (_kpair.parse(_plain)) {
           kpair = _kpair;
@@ -408,10 +407,10 @@ class KeyPairPKCS8 extends KeyPair {
         byte[] r_array = tmp[0];
         byte[] s_array = tmp[1];
 
-        _key = new KeyPairECDSA(jsch, name, r_array, s_array, prv_array);
+        _key = new KeyPairECDSA(instLogger, name, r_array, s_array, prv_array);
         _plain = _key.getPrivateKey();
 
-        _kpair = new KeyPairECDSA(jsch);
+        _kpair = new KeyPairECDSA(instLogger);
         _kpair.copy(this);
         if (_kpair.parse(_plain)) {
           kpair = _kpair;
@@ -431,9 +430,9 @@ class KeyPairPKCS8 extends KeyPair {
 
         prv_array = curvePrivateKey.getContent();
         if (Util.array_equals(privateKeyAlgorithmID, ed25519)) {
-          _kpair = new KeyPairEd25519(jsch);
+          _kpair = new KeyPairEd25519(instLogger);
         } else {
-          _kpair = new KeyPairEd448(jsch);
+          _kpair = new KeyPairEd448(instLogger);
         }
         _kpair.copy(this);
         if (_kpair.parse(prv_array)) {
@@ -447,14 +446,14 @@ class KeyPairPKCS8 extends KeyPair {
             "unsupported privateKeyAlgorithm oid: " + Util.toHex(privateKeyAlgorithmID));
       }
     } catch (ASN1Exception e) {
-      if (jsch.getInstanceLogger().isEnabled(Logger.ERROR)) {
-        jsch.getInstanceLogger().log(Logger.ERROR, "PKCS8: failed to parse key: ASN1 parsing error",
+      if (instLogger.getLogger().isEnabled(Logger.ERROR)) {
+        instLogger.getLogger().log(Logger.ERROR, "PKCS8: failed to parse key: ASN1 parsing error",
             e);
       }
       return false;
     } catch (Exception e) {
-      if (jsch.getInstanceLogger().isEnabled(Logger.ERROR)) {
-        jsch.getInstanceLogger().log(Logger.ERROR, "PKCS8: failed to parse key: " + e.getMessage(),
+      if (instLogger.getLogger().isEnabled(Logger.ERROR)) {
+        instLogger.getLogger().log(Logger.ERROR, "PKCS8: failed to parse key: " + e.getMessage(),
             e);
       }
       return false;
@@ -766,15 +765,15 @@ class KeyPairPKCS8 extends KeyPair {
         throw new JSchException("failed to parse decrypted key");
       }
     } catch (ASN1Exception e) {
-      if (jsch.getInstanceLogger().isEnabled(Logger.ERROR)) {
-        jsch.getInstanceLogger().log(Logger.ERROR,
-            "PKCS8: failed to decrypt key: ASN1 parsing error", e);
+      if (instLogger.getLogger().isEnabled(Logger.ERROR)) {
+        instLogger.getLogger().log(Logger.ERROR, "PKCS8: failed to decrypt key: ASN1 parsing error",
+            e);
       }
       return false;
     } catch (Exception e) {
-      if (jsch.getInstanceLogger().isEnabled(Logger.ERROR)) {
-        jsch.getInstanceLogger().log(Logger.ERROR,
-            "PKCS8: failed to decrypt key: " + e.getMessage(), e);
+      if (instLogger.getLogger().isEnabled(Logger.ERROR)) {
+        instLogger.getLogger().log(Logger.ERROR, "PKCS8: failed to decrypt key: " + e.getMessage(),
+            e);
       }
       return false;
     } finally {
@@ -797,9 +796,9 @@ class KeyPairPKCS8 extends KeyPair {
     } else if (Util.array_equals(id, hmacWithSha512)) {
       name = "pbkdf2-hmac-sha512";
     } else if (Util.array_equals(id, hmacWithSha512224)) {
-      throw new JSchException("unsupported pbkdf2 function: pbkdf2-hmac-sha512-224");
+      name = "pbkdf2-hmac-sha512-224";
     } else if (Util.array_equals(id, hmacWithSha512256)) {
-      throw new JSchException("unsupported pbkdf2 function: pbkdf2-hmac-sha512-256");
+      name = "pbkdf2-hmac-sha512-256";
     }
 
     if (name == null) {
@@ -862,6 +861,13 @@ class KeyPairPKCS8 extends KeyPair {
   }
 
   static int parseASN1IntegerAsInt(byte[] content) {
-    return new BigInteger(content).intValueExact();
+    BigInteger b = new BigInteger(content);
+    // https://github.com/mwiede/jsch/issues/392 not using intValueExact() because of Android
+    // incompatibility.
+    if (b.bitLength() <= 31) {
+      return b.intValue();
+    } else {
+      throw new ArithmeticException("BigInteger out of int range");
+    }
   }
 }

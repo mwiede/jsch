@@ -26,27 +26,24 @@
 
 package com.jcraft.jsch;
 
-import java.io.*;
-
 class IdentityFile implements Identity {
-  private JSch jsch;
   private KeyPair kpair;
   private String identity;
 
-  static IdentityFile newInstance(String prvfile, String pubfile, JSch jsch) throws JSchException {
-    KeyPair kpair = KeyPair.load(jsch, prvfile, pubfile);
-    return new IdentityFile(jsch, prvfile, kpair);
-  }
-
-  static IdentityFile newInstance(String name, byte[] prvkey, byte[] pubkey, JSch jsch)
+  static IdentityFile newInstance(String prvfile, String pubfile, JSch.InstanceLogger instLogger)
       throws JSchException {
-
-    KeyPair kpair = KeyPair.load(jsch, prvkey, pubkey);
-    return new IdentityFile(jsch, name, kpair);
+    KeyPair kpair = KeyPair.load(instLogger, prvfile, pubfile);
+    return new IdentityFile(prvfile, kpair);
   }
 
-  private IdentityFile(JSch jsch, String name, KeyPair kpair) throws JSchException {
-    this.jsch = jsch;
+  static IdentityFile newInstance(String name, byte[] prvkey, byte[] pubkey,
+      JSch.InstanceLogger instLogger) throws JSchException {
+
+    KeyPair kpair = KeyPair.load(instLogger, prvkey, pubkey);
+    return new IdentityFile(name, kpair);
+  }
+
+  private IdentityFile(String name, KeyPair kpair) {
     this.identity = name;
     this.kpair = kpair;
   }
@@ -96,29 +93,20 @@ class IdentityFile implements Identity {
   }
 
   /**
-   * @deprecated This method should not be invoked.
-   * @see #setPassphrase(byte[] passphrase)
-   */
-  @Override
-  @Deprecated
-  public boolean decrypt() {
-    throw new RuntimeException("not implemented");
-  }
-
-  /**
    * Returns the name of the key algorithm.
    *
-   * @return "ssh-rsa" or "ssh-dss"
+   * @return the name of the key algorithm
    */
   @Override
   public String getAlgName() {
-    byte[] name = kpair.getKeyTypeName();
-    return Util.byte2str(name);
+    return kpair.getKeyTypeString();
   }
 
   /**
    * Returns the name of this identity. It will be useful to identify this object in the
    * {@link IdentityRepository}.
+   *
+   * @return the name of this identity
    */
   @Override
   public String getName() {
@@ -135,9 +123,7 @@ class IdentityFile implements Identity {
     return kpair.isEncrypted();
   }
 
-  /**
-   * Disposes internally allocated data, like byte array for the private key.
-   */
+  /** Disposes internally allocated data, like byte array for the private key. */
   @Override
   public void clear() {
     kpair.dispose();

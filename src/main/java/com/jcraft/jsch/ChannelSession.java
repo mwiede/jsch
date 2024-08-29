@@ -26,7 +26,8 @@
 
 package com.jcraft.jsch;
 
-import java.util.*;
+import java.util.Enumeration;
+import java.util.Hashtable;
 
 class ChannelSession extends Channel {
   private static byte[] _session = Util.str2byte("session");

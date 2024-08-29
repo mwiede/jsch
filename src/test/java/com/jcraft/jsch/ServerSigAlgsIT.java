@@ -14,6 +14,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Base64;
 import java.util.List;
+import java.util.Locale;
 import java.util.Optional;
 import java.util.Random;
 import org.apache.commons.codec.digest.DigestUtils;
@@ -139,8 +140,8 @@ public class ServerSigAlgsIT {
     doSftp(session, true);
 
     String expectedKex = "kex: host key algorithm: rsa-sha2-512";
-    String expectedPubkeysNoServerSigs =
-        String.format("No server-sig-algs found, using PubkeyAcceptedAlgorithms = %s", algos);
+    // String expectedPubkeysNoServerSigs = String.format(Locale.ROOT,
+    // "No server-sig-algs found, using PubkeyAcceptedAlgorithms = %s", algos);
     String expectedPreauthFail1 = "ssh-rsa-sha512@ssh.com preauth failure";
     String expectedPreauthFail2 = "ssh-rsa-sha384@ssh.com preauth failure";
     String expectedPreauthFail3 = "ssh-rsa-sha256@ssh.com preauth failure";
@@ -167,7 +168,8 @@ public class ServerSigAlgsIT {
   private HostKey readHostKey(String fileName) throws Exception {
     List<String> lines = Files.readAllLines(Paths.get(fileName), UTF_8);
     String[] split = lines.get(0).split("\\s+");
-    String hostname = String.format("[%s]:%d", sshd.getHost(), sshd.getFirstMappedPort());
+    String hostname =
+        String.format(Locale.ROOT, "[%s]:%d", sshd.getHost(), sshd.getFirstMappedPort());
     return new HostKey(hostname, Base64.getDecoder().decode(split[1]));
   }
 

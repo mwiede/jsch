@@ -31,13 +31,13 @@
 package com.jcraft.jsch.jzlib;
 
 final class StaticTree {
-  static final private int MAX_BITS = 15;
+  private static final int MAX_BITS = 15;
 
-  static final private int BL_CODES = 19;
-  static final private int D_CODES = 30;
-  static final private int LITERALS = 256;
-  static final private int LENGTH_CODES = 29;
-  static final private int L_CODES = (LITERALS + 1 + LENGTH_CODES);
+  private static final int BL_CODES = 19;
+  private static final int D_CODES = 30;
+  private static final int LITERALS = 256;
+  private static final int LENGTH_CODES = 29;
+  private static final int L_CODES = (LITERALS + 1 + LENGTH_CODES);
 
   // Bit length codes must not exceed MAX_BL_BITS bits
   static final int MAX_BL_BITS = 7;

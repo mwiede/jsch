@@ -1,0 +1,11 @@
+Host *.example.com !*-jump.example.com !*-proxy.example.com
+    User u1
+
+Host *-jump.example.com
+    User jump-u1
+
+Host *-proxy.example.com
+    User proxy-u1
+
+Host *.example.org
+    User u2

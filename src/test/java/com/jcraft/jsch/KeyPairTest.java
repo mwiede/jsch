@@ -1,20 +1,23 @@
 package com.jcraft.jsch;
 
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.io.TempDir;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.Arguments;
-import org.junit.jupiter.params.provider.MethodSource;
-import org.junit.jupiter.params.provider.ValueSource;
+import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.File;
 import java.net.URISyntaxException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.stream.Stream;
-
-import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.jupiter.params.provider.ValueSource;
 
 class KeyPairTest {
 
@@ -35,6 +38,12 @@ class KeyPairTest {
         Arguments.of("docker/ssh_host_dsa_key", null, "ssh-dss"),
         // encrypted dsa
         Arguments.of("encrypted_openssh_private_key_dsa", "secret123", "ssh-dss"),
+        // unencrypted RSA with windows (\r\n) line endings
+        Arguments.of("issue362_rsa", null, "ssh-rsa"),
+        Arguments.of("issue_369_rsa_opensshv1", null, "ssh-rsa"),
+        Arguments.of("issue_369_rsa_pem", null, "ssh-rsa"),
+        Arguments.of("encrypted_issue_369_rsa_opensshv1", "secret123", "ssh-rsa"),
+        Arguments.of("encrypted_issue_369_rsa_pem", "secret123", "ssh-rsa"),
         // ecdsa EC private key format
         Arguments.of("docker/id_ecdsa256", null, "ecdsa-sha2-nistp256"), //
         Arguments.of("docker/id_ecdsa384", null, "ecdsa-sha2-nistp384"), //
@@ -156,7 +165,7 @@ class KeyPairTest {
     final String prvkey =
         Paths.get(ClassLoader.getSystemResource(keyFile).toURI()).toFile().getAbsolutePath();
     assertTrue(new File(prvkey).exists());
-    IdentityFile identity = IdentityFile.newInstance(prvkey, null, jSch);
+    IdentityFile identity = IdentityFile.newInstance(prvkey, null, jSch.instLogger);
 
     // Decrypt the key file
     assertTrue(identity.getKeyPair().decrypt("secret123"));
@@ -169,5 +178,4 @@ class KeyPairTest {
     assertTrue(identity.getKeyPair().decrypt((byte[]) null));
     assertTrue(identity.getKeyPair().decrypt((String) null));
   }
-
 }

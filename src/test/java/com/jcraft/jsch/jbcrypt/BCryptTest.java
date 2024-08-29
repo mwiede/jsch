@@ -14,11 +14,13 @@
 
 package com.jcraft.jsch.jbcrypt;
 
-import org.junit.jupiter.api.Test;
+import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.Arrays;
-
-import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.Test;
 
 /**
  * JUnit unit tests for BCrypt routines
@@ -69,9 +71,7 @@ public class BCryptTest {
       {"~!@#$%^&*()      ~!@#$%^&*()PNBFRD", "$2a$12$WApznUOJfkEGSmYRfnkrPO",
           "$2a$12$WApznUOJfkEGSmYRfnkrPOr466oFDCaj4b6HY3EXGvfxm43seyhgC"},};
 
-  /**
-   * Test method for 'BCrypt.hashpw(String, String)'
-   */
+  /** Test method for 'BCrypt.hashpw(String, String)' */
   @Test
   public void testHashpw() {
     // System.out.print("BCrypt.hashpw(): ");
@@ -86,9 +86,7 @@ public class BCryptTest {
     // System.out.println("");
   }
 
-  /**
-   * Test method for 'BCrypt.gensalt(int)'
-   */
+  /** Test method for 'BCrypt.gensalt(int)' */
   @Test
   public void testGensaltInt() {
     // System.out.print("BCrypt.gensalt(log_rounds):");
@@ -106,9 +104,7 @@ public class BCryptTest {
     // System.out.println("");
   }
 
-  /**
-   * Test method for 'BCrypt.gensalt()'
-   */
+  /** Test method for 'BCrypt.gensalt()' */
   @Test
   public void testGensalt() {
     // System.out.print("BCrypt.gensalt(): ");
@@ -123,9 +119,7 @@ public class BCryptTest {
     // System.out.println("");
   }
 
-  /**
-   * Test method for 'BCrypt.checkpw(String, String)' expecting success
-   */
+  /** Test method for 'BCrypt.checkpw(String, String)' expecting success */
   @Test
   public void testCheckpw_success() {
     // System.out.print("BCrypt.checkpw w/ good passwords: ");
@@ -138,9 +132,7 @@ public class BCryptTest {
     // System.out.println("");
   }
 
-  /**
-   * Test method for 'BCrypt.checkpw(String, String)' expecting failure
-   */
+  /** Test method for 'BCrypt.checkpw(String, String)' expecting failure */
   @Test
   public void testCheckpw_failure() {
     // System.out.print("BCrypt.checkpw w/ bad passwords: ");
@@ -154,9 +146,7 @@ public class BCryptTest {
     // System.out.println("");
   }
 
-  /**
-   * Test for correct hashing of non-US-ASCII passwords
-   */
+  /** Test for correct hashing of non-US-ASCII passwords */
   @Test
   public void testInternationalChars() {
     // System.out.print("BCrypt.hashpw w/ international chars: ");
@@ -246,14 +236,14 @@ public class BCryptTest {
   }
 
   BCryptPbkdfTV[] bcrypt_pbkdf_test_vectors = new BCryptPbkdfTV[] {
-      new BCryptPbkdfTV("password".getBytes(), "salt".getBytes(), 4,
+      new BCryptPbkdfTV("password".getBytes(UTF_8), "salt".getBytes(UTF_8), 4,
           new byte[] {(byte) 0x5b, (byte) 0xbf, (byte) 0x0c, (byte) 0xc2, (byte) 0x93, (byte) 0x58,
               (byte) 0x7f, (byte) 0x1c, (byte) 0x36, (byte) 0x35, (byte) 0x55, (byte) 0x5c,
               (byte) 0x27, (byte) 0x79, (byte) 0x65, (byte) 0x98, (byte) 0xd4, (byte) 0x7e,
               (byte) 0x57, (byte) 0x90, (byte) 0x71, (byte) 0xbf, (byte) 0x42, (byte) 0x7e,
               (byte) 0x9d, (byte) 0x8f, (byte) 0xbe, (byte) 0x84, (byte) 0x2a, (byte) 0xba,
               (byte) 0x34, (byte) 0xd9,}),
-      new BCryptPbkdfTV("password".getBytes(), "salt".getBytes(), 8,
+      new BCryptPbkdfTV("password".getBytes(UTF_8), "salt".getBytes(UTF_8), 8,
           new byte[] {(byte) 0xe1, (byte) 0x36, (byte) 0x7e, (byte) 0xc5, (byte) 0x15, (byte) 0x1a,
               (byte) 0x33, (byte) 0xfa, (byte) 0xac, (byte) 0x4c, (byte) 0xc1, (byte) 0xc1,
               (byte) 0x44, (byte) 0xcd, (byte) 0x23, (byte) 0xfa, (byte) 0x15, (byte) 0xd5,
@@ -265,7 +255,7 @@ public class BCryptTest {
               (byte) 0xe7, (byte) 0x4b, (byte) 0xba, (byte) 0x51, (byte) 0x72, (byte) 0x3f,
               (byte) 0xef, (byte) 0xa9, (byte) 0xf9, (byte) 0x47, (byte) 0x4d, (byte) 0x65,
               (byte) 0x08, (byte) 0x84, (byte) 0x5e, (byte) 0x8d}),
-      new BCryptPbkdfTV("password".getBytes(), "salt".getBytes(), 42,
+      new BCryptPbkdfTV("password".getBytes(UTF_8), "salt".getBytes(UTF_8), 42,
           new byte[] {(byte) 0x83, (byte) 0x3c, (byte) 0xf0, (byte) 0xdc, (byte) 0xf5, (byte) 0x6d,
               (byte) 0xb6, (byte) 0x56, (byte) 0x08, (byte) 0xe8, (byte) 0xf0, (byte) 0xdc,
               (byte) 0x0c, (byte) 0xe8, (byte) 0x82, (byte) 0xbd}),};

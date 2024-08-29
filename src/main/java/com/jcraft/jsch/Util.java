@@ -26,10 +26,13 @@
 
 package com.jcraft.jsch;
 
-import java.net.Socket;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.net.InetSocketAddress;
+import java.net.Socket;
+import java.net.SocketTimeoutException;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.Vector;
@@ -149,7 +152,7 @@ class Util {
     return glob0(pattern, 0, name, 0);
   }
 
-  static private boolean glob0(byte[] pattern, int pattern_index, byte[] name, int name_index) {
+  private static boolean glob0(byte[] pattern, int pattern_index, byte[] name, int name_index) {
     if (name.length > 0 && name[0] == '.') {
       if (pattern.length > 0 && pattern[0] == '.') {
         if (pattern.length == 2 && pattern[1] == '*')
@@ -161,7 +164,7 @@ class Util {
     return glob(pattern, pattern_index, name, name_index);
   }
 
-  static private boolean glob(byte[] pattern, int pattern_index, byte[] name, int name_index) {
+  private static boolean glob(byte[] pattern, int pattern_index, byte[] name, int name_index) {
     // System.err.println("glob: "+new String(pattern)+", "+pattern_index+" "+new String(name)+",
     // "+name_index);
 
@@ -368,55 +371,20 @@ class Util {
   }
 
   static Socket createSocket(String host, int port, int timeout) throws JSchException {
-    Socket socket = null;
-    if (timeout == 0) {
-      try {
-        socket = new Socket(host, port);
-        return socket;
-      } catch (Exception e) {
-        String message = e.toString();
-        throw new JSchException(message, e);
-      }
-    }
-    final String _host = host;
-    final int _port = port;
-    final Socket[] sockp = new Socket[1];
-    final Exception[] ee = new Exception[1];
-    String message = "";
-    Thread tmp = new Thread(() -> {
-      sockp[0] = null;
-      try {
-        sockp[0] = new Socket(_host, _port);
-      } catch (Exception e) {
-        ee[0] = e;
-        if (sockp[0] != null && sockp[0].isConnected()) {
-          try {
-            sockp[0].close();
-          } catch (Exception eee) {
-          }
-        }
-        sockp[0] = null;
-      }
-    });
-    tmp.setName("Opening Socket " + host);
-    tmp.start();
+    Socket socket = new Socket();
     try {
-      tmp.join(timeout);
-      message = "timeout: ";
-    } catch (InterruptedException eee) {
-    }
-    if (sockp[0] != null && sockp[0].isConnected()) {
-      socket = sockp[0];
-    } else {
-      message += "socket is not established";
-      if (ee[0] != null) {
-        message = ee[0].toString();
+      socket.connect(new InetSocketAddress(host, port), timeout);
+      return socket;
+    } catch (Exception e) {
+      try {
+        socket.close();
+      } catch (Exception ignore) {
       }
-      tmp.interrupt();
-      tmp = null;
-      throw new JSchException(message, ee[0]);
+
+      String message =
+          e instanceof SocketTimeoutException ? "timeout: socket is not established" : e.toString();
+      throw new JSchException(message, e);
     }
-    return socket;
   }
 
   static byte[] str2byte(String str, Charset encoding) {
@@ -512,8 +480,7 @@ class Util {
   static byte[] fromFile(String _file) throws IOException {
     _file = checkTilde(_file);
     File file = new File(_file);
-    FileInputStream fis = new FileInputStream(_file);
-    try {
+    try (InputStream fis = new FileInputStream(_file)) {
       byte[] result = new byte[(int) (file.length())];
       int len = 0;
       while (true) {
@@ -522,11 +489,7 @@ class Util {
           break;
         len += i;
       }
-      fis.close();
       return result;
-    } finally {
-      if (fis != null)
-        fis.close();
     }
   }
 

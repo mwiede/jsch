@@ -1,16 +1,15 @@
 package com.jcraft.jsch;
 
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.net.URISyntaxException;
+import java.nio.file.Paths;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.images.builder.ImageFromDockerfile;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
-
-import java.net.URISyntaxException;
-import java.nio.file.Paths;
-
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @Testcontainers
 public class KeyPair2IT {
@@ -56,7 +55,6 @@ public class KeyPair2IT {
     } finally {
       session.disconnect();
     }
-
   }
 
   @ParameterizedTest
@@ -97,9 +95,7 @@ public class KeyPair2IT {
       }
 
       @Override
-      public void showMessage(String message) {
-
-      }
+      public void showMessage(String message) {}
     });
 
     if (keyType != null) {
@@ -111,7 +107,6 @@ public class KeyPair2IT {
     } finally {
       session.disconnect();
     }
-
   }
 
   private JSch createIdentity(String path, String password)

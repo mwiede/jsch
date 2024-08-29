@@ -26,12 +26,18 @@
 
 package com.jcraft.jsch.jce;
 
+import com.jcraft.jsch.Buffer;
 import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
-import java.security.*;
-import java.security.spec.*;
+import java.security.KeyFactory;
+import java.security.PrivateKey;
+import java.security.PublicKey;
+import java.security.Signature;
+import java.security.spec.EdECPoint;
+import java.security.spec.EdECPrivateKeySpec;
+import java.security.spec.EdECPublicKeySpec;
+import java.security.spec.NamedParameterSpec;
 import java.util.Arrays;
-import com.jcraft.jsch.Buffer;
 
 abstract class SignatureEdDSA implements com.jcraft.jsch.SignatureEdDSA {
 
@@ -46,7 +52,7 @@ abstract class SignatureEdDSA implements com.jcraft.jsch.SignatureEdDSA {
 
   @Override
   public void init() throws Exception {
-    signature = java.security.Signature.getInstance("EdDSA");
+    signature = Signature.getInstance("EdDSA");
     keyFactory = KeyFactory.getInstance("EdDSA");
   }
 

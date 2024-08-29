@@ -2,11 +2,21 @@
  * This program will demonstrate the packet compression. You will be asked username, hostname and
  * passwd. If everything works fine, you will get the shell prompt. In this program, all data from
  * sshd server to jsch will be compressed.
- *
  */
-import com.jcraft.jsch.*;
-import java.awt.*;
-import javax.swing.*;
+import com.jcraft.jsch.Channel;
+import com.jcraft.jsch.JSch;
+import com.jcraft.jsch.Session;
+import com.jcraft.jsch.UIKeyboardInteractive;
+import com.jcraft.jsch.UserInfo;
+import java.awt.Container;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Insets;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JPasswordField;
+import javax.swing.JTextField;
 
 public class Compression {
   public static void main(String[] arg) {
@@ -141,5 +151,3 @@ public class Compression {
     }
   }
 }
-
-

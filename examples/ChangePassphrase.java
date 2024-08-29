@@ -3,10 +3,12 @@
  * a new private key. A passphrase will be prompted if the given private-key has been encrypted.
  * After successfully loading the content of the private-key, the new passphrase will be prompted
  * and the given private-key will be re-encrypted with that new passphrase.
- *
  */
-import com.jcraft.jsch.*;
-import javax.swing.*;
+import com.jcraft.jsch.JSch;
+import com.jcraft.jsch.KeyPair;
+import javax.swing.JOptionPane;
+import javax.swing.JPasswordField;
+import javax.swing.JTextField;
 
 public class ChangePassphrase {
   public static void main(String[] arg) {

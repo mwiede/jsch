@@ -32,26 +32,26 @@ package com.jcraft.jsch.jzlib;
 
 final class Deflater extends ZStream {
 
-  static final private int MAX_WBITS = 15; // 32K LZ77 window
-  static final private int DEF_WBITS = MAX_WBITS;
+  private static final int MAX_WBITS = 15; // 32K LZ77 window
+  private static final int DEF_WBITS = MAX_WBITS;
 
-  static final private int Z_NO_FLUSH = 0;
-  static final private int Z_PARTIAL_FLUSH = 1;
-  static final private int Z_SYNC_FLUSH = 2;
-  static final private int Z_FULL_FLUSH = 3;
-  static final private int Z_FINISH = 4;
+  private static final int Z_NO_FLUSH = 0;
+  private static final int Z_PARTIAL_FLUSH = 1;
+  private static final int Z_SYNC_FLUSH = 2;
+  private static final int Z_FULL_FLUSH = 3;
+  private static final int Z_FINISH = 4;
 
-  static final private int MAX_MEM_LEVEL = 9;
+  private static final int MAX_MEM_LEVEL = 9;
 
-  static final private int Z_OK = 0;
-  static final private int Z_STREAM_END = 1;
-  static final private int Z_NEED_DICT = 2;
-  static final private int Z_ERRNO = -1;
-  static final private int Z_STREAM_ERROR = -2;
-  static final private int Z_DATA_ERROR = -3;
-  static final private int Z_MEM_ERROR = -4;
-  static final private int Z_BUF_ERROR = -5;
-  static final private int Z_VERSION_ERROR = -6;
+  private static final int Z_OK = 0;
+  private static final int Z_STREAM_END = 1;
+  private static final int Z_NEED_DICT = 2;
+  private static final int Z_ERRNO = -1;
+  private static final int Z_STREAM_ERROR = -2;
+  private static final int Z_DATA_ERROR = -3;
+  private static final int Z_MEM_ERROR = -4;
+  private static final int Z_BUF_ERROR = -5;
+  private static final int Z_VERSION_ERROR = -6;
 
   private boolean finished = false;
 

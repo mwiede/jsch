@@ -26,13 +26,14 @@
 
 package com.jcraft.jsch;
 
-import java.io.*;
+import java.io.InputStream;
+import java.io.OutputStream;
 
 public class ChannelDirectTCPIP extends Channel {
 
-  static private final int LOCAL_WINDOW_SIZE_MAX = 0x20000;
-  static private final int LOCAL_MAXIMUM_PACKET_SIZE = 0x4000;
-  static private final byte[] _type = Util.str2byte("direct-tcpip");
+  private static final int LOCAL_WINDOW_SIZE_MAX = 0x20000;
+  private static final int LOCAL_MAXIMUM_PACKET_SIZE = 0x4000;
+  private static final byte[] _type = Util.str2byte("direct-tcpip");
   String host;
   int port;
 
@@ -42,9 +43,9 @@ public class ChannelDirectTCPIP extends Channel {
   ChannelDirectTCPIP() {
     super();
     type = _type;
-    setLocalWindowSizeMax(LOCAL_WINDOW_SIZE_MAX);
-    setLocalWindowSize(LOCAL_WINDOW_SIZE_MAX);
-    setLocalPacketSize(LOCAL_MAXIMUM_PACKET_SIZE);
+    lwsize_max = LOCAL_WINDOW_SIZE_MAX;
+    lwsize = LOCAL_WINDOW_SIZE_MAX;
+    lmpsize = LOCAL_MAXIMUM_PACKET_SIZE;
   }
 
   @Override

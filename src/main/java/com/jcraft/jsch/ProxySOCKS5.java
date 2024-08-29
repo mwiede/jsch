@@ -31,8 +31,10 @@
 
 package com.jcraft.jsch;
 
-import java.io.*;
-import java.net.*;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.Socket;
 
 public class ProxySOCKS5 implements Proxy {
   private static int DEFAULTPORT = 1080;
@@ -177,7 +179,7 @@ public class ProxySOCKS5 implements Proxy {
           socket.close();
         } catch (Exception eee) {
         }
-        throw new JSchException("fail in SOCKS5 proxy");
+        throw new JSchProxyException("fail in SOCKS5 proxy");
       }
 
       /*
@@ -239,7 +241,7 @@ public class ProxySOCKS5 implements Proxy {
           socket.close();
         } catch (Exception eee) {
         }
-        throw new JSchException("ProxySOCKS5: server returns " + buf[1]);
+        throw new JSchProxyException("ProxySOCKS5: server returns " + buf[1]);
       }
 
       switch (buf[3] & 0xff) {
@@ -268,7 +270,7 @@ public class ProxySOCKS5 implements Proxy {
       } catch (Exception eee) {
       }
       String message = "ProxySOCKS5: " + e.toString();
-      throw new JSchException(message, e);
+      throw new JSchProxyException(message, e);
     }
   }
 
@@ -312,7 +314,7 @@ public class ProxySOCKS5 implements Proxy {
     while (s < len) {
       int i = in.read(buf, s, len - s);
       if (i <= 0) {
-        throw new JSchException("ProxySOCKS5: stream is closed");
+        throw new JSchProxyException("ProxySOCKS5: stream is closed");
       }
       s += i;
     }

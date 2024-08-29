@@ -26,20 +26,24 @@
 
 package com.jcraft.jsch.jce;
 
+import com.jcraft.jsch.Buffer;
 import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
-import java.security.*;
-import java.security.spec.*;
-import com.jcraft.jsch.Buffer;
+import java.security.KeyFactory;
+import java.security.PrivateKey;
+import java.security.PublicKey;
+import java.security.Signature;
+import java.security.spec.DSAPrivateKeySpec;
+import java.security.spec.DSAPublicKeySpec;
 
 public class SignatureDSA implements com.jcraft.jsch.SignatureDSA {
 
-  java.security.Signature signature;
+  Signature signature;
   KeyFactory keyFactory;
 
   @Override
   public void init() throws Exception {
-    signature = java.security.Signature.getInstance("SHA1withDSA");
+    signature = Signature.getInstance("SHA1withDSA");
     keyFactory = KeyFactory.getInstance("DSA");
   }
 
@@ -131,15 +135,15 @@ public class SignatureDSA implements com.jcraft.jsch.SignatureDSA {
     tmp = new byte[length];
     tmp[0] = (byte) 0x30;
     tmp[1] = (byte) (_frst.length + _scnd.length + 4);
-    tmp[1] += frst;
-    tmp[1] += scnd;
+    tmp[1] += (byte) frst;
+    tmp[1] += (byte) scnd;
     tmp[2] = (byte) 0x02;
     tmp[3] = (byte) _frst.length;
-    tmp[3] += frst;
+    tmp[3] += (byte) frst;
     System.arraycopy(_frst, 0, tmp, 4 + frst, _frst.length);
     tmp[4 + tmp[3]] = (byte) 0x02;
     tmp[5 + tmp[3]] = (byte) _scnd.length;
-    tmp[5 + tmp[3]] += scnd;
+    tmp[5 + tmp[3]] += (byte) scnd;
     System.arraycopy(_scnd, 0, tmp, 6 + tmp[3] + scnd, _scnd.length);
     sig = tmp;
 

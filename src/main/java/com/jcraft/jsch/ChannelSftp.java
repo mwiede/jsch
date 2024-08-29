@@ -26,7 +26,14 @@
 
 package com.jcraft.jsch;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.PipedInputStream;
+import java.io.PipedOutputStream;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.Hashtable;
@@ -34,8 +41,8 @@ import java.util.Vector;
 
 public class ChannelSftp extends ChannelSession {
 
-  static private final int LOCAL_MAXIMUM_PACKET_SIZE = 32 * 1024;
-  static private final int LOCAL_WINDOW_SIZE_MAX = (64 * LOCAL_MAXIMUM_PACKET_SIZE);
+  private static final int LOCAL_MAXIMUM_PACKET_SIZE = 32 * 1024;
+  private static final int LOCAL_WINDOW_SIZE_MAX = (64 * LOCAL_MAXIMUM_PACKET_SIZE);
 
   private static final byte SSH_FXP_INIT = 1;
   private static final byte SSH_FXP_VERSION = 2;
@@ -157,6 +164,8 @@ public class ChannelSftp extends ChannelSession {
   private Charset fEncoding = StandardCharsets.UTF_8;
   private boolean fEncoding_is_utf8 = true;
 
+  private boolean useWriteFlushWorkaround = true;
+
   private RequestQueue rq = new RequestQueue(16);
 
   /**
@@ -181,11 +190,19 @@ public class ChannelSftp extends ChannelSession {
     return rq.size();
   }
 
+  public void setUseWriteFlushWorkaround(boolean useWriteFlushWorkaround) {
+    this.useWriteFlushWorkaround = useWriteFlushWorkaround;
+  }
+
+  public boolean getUseWriteFlushWorkaround() {
+    return useWriteFlushWorkaround;
+  }
+
   public ChannelSftp() {
     super();
-    setLocalWindowSizeMax(LOCAL_WINDOW_SIZE_MAX);
-    setLocalWindowSize(LOCAL_WINDOW_SIZE_MAX);
-    setLocalPacketSize(LOCAL_MAXIMUM_PACKET_SIZE);
+    lwsize_max = LOCAL_WINDOW_SIZE_MAX;
+    lwsize = LOCAL_WINDOW_SIZE_MAX;
+    lmpsize = LOCAL_MAXIMUM_PACKET_SIZE;
   }
 
   @Override
@@ -432,14 +449,8 @@ public class ChannelSftp extends ChannelSession {
             monitor.count(size_of_dst);
           }
         }
-        FileInputStream fis = null;
-        try {
-          fis = new FileInputStream(_src);
+        try (InputStream fis = new FileInputStream(_src)) {
           _put(fis, _dst, monitor, mode);
-        } finally {
-          if (fis != null) {
-            fis.close();
-          }
         }
       }
     } catch (Exception e) {
@@ -604,8 +615,10 @@ public class ChannelSftp extends ChannelSession {
                 int _ackid = ackid[0];
                 if (startid > _ackid || _ackid > seq - 1) {
                   if (_ackid == seq) {
-                    System.err.println(
-                        "ack error: startid=" + startid + " seq=" + seq + " _ackid=" + _ackid);
+                    if (getSession().getLogger().isEnabled(Logger.ERROR)) {
+                      getSession().getLogger().log(Logger.ERROR,
+                          "ack error: startid=" + startid + " seq=" + seq + " _ackid=" + _ackid);
+                    }
                   } else {
                     throw new SftpException(SSH_FX_FAILURE,
                         "ack error: startid=" + startid + " seq=" + seq + " _ackid=" + _ackid);
@@ -758,6 +771,9 @@ public class ChannelSftp extends ChannelSession {
           try {
             int _len = len;
             while (_len > 0) {
+              if (useWriteFlushWorkaround && rwsize < 21 + handle.length + _len + 4) {
+                flush();
+              }
               int sent = sendWRITE(handle, _offset[0], d, s, _len);
               writecount++;
               _offset[0] += sent;
@@ -929,20 +945,11 @@ public class ChannelSftp extends ChannelSession {
           }
         }
 
-        FileOutputStream fos = null;
         _dstExist = _dstFile.exists();
-        try {
-          if (mode == OVERWRITE) {
-            fos = new FileOutputStream(_dst);
-          } else {
-            fos = new FileOutputStream(_dst, true); // append
-          }
+        try (OutputStream fos = mode == OVERWRITE ? new FileOutputStream(_dst)
+            : new FileOutputStream(_dst, true) /* append */) {
           // System.err.println("_get: "+_src+", "+_dst);
           _get(_src, fos, monitor, mode, new File(_dst).length());
-        } finally {
-          if (fos != null) {
-            fos.close();
-          }
         }
       }
     } catch (Exception e) {
@@ -1069,12 +1076,10 @@ public class ChannelSftp extends ChannelSession {
         length -= 4;
         int length_of_data = buf.getInt(); // length of data
 
-        /**
-         * Since sftp protocol version 6, "end-of-file" has been defined,
-         *
-         * byte SSH_FXP_DATA uint32 request-id string data bool end-of-file [optional]
-         *
-         * but some sftpd server will send such a field in the sftp protocol 3 ;-(
+        /*
+         * Since sftp protocol version 6, "end-of-file" has been defined, byte SSH_FXP_DATA uint32
+         * request-id string data bool end-of-file [optional] but some sftpd server will send such a
+         * field in the sftp protocol 3 ;-(
          */
         int optional_data = length - length_of_data;
 
@@ -1103,7 +1108,6 @@ public class ChannelSftp extends ChannelSession {
               break loop;
             }
           }
-
         }
         // System.err.println("length: "+length); // length should be 0
 
@@ -1136,7 +1140,6 @@ public class ChannelSftp extends ChannelSession {
     }
   }
 
-
   private class RequestQueue {
     class OutOfOrderException extends Exception {
       private static final long serialVersionUID = -1L;
@@ -1146,6 +1149,7 @@ public class ChannelSftp extends ChannelSession {
         this.offset = offset;
       }
     }
+
     class Request {
       int id;
       long offset;
@@ -1428,12 +1432,10 @@ public class ChannelSftp extends ChannelSession {
           int length_of_data = buf.getInt();
           rest_length -= 4;
 
-          /**
-           * Since sftp protocol version 6, "end-of-file" has been defined,
-           *
-           * byte SSH_FXP_DATA uint32 request-id string data bool end-of-file [optional]
-           *
-           * but some sftpd server will send such a field in the sftp protocol 3 ;-(
+          /*
+           * Since sftp protocol version 6, "end-of-file" has been defined, byte SSH_FXP_DATA uint32
+           * request-id string data bool end-of-file [optional] but some sftpd server will send such
+           * a field in the sftp protocol 3 ;-(
            */
           int optional_data = rest_length - length_of_data;
 
@@ -1508,8 +1510,10 @@ public class ChannelSftp extends ChannelSession {
           rq.cancel(header, buf);
           try {
             _sendCLOSE(handle, header);
+          } catch (IOException e) {
+            throw e;
           } catch (Exception e) {
-            throw new IOException("error");
+            throw new IOException(e.toString(), e);
           }
         }
       };
@@ -1584,7 +1588,6 @@ public class ChannelSftp extends ChannelSession {
             _pattern = Util.unquote(_pattern);
             pattern = Util.str2byte(_pattern, fEncoding);
           }
-
         }
       }
 
@@ -2513,7 +2516,7 @@ public class ChannelSftp extends ChannelSession {
   }
 
   private void sendOPENA(byte[] path) throws Exception {
-    sendOPEN(path, SSH_FXF_WRITE | /* SSH_FXF_APPEND| */SSH_FXF_CREAT);
+    sendOPEN(path, SSH_FXF_WRITE | /* SSH_FXF_APPEND | */ SSH_FXF_CREAT);
   }
 
   private void sendOPEN(byte[] path, int mode) throws Exception {
@@ -3025,7 +3028,6 @@ public class ChannelSftp extends ChannelSession {
     public final int BREAK = 1;
 
     /**
-     * <p>
      * The <code>select</code> method will be invoked in <code>ls</code> method for each file entry.
      * If this method returns BREAK, <code>ls</code> will be canceled.
      *

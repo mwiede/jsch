@@ -4,23 +4,24 @@ import static com.jcraft.jsch.Session.SSH_MSG_CHANNEL_OPEN;
 
 /**
  * Extension of {@link ChannelDirectTCPIP} to support socket forwarding.
+ *
  * <p>
  * https://raw.githubusercontent.com/openssh/openssh-portable/master/PROTOCOL
  */
 public class ChannelDirectStreamLocal extends ChannelDirectTCPIP {
 
-  static private final int LOCAL_WINDOW_SIZE_MAX = 0x20000;
-  static private final int LOCAL_MAXIMUM_PACKET_SIZE = 0x4000;
-  static private final byte[] _type = Util.str2byte("direct-streamlocal@openssh.com");
+  private static final int LOCAL_WINDOW_SIZE_MAX = 0x20000;
+  private static final int LOCAL_MAXIMUM_PACKET_SIZE = 0x4000;
+  private static final byte[] _type = Util.str2byte("direct-streamlocal@openssh.com");
 
   private String socketPath;
 
   ChannelDirectStreamLocal() {
     super();
     type = _type;
-    setLocalWindowSizeMax(LOCAL_WINDOW_SIZE_MAX);
-    setLocalWindowSize(LOCAL_WINDOW_SIZE_MAX);
-    setLocalPacketSize(LOCAL_MAXIMUM_PACKET_SIZE);
+    lwsize_max = LOCAL_WINDOW_SIZE_MAX;
+    lwsize = LOCAL_WINDOW_SIZE_MAX;
+    lmpsize = LOCAL_MAXIMUM_PACKET_SIZE;
   }
 
   @Override

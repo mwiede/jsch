@@ -32,12 +32,12 @@ package com.jcraft.jsch.jzlib;
 
 final class Deflate implements Cloneable {
 
-  static final private int MAX_MEM_LEVEL = 9;
+  private static final int MAX_MEM_LEVEL = 9;
 
-  static final private int Z_DEFAULT_COMPRESSION = -1;
+  private static final int Z_DEFAULT_COMPRESSION = -1;
 
-  static final private int MAX_WBITS = 15; // 32K LZ77 window
-  static final private int DEF_MEM_LEVEL = 8;
+  private static final int MAX_WBITS = 15; // 32K LZ77 window
+  private static final int DEF_MEM_LEVEL = 8;
 
   static class Config {
     int good_length; // reduce lazy search above this match length
@@ -55,10 +55,11 @@ final class Deflate implements Cloneable {
     }
   }
 
-  static final private int STORED = 0;
-  static final private int FAST = 1;
-  static final private int SLOW = 2;
-  static final private Config[] config_table;
+  private static final int STORED = 0;
+  private static final int FAST = 1;
+  private static final int SLOW = 2;
+  private static final Config[] config_table;
+
   static {
     config_table = new Config[10];
     // good lazy nice chain
@@ -75,7 +76,7 @@ final class Deflate implements Cloneable {
     config_table[9] = new Config(32, 258, 258, 4096, SLOW);
   }
 
-  static final private String[] z_errmsg = {"need dictionary", // Z_NEED_DICT 2
+  private static final String[] z_errmsg = {"need dictionary", // Z_NEED_DICT 2
       "stream end", // Z_STREAM_END 1
       "", // Z_OK 0
       "file error", // Z_ERRNO (-1)
@@ -87,80 +88,80 @@ final class Deflate implements Cloneable {
       ""};
 
   // block not completed, need more input or more output
-  static final private int NeedMore = 0;
+  private static final int NeedMore = 0;
 
   // block flush performed
-  static final private int BlockDone = 1;
+  private static final int BlockDone = 1;
 
   // finish started, need only more output at next deflate
-  static final private int FinishStarted = 2;
+  private static final int FinishStarted = 2;
 
   // finish done, accept no more input or output
-  static final private int FinishDone = 3;
+  private static final int FinishDone = 3;
 
   // preset dictionary flag in zlib header
-  static final private int PRESET_DICT = 0x20;
+  private static final int PRESET_DICT = 0x20;
 
-  static final private int Z_FILTERED = 1;
-  static final private int Z_HUFFMAN_ONLY = 2;
-  static final private int Z_DEFAULT_STRATEGY = 0;
+  private static final int Z_FILTERED = 1;
+  private static final int Z_HUFFMAN_ONLY = 2;
+  private static final int Z_DEFAULT_STRATEGY = 0;
 
-  static final private int Z_NO_FLUSH = 0;
-  static final private int Z_PARTIAL_FLUSH = 1;
-  static final private int Z_SYNC_FLUSH = 2;
-  static final private int Z_FULL_FLUSH = 3;
-  static final private int Z_FINISH = 4;
+  private static final int Z_NO_FLUSH = 0;
+  private static final int Z_PARTIAL_FLUSH = 1;
+  private static final int Z_SYNC_FLUSH = 2;
+  private static final int Z_FULL_FLUSH = 3;
+  private static final int Z_FINISH = 4;
 
-  static final private int Z_OK = 0;
-  static final private int Z_STREAM_END = 1;
-  static final private int Z_NEED_DICT = 2;
-  static final private int Z_ERRNO = -1;
-  static final private int Z_STREAM_ERROR = -2;
-  static final private int Z_DATA_ERROR = -3;
-  static final private int Z_MEM_ERROR = -4;
-  static final private int Z_BUF_ERROR = -5;
-  static final private int Z_VERSION_ERROR = -6;
+  private static final int Z_OK = 0;
+  private static final int Z_STREAM_END = 1;
+  private static final int Z_NEED_DICT = 2;
+  private static final int Z_ERRNO = -1;
+  private static final int Z_STREAM_ERROR = -2;
+  private static final int Z_DATA_ERROR = -3;
+  private static final int Z_MEM_ERROR = -4;
+  private static final int Z_BUF_ERROR = -5;
+  private static final int Z_VERSION_ERROR = -6;
 
-  static final private int INIT_STATE = 42;
-  static final private int BUSY_STATE = 113;
-  static final private int FINISH_STATE = 666;
+  private static final int INIT_STATE = 42;
+  private static final int BUSY_STATE = 113;
+  private static final int FINISH_STATE = 666;
 
   // The deflate compression method
-  static final private int Z_DEFLATED = 8;
+  private static final int Z_DEFLATED = 8;
 
-  static final private int STORED_BLOCK = 0;
-  static final private int STATIC_TREES = 1;
-  static final private int DYN_TREES = 2;
+  private static final int STORED_BLOCK = 0;
+  private static final int STATIC_TREES = 1;
+  private static final int DYN_TREES = 2;
 
   // The three kinds of block type
-  static final private int Z_BINARY = 0;
-  static final private int Z_ASCII = 1;
-  static final private int Z_UNKNOWN = 2;
+  private static final int Z_BINARY = 0;
+  private static final int Z_ASCII = 1;
+  private static final int Z_UNKNOWN = 2;
 
-  static final private int Buf_size = 8 * 2;
+  private static final int Buf_size = 8 * 2;
 
   // repeat previous bit length 3-6 times (2 bits of repeat count)
-  static final private int REP_3_6 = 16;
+  private static final int REP_3_6 = 16;
 
   // repeat a zero length 3-10 times (3 bits of repeat count)
-  static final private int REPZ_3_10 = 17;
+  private static final int REPZ_3_10 = 17;
 
   // repeat a zero length 11-138 times (7 bits of repeat count)
-  static final private int REPZ_11_138 = 18;
+  private static final int REPZ_11_138 = 18;
 
-  static final private int MIN_MATCH = 3;
-  static final private int MAX_MATCH = 258;
-  static final private int MIN_LOOKAHEAD = (MAX_MATCH + MIN_MATCH + 1);
+  private static final int MIN_MATCH = 3;
+  private static final int MAX_MATCH = 258;
+  private static final int MIN_LOOKAHEAD = (MAX_MATCH + MIN_MATCH + 1);
 
-  static final private int MAX_BITS = 15;
-  static final private int D_CODES = 30;
-  static final private int BL_CODES = 19;
-  static final private int LENGTH_CODES = 29;
-  static final private int LITERALS = 256;
-  static final private int L_CODES = (LITERALS + 1 + LENGTH_CODES);
-  static final private int HEAP_SIZE = (2 * L_CODES + 1);
+  private static final int MAX_BITS = 15;
+  private static final int D_CODES = 30;
+  private static final int BL_CODES = 19;
+  private static final int LENGTH_CODES = 29;
+  private static final int LITERALS = 256;
+  private static final int L_CODES = (LITERALS + 1 + LENGTH_CODES);
+  private static final int HEAP_SIZE = (2 * L_CODES + 1);
 
-  static final private int END_BLOCK = 256;
+  private static final int END_BLOCK = 256;
 
   ZStream strm; // pointer back to this zlib stream
   int status; // as the name implies
@@ -435,7 +436,7 @@ final class Deflate implements Cloneable {
       if (++count < max_count && curlen == nextlen) {
         continue;
       } else if (count < min_count) {
-        bl_tree[curlen * 2] += count;
+        bl_tree[curlen * 2] += (short) count;
       } else if (curlen != 0) {
         if (curlen != prevlen)
           bl_tree[curlen * 2]++;
@@ -486,7 +487,6 @@ final class Deflate implements Cloneable {
 
     return max_blindex;
   }
-
 
   // Send the header for a block using dynamic Huffman trees: the counts, the
   // lengths of the bit length codes, the literal tree and the distance tree.
@@ -572,13 +572,13 @@ final class Deflate implements Cloneable {
   }
 
   final void put_short(int w) {
-    put_byte((byte) (w/* &0xff */));
+    put_byte((byte) (w /* &0xff */));
     put_byte((byte) (w >>> 8));
   }
 
   final void putShortMSB(int b) {
     put_byte((byte) (b >> 8));
-    put_byte((byte) (b/* &0xff */));
+    put_byte((byte) (b /* &0xff */));
   }
 
   final void send_code(int c, short[] tree) {
@@ -591,13 +591,13 @@ final class Deflate implements Cloneable {
     if (bi_valid > Buf_size - len) {
       int val = value;
       // bi_buf |= (val << bi_valid);
-      bi_buf |= ((val << bi_valid) & 0xffff);
+      bi_buf |= (short) ((val << bi_valid) & 0xffff);
       put_short(bi_buf);
       bi_buf = (short) (val >>> (Buf_size - bi_valid));
       bi_valid += len - Buf_size;
     } else {
       // bi_buf |= (value) << bi_valid;
-      bi_buf |= (((value) << bi_valid) & 0xffff);
+      bi_buf |= (short) (((value) << bi_valid) & 0xffff);
       bi_valid += len;
     }
   }
@@ -629,7 +629,6 @@ final class Deflate implements Cloneable {
     last_eob_len = 7;
   }
 
-
   // Save the match info and tally the frequency counts. Return true if
   // the current block must be flushed.
   boolean _tr_tally(int dist, // distance of matched string
@@ -659,7 +658,7 @@ final class Deflate implements Cloneable {
       int in_length = strstart - block_start;
       int dcode;
       for (dcode = 0; dcode < D_CODES; dcode++) {
-        out_length += (int) dyn_dtree[dcode * 2] * (5L + Tree.extra_dbits[dcode]);
+        out_length += (int) dyn_dtree[dcode * 2] * (5 + Tree.extra_dbits[dcode]);
       }
       out_length >>>= 3;
       if ((matches < (last_lit / 2)) && out_length < in_length / 2)
@@ -835,7 +834,6 @@ final class Deflate implements Cloneable {
         flush_block_only(false);
         if (strm.avail_out == 0)
           return NeedMore;
-
       }
 
       // Flush if we may have to slide, otherwise block_start may become
@@ -869,7 +867,7 @@ final class Deflate implements Cloneable {
       int stored_len, // length of input block
       boolean eof // true if this is the last block for a file
   ) {
-    int opt_lenb, static_lenb;// opt_len and static_len in bytes
+    int opt_lenb, static_lenb; // opt_len and static_len in bytes
     int max_blindex = 0; // index of last bit length code of non zero freq
 
     // Build the Huffman trees unless a stored block is forced
@@ -1541,7 +1539,6 @@ final class Deflate implements Cloneable {
         status = BUSY_STATE;
         putShortMSB(header);
 
-
         // Save the adler32 of the preset dictionary:
         if (strstart != 0) {
           long adler = strm.adler.getValue();
@@ -1620,7 +1617,7 @@ final class Deflate implements Cloneable {
           // as a special marker by inflate_sync().
           if (flush == Z_FULL_FLUSH) {
             // state.head[s.hash_size-1]=0;
-            for (int i = 0; i < hash_size/*-1*/; i++) // forget history
+            for (int i = 0; i < hash_size /*-1*/; i++) // forget history
               head[i] = 0;
           }
         }

@@ -3,11 +3,21 @@
  * to host2 and host3. java JumpHosts usr1@host1 usr2@host2 usr3@host3. You will be asked passwords
  * for those destinations. If everything works fine, you will get file lists of your home-directory
  * at host3.
- *
  */
-import com.jcraft.jsch.*;
-import java.awt.*;
-import javax.swing.*;
+import com.jcraft.jsch.ChannelSftp;
+import com.jcraft.jsch.JSch;
+import com.jcraft.jsch.Session;
+import com.jcraft.jsch.UIKeyboardInteractive;
+import com.jcraft.jsch.UserInfo;
+import java.awt.Container;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Insets;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JPasswordField;
+import javax.swing.JTextField;
 
 public class JumpHosts {
   public static void main(String[] arg) {

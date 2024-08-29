@@ -1,12 +1,27 @@
 /**
  * This program will demonstrate the file transfer from remote to local. If everything works fine, a
  * file 'file1' on 'remotehost' will copied to local 'file1'.
- *
  */
-import com.jcraft.jsch.*;
-import java.awt.*;
-import javax.swing.*;
-import java.io.*;
+import com.jcraft.jsch.Channel;
+import com.jcraft.jsch.ChannelExec;
+import com.jcraft.jsch.JSch;
+import com.jcraft.jsch.Session;
+import com.jcraft.jsch.UIKeyboardInteractive;
+import com.jcraft.jsch.UserInfo;
+import java.awt.Container;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Insets;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JPasswordField;
+import javax.swing.JTextField;
 
 public class ScpFrom {
   public static void main(String[] arg) {

@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    <groupId>com.jcraft</groupId>
+    <groupId>com.github.mwiede</groupId>
     <artifactId>jsch</artifactId>
     <packaging>jar</packaging>
-    <version>0.2.8</version>
+    <version>0.2.20-SNAPSHOT</version>
     <name>JSch</name>
     <url>https://github.com/mwiede/jsch</url>
     <description>JSch is a pure Java implementation of SSH2</description>
@@ -47,12 +47,14 @@
             <timezone>+9</timezone>
         </developer>
         <developer>
+            <id>mwiede</id>
             <name>Matthias Wiedemann</name>
             <email>mwiede@gmx.de</email>
             <organization>Community</organization>
             <organizationUrl>https://github.com/mwiede</organizationUrl>
         </developer>
         <developer>
+            <id>norrisjeremy</id>
             <name>Jeremy Norris</name>
             <organization>Community</organization>
             <organizationUrl>https://github.com/norrisjeremy</organizationUrl>
@@ -73,26 +75,35 @@
         </license>
     </licenses>
     <properties>
-        <project.build.outputTimestamp>2023-03-21T03:04:14Z</project.build.outputTimestamp>
+        <project.build.outputTimestamp>2024-08-06T09:07:30Z</project.build.outputTimestamp>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <skipITs>true</skipITs>
-        <junixsocket.version>2.6.2</junixsocket.version>
-        <jna.version>5.13.0</jna.version>
-        <log4j.version>2.20.0</log4j.version>
-        <surefire.version>3.0.0</surefire.version>
+        <junixsocket.version>2.10.0</junixsocket.version>
+        <jna.version>5.14.0</jna.version>
+        <log4j.version>2.23.1</log4j.version>
+        <errorprone.version>2.29.2</errorprone.version>
+        <surefire.version>3.4.0</surefire.version>
     </properties>
     <dependencies>
         <dependency>
             <groupId>org.bouncycastle</groupId>
             <artifactId>bcprov-jdk18on</artifactId>
-            <version>1.72</version>
+            <version>1.78.1</version>
             <optional>true</optional>
         </dependency>
         <dependency>
             <groupId>com.kohlschutter.junixsocket</groupId>
             <artifactId>junixsocket-common</artifactId>
             <version>${junixsocket.version}</version>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>com.kohlschutter</groupId>
+            <artifactId>compiler-annotations</artifactId>
+            <version>1.7.4</version>
+            <scope>provided</scope>
+            <optional>true</optional>
         </dependency>
         <dependency>
             <groupId>net.java.dev.jna</groupId>
@@ -121,19 +132,19 @@
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
-            <version>2.0.7</version>
+            <version>2.0.16</version>
             <optional>true</optional>
         </dependency>
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter</artifactId>
-            <version>5.9.2</version>
+            <version>5.11.0</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.testcontainers</groupId>
             <artifactId>junit-jupiter</artifactId>
-            <version>1.17.6</version>
+            <version>1.20.1</version>
             <scope>test</scope>
             <!-- Rely upon jna-jpms brought in above -->
             <exclusions>
@@ -150,18 +161,19 @@
         <dependency>
             <groupId>commons-codec</groupId>
             <artifactId>commons-codec</artifactId>
-            <version>1.15</version>
+            <version>1.17.1</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>commons-io</groupId>
+            <artifactId>commons-io</artifactId>
+            <version>2.16.1</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>com.kohlschutter.junixsocket</groupId>
             <artifactId>junixsocket-native-common</artifactId>
             <version>${junixsocket.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.google.guava</groupId>
-            <artifactId>guava</artifactId>
-            <version>31.1-jre</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -216,16 +228,25 @@
         <dependency>
             <groupId>com.github.valfirst</groupId>
             <artifactId>slf4j-test</artifactId>
-            <version>2.8.1</version>
+            <version>3.0.1</version>
             <scope>test</scope>
         </dependency>
     </dependencies>
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>com.google.errorprone</groupId>
+                <artifactId>error_prone_annotations</artifactId>
+                <version>${errorprone.version}</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
     <build>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-enforcer-plugin</artifactId>
-                <version>3.2.1</version>
+                <version>3.5.0</version>
                 <executions>
                     <execution>
                         <id>enforce-java</id>
@@ -235,7 +256,7 @@
                         <configuration>
                             <rules>
                                 <requireJavaVersion>
-                                    <version>16</version>
+                                    <version>17</version>
                                 </requireJavaVersion>
                                 <dependencyConvergence />
                                 <banDuplicatePomDependencyVersions />
@@ -249,7 +270,7 @@
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>flatten-maven-plugin</artifactId>
-                <version>1.4.0</version>
+                <version>1.6.0</version>
                 <configuration>
                     <flattenMode>ossrh</flattenMode>
                     <flattenDependencyMode>all</flattenDependencyMode>
@@ -274,7 +295,7 @@
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>build-helper-maven-plugin</artifactId>
-                <version>3.3.0</version>
+                <version>3.6.0</version>
                 <executions>
                     <execution>
                         <goals>
@@ -293,7 +314,7 @@
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>templating-maven-plugin</artifactId>
-                <version>1.0.0</version>
+                <version>3.0.0</version>
                 <executions>
                     <execution>
                         <goals>
@@ -305,14 +326,14 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.11.0</version>
+                <version>3.13.0</version>
                 <configuration>
                     <release>8</release>
                     <showDeprecation>true</showDeprecation>
                     <showWarnings>true</showWarnings>
+                    <failOnWarning>true</failOnWarning>
                     <compilerArgs>
-                        <arg>-Xlint:all,-processing,-classfile</arg>
-                        <arg>-Werror</arg>
+                        <arg>-Xlint:all,-processing,-classfile,-options</arg>
                     </compilerArgs>
                 </configuration>
                 <executions>
@@ -384,40 +405,32 @@
                 </executions>
             </plugin>
             <plugin>
-                <groupId>org.apache.felix</groupId>
-                <artifactId>maven-bundle-plugin</artifactId>
-                <version>5.1.8</version>
+                <groupId>biz.aQute.bnd</groupId>
+                <artifactId>bnd-maven-plugin</artifactId>
+                <version>7.0.0</version>
                 <configuration>
-                    <instructions>
-                        <Export-Package>com.jcraft.jsch;-noimport:=true</Export-Package>
-                        <!-- Avoid uses:="com.sun.jna" on export -->
-                        <_nouses>true</_nouses>
-                        <Import-Package><![CDATA[
-                            com.sun.jna,
-                            org.apache.logging.log4j,
-                            org.bouncycastle.crypto,
-                            org.bouncycastle.crypto.digests,
-                            org.bouncycastle.crypto.engines,
-                            org.bouncycastle.crypto.generators,
-                            org.bouncycastle.crypto.macs,
-                            org.bouncycastle.crypto.modes,
-                            org.bouncycastle.crypto.params,
-                            org.bouncycastle.crypto.signers,
-                            org.slf4j,
-                            org.ietf.jgss;resolution:=optional
-                            ]]></Import-Package>
-                        <Require-Bundle>com.sun.jna, com.sun.jna.platform</Require-Bundle>
-                    </instructions>
+                    <bnd><![CDATA[
+                        -noextraheaders: false
+                        -removeheaders: \
+                            Bnd-LastModified,\
+                            Bundle-Developers,\
+                            Bundle-DocURL,\
+                            Bundle-SCM,\
+                            Created-By,\
+                            Private-Package
+                        Bundle-SymbolicName: ${project.groupId}.${project.artifactId}
+                        Export-Package: com.jcraft.jsch;-noimport:=true
+                        Import-Package: \
+                            com.sun.jna*;version="${range;[=0,+)}";resolution:=optional,\
+                            org.apache.logging.log4j*;version="${range;[=0,4)}";resolution:=optional,\
+                            org.bouncycastle*;version="[1.76,${versionmask;+})";resolution:=optional,\
+                            org.slf4j*;version="[1.7,${versionmask;+})";resolution:=optional,\
+                            org.newsclub.net.unix;resolution:=optional,\
+                            org.ietf.jgss;resolution:=optional,\
+                            !java.*,\
+                            *
+                        ]]></bnd>
                 </configuration>
-                <executions>
-                    <execution>
-                        <id>bundle-manifest</id>
-                        <phase>process-classes</phase>
-                        <goals>
-                            <goal>manifest</goal>
-                        </goals>
-                    </execution>
-                </executions>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -446,12 +459,12 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-clean-plugin</artifactId>
-                <version>3.2.0</version>
+                <version>3.4.0</version>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-resources-plugin</artifactId>
-                <version>3.3.0</version>
+                <version>3.3.1</version>
                 <executions>
                     <execution>
                         <id>copy-licenses</id>
@@ -477,16 +490,13 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>
-                <version>3.3.0</version>
+                <version>3.4.2</version>
                 <configuration>
                     <archive>
                         <manifest>
                             <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
                             <addDefaultSpecificationEntries>true</addDefaultSpecificationEntries>
                         </manifest>
-                        <manifestEntries>
-                            <Multi-Release>true</Multi-Release>
-                        </manifestEntries>
                         <manifestFile>${project.build.outputDirectory}/META-INF/MANIFEST.MF</manifestFile>
                     </archive>
                 </configuration>
@@ -494,7 +504,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-assembly-plugin</artifactId>
-                <version>3.5.0</version>
+                <version>3.7.1</version>
                 <executions>
                     <execution>
                         <id>attach-sources</id>
@@ -513,13 +523,13 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-javadoc-plugin</artifactId>
-                <version>3.5.0</version>
+                <version>3.8.0</version>
                 <configuration>
                     <quiet>true</quiet>
                     <doclint>none</doclint>
                     <subpackages>com.jcraft.jsch</subpackages>
                     <excludePackageNames>com.jcraft.jsch.*</excludePackageNames>
-                    <sourcepath>${project.build.sourceDirectory}:${project.build.directory}/generated-sources/java-templates:${project.basedir}/src/main/java9:${project.basedir}/src/main/java11:${project.basedir}/src/main/java15:${project.basedir}/src/main/java16</sourcepath>
+                    <sourcepath>${project.build.sourceDirectory}:${project.build.directory}/generated-sources/java-templates:${project.basedir}/src/main/java9:${project.basedir}/src/main/java10:${project.basedir}/src/main/java11:${project.basedir}/src/main/java15:${project.basedir}/src/main/java16</sourcepath>
                 </configuration>
                 <executions>
                     <execution>
@@ -533,7 +543,11 @@
             <plugin>
                 <groupId>org.cyclonedx</groupId>
                 <artifactId>cyclonedx-maven-plugin</artifactId>
-                <version>2.7.5</version>
+                <version>2.8.1</version>
+                <configuration>
+                    <includeProvidedScope>false</includeProvidedScope>
+                    <includeSystemScope>false</includeSystemScope>
+                </configuration>
                 <executions>
                     <execution>
                         <goals>
@@ -545,7 +559,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-release-plugin</artifactId>
-                <version>3.0.0</version>
+                <version>3.1.1</version>
                 <configuration>
                     <useReleaseProfile>false</useReleaseProfile>
                     <releaseProfiles>release</releaseProfiles>
@@ -554,33 +568,32 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-gpg-plugin</artifactId>
-                <version>3.0.1</version>
+                <version>3.2.5</version>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-deploy-plugin</artifactId>
-                <version>3.1.0</version>
+                <version>3.1.3</version>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-install-plugin</artifactId>
-                <version>3.1.0</version>
+                <version>3.1.3</version>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-site-plugin</artifactId>
-                <version>3.12.1</version>
+                <version>3.20.0</version>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-dependency-plugin</artifactId>
-                <version>3.5.0</version>
+                <version>3.7.1</version>
             </plugin>
-<!--
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-checkstyle-plugin</artifactId>
-                <version>3.2.1</version>
+                <version>3.4.0</version>
                 <configuration>
                     <failOnViolation>true</failOnViolation>
                     <logViolationsToConsole>true</logViolationsToConsole>
@@ -602,7 +615,7 @@
             <plugin>
                 <groupId>net.revelc.code.formatter</groupId>
                 <artifactId>formatter-maven-plugin</artifactId>
-                <version>2.22.0</version>
+                <version>2.24.1</version>
                 <configuration>
                     <configFile>${project.basedir}/eclipse-java-google-style.xml</configFile>
                     <encoding>UTF-8</encoding>
@@ -619,49 +632,39 @@
                     </directories>
                 </configuration>
             </plugin>
--->
             <plugin>
                 <groupId>org.jacoco</groupId>
                 <artifactId>jacoco-maven-plugin</artifactId>
-                <version>0.8.8</version>
+                <version>0.8.12</version>
                 <configuration>
                     <excludes>
                         <exclude>com/jcraft/jsch/JavaVersion.class</exclude>
+                        <exclude>com/jcraft/jsch/JplLogger.class</exclude>
                         <exclude>com/jcraft/jsch/UnixDomainSocketFactory.class</exclude>
+                        <exclude>com/jcraft/jsch/jce/KeyPairGenEdDSA.class</exclude>
+                        <exclude>com/jcraft/jsch/jce/SignatureEd25519.class</exclude>
+                        <exclude>com/jcraft/jsch/jce/SignatureEd448.class</exclude>
+                        <exclude>com/jcraft/jsch/jce/XDH.class</exclude>
                         <exclude>META-INF/versions/9/com/jcraft/jsch/JavaVersion.class</exclude>
                         <exclude>META-INF/versions/10/com/jcraft/jsch/JavaVersion.class</exclude>
                     </excludes>
                 </configuration>
             </plugin>
             <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-shade-plugin</artifactId>
-                <version>3.4.1</version>
-                <executions>
-                    <execution>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>shade</goal>
-                        </goals>
-                        <configuration>
-                            <artifactSet>
-                                <includes>
-                                    <include>com.kohlschutter.junixsocket:junixsocket-common</include>
-                                    <include>com.kohlschutter.junixsocket:junixsocket-native-common</include>
-                                </includes>
-                            </artifactSet>
-                            <filters>
-                                <filter>
-                                    <artifact>com.kohlschutter.junixsocket:*</artifact>
-                                    <excludes>
-                                        <exclude>lib/**/*.dll</exclude>
-                                        <exclude>lib/**/*.nodeps.so</exclude>
-                                    </excludes>
-                                </filter>
-                            </filters>
-                        </configuration>
-                    </execution>
-                </executions>
+                <groupId>de.thetaphi</groupId>
+                <artifactId>forbiddenapis</artifactId>
+                <version>3.7</version>
+                <configuration>
+                    <bundledSignatures>
+                        <bundledSignature>jdk-unsafe</bundledSignature>
+                        <bundledSignature>jdk-deprecated</bundledSignature>
+                        <bundledSignature>jdk-non-portable</bundledSignature>
+                        <bundledSignature>jdk-reflection</bundledSignature>
+                    </bundledSignatures>
+                    <suppressAnnotations>
+                        <suppressAnnotation>com.jcraft.jsch.annotations.SuppressForbiddenApi</suppressAnnotation>
+                    </suppressAnnotations>
+                </configuration>
             </plugin>
         </plugins>
     </build>
@@ -749,7 +752,7 @@
                                 <path>
                                     <groupId>com.google.errorprone</groupId>
                                     <artifactId>error_prone_core</artifactId>
-                                    <version>2.18.0</version>
+                                    <version>${errorprone.version}</version>
                                 </path>
                             </annotationProcessorPaths>
                         </configuration>
@@ -757,7 +760,6 @@
                 </plugins>
             </build>
         </profile>
-<!--
         <profile>
             <id>format</id>
             <build>
@@ -780,7 +782,7 @@
         <profile>
             <id>formatvalidation</id>
             <activation>
-                <jdk>[11,)</jdk>
+                <jdk>[17,)</jdk>
             </activation>
             <build>
                 <plugins>
@@ -819,6 +821,69 @@
                 </plugins>
             </build>
         </profile>
--->
+        <profile>
+            <id>forbiddenapis</id>
+            <activation>
+                <jdk>[16,)</jdk>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>de.thetaphi</groupId>
+                        <artifactId>forbiddenapis</artifactId>
+                        <configuration>
+                            <releaseVersion>16</releaseVersion>
+                        </configuration>
+                        <executions>
+                            <execution>
+                                <id>check</id>
+                                <goals>
+                                    <goal>check</goal>
+                                </goals>
+                                <configuration>
+                                    <bundledSignatures combine.children="append">
+                                        <bundledSignature>jdk-system-out</bundledSignature>
+                                    </bundledSignatures>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>testCheck</id>
+                                <goals>
+                                    <goal>testCheck</goal>
+                                </goals>
+                                <configuration>
+                                    <bundledSignatures combine.children="append">
+                                        <bundledSignature>commons-io-unsafe-2.14.0</bundledSignature>
+                                    </bundledSignatures>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <profile>
+            <id>bnd</id>
+            <activation>
+                <jdk>[17,)</jdk>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>biz.aQute.bnd</groupId>
+                        <artifactId>bnd-maven-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>bnd-process</id>
+                                <phase>process-classes</phase>
+                                <goals>
+                                    <goal>bnd-process</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
     </profiles>
 </project>

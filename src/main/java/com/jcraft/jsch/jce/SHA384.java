@@ -26,9 +26,10 @@
 
 package com.jcraft.jsch.jce;
 
-import java.security.*;
+import com.jcraft.jsch.HASH;
+import java.security.MessageDigest;
 
-public class SHA384 implements com.jcraft.jsch.HASH {
+public class SHA384 implements HASH {
   MessageDigest md;
 
   @Override
@@ -38,11 +39,7 @@ public class SHA384 implements com.jcraft.jsch.HASH {
 
   @Override
   public void init() throws Exception {
-    try {
-      md = MessageDigest.getInstance("SHA-384");
-    } catch (Exception e) {
-      System.err.println(e);
-    }
+    md = MessageDigest.getInstance("SHA-384");
   }
 
   @Override

@@ -33,7 +33,7 @@ with
 <dependency>
   <groupId>com.github.mwiede</groupId>
   <artifactId>jsch</artifactId>
-  <version>0.2.7</version>
+  <version>0.2.19</version>
 </dependency>
 ```
 
@@ -43,7 +43,7 @@ When you have an artifact `foo:bar`, which contains `com.jcraft:jsch` as a trans
 <dependency>
   <groupId>com.github.mwiede</groupId>
   <artifactId>jsch</artifactId>
-  <version>0.2.7</version>
+  <version>0.2.19</version>
 </dependency>
 <dependency>
   <groupId>foo</groupId>
@@ -60,8 +60,10 @@ When you have an artifact `foo:bar`, which contains `com.jcraft:jsch` as a trans
 *Addition*: You can further exclude any of `com.jcraft:jsch.agentproxy.jsch`, `com.jcraft:jsch.agentproxy.core` or `com.jcraft:jsch.agentproxy.pageant`, because these modules where integrated in this fork (see release notes of [0.1.66](https://github.com/mwiede/jsch/releases/tag/jsch-0.1.66)).
 
 ## FAQ
+### Which is the minimum Java version required?
+  * Java 8. For more limitations, see next answer.
 ### Are ssh-ed25519, ssh-ed448, curve25519-sha256, curve448-sha512 & chacha20-poly1305@<!-- -->openssh.com supported?
-  * This library is a Multi-Release-jar, which means that you can only use certain features when a more recent Java version is used.
+  * This library is a [Multi-Release-jar](https://openjdk.org/jeps/238), which means that you can only use certain features when a more recent Java version is used.
     * In order to use ssh-ed25519 & ssh-ed448, you must use at least Java 15 or add [Bouncy Castle](https://www.bouncycastle.org/java.html) (bcprov-jdk18on) to the classpath.
     * In order to use curve25519-sha256 & curve448-sha512, you must use at least Java 11 or add [Bouncy Castle](https://www.bouncycastle.org/java.html) (bcprov-jdk18on) to the classpath.
     * In order to use chacha20-poly1305@<!-- -->openssh.com, you must add [Bouncy Castle](https://www.bouncycastle.org/java.html) (bcprov-jdk18on) to the classpath.

@@ -15,42 +15,67 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        java: ['8', '11', '17']
     steps:
-    - uses: actions/checkout@v3
+    - name: Checkout repository
+      uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
     - name: Cache local Maven repository
-      uses: actions/cache@v3
+      uses: actions/cache@0c45773b623bea8c8e75f6c82b208c3cf94ea4f9 # v4.0.2
       with:
-        path: ~/.m2/repository
-        key: ${{ runner.os }}-${{ matrix.java }}-maven-${{ hashFiles('**/pom.xml') }}
+        path: |
+          ~/.m2/repository
+          ~/.m2/wrapper
+        key: ${{ runner.os }}-build-maven-${{ hashFiles('**/pom.xml', '**/maven-wrapper.properties') }}
         restore-keys: |
-          ${{ runner.os }}-${{ matrix.java }}-maven-
-    - name: Set up build JDK
-      uses: actions/setup-java@v3
+          ${{ runner.os }}-build-maven-
+    - name: Set up JDK
+      uses: actions/setup-java@6a0805fcefea3d4657a47ac4c165951e33482018 # v4.2.2
       with:
         distribution: 'zulu'
-        java-version: '17'
+        java-version: '21'
         check-latest: true
     - name: Build with Maven
-      run: mvn -B -V -DskipTests=true package --file pom.xml
-    - uses: actions/upload-artifact@v3
+      run: ./mvnw -B -V -e verify -DskipTests=true -DskipITs=true
+    - name: Archive target directory
+      run: tar -cf target.tar target
+    - name: Upload target directory archive
+      uses: actions/upload-artifact@834a144ee995460fba8ed112a2fc961b36a5ec5a # v4.3.6
       with:
-        name: java-${{ matrix.java }}-jars
+        name: build_target
+        path: target.tar
+  test:
+    needs: build
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        java: ['8', '11', '17', '21', '22']
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
+    - name: Cache local Maven repository
+      uses: actions/cache@0c45773b623bea8c8e75f6c82b208c3cf94ea4f9 # v4.0.2
+      with:
         path: |
-          **/target/*.jar
-          **/target/bom.*
-      if: always()
-    - name: Set up test JDK ${{ matrix.java }}
-      uses: actions/setup-java@v3
+          ~/.m2/repository
+          ~/.m2/wrapper
+        key: ${{ runner.os }}-test-${{ matrix.java }}-maven-${{ hashFiles('**/pom.xml', '**/maven-wrapper.properties') }}
+        restore-keys: |
+          ${{ runner.os }}-test-${{ matrix.java }}-maven-
+    - name: Set up JDK
+      uses: actions/setup-java@6a0805fcefea3d4657a47ac4c165951e33482018 # v4.2.2
       with:
         distribution: 'zulu'
         java-version: ${{ matrix.java }}
         check-latest: true
+    - name: Download target directory archive
+      uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
+      with:
+        name: build_target
+    - name: Extract target directory archive
+      run: tar -xf target.tar
     - name: Test with Maven
-      run: mvn -B -V -P coverage verify -Denforcer.skip=true -Dmaven.resources.skip=true -Dmaven.main.skip=true -Dassembly.skipAssembly=true -Dmaven.javadoc.skip=true -DskipITs=false --file pom.xml
-    - uses: actions/upload-artifact@v3
+      run: ./mvnw -B -V -e -Pcoverage verify -Denforcer.skip=true -Dmaven.resources.skip=true -Dflatten.skip=true -Dmaven.main.skip=true -Dbnd.skip=true -Dassembly.skipAssembly=true -Dmaven.javadoc.skip=true -Dcyclonedx.skip=true -Dformatter.skip=true -Dforbiddenapis.skip=true -DskipTests=false -DskipITs=false
+    - name: Upload test results
+      uses: actions/upload-artifact@834a144ee995460fba8ed112a2fc961b36a5ec5a # v4.3.6
       with:
         name: java-${{ matrix.java }}-testresults
         path: |

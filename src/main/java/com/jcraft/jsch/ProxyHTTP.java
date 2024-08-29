@@ -26,8 +26,10 @@
 
 package com.jcraft.jsch;
 
-import java.io.*;
-import java.net.*;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.Socket;
 
 public class ProxyHTTP implements Proxy {
   private static int DEFAULTPORT = 80;
@@ -163,7 +165,7 @@ public class ProxyHTTP implements Proxy {
       } catch (Exception eee) {
       }
       String message = "ProxyHTTP: " + e.toString();
-      throw new JSchException(message, e);
+      throw new JSchProxyException(message, e);
     }
   }
 

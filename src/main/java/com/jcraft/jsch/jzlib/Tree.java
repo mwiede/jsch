@@ -31,13 +31,13 @@
 package com.jcraft.jsch.jzlib;
 
 final class Tree {
-  static final private int MAX_BITS = 15;
-  static final private int BL_CODES = 19;
-  static final private int D_CODES = 30;
-  static final private int LITERALS = 256;
-  static final private int LENGTH_CODES = 29;
-  static final private int L_CODES = (LITERALS + 1 + LENGTH_CODES);
-  static final private int HEAP_SIZE = (2 * L_CODES + 1);
+  private static final int MAX_BITS = 15;
+  private static final int BL_CODES = 19;
+  private static final int D_CODES = 30;
+  private static final int LITERALS = 256;
+  private static final int LENGTH_CODES = 29;
+  private static final int L_CODES = (LITERALS + 1 + LENGTH_CODES);
+  private static final int HEAP_SIZE = (2 * L_CODES + 1);
 
   // Bit length codes must not exceed MAX_BL_BITS bits
   static final int MAX_BL_BITS = 7;
@@ -66,7 +66,6 @@ final class Tree {
   static final int[] extra_blbits = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 3, 7};
 
   static final byte[] bl_order = {16, 17, 18, 0, 8, 7, 9, 6, 10, 5, 11, 4, 12, 3, 13, 2, 14, 1, 15};
-
 
   // The lengths of the bit length codes are sent in order of decreasing
   // probability, to avoid transmitting the lengths for unused bit
@@ -205,7 +204,7 @@ final class Tree {
         if (m > max_code)
           continue;
         if (tree[m * 2 + 1] != bits) {
-          s.opt_len += ((long) bits - (long) tree[m * 2 + 1]) * (long) tree[m * 2];
+          s.opt_len += (int) (((long) bits - (long) tree[m * 2 + 1]) * (long) tree[m * 2]);
           tree[m * 2 + 1] = (short) bits;
         }
         n--;
@@ -304,7 +303,7 @@ final class Tree {
   // the given tree and the field len is set for all tree elements.
   // OUT assertion: the field code is set for all tree elements of non
   // zero code length.
-  private final static void gen_codes(short[] tree, // the tree to decorate
+  private static final void gen_codes(short[] tree, // the tree to decorate
       int max_code, // largest code with non zero frequency
       short[] bl_count, // number of codes at each bit length
       short[] next_code) {
@@ -337,7 +336,7 @@ final class Tree {
   // Reverse the first len bits of a code, using straightforward code (a faster
   // method would use a table)
   // IN assertion: 1 <= len <= 15
-  private final static int bi_reverse(int code, // the value to invert
+  private static final int bi_reverse(int code, // the value to invert
       int len // its bit length
   ) {
     int res = 0;
@@ -349,4 +348,3 @@ final class Tree {
     return res >>> 1;
   }
 }
-

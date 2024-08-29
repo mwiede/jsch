@@ -37,6 +37,7 @@ import java.util.Vector;
 class PortWatcher {
   private static Vector<PortWatcher> pool = new Vector<>();
   private static InetAddress anyLocalAddress = null;
+
   static {
     // 0.0.0.0
     /*
@@ -48,7 +49,6 @@ class PortWatcher {
     } catch (UnknownHostException e) {
     }
   }
-
 
   Session session;
   int lport;

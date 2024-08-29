@@ -26,8 +26,14 @@
 
 package com.jcraft.jsch.jce;
 
-import java.security.*;
-import java.security.interfaces.*;
+import java.security.KeyPair;
+import java.security.KeyPairGenerator;
+import java.security.PrivateKey;
+import java.security.PublicKey;
+import java.security.SecureRandom;
+import java.security.interfaces.RSAPrivateCrtKey;
+import java.security.interfaces.RSAPrivateKey;
+import java.security.interfaces.RSAPublicKey;
 
 public class KeyPairGenRSA implements com.jcraft.jsch.KeyPairGenRSA {
   byte[] d; // private

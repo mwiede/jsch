@@ -26,9 +26,11 @@
 
 package com.jcraft.jsch.jce;
 
-import java.security.*;
-import java.security.interfaces.*;
-import java.security.spec.*;
+import java.security.KeyPair;
+import java.security.KeyPairGenerator;
+import java.security.interfaces.EdECPrivateKey;
+import java.security.interfaces.EdECPublicKey;
+import java.security.spec.EdECPoint;
 import java.util.Arrays;
 
 public class KeyPairGenEdDSA implements com.jcraft.jsch.KeyPairGenEdDSA {
@@ -50,7 +52,7 @@ public class KeyPairGenEdDSA implements com.jcraft.jsch.KeyPairGenEdDSA {
     prv = prvKey.getBytes().get();
     pub = rotate(point.getY().toByteArray());
     if (point.isXOdd()) {
-      pub[pub.length - 1] |= 0x80;
+      pub[pub.length - 1] |= (byte) 0x80;
     }
   }
 

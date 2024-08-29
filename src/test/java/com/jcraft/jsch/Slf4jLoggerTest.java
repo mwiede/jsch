@@ -9,17 +9,28 @@ import com.github.valfirst.slf4jtest.TestLogger;
 import com.github.valfirst.slf4jtest.TestLoggerFactory;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import uk.org.lidalia.slf4jext.ConventionalLevelHierarchy;
+import org.slf4j.event.Level;
 
 public class Slf4jLoggerTest {
 
   private static final TestLogger logger = TestLoggerFactory.getTestLogger(JSch.class);
+
+  private final Set<Level> OFF_LEVELS = EnumSet.noneOf(Level.class);
+  private final Set<Level> TRACE_LEVELS =
+      EnumSet.of(Level.TRACE, Level.DEBUG, Level.INFO, Level.WARN, Level.ERROR);
+  private final Set<Level> DEBUG_LEVELS =
+      EnumSet.of(Level.DEBUG, Level.INFO, Level.WARN, Level.ERROR);
+  private final Set<Level> INFO_LEVELS = EnumSet.of(Level.INFO, Level.WARN, Level.ERROR);
+  private final Set<Level> WARN_LEVELS = EnumSet.of(Level.WARN, Level.ERROR);
+  private final Set<Level> ERROR_LEVELS = EnumSet.of(Level.ERROR);
 
   private final Exception testException = new Exception("dummy exception");
 
@@ -37,7 +48,7 @@ public class Slf4jLoggerTest {
   public void testIsEnabled() {
     Slf4jLogger sl = new Slf4jLogger();
 
-    logger.setEnabledLevelsForAllThreads(ConventionalLevelHierarchy.DEBUG_LEVELS);
+    logger.setEnabledLevelsForAllThreads(DEBUG_LEVELS);
     assertTrue(sl.isEnabled(com.jcraft.jsch.Logger.DEBUG), "debug should be enabled");
     assertTrue(sl.isEnabled(com.jcraft.jsch.Logger.ERROR), "error should be enabled");
     assertTrue(sl.isEnabled(com.jcraft.jsch.Logger.FATAL), "fatal should be enabled");
@@ -45,7 +56,7 @@ public class Slf4jLoggerTest {
     assertTrue(sl.isEnabled(com.jcraft.jsch.Logger.WARN), "warn should be enabled");
     assertFalse(sl.isEnabled(-1), "trace should not be enabled");
 
-    logger.setEnabledLevelsForAllThreads(ConventionalLevelHierarchy.ERROR_LEVELS);
+    logger.setEnabledLevelsForAllThreads(ERROR_LEVELS);
     assertFalse(sl.isEnabled(com.jcraft.jsch.Logger.DEBUG), "debug should not be enabled");
     assertTrue(sl.isEnabled(com.jcraft.jsch.Logger.ERROR), "error should be enabled");
     assertTrue(sl.isEnabled(com.jcraft.jsch.Logger.FATAL), "fatal should be enabled");
@@ -53,7 +64,7 @@ public class Slf4jLoggerTest {
     assertFalse(sl.isEnabled(com.jcraft.jsch.Logger.WARN), "warn should not be enabled");
     assertFalse(sl.isEnabled(-1), "trace should not be enabled");
 
-    logger.setEnabledLevelsForAllThreads(ConventionalLevelHierarchy.INFO_LEVELS);
+    logger.setEnabledLevelsForAllThreads(INFO_LEVELS);
     assertFalse(sl.isEnabled(com.jcraft.jsch.Logger.DEBUG), "debug should not be enabled");
     assertTrue(sl.isEnabled(com.jcraft.jsch.Logger.ERROR), "error should be enabled");
     assertTrue(sl.isEnabled(com.jcraft.jsch.Logger.FATAL), "fatal should be enabled");
@@ -61,7 +72,7 @@ public class Slf4jLoggerTest {
     assertTrue(sl.isEnabled(com.jcraft.jsch.Logger.WARN), "warn should be enabled");
     assertFalse(sl.isEnabled(-1), "trace should not be enabled");
 
-    logger.setEnabledLevelsForAllThreads(ConventionalLevelHierarchy.OFF_LEVELS);
+    logger.setEnabledLevelsForAllThreads(OFF_LEVELS);
     assertFalse(sl.isEnabled(com.jcraft.jsch.Logger.DEBUG), "debug should not be enabled");
     assertFalse(sl.isEnabled(com.jcraft.jsch.Logger.ERROR), "error should not be enabled");
     assertFalse(sl.isEnabled(com.jcraft.jsch.Logger.FATAL), "fatal should not be enabled");
@@ -69,7 +80,7 @@ public class Slf4jLoggerTest {
     assertFalse(sl.isEnabled(com.jcraft.jsch.Logger.WARN), "warn should not be enabled");
     assertFalse(sl.isEnabled(-1), "trace should not be enabled");
 
-    logger.setEnabledLevelsForAllThreads(ConventionalLevelHierarchy.TRACE_LEVELS);
+    logger.setEnabledLevelsForAllThreads(TRACE_LEVELS);
     assertTrue(sl.isEnabled(com.jcraft.jsch.Logger.DEBUG), "debug should be enabled");
     assertTrue(sl.isEnabled(com.jcraft.jsch.Logger.ERROR), "error should be enabled");
     assertTrue(sl.isEnabled(com.jcraft.jsch.Logger.FATAL), "fatal should be enabled");
@@ -77,7 +88,7 @@ public class Slf4jLoggerTest {
     assertTrue(sl.isEnabled(com.jcraft.jsch.Logger.WARN), "warn should be enabled");
     assertTrue(sl.isEnabled(-1), "trace should be enabled");
 
-    logger.setEnabledLevelsForAllThreads(ConventionalLevelHierarchy.WARN_LEVELS);
+    logger.setEnabledLevelsForAllThreads(WARN_LEVELS);
     assertFalse(sl.isEnabled(com.jcraft.jsch.Logger.DEBUG), "debug should not be enabled");
     assertTrue(sl.isEnabled(com.jcraft.jsch.Logger.ERROR), "error should be enabled");
     assertTrue(sl.isEnabled(com.jcraft.jsch.Logger.FATAL), "fatal should be enabled");
@@ -95,25 +106,25 @@ public class Slf4jLoggerTest {
     List<Optional<Throwable>> expectedExceptions =
         Arrays.asList(Optional.empty(), Optional.ofNullable(null), Optional.of(testException));
 
-    logger.setEnabledLevelsForAllThreads(ConventionalLevelHierarchy.TRACE_LEVELS);
+    logger.setEnabledLevelsForAllThreads(TRACE_LEVELS);
     sl.log(-1, "debug message");
     sl.log(-1, "debug message with null cause", null);
     sl.log(-1, "debug message with cause", testException);
     checkMessages(expectedMessages, expectedExceptions);
 
-    logger.setEnabledLevelsForAllThreads(ConventionalLevelHierarchy.TRACE_LEVELS);
+    logger.setEnabledLevelsForAllThreads(TRACE_LEVELS);
     sl.log(com.jcraft.jsch.Logger.FATAL, "debug message");
     sl.log(com.jcraft.jsch.Logger.FATAL, "debug message with null cause", null);
     sl.log(com.jcraft.jsch.Logger.FATAL, "debug message with cause", testException);
     checkMessages(expectedMessages, expectedExceptions);
 
-    logger.setEnabledLevelsForAllThreads(ConventionalLevelHierarchy.ERROR_LEVELS);
+    logger.setEnabledLevelsForAllThreads(ERROR_LEVELS);
     sl.log(-1, "debug message");
     sl.log(-1, "debug message with null cause", null);
     sl.log(-1, "debug message with cause", testException);
     checkMessages(Collections.emptyList(), Collections.emptyList());
 
-    logger.setEnabledLevelsForAllThreads(ConventionalLevelHierarchy.ERROR_LEVELS);
+    logger.setEnabledLevelsForAllThreads(ERROR_LEVELS);
     sl.log(com.jcraft.jsch.Logger.FATAL, "debug message");
     sl.log(com.jcraft.jsch.Logger.FATAL, "debug message with null cause", null);
     sl.log(com.jcraft.jsch.Logger.FATAL, "debug message with cause", testException);

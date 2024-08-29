@@ -26,20 +26,21 @@
 
 package com.jcraft.jsch;
 
-class UserAuthNone extends UserAuth {
-  private static final int SSH_MSG_SERVICE_ACCEPT = 6;
-  private String methods = null;
+public class UserAuthNone extends UserAuth {
+  protected static final int SSH_MSG_SERVICE_REQUEST = 5;
+  protected static final int SSH_MSG_SERVICE_ACCEPT = 6;
+
+  private String methods;
 
   @Override
   public boolean start(Session session) throws Exception {
     super.start(session);
 
-
     // send
     // byte SSH_MSG_SERVICE_REQUEST(5)
     // string service name "ssh-userauth"
     packet.reset();
-    buf.putByte((byte) Session.SSH_MSG_SERVICE_REQUEST);
+    buf.putByte((byte) SSH_MSG_SERVICE_REQUEST);
     buf.putString(Util.str2byte("ssh-userauth"));
     session.write(packet);
 
@@ -73,7 +74,7 @@ class UserAuthNone extends UserAuth {
     // string service name ("ssh-connection")
     // string "none"
     packet.reset();
-    buf.putByte((byte) SSH_MSG_USERAUTH_REQUEST);
+    buf.putByte((byte) UserAuth.SSH_MSG_USERAUTH_REQUEST);
     buf.putString(_username);
     buf.putString(Util.str2byte("ssh-connection"));
     buf.putString(Util.str2byte("none"));
@@ -83,10 +84,10 @@ class UserAuthNone extends UserAuth {
       buf = session.read(buf);
       command = buf.getCommand() & 0xff;
 
-      if (command == SSH_MSG_USERAUTH_SUCCESS) {
+      if (command == UserAuth.SSH_MSG_USERAUTH_SUCCESS) {
         return true;
       }
-      if (command == SSH_MSG_USERAUTH_BANNER) {
+      if (command == UserAuth.SSH_MSG_USERAUTH_BANNER) {
         buf.getInt();
         buf.getByte();
         buf.getByte();
@@ -101,22 +102,22 @@ class UserAuthNone extends UserAuth {
         }
         continue loop;
       }
-      if (command == SSH_MSG_USERAUTH_FAILURE) {
+      if (command == UserAuth.SSH_MSG_USERAUTH_FAILURE) {
         buf.getInt();
         buf.getByte();
         buf.getByte();
         byte[] foo = buf.getString();
         int partial_success = buf.getByte();
-        methods = Util.byte2str(foo);
-        // System.err.println("UserAuthNONE: "+methods+
-        // " partial_success:"+(partial_success!=0));
-        // if(partial_success!=0){
+        setMethods(Util.byte2str(foo));
+        // System.err.println("UserAuthNone: " + methods + " partial_success:" + (partial_success !=
+        // 0));
+        // if (partial_success != 0) {
         // throw new JSchPartialAuthException(new String(foo));
         // }
 
         break;
       } else {
-        // System.err.println("USERAUTH fail ("+command+")");
+        // System.err.println("USERAUTH fail (" + command + ")");
         throw new JSchException("USERAUTH fail (" + command + ")");
       }
     }
@@ -124,7 +125,11 @@ class UserAuthNone extends UserAuth {
     return false;
   }
 
-  String getMethods() {
+  protected String getMethods() {
     return methods;
+  }
+
+  protected void setMethods(String methods) {
+    this.methods = methods;
   }
 }

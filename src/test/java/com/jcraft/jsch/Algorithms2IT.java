@@ -16,6 +16,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Base64;
 import java.util.List;
+import java.util.Locale;
 import java.util.Optional;
 import java.util.Random;
 import org.apache.commons.codec.digest.DigestUtils;
@@ -146,7 +147,7 @@ public class Algorithms2IT {
     session.setConfig("kex", kex);
     doSftp(session, true);
 
-    String expected = String.format("kex: algorithm: %s.*", kex);
+    String expected = String.format(Locale.ROOT, "kex: algorithm: %s.*", kex);
     checkLogs(expected);
   }
 
@@ -177,9 +178,9 @@ public class Algorithms2IT {
     session.setConfig("dhgex_preferred", size);
     doSftp(session, true);
 
-    String expectedKex = String.format("kex: algorithm: %s.*", kex);
-    String expectedSizes =
-        String.format("SSH_MSG_KEX_DH_GEX_REQUEST\\(%s<%s<%s\\) sent", size, size, size);
+    String expectedKex = String.format(Locale.ROOT, "kex: algorithm: %s.*", kex);
+    String expectedSizes = String.format(Locale.ROOT,
+        "SSH_MSG_KEX_DH_GEX_REQUEST\\(%s<%s<%s\\) sent", size, size, size);
     checkLogs(expectedKex);
     checkLogs(expectedSizes);
   }
@@ -235,7 +236,7 @@ public class Algorithms2IT {
     session.setConfig("server_host_key", keyType);
     doSftp(session, true);
 
-    String expected = String.format("kex: host key algorithm: %s.*", keyType);
+    String expected = String.format(Locale.ROOT, "kex: host key algorithm: %s.*", keyType);
     checkLogs(expected);
   }
 
@@ -250,8 +251,8 @@ public class Algorithms2IT {
     session.setConfig("compression.c2s", compression);
     doSftp(session, true);
 
-    String expectedS2C = String.format("kex: server->client cipher: %s.*", cipher);
-    String expectedC2S = String.format("kex: client->server cipher: %s.*", cipher);
+    String expectedS2C = String.format(Locale.ROOT, "kex: server->client cipher: %s.*", cipher);
+    String expectedC2S = String.format(Locale.ROOT, "kex: client->server cipher: %s.*", cipher);
     checkLogs(expectedS2C);
     checkLogs(expectedC2S);
   }
@@ -274,8 +275,8 @@ public class Algorithms2IT {
     session.setConfig("cipher.c2s", "aes128-ctr");
     doSftp(session, true);
 
-    String expectedS2C = String.format("kex: server->client .* MAC: %s.*", mac);
-    String expectedC2S = String.format("kex: client->server .* MAC: %s.*", mac);
+    String expectedS2C = String.format(Locale.ROOT, "kex: server->client .* MAC: %s.*", mac);
+    String expectedC2S = String.format(Locale.ROOT, "kex: client->server .* MAC: %s.*", mac);
     checkLogs(expectedS2C);
     checkLogs(expectedC2S);
   }
@@ -304,7 +305,7 @@ public class Algorithms2IT {
     session.setConfig("zlib", impl);
     doSftp(session, true);
 
-    String expectedImpl = String.format("zlib using %s", impl);
+    String expectedImpl = String.format(Locale.ROOT, "zlib using %s", impl);
     String expectedS2C = "kex: server->client .* compression: zlib.*";
     String expectedC2S = "kex: client->server .* compression: zlib.*";
     checkLogs(expectedImpl);
@@ -332,7 +333,8 @@ public class Algorithms2IT {
   private HostKey readHostKey(String fileName) throws Exception {
     List<String> lines = Files.readAllLines(Paths.get(fileName), UTF_8);
     String[] split = lines.get(0).split("\\s+");
-    String hostname = String.format("[%s]:%d", sshd.getHost(), sshd.getFirstMappedPort());
+    String hostname =
+        String.format(Locale.ROOT, "[%s]:%d", sshd.getHost(), sshd.getFirstMappedPort());
     return new HostKey(hostname, Base64.getDecoder().decode(split[1]));
   }
 

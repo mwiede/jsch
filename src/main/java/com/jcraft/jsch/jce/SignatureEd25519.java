@@ -26,29 +26,41 @@
 
 package com.jcraft.jsch.jce;
 
-import java.security.*;
-import java.security.interfaces.*;
-import java.security.spec.*;
+import com.jcraft.jsch.SignatureEdDSA;
 
-public class KeyPairGenXEC implements com.jcraft.jsch.KeyPairGenXEC {
-  XECPublicKey pubKey;
-  XECPrivateKey prvKey;
+public class SignatureEd25519 implements SignatureEdDSA {
+
+  public SignatureEd25519() {
+    throw new UnsupportedOperationException("SignatureEd25519 requires Java15+.");
+  }
 
   @Override
-  public void init(String name) throws Exception {
-    KeyPairGenerator kpg = KeyPairGenerator.getInstance("XDH");
-    NamedParameterSpec paramSpec = new NamedParameterSpec(name);
-    kpg.initialize(paramSpec);
-    KeyPair kp = kpg.genKeyPair();
-    prvKey = (XECPrivateKey) kp.getPrivate();
-    pubKey = (XECPublicKey) kp.getPublic();
+  public void init() throws Exception {
+    throw new UnsupportedOperationException("SignatureEd25519 requires Java15+.");
   }
 
-  XECPublicKey getPublicKey() {
-    return pubKey;
+  @Override
+  public void setPubKey(byte[] y_arr) throws Exception {
+    throw new UnsupportedOperationException("SignatureEd25519 requires Java15+.");
   }
 
-  XECPrivateKey getPrivateKey() {
-    return prvKey;
+  @Override
+  public void setPrvKey(byte[] bytes) throws Exception {
+    throw new UnsupportedOperationException("SignatureEd25519 requires Java15+.");
+  }
+
+  @Override
+  public byte[] sign() throws Exception {
+    throw new UnsupportedOperationException("SignatureEd25519 requires Java15+.");
+  }
+
+  @Override
+  public void update(byte[] foo) throws Exception {
+    throw new UnsupportedOperationException("SignatureEd25519 requires Java15+.");
+  }
+
+  @Override
+  public boolean verify(byte[] sig) throws Exception {
+    throw new UnsupportedOperationException("SignatureEd25519 requires Java15+.");
   }
 }

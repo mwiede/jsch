@@ -26,7 +26,11 @@
 
 package com.jcraft.jsch;
 
-import java.io.*;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.PipedInputStream;
+import java.io.PipedOutputStream;
 import java.util.Vector;
 
 public abstract class Channel {
@@ -67,7 +71,11 @@ public abstract class Channel {
       ret = new ChannelForwardedTCPIP();
     }
     if (type.equals("sftp")) {
-      ret = new ChannelSftp();
+      ChannelSftp sftp = new ChannelSftp();
+      boolean useWriteFlushWorkaround =
+          session.getConfig("use_sftp_write_flush_workaround").equals("yes");
+      sftp.setUseWriteFlushWorkaround(useWriteFlushWorkaround);
+      ret = sftp;
     }
     if (type.equals("subsystem")) {
       ret = new ChannelSubsystem();
@@ -204,6 +212,11 @@ public abstract class Channel {
   }
 
   public InputStream getInputStream() throws IOException {
+    Session _session = this.session;
+    if (_session != null && isConnected() && _session.getLogger().isEnabled(Logger.WARN)) {
+      _session.getLogger().log(Logger.WARN, "getInputStream() should be called before connect()");
+    }
+
     int max_input_buffer_size = 32 * 1024;
     try {
       max_input_buffer_size = Integer.parseInt(getSession().getConfig("max_input_buffer_size"));
@@ -217,6 +230,12 @@ public abstract class Channel {
   }
 
   public InputStream getExtInputStream() throws IOException {
+    Session _session = this.session;
+    if (_session != null && isConnected() && _session.getLogger().isEnabled(Logger.WARN)) {
+      _session.getLogger().log(Logger.WARN,
+          "getExtInputStream() should be called before connect()");
+    }
+
     int max_input_buffer_size = 32 * 1024;
     try {
       max_input_buffer_size = Integer.parseInt(getSession().getConfig("max_input_buffer_size"));
@@ -252,7 +271,6 @@ public abstract class Channel {
         } catch (JSchException e) {
           throw new IOException("failed to initialize the channel.", e);
         }
-
       }
 
       byte[] b = new byte[1];
@@ -321,7 +339,6 @@ public abstract class Channel {
           close();
           throw new IOException(e.toString(), e);
         }
-
       }
 
       @Override
@@ -682,6 +699,7 @@ public abstract class Channel {
       this.os = null;
     }
   }
+
   static class PassiveOutputStream extends PipedOutputStream {
     private MyPipedInputStream _sink = null;
 

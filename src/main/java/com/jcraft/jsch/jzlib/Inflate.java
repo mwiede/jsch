@@ -34,10 +34,10 @@ import java.io.ByteArrayOutputStream;
 
 final class Inflate {
 
-  static final private int MAX_WBITS = 15; // 32K LZ77 window
+  private static final int MAX_WBITS = 15; // 32K LZ77 window
 
   // preset dictionary flag in zlib header
-  static final private int PRESET_DICT = 0x20;
+  private static final int PRESET_DICT = 0x20;
 
   static final int Z_NO_FLUSH = 0;
   static final int Z_PARTIAL_FLUSH = 1;
@@ -45,43 +45,43 @@ final class Inflate {
   static final int Z_FULL_FLUSH = 3;
   static final int Z_FINISH = 4;
 
-  static final private int Z_DEFLATED = 8;
+  private static final int Z_DEFLATED = 8;
 
-  static final private int Z_OK = 0;
-  static final private int Z_STREAM_END = 1;
-  static final private int Z_NEED_DICT = 2;
-  static final private int Z_ERRNO = -1;
-  static final private int Z_STREAM_ERROR = -2;
-  static final private int Z_DATA_ERROR = -3;
-  static final private int Z_MEM_ERROR = -4;
-  static final private int Z_BUF_ERROR = -5;
-  static final private int Z_VERSION_ERROR = -6;
+  private static final int Z_OK = 0;
+  private static final int Z_STREAM_END = 1;
+  private static final int Z_NEED_DICT = 2;
+  private static final int Z_ERRNO = -1;
+  private static final int Z_STREAM_ERROR = -2;
+  private static final int Z_DATA_ERROR = -3;
+  private static final int Z_MEM_ERROR = -4;
+  private static final int Z_BUF_ERROR = -5;
+  private static final int Z_VERSION_ERROR = -6;
 
-  static final private int METHOD = 0; // waiting for method byte
-  static final private int FLAG = 1; // waiting for flag byte
-  static final private int DICT4 = 2; // four dictionary check bytes to go
-  static final private int DICT3 = 3; // three dictionary check bytes to go
-  static final private int DICT2 = 4; // two dictionary check bytes to go
-  static final private int DICT1 = 5; // one dictionary check byte to go
-  static final private int DICT0 = 6; // waiting for inflateSetDictionary
-  static final private int BLOCKS = 7; // decompressing blocks
-  static final private int CHECK4 = 8; // four check bytes to go
-  static final private int CHECK3 = 9; // three check bytes to go
-  static final private int CHECK2 = 10; // two check bytes to go
-  static final private int CHECK1 = 11; // one check byte to go
-  static final private int DONE = 12; // finished check, done
-  static final private int BAD = 13; // got an error--stay here
+  private static final int METHOD = 0; // waiting for method byte
+  private static final int FLAG = 1; // waiting for flag byte
+  private static final int DICT4 = 2; // four dictionary check bytes to go
+  private static final int DICT3 = 3; // three dictionary check bytes to go
+  private static final int DICT2 = 4; // two dictionary check bytes to go
+  private static final int DICT1 = 5; // one dictionary check byte to go
+  private static final int DICT0 = 6; // waiting for inflateSetDictionary
+  private static final int BLOCKS = 7; // decompressing blocks
+  private static final int CHECK4 = 8; // four check bytes to go
+  private static final int CHECK3 = 9; // three check bytes to go
+  private static final int CHECK2 = 10; // two check bytes to go
+  private static final int CHECK1 = 11; // one check byte to go
+  private static final int DONE = 12; // finished check, done
+  private static final int BAD = 13; // got an error--stay here
 
-  static final private int HEAD = 14;
-  static final private int LENGTH = 15;
-  static final private int TIME = 16;
-  static final private int OS = 17;
-  static final private int EXLEN = 18;
-  static final private int EXTRA = 19;
-  static final private int NAME = 20;
-  static final private int COMMENT = 21;
-  static final private int HCRC = 22;
-  static final private int FLAGS = 23;
+  private static final int HEAD = 14;
+  private static final int LENGTH = 15;
+  private static final int TIME = 16;
+  private static final int OS = 17;
+  private static final int EXLEN = 18;
+  private static final int EXTRA = 19;
+  private static final int NAME = 20;
+  private static final int COMMENT = 21;
+  private static final int HCRC = 22;
+  private static final int FLAGS = 23;
 
   static final int INFLATE_ANY = 0x40000000;
 
@@ -288,7 +288,6 @@ final class Inflate {
           }
           this.mode = DICT4;
         case DICT4:
-
           if (z.avail_in == 0)
             return r;
           r = f;
@@ -298,7 +297,6 @@ final class Inflate {
           this.need = ((z.next_in[z.next_in_index++] & 0xff) << 24) & 0xff000000L;
           this.mode = DICT3;
         case DICT3:
-
           if (z.avail_in == 0)
             return r;
           r = f;
@@ -308,7 +306,6 @@ final class Inflate {
           this.need += ((z.next_in[z.next_in_index++] & 0xff) << 16) & 0xff0000L;
           this.mode = DICT2;
         case DICT2:
-
           if (z.avail_in == 0)
             return r;
           r = f;
@@ -318,7 +315,6 @@ final class Inflate {
           this.need += ((z.next_in[z.next_in_index++] & 0xff) << 8) & 0xff00L;
           this.mode = DICT1;
         case DICT1:
-
           if (z.avail_in == 0)
             return r;
           r = f;
@@ -356,7 +352,6 @@ final class Inflate {
           }
           this.mode = CHECK4;
         case CHECK4:
-
           if (z.avail_in == 0)
             return r;
           r = f;
@@ -366,7 +361,6 @@ final class Inflate {
           this.need = ((z.next_in[z.next_in_index++] & 0xff) << 24) & 0xff000000L;
           this.mode = CHECK3;
         case CHECK3:
-
           if (z.avail_in == 0)
             return r;
           r = f;
@@ -376,7 +370,6 @@ final class Inflate {
           this.need += ((z.next_in[z.next_in_index++] & 0xff) << 16) & 0xff0000L;
           this.mode = CHECK2;
         case CHECK2:
-
           if (z.avail_in == 0)
             return r;
           r = f;
@@ -386,7 +379,6 @@ final class Inflate {
           this.need += ((z.next_in[z.next_in_index++] & 0xff) << 8) & 0xff00L;
           this.mode = CHECK1;
         case CHECK1:
-
           if (z.avail_in == 0)
             return r;
           r = f;
@@ -447,7 +439,6 @@ final class Inflate {
           return Z_DATA_ERROR;
 
         case FLAGS:
-
           try {
             r = readBytes(2, r, f);
           } catch (Return e) {
@@ -625,7 +616,7 @@ final class Inflate {
     return Z_OK;
   }
 
-  static private byte[] mark = {(byte) 0, (byte) 0, (byte) 0xff, (byte) 0xff};
+  private static byte[] mark = {(byte) 0, (byte) 0, (byte) 0xff, (byte) 0xff};
 
   int inflateSync() {
     int n; // number of bytes to look at

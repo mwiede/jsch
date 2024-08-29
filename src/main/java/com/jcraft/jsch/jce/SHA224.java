@@ -27,8 +27,7 @@
 package com.jcraft.jsch.jce;
 
 import com.jcraft.jsch.HASH;
-
-import java.security.*;
+import java.security.MessageDigest;
 
 public class SHA224 implements HASH {
   MessageDigest md;
@@ -40,11 +39,7 @@ public class SHA224 implements HASH {
 
   @Override
   public void init() throws Exception {
-    try {
-      md = MessageDigest.getInstance("SHA-224");
-    } catch (Exception e) {
-      System.err.println(e);
-    }
+    md = MessageDigest.getInstance("SHA-224");
   }
 
   @Override

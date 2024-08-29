@@ -221,5 +221,3 @@ class UserAuthGSSAPIWithMIC extends UserAuth {
     return false;
   }
 }
-
-

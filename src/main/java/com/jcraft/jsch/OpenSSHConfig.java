@@ -36,6 +36,7 @@ import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Hashtable;
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 import java.util.Vector;
 import java.util.stream.Collectors;
@@ -44,6 +45,7 @@ import java.util.stream.Stream;
 /**
  * This class implements ConfigRepository interface, and parses OpenSSH's configuration file. The
  * following keywords will be recognized,
+ *
  * <ul>
  * <li>Host</li>
  * <li>User</li>
@@ -75,9 +77,10 @@ import java.util.stream.Stream;
  */
 public class OpenSSHConfig implements ConfigRepository {
 
-  private static final Set<String> keysWithListAdoption =
-      Stream.of("KexAlgorithms", "Ciphers", "HostKeyAlgorithms", "MACs", "PubkeyAcceptedAlgorithms",
-          "PubkeyAcceptedKeyTypes").map(String::toUpperCase).collect(Collectors.toSet());
+  private static final Set<String> keysWithListAdoption = Stream
+      .of("KexAlgorithms", "Ciphers", "HostKeyAlgorithms", "MACs", "PubkeyAcceptedAlgorithms",
+          "PubkeyAcceptedKeyTypes")
+      .map(string -> string.toUpperCase(Locale.ROOT)).collect(Collectors.toSet());
 
   /**
    * Parses the given string, and returns an instance of ConfigRepository.
@@ -158,6 +161,7 @@ public class OpenSSHConfig implements ConfigRepository {
   }
 
   private static final Hashtable<String, String> keymap = new Hashtable<>();
+
   static {
     keymap.put("kex", "KexAlgorithms");
     keymap.put("server_host_key", "HostKeyAlgorithms");
@@ -184,6 +188,8 @@ public class OpenSSHConfig implements ConfigRepository {
       byte[] _host = Util.str2byte(host);
       if (hosts.size() > 1) {
         for (int i = 1; i < hosts.size(); i++) {
+          boolean anyPositivePatternMatches = false;
+          boolean anyNegativePatternMatches = false;
           String patterns[] = hosts.elementAt(i).split("[ \t]");
           for (int j = 0; j < patterns.length; j++) {
             boolean negate = false;
@@ -193,12 +199,16 @@ public class OpenSSHConfig implements ConfigRepository {
               foo = foo.substring(1).trim();
             }
             if (Util.glob(Util.str2byte(foo), _host)) {
-              if (!negate) {
-                _configs.addElement(config.get(hosts.elementAt(i)));
+              if (negate) {
+                anyNegativePatternMatches = true;
+              } else {
+                anyPositivePatternMatches = true;
               }
-            } else if (negate) {
-              _configs.addElement(config.get(hosts.elementAt(i)));
             }
+          }
+
+          if (anyPositivePatternMatches && !anyNegativePatternMatches) {
+            _configs.addElement(config.get(hosts.elementAt(i)));
           }
         }
       }
@@ -209,13 +219,13 @@ public class OpenSSHConfig implements ConfigRepository {
       if (keymap.get(key) != null) {
         key = keymap.get(key);
       }
-      key = key.toUpperCase();
+      key = key.toUpperCase(Locale.ROOT);
       String value = null;
       for (int i = 0; i < _configs.size(); i++) {
         Vector<String[]> v = _configs.elementAt(i);
         for (int j = 0; j < v.size(); j++) {
           String[] kv = v.elementAt(j);
-          if (kv[0].toUpperCase().equals(key)) {
+          if (kv[0].toUpperCase(Locale.ROOT).equals(key)) {
             value = kv[1];
             break;
           }
@@ -255,13 +265,13 @@ public class OpenSSHConfig implements ConfigRepository {
     }
 
     private String[] multiFind(String key) {
-      key = key.toUpperCase();
+      key = key.toUpperCase(Locale.ROOT);
       Vector<String> value = new Vector<>();
       for (int i = 0; i < _configs.size(); i++) {
         Vector<String[]> v = _configs.elementAt(i);
         for (int j = 0; j < v.size(); j++) {
           String[] kv = v.elementAt(j);
-          if (kv[0].toUpperCase().equals(key)) {
+          if (kv[0].toUpperCase(Locale.ROOT).equals(key)) {
             String foo = kv[1];
             if (foo != null) {
               value.remove(foo);
