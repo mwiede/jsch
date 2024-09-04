@@ -50,7 +50,7 @@ public class GSSContextKrb5 implements com.jcraft.jsch.GSSContext {
       // RFC 1964
       Oid krb5 = new Oid("1.2.840.113554.1.2.2");
       // Kerberos Principal Name Form
-      Oid principalName = new Oid("1.2.840.113554.1.2.2.1");
+      Oid principalName = GSSName.NT_HOSTBASED_SERVICE;
 
       GSSManager mgr = GSSManager.getInstance();
 
@@ -66,7 +66,7 @@ public class GSSContextKrb5 implements com.jcraft.jsch.GSSContext {
         cname = InetAddress.getByName(cname).getCanonicalHostName();
       } catch (UnknownHostException e) {
       }
-      GSSName _host = mgr.createName("host/" + cname, principalName);
+      GSSName _host = mgr.createName("host@" + cname, principalName);
 
       context = mgr.createContext(_host, krb5, crd, GSSContext.DEFAULT_LIFETIME);
 
