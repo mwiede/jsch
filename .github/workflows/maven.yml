@@ -71,7 +71,7 @@ jobs:
       with:
         name: build_target
     - name: Extract target directory archive
-      run: tar -xf target.tar
+      run: tar -xmf target.tar
     - name: Test with Maven
       run: ./mvnw -B -V -e -Pcoverage verify -Denforcer.skip=true -Dmaven.resources.skip=true -Dflatten.skip=true -Dmaven.main.skip=true -Dbnd.skip=true -Dassembly.skipAssembly=true -Dmaven.javadoc.skip=true -Dcyclonedx.skip=true -Dformatter.skip=true -Dforbiddenapis.skip=true -DskipTests=false -DskipITs=false
     - name: Upload test results

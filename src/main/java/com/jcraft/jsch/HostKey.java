@@ -128,7 +128,7 @@ public class HostKey {
         jsch.getInstanceLogger().log(Logger.ERROR, "getFingerPrint: " + e.getMessage(), e);
       }
     }
-    return Util.getFingerPrint(hash, key, false, true);
+    return Util.getFingerPrint(hash, key, true, false);
   }
 
   public String getComment() {

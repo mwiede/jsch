@@ -454,9 +454,8 @@ class KnownHostsTest {
         "|1|AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8=|mie6rcAf1aPGk6d+HxnkpvO4HaOAH/Y6YWegs+Xog/s=",
         hhk.getHost(), "host mismatch");
     assertEquals("", hhk.getMarker(), "marker mismatch");
-    assertEquals(
-        "9c:fb:7f:99:79:01:6d:46:68:87:39:15:4f:f5:cc:9d:71:7a:8b:5a:4a:c1:c7:4b:9c:20:a5:91:c2:6a:ff:5a",
-        hhk.getFingerPrint(jsch));
+    assertEquals("SHA256:nPt/mXkBbUZohzkVT/XMnXF6i1pKwcdLnCClkcJq/1o", hhk.getFingerPrint(jsch),
+        "fingerprint mismatch");
     assertEquals(null, hhk.getComment(), "comment mismatch");
     assertEquals("ICAgIHNzaC1yc2E=", hhk.getKey(), "key mismatch");
     assertEquals("ssh-rsa", hhk.getType(), "type mismatch");
@@ -1006,9 +1005,8 @@ class KnownHostsTest {
       String expectedType, String expectedComment) {
     assertEquals(expctedHost, hhk.getHost(), "host mismatch");
     assertEquals(expectedMarker, hhk.getMarker(), "marker mismatch");
-    assertEquals(
-        "1e:b5:70:92:65:6e:6a:f9:d6:7a:a9:43:00:40:a2:e7:c8:51:35:df:ee:60:19:b7:4b:18:1d:eb:46:48:28:4b",
-        hhk.getFingerPrint(jsch));
+    assertEquals("SHA256:HrVwkmVuavnWeqlDAECi58hRNd/uYBm3Sxgd60ZIKEs", hhk.getFingerPrint(jsch),
+        "fingerprint mismatch");
     assertEquals(expectedComment, hhk.getComment(), "comment mismatch");
     assertEquals("ICAgIHNzaC1kc2E=", hhk.getKey(), "key mismatch");
     assertEquals(expectedType, hhk.getType(), "type mismatch");
@@ -1022,9 +1020,8 @@ class KnownHostsTest {
     assertEquals("|1|AAECAwQFBgcICQoLDA0ODxAREhM=|/pE4peaossRYDRp6bEWa348eFLI=", hhk.getHost(),
         "host mismatch");
     assertEquals(expectedMarker, hhk.getMarker(), "marker mismatch");
-    assertEquals(
-        "1e:b5:70:92:65:6e:6a:f9:d6:7a:a9:43:00:40:a2:e7:c8:51:35:df:ee:60:19:b7:4b:18:1d:eb:46:48:28:4b",
-        hhk.getFingerPrint(jsch));
+    assertEquals("SHA256:HrVwkmVuavnWeqlDAECi58hRNd/uYBm3Sxgd60ZIKEs", hhk.getFingerPrint(jsch),
+        "fingerprint mismatch");
     assertEquals(expectedComment, hhk.getComment(), "comment mismatch");
     assertEquals("ICAgIHNzaC1kc2E=", hhk.getKey(), "key mismatch");
     assertEquals(expectedType, hhk.getType(), "type mismatch");
@@ -1054,9 +1051,8 @@ class KnownHostsTest {
     assertEquals(1, keys.length, "1 key expected");
     HostKey key = keys[0];
     assertEquals("some comment", key.getComment(), "comment mismatch");
-    assertEquals(
-        "9d:38:5b:83:a9:17:52:92:56:1a:5e:c4:d4:81:8e:0a:ca:51:a2:64:f1:74:20:11:2e:f8:8a:c3:a1:39:49:8f",
-        key.getFingerPrint(jsch), "fingerprint mismatch");
+    assertEquals("SHA256:nThbg6kXUpJWGl7E1IGOCspRomTxdCARLviKw6E5SY8", key.getFingerPrint(jsch),
+        "fingerprint mismatch");
     assertEquals(expectedHostResult, key.getHost(), "host mismatch");
     assertEquals(rsaKey, key.getKey(), "key mismatch");
     assertEquals(expectedMarker, key.getMarker(), "marker mismatch");
