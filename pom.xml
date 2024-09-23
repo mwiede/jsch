@@ -79,7 +79,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <skipITs>true</skipITs>
-        <junixsocket.version>2.10.0</junixsocket.version>
+        <junixsocket.version>2.10.1</junixsocket.version>
         <jna.version>5.15.0</jna.version>
         <log4j.version>2.23.1</log4j.version>
         <errorprone.version>2.32.0</errorprone.version>
