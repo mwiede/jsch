@@ -82,7 +82,7 @@
         <junixsocket.version>2.10.1</junixsocket.version>
         <jna.version>5.15.0</jna.version>
         <log4j.version>2.24.1</log4j.version>
-        <errorprone.version>2.32.0</errorprone.version>
+        <errorprone.version>2.34.0</errorprone.version>
         <surefire.version>3.5.1</surefire.version>
     </properties>
     <dependencies>
