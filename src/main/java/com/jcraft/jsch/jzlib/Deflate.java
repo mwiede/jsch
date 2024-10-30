@@ -1309,7 +1309,9 @@ final class Deflate implements Cloneable {
           && window[++scan] == window[++match] && window[++scan] == window[++match]
           && scan < strend);
 
-      len = MAX_MATCH - strend - scan;
+      // len here is set to MAX_MATCH minus (strend minus scan, i.e. the distance between scan and
+      // strend) to ensure that best_len is set to the best possible length to lookahead
+      len = MAX_MATCH - (strend - scan);
       scan = strend - MAX_MATCH;
 
       if (len > best_len) {
