@@ -423,7 +423,7 @@
                         Import-Package: \
                             com.sun.jna*;version="${range;[=0,+)}";resolution:=optional,\
                             org.apache.logging.log4j*;version="${range;[=0,4)}";resolution:=optional,\
-                            org.bouncycastle*;version="[1.76,${versionmask;+})";resolution:=optional,\
+                            org.bouncycastle*;version="[1.79,${versionmask;+})";resolution:=optional,\
                             org.slf4j*;version="[1.7,${versionmask;+})";resolution:=optional,\
                             org.newsclub.net.unix;resolution:=optional,\
                             org.ietf.jgss;resolution:=optional,\

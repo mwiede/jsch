@@ -98,7 +98,8 @@ public class Algorithms4IT {
   }
 
   @ParameterizedTest
-  @ValueSource(strings = {"sntrup761x25519-sha512", "sntrup761x25519-sha512@openssh.com"})
+  @ValueSource(strings = {"mlkem768x25519-sha256", "sntrup761x25519-sha512",
+      "sntrup761x25519-sha512@openssh.com"})
   public void testBCKEXs(String kex) throws Exception {
     JSch ssh = createRSAIdentity();
     Session session = createSession(ssh);
