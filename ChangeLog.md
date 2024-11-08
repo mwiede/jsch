@@ -1,3 +1,5 @@
+* [0.2.22](https://github.com/mwiede/jsch/releases/tag/jsch-0.2.22)
+  * Add support for sntrup761x25519-sha512 KEX algorithm.
 * [0.2.21](https://github.com/mwiede/jsch/releases/tag/jsch-0.2.21)
   * [#692](https://github.com/mwiede/jsch/pull/692) Update Deflate.java by @mjmst74.
 * [0.2.20](https://github.com/mwiede/jsch/releases/tag/jsch-0.2.20)
