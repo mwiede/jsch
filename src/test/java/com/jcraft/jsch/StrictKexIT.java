@@ -58,11 +58,9 @@ public class StrictKexIT {
           .withFileFromClasspath("ssh_host_ecdsa521_key.pub", "docker/ssh_host_ecdsa521_key.pub")
           .withFileFromClasspath("ssh_host_ed25519_key", "docker/ssh_host_ed25519_key")
           .withFileFromClasspath("ssh_host_ed25519_key.pub", "docker/ssh_host_ed25519_key.pub")
-          .withFileFromClasspath("ssh_host_dsa_key", "docker/ssh_host_dsa_key")
-          .withFileFromClasspath("ssh_host_dsa_key.pub", "docker/ssh_host_dsa_key.pub")
-          .withFileFromClasspath("sshd_config", "docker/sshd_config.openssh96")
+          .withFileFromClasspath("sshd_config", "docker/sshd_config.openssh99")
           .withFileFromClasspath("authorized_keys", "docker/authorized_keys")
-          .withFileFromClasspath("Dockerfile", "docker/Dockerfile.openssh96"))
+          .withFileFromClasspath("Dockerfile", "docker/Dockerfile.openssh99"))
       .withExposedPorts(22);
 
   @BeforeAll

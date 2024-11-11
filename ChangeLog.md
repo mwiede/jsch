@@ -1,11 +1,17 @@
+* [0.2.22](https://github.com/mwiede/jsch/releases/tag/jsch-0.2.22)
+  * Add support for sntrup761x25519-sha512 KEX algorithm.
+  * Add support for mlkem768x25519-sha256, mlkem768nistp256-sha256 & mlkem1024nistp384-sha384 KEX algorithms.
+* [0.2.21](https://github.com/mwiede/jsch/releases/tag/jsch-0.2.21)
+  * [#692](https://github.com/mwiede/jsch/pull/692) Update Deflate.java by @mjmst74.
 * [0.2.20](https://github.com/mwiede/jsch/releases/tag/jsch-0.2.20)
   * [#529](https://github.com/mwiede/jsch/pull/529) Update `Hostkey.getFingerprint()` method to output more moden format first introduced with OpenSSH 6.8.
   * [#622](https://github.com/mwiede/jsch/pull/622) Add stack trace to log message when an exception occurs during authentication.
+  * [#649](https://github.com/mwiede/jsch/pull/649) Incorrect Oid for service name in GSSAPI authentication.
 * [0.2.19](https://github.com/mwiede/jsch/releases/tag/jsch-0.2.19)
   * Enforce DHGEX prime modulus bit length meets configured constraints.
-  * #604 Fix possible rekeying timeouts.
+  * [#604](https://github.com/mwiede/jsch/issues/604) Fix possible rekeying timeouts.
 * [0.2.18](https://github.com/mwiede/jsch/releases/tag/jsch-0.2.18)
-  * Handle negated patterns according to ssh_config(5) by @bmiddaugh in https://github.com/mwiede/jsch/pull/565
+  * [#565](https://github.com/mwiede/jsch/pull/565) Handle negated patterns according to ssh_config(5) by @bmiddaugh.
 * [0.2.17](https://github.com/mwiede/jsch/releases/tag/jsch-0.2.17)
   * Add PBKDF2-HMAC-SHA512/256 & PBKDF2-HMAC-SHA512/224, which are both supported as of Java 21.
 * [0.2.16](https://github.com/mwiede/jsch/releases/tag/jsch-0.2.16)

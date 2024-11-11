@@ -107,38 +107,40 @@ public class Algorithms2IT {
     sshdLogger.clearAll();
   }
 
-  @Test
+  @ParameterizedTest
+  @ValueSource(strings = {"mlkem768nistp256-sha256", "mlkem1024nistp384-sha384", "curve448-sha512"})
   @EnabledForJreRange(min = JAVA_11)
-  public void testJava11KEXs() throws Exception {
+  public void testJava11KEXs(String kex) throws Exception {
     JSch ssh = createRSAIdentity();
     Session session = createSession(ssh);
     session.setConfig("xdh", "com.jcraft.jsch.jce.XDH");
-    session.setConfig("kex", "curve448-sha512");
+    session.setConfig("kex", kex);
     doSftp(session, true);
 
-    String expected = "kex: algorithm: curve448-sha512.*";
-    checkLogs(expected);
-  }
-
-  @Test
-  public void testBCKEXs() throws Exception {
-    JSch ssh = createRSAIdentity();
-    Session session = createSession(ssh);
-    session.setConfig("xdh", "com.jcraft.jsch.bc.XDH");
-    session.setConfig("kex", "curve448-sha512");
-    doSftp(session, true);
-
-    String expected = "kex: algorithm: curve448-sha512.*";
+    String expected = String.format(Locale.ROOT, "kex: algorithm: %s.*", kex);
     checkLogs(expected);
   }
 
   @ParameterizedTest
-  @ValueSource(strings = {"curve448-sha512", "diffie-hellman-group17-sha512",
-      "diffie-hellman-group15-sha512", "diffie-hellman-group18-sha512@ssh.com",
-      "diffie-hellman-group16-sha512@ssh.com", "diffie-hellman-group16-sha384@ssh.com",
-      "diffie-hellman-group15-sha384@ssh.com", "diffie-hellman-group15-sha256@ssh.com",
-      "diffie-hellman-group14-sha256@ssh.com", "diffie-hellman-group14-sha224@ssh.com",
-      "diffie-hellman-group-exchange-sha512@ssh.com",
+  @ValueSource(strings = {"mlkem768nistp256-sha256", "mlkem1024nistp384-sha384", "curve448-sha512"})
+  public void testBCKEXs(String kex) throws Exception {
+    JSch ssh = createRSAIdentity();
+    Session session = createSession(ssh);
+    session.setConfig("xdh", "com.jcraft.jsch.bc.XDH");
+    session.setConfig("kex", kex);
+    doSftp(session, true);
+
+    String expected = String.format(Locale.ROOT, "kex: algorithm: %s.*", kex);
+    checkLogs(expected);
+  }
+
+  @ParameterizedTest
+  @ValueSource(strings = {"mlkem768nistp256-sha256", "mlkem1024nistp384-sha384", "curve448-sha512",
+      "diffie-hellman-group17-sha512", "diffie-hellman-group15-sha512",
+      "diffie-hellman-group18-sha512@ssh.com", "diffie-hellman-group16-sha512@ssh.com",
+      "diffie-hellman-group16-sha384@ssh.com", "diffie-hellman-group15-sha384@ssh.com",
+      "diffie-hellman-group15-sha256@ssh.com", "diffie-hellman-group14-sha256@ssh.com",
+      "diffie-hellman-group14-sha224@ssh.com", "diffie-hellman-group-exchange-sha512@ssh.com",
       "diffie-hellman-group-exchange-sha384@ssh.com",
       "diffie-hellman-group-exchange-sha224@ssh.com"})
   public void testKEXs(String kex) throws Exception {

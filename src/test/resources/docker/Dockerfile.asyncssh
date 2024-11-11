@@ -1,6 +1,10 @@
-FROM python:3.9
+FROM fedora:41
 ARG MAX_PKTSIZE=32768
-RUN pip install 'asyncssh[bcrypt]' && \
+RUN dnf -y update && \
+    dnf -y install python3-pip liboqs && \
+    dnf -y clean all && \
+    pip install 'asyncssh[bcrypt]~=2.18.0' && \
+    pip cache purge && \
     mkdir /root/.ssh && \
     chmod 700 /root/.ssh
 COPY asyncsshd.py /

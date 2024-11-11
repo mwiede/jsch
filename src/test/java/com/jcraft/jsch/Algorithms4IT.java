@@ -57,11 +57,9 @@ public class Algorithms4IT {
           .withFileFromClasspath("ssh_host_ecdsa521_key.pub", "docker/ssh_host_ecdsa521_key.pub")
           .withFileFromClasspath("ssh_host_ed25519_key", "docker/ssh_host_ed25519_key")
           .withFileFromClasspath("ssh_host_ed25519_key.pub", "docker/ssh_host_ed25519_key.pub")
-          .withFileFromClasspath("ssh_host_dsa_key", "docker/ssh_host_dsa_key")
-          .withFileFromClasspath("ssh_host_dsa_key.pub", "docker/ssh_host_dsa_key.pub")
-          .withFileFromClasspath("sshd_config", "docker/sshd_config.openssh96")
+          .withFileFromClasspath("sshd_config", "docker/sshd_config.openssh99")
           .withFileFromClasspath("authorized_keys", "docker/authorized_keys")
-          .withFileFromClasspath("Dockerfile", "docker/Dockerfile.openssh96"))
+          .withFileFromClasspath("Dockerfile", "docker/Dockerfile.openssh99"))
       .withExposedPorts(22);
 
   @BeforeAll
@@ -100,7 +98,8 @@ public class Algorithms4IT {
   }
 
   @ParameterizedTest
-  @ValueSource(strings = {"sntrup761x25519-sha512@openssh.com"})
+  @ValueSource(strings = {"mlkem768x25519-sha256", "sntrup761x25519-sha512",
+      "sntrup761x25519-sha512@openssh.com"})
   public void testBCKEXs(String kex) throws Exception {
     JSch ssh = createRSAIdentity();
     Session session = createSession(ssh);
