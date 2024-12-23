@@ -38,7 +38,7 @@ jobs:
     - name: Archive target directory
       run: tar -cf target.tar target
     - name: Upload target directory archive
-      uses: actions/upload-artifact@b4b15b8c7c6ac21ea08fcf65892d2ee8f75cf882 # v4.4.3
+      uses: actions/upload-artifact@6f51ac03b9356f520e9adb1b1b7802705f340c2b # v4.5.0
       with:
         name: build_target
         path: target.tar
@@ -75,7 +75,7 @@ jobs:
     - name: Test with Maven
       run: ./mvnw -B -V -e -Pcoverage verify -Denforcer.skip=true -Dmaven.resources.skip=true -Dflatten.skip=true -Dmaven.main.skip=true -Dbnd.skip=true -Dassembly.skipAssembly=true -Dmaven.javadoc.skip=true -Dcyclonedx.skip=true -Dformatter.skip=true -Dforbiddenapis.skip=true -DskipTests=false -DskipITs=false
     - name: Upload test results
-      uses: actions/upload-artifact@b4b15b8c7c6ac21ea08fcf65892d2ee8f75cf882 # v4.4.3
+      uses: actions/upload-artifact@6f51ac03b9356f520e9adb1b1b7802705f340c2b # v4.5.0
       with:
         name: java-${{ matrix.java }}-testresults
         path: |
