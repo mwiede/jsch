@@ -345,13 +345,16 @@ class KeyPairECDSA extends KeyPair {
 
   @Override
   public byte[] getSignature(byte[] data) {
+    byte[] keyCopy = null;
     try {
       Class<? extends SignatureECDSA> c =
           Class.forName(JSch.getConfig("ecdsa-sha2-" + Util.byte2str(name)))
               .asSubclass(SignatureECDSA.class);
       SignatureECDSA ecdsa = c.getDeclaredConstructor().newInstance();
       ecdsa.init();
-      ecdsa.setPrvKey(prv_array);
+      // https://github.com/mwiede/jsch/issues/739 : prv_array could be destroyed by ecdsa signing
+      keyCopy = Arrays.copyOf(prv_array, prv_array.length);
+      ecdsa.setPrvKey(keyCopy);
 
       ecdsa.update(data);
       byte[] sig = ecdsa.sign();
@@ -364,6 +367,8 @@ class KeyPairECDSA extends KeyPair {
       if (instLogger.getLogger().isEnabled(Logger.ERROR)) {
         instLogger.getLogger().log(Logger.ERROR, "failed to generate signature", e);
       }
+    } finally {
+      Util.bzero(keyCopy);
     }
     return null;
   }
@@ -390,7 +395,9 @@ class KeyPairECDSA extends KeyPair {
         r_array = tmp[0];
         s_array = tmp[1];
       }
-      ecdsa.setPubKey(r_array, s_array);
+      // https://github.com/mwiede/jsch/issues/739 : keys could be destroyed by ecdsa verification
+      ecdsa.setPubKey(Arrays.copyOf(r_array, r_array.length),
+          Arrays.copyOf(s_array, s_array.length));
       return ecdsa;
     } catch (Exception e) {
       if (instLogger.getLogger().isEnabled(Logger.ERROR)) {
