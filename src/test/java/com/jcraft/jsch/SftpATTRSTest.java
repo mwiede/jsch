@@ -2,13 +2,29 @@ package com.jcraft.jsch;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import java.time.ZoneOffset;
 import java.util.Date;
 import java.util.Random;
+import java.util.TimeZone;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 public class SftpATTRSTest {
 
+  private static TimeZone timezone;
   private final Random random = new Random();
+
+  @BeforeAll
+  public static void beforeAll() {
+    timezone = TimeZone.getDefault();
+    TimeZone.setDefault(TimeZone.getTimeZone(ZoneOffset.UTC));
+  }
+
+  @AfterAll
+  public static void afterAll() {
+    TimeZone.setDefault(timezone);
+  }
 
   @Test
   public void testToDateString0() {
