@@ -233,14 +233,15 @@ public class OpenSSHConfig implements ConfigRepository {
         if (value != null)
           break;
       }
-      // TODO: The following change should be applied,
-      // but it is breaking changes.
-      // The consensus is required to enable it.
-      /*
-       * if(value!=null && (key.equals("SERVERALIVEINTERVAL") || key.equals("CONNECTTIMEOUT"))){ try
-       * { int timeout = Integer.parseInt(value); value = Integer.toString(timeout*1000); } catch
-       * (NumberFormatException e) { } }
-       */
+
+      if (value != null && (key.equals("SERVERALIVEINTERVAL") || key.equals("CONNECTTIMEOUT"))) {
+        try {
+          int timeout = Integer.parseInt(value);
+          value = Integer.toString(timeout * 1000);
+        } catch (NumberFormatException e) {
+          logError(originalKey, e);
+        }
+      }
 
       if (keysWithListAdoption.contains(key) && value != null
           && (value.startsWith("+") || value.startsWith("-") || value.startsWith("^"))) {
@@ -262,6 +263,14 @@ public class OpenSSHConfig implements ConfigRepository {
       }
 
       return value;
+    }
+
+    private void logError(String originalKey, NumberFormatException e) {
+      Logger logger = JSch.getLogger();
+      if (logger != null) {
+        logger.log(Logger.ERROR, "Error during parsing of " + originalKey + ": " + e.getMessage(),
+            e);
+      }
     }
 
     private String[] multiFind(String key) {
@@ -303,6 +312,7 @@ public class OpenSSHConfig implements ConfigRepository {
         port = Integer.parseInt(foo);
       } catch (NumberFormatException e) {
         // wrong format
+        logError("Port", e);
       }
       return port;
     }

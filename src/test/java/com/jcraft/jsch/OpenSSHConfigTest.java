@@ -102,6 +102,14 @@ class OpenSSHConfigTest {
     assertUserEquals(openSSHConfig, "my.example.org", "u2");
   }
 
+  @ParameterizedTest
+  @ValueSource(strings = {"ConnectTimeout", "ServerAliveInterval"})
+  void timeoutsAreConvertedToMs(String configKey) throws IOException {
+    OpenSSHConfig parse = OpenSSHConfig.parse(configKey + " 42");
+    ConfigRepository.Config config = parse.getConfig("");
+    assertEquals("42000", config.getValue(configKey));
+  }
+
   private void assertUserEquals(OpenSSHConfig openSSHConfig, String host, String expected) {
     final ConfigRepository.Config config = openSSHConfig.getConfig(host);
     assertNotNull(config);
