@@ -68,7 +68,7 @@ class JSchTest {
   }
 
   @Test
-  void getConfig() throws Exception {
+  void getConfig() {
     Map<String, String> map = JSch.getConfig();
 
     // there are many keys so just assert a high number in case new keys
