@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.Hashtable;
+import java.util.Map;
 import java.util.Set;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -69,22 +70,21 @@ class JSchTest {
 
   @Test
   void getConfigKeys() throws Exception {
-    Set<String> keys = JSch.getConfigKeys();
+    Map<String, String> map = JSch.getConfig();
+
     // there are many keys so just assert a high number in case new keys
     // are added so this test still passes
-
-    int before = keys.size();
-
+    int before = map.size();
     assertTrue(before > 150);
-    assertTrue(keys.contains("diffie-hellman-group14-sha256"));
-    assertTrue(keys.contains("HashKnownHosts"));
+    assertTrue(map.containsKey("diffie-hellman-group14-sha256"));
+    assertTrue(map.containsKey("HashKnownHosts"));
 
     // add new key
     JSch.setConfig("mySpecialKey", "mySpecialValue");
 
     // add 1 new key
-    keys = JSch.getConfigKeys();
-    int after = keys.size();
+    map = JSch.getConfig();
+    int after = map.size();
     assertEquals(before + 1, after);
   }
 

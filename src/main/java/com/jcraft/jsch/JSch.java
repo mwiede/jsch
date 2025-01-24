@@ -29,7 +29,9 @@ package com.jcraft.jsch;
 import java.io.InputStream;
 import java.util.Collections;
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.Hashtable;
+import java.util.Map;
 import java.util.Set;
 import java.util.Vector;
 
@@ -642,17 +644,20 @@ public class JSch {
   }
 
   /**
-   * Returns the config keys for all the stored configurations.
-   *
-   * For example this can be used for troubleshooting to enumerate all the configuration values to
-   * be logged.
-   *
-   * @return config keys
+   * Gets the configuration
    */
-  public static Set<String> getConfigKeys() {
+  public static Map<String, String> getConfig() {
+    Map<String, String> ret = new HashMap<>();
     synchronized (config) {
-      return Collections.unmodifiableSet(config.keySet());
+      for (Map.Entry<String, String> entry : config.entrySet()) {
+        String key = entry.getKey();
+        if (key.equals("PubkeyAcceptedKeyTypes")) {
+          key = "PubkeyAcceptedAlgorithms";
+        }
+        ret.put(key, entry.getValue());
+      }
     }
+    return Collections.unmodifiableMap(ret);
   }
 
   /**
