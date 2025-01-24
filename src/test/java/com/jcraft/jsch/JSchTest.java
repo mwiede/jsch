@@ -6,7 +6,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.Hashtable;
 import java.util.Map;
-import java.util.Set;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -69,7 +68,7 @@ class JSchTest {
   }
 
   @Test
-  void getConfigKeys() throws Exception {
+  void getConfig() throws Exception {
     Map<String, String> map = JSch.getConfig();
 
     // there are many keys so just assert a high number in case new keys
