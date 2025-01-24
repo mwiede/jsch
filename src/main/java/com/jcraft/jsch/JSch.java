@@ -27,8 +27,11 @@
 package com.jcraft.jsch;
 
 import java.io.InputStream;
+import java.util.Collections;
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.Hashtable;
+import java.util.Map;
 import java.util.Vector;
 
 public class JSch {
@@ -637,6 +640,23 @@ public class JSch {
     } else {
       config.put(key, value);
     }
+  }
+
+  /**
+   * Gets the configuration
+   */
+  public static Map<String, String> getConfig() {
+    Map<String, String> ret = new HashMap<>();
+    synchronized (config) {
+      for (Map.Entry<String, String> entry : config.entrySet()) {
+        String key = entry.getKey();
+        if (key.equals("PubkeyAcceptedKeyTypes")) {
+          key = "PubkeyAcceptedAlgorithms";
+        }
+        ret.put(key, entry.getValue());
+      }
+    }
+    return Collections.unmodifiableMap(ret);
   }
 
   /**
