@@ -311,7 +311,6 @@ public class OpenSSHConfig implements ConfigRepository {
       try {
         port = Integer.parseInt(foo);
       } catch (NumberFormatException e) {
-        // wrong format
         logError("Port", e);
       }
       return port;
