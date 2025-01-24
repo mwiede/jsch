@@ -2,8 +2,11 @@ package com.jcraft.jsch;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.Hashtable;
+import java.util.Set;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -62,6 +65,27 @@ class JSchTest {
     JSch.setLogger(null);
     assertSame(JSch.DEVNULL, JSch.logger, "static logger should be DEVNULL");
     assertSame(JSch.DEVNULL, jsch.getInstanceLogger(), "instance logger should be DEVNULL");
+  }
+
+  @Test
+  void getConfigKeys() throws Exception {
+    Set<String> keys = JSch.getConfigKeys();
+    // there are many keys so just assert a high number in case new keys
+    // are added so this test still passes
+
+    int before = keys.size();
+
+    assertTrue(before > 150);
+    assertTrue(keys.contains("diffie-hellman-group14-sha256"));
+    assertTrue(keys.contains("HashKnownHosts"));
+
+    // add new key
+    JSch.setConfig("mySpecialKey", "mySpecialValue");
+
+    // add 1 new key
+    keys = JSch.getConfigKeys();
+    int after = keys.size();
+    assertEquals(before + 1, after);
   }
 
   static final class TestLogger implements Logger {

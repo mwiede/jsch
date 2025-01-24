@@ -27,8 +27,10 @@
 package com.jcraft.jsch;
 
 import java.io.InputStream;
+import java.util.Collections;
 import java.util.Enumeration;
 import java.util.Hashtable;
+import java.util.Set;
 import java.util.Vector;
 
 public class JSch {
@@ -636,6 +638,20 @@ public class JSch {
       config.put("PubkeyAcceptedAlgorithms", value);
     } else {
       config.put(key, value);
+    }
+  }
+
+  /**
+   * Returns the config keys for all the stored configurations.
+   *
+   * For example this can be used for troubleshooting to enumerate all the configuration values to
+   * be logged.
+   *
+   * @return config keys
+   */
+  public static Set<String> getConfigKeys() {
+    synchronized (config) {
+      return Collections.unmodifiableSet(config.keySet());
     }
   }
 
