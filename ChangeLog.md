@@ -1,3 +1,6 @@
+* [0.2.23](https://github.com/mwiede/jsch/releases/tag/jsch-0.2.23)
+  * [#752](https://github.com/mwiede/jsch/issues/752): Add getKeys to JSch which makes access to all the config values… by @davsclaus in https://github.com/mwiede/jsch/pull/753
+  * [#560](https://github.com/mwiede/jsch/issues/560) treat openssh config values ConnectTimeout and ServerAliveInterval as seconds. by @mwiede in https://github.com/mwiede/jsch/pull/755
 * [0.2.22](https://github.com/mwiede/jsch/releases/tag/jsch-0.2.22)
   * Add support for sntrup761x25519-sha512 KEX algorithm.
   * Add support for mlkem768x25519-sha256, mlkem768nistp256-sha256 & mlkem1024nistp384-sha384 KEX algorithms.
