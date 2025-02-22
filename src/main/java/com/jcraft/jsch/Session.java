@@ -976,7 +976,7 @@ public class Session {
       }
 
       if (!b) {
-        throw new JSchException("HostKey has been changed: " + chost);
+        throw new JSchChangedHostKeyException("HostKey has been changed: " + chost);
       }
 
       synchronized (hkr) {
@@ -987,7 +987,7 @@ public class Session {
 
     if ((shkc.equals("ask") || shkc.equals("yes")) && (i != HostKeyRepository.OK) && !insert) {
       if (shkc.equals("yes")) {
-        throw new JSchException("reject HostKey: " + chost);
+        throw new JSchUnknownHostKeyException("reject HostKey: " + chost);
       }
       // System.err.println("finger-print: "+key_fprint);
       if (userinfo != null) {
@@ -995,7 +995,7 @@ public class Session {
             + "' can't be established.\n" + key_type + " key fingerprint is " + key_fprint + ".\n"
             + "Are you sure you want to continue connecting?");
         if (!foo) {
-          throw new JSchException("reject HostKey: " + chost);
+          throw new JSchUnknownHostKeyException("reject HostKey: " + chost);
         }
         insert = true;
       } else {
