@@ -138,6 +138,7 @@ public abstract class Channel {
 
   Channel() {
     synchronized (pool) {
+      /* Restrict sender channel ID to be within INT_MAX */
       if (index == Integer.MAX_VALUE) {
         index = 0;
       }    
