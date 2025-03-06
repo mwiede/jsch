@@ -73,7 +73,7 @@ public abstract class Channel {
     if (type.equals("sftp")) {
       ChannelSftp sftp = new ChannelSftp();
       boolean useWriteFlushWorkaround =
-          session.getConfig("use_sftp_write_flush_workaround").equals("yes");
+              session.getConfig("use_sftp_write_flush_workaround").equals("yes");
       sftp.setUseWriteFlushWorkaround(useWriteFlushWorkaround);
       ret = sftp;
     }
@@ -138,12 +138,11 @@ public abstract class Channel {
 
   Channel() {
     synchronized (pool) {
-      
       if (index == Integer.MAX_VALUE) {
         index = 0;
-      }    
+      }
       id = index++;
-      pool.addElement(this);
+      pool.addElement(this);      
     }
   }
 
@@ -227,7 +226,7 @@ public abstract class Channel {
     } catch (Exception e) {
     }
     PipedInputStream in = new MyPipedInputStream(32 * 1024, // this value should be customizable.
-        max_input_buffer_size);
+            max_input_buffer_size);
     boolean resizable = 32 * 1024 < max_input_buffer_size;
     io.setOutputStream(new PassiveOutputStream(in, resizable), false);
     return in;
@@ -237,7 +236,7 @@ public abstract class Channel {
     Session _session = this.session;
     if (_session != null && isConnected() && _session.getLogger().isEnabled(Logger.WARN)) {
       _session.getLogger().log(Logger.WARN,
-          "getExtInputStream() should be called before connect()");
+              "getExtInputStream() should be called before connect()");
     }
 
     int max_input_buffer_size = 32 * 1024;
@@ -246,7 +245,7 @@ public abstract class Channel {
     } catch (Exception e) {
     }
     PipedInputStream in = new MyPipedInputStream(32 * 1024, // this value should be customizable.
-        max_input_buffer_size);
+            max_input_buffer_size);
     boolean resizable = 32 * 1024 < max_input_buffer_size;
     io.setExtOutputStream(new PassiveOutputStream(in, resizable), false);
     return in;
@@ -450,7 +449,7 @@ public abstract class Channel {
           } else {
             System.arraycopy(buffer, 0, tmp, 0, in);
             System.arraycopy(buffer, out, tmp, tmp.length - (buffer.length - out),
-                (buffer.length - out));
+                    (buffer.length - out));
             out = tmp.length - (buffer.length - out);
           }
         } else if (in == out) {
