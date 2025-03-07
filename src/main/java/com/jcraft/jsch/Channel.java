@@ -138,8 +138,8 @@ public abstract class Channel {
 
   Channel() {
     synchronized (pool) {
-      id = index;
-      index = index == Integer.MAX_VALUE ? 0 : ++index;
+      // OpenSSH rejects channels with an id that exceeds INT_MAX
+      index &= Integer.MAX_VALUE;
       pool.addElement(this);
     }
   }
