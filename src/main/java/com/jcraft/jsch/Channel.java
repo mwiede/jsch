@@ -73,7 +73,7 @@ public abstract class Channel {
     if (type.equals("sftp")) {
       ChannelSftp sftp = new ChannelSftp();
       boolean useWriteFlushWorkaround =
-        session.getConfig("use_sftp_write_flush_workaround").equals("yes");
+          session.getConfig("use_sftp_write_flush_workaround").equals("yes");
       sftp.setUseWriteFlushWorkaround(useWriteFlushWorkaround);
       ret = sftp;
     }
