@@ -143,7 +143,7 @@ public abstract class Channel {
         index = 0;
       } else {
         ++index;
-      }  
+      }
       pool.addElement(this);
     }
   }
