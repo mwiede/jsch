@@ -139,11 +139,7 @@ public abstract class Channel {
   Channel() {
     synchronized (pool) {
       id = index;
-      if (index == Integer.MAX_VALUE) {
-        index = 0;
-      } else {
-        ++index;
-      }
+      index = index == Integer.MAX_VALUE ? 0 : ++index;
       pool.addElement(this);
     }
   }
