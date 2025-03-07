@@ -145,7 +145,7 @@ public abstract class Channel {
        * This bug was later resolved in OpenSSH 8.2.
        * See https://github.com/openssh/openssh-portable/commit/0ecd20bc9f0b9c7c697c9eb014613516c8f65834.
        * To ensure compatibility, clamp the ID value JSch uses to not exceed INT_MAX.
-      */
+       */
       index &= Integer.MAX_VALUE;
       pool.addElement(this);
     }
