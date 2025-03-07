@@ -32,7 +32,7 @@ import java.io.OutputStream;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
 import java.util.Vector;
-  
+
 public abstract class Channel {
 
   static final int SSH_MSG_CHANNEL_OPEN_CONFIRMATION = 91;
