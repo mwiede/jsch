@@ -139,6 +139,7 @@ public abstract class Channel {
   Channel() {
     synchronized (pool) {
       id = index++;
+      
       /*
        * OpenSSH 8.0 introduced a bug that rejected channels with an ID that exceeds INT_MAX.
        * See https://github.com/openssh/openssh-portable/commit/7ec5cb4d15ed2f2c5c9f5d00e6b361d136fc1e2d.
@@ -146,6 +147,7 @@ public abstract class Channel {
        * See https://github.com/openssh/openssh-portable/commit/0ecd20bc9f0b9c7c697c9eb014613516c8f65834.
        * To ensure compatibility, clamp the ID value JSch uses to not exceed INT_MAX.
        */
+      
       index &= Integer.MAX_VALUE;
       pool.addElement(this);
     }
