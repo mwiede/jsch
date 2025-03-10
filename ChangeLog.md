@@ -1,3 +1,6 @@
+* [0.2.24](https://github.com/mwiede/jsch/releases/tag/jsch-0.2.24)
+  * [#768](https://github.com/mwiede/jsch/issues/768) Make more use of dedicated exceptions
+  * [#786](https://github.com/mwiede/jsch/issues/786) SSH server comparison the channel id from INT_MAX for a signed value.
 * [0.2.23](https://github.com/mwiede/jsch/releases/tag/jsch-0.2.23)
   * [#752](https://github.com/mwiede/jsch/issues/752): Add getKeys to JSch which makes access to all the config values… by @davsclaus in https://github.com/mwiede/jsch/pull/753
   * [#560](https://github.com/mwiede/jsch/issues/560) treat openssh config values ConnectTimeout and ServerAliveInterval as seconds. by @mwiede in https://github.com/mwiede/jsch/pull/755
