@@ -48,7 +48,7 @@ public class ChannelExec extends ChannelSession {
     }
 
     if (io.in != null) {
-      thread = session.jsch.getThreadFactory().newThread(this::run);
+      thread = _session.jsch.getThreadFactory().newThread(this::run);
       thread.setName("Exec thread " + _session.getHost());
       if (_session.daemon_thread) {
         thread.setDaemon(_session.daemon_thread);
