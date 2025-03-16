@@ -528,7 +528,7 @@ public class Session {
 
       synchronized (lock) {
         if (isConnected) {
-          connectThread = new Thread(this::run);
+          connectThread = jsch.getThreadFactory().newThread(this::run);
           connectThread.setName("Connect thread " + host + " session");
           if (daemon_thread) {
             connectThread.setDaemon(daemon_thread);
@@ -2005,7 +2005,7 @@ public class Session {
               channel.getData(buf);
               channel.init();
 
-              Thread tmp = new Thread(channel::run);
+              Thread tmp = jsch.getThreadFactory().newThread(channel::run);
               tmp.setName("Channel " + ctyp + " " + host);
               if (daemon_thread) {
                 tmp.setDaemon(daemon_thread);
@@ -2230,7 +2230,7 @@ public class Session {
       ServerSocketFactory ssf, int connectTimeout) throws JSchException {
     PortWatcher pw = PortWatcher.addPort(this, bind_address, lport, host, rport, ssf);
     pw.setConnectTimeout(connectTimeout);
-    Thread tmp = new Thread(pw::run);
+    Thread tmp = jsch.getThreadFactory().newThread(pw::run);
     tmp.setName("PortWatcher Thread for " + host);
     if (daemon_thread) {
       tmp.setDaemon(daemon_thread);
@@ -2243,7 +2243,7 @@ public class Session {
       ServerSocketFactory ssf, int connectTimeout) throws JSchException {
     PortWatcher pw = PortWatcher.addSocket(this, bindAddress, lport, socketPath, ssf);
     pw.setConnectTimeout(connectTimeout);
-    Thread tmp = new Thread(pw::run);
+    Thread tmp = jsch.getThreadFactory().newThread(pw::run);
     tmp.setName("PortWatcher Thread for " + host);
     if (daemon_thread) {
       tmp.setDaemon(daemon_thread);

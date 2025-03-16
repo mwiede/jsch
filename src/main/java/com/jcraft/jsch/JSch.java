@@ -33,6 +33,8 @@ import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Map;
 import java.util.Vector;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadFactory;
 
 public class JSch {
   /** The version number. */
@@ -270,6 +272,8 @@ public class JSch {
   private IdentityRepository identityRepository = defaultIdentityRepository;
 
   private ConfigRepository configRepository = null;
+
+  private ThreadFactory threadFactory = null;
 
   /**
    * Sets the <code>identityRepository</code>, which will be referred in the public key
@@ -689,6 +693,28 @@ public class JSch {
    */
   public void setInstanceLogger(Logger logger) {
     instLogger.setLogger(logger);
+  }
+
+  /**
+   * Sets the thread factory to be used for this instance.
+   *
+   * @param threadFactory The thread factory to be used, or <code>null</code> to reset to the
+   *        default thread factory.
+   */
+  public void setThreadFactory(ThreadFactory threadFactory) {
+    this.threadFactory = threadFactory;
+  }
+
+  /**
+   * Returns the thread factory used by this instance.
+   *
+   * @return The thread factory associated with this instance. If no specific thread factory has
+   *         been set, a default thread factory is created and returned.
+   */
+  public ThreadFactory getThreadFactory() {
+    if (threadFactory == null)
+      threadFactory = Executors.defaultThreadFactory();
+    return threadFactory;
   }
 
   /**
