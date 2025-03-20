@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.condition.JRE.JAVA_11;
 import static org.junit.jupiter.api.condition.JRE.JAVA_15;
+import static org.junit.jupiter.api.condition.JRE.JAVA_24;
 
 import com.github.valfirst.slf4jtest.LoggingEvent;
 import com.github.valfirst.slf4jtest.TestLogger;
@@ -108,7 +109,7 @@ public class Algorithms2IT {
   }
 
   @ParameterizedTest
-  @ValueSource(strings = {"mlkem768nistp256-sha256", "mlkem1024nistp384-sha384", "curve448-sha512"})
+  @ValueSource(strings = {"curve448-sha512"})
   @EnabledForJreRange(min = JAVA_11)
   public void testJava11KEXs(String kex) throws Exception {
     JSch ssh = createRSAIdentity();
@@ -122,10 +123,27 @@ public class Algorithms2IT {
   }
 
   @ParameterizedTest
+  @ValueSource(strings = {"mlkem768nistp256-sha256", "mlkem1024nistp384-sha384"})
+  @EnabledForJreRange(min = JAVA_24)
+  public void testJava24KEXs(String kex) throws Exception {
+    JSch ssh = createRSAIdentity();
+    Session session = createSession(ssh);
+    session.setConfig("mlkem768", "com.jcraft.jsch.jce.MLKEM768");
+    session.setConfig("mlkem1024", "com.jcraft.jsch.jce.MLKEM1024");
+    session.setConfig("kex", kex);
+    doSftp(session, true);
+
+    String expected = String.format(Locale.ROOT, "kex: algorithm: %s.*", kex);
+    checkLogs(expected);
+  }
+
+  @ParameterizedTest
   @ValueSource(strings = {"mlkem768nistp256-sha256", "mlkem1024nistp384-sha384", "curve448-sha512"})
   public void testBCKEXs(String kex) throws Exception {
     JSch ssh = createRSAIdentity();
     Session session = createSession(ssh);
+    session.setConfig("mlkem768", "com.jcraft.jsch.bc.MLKEM768");
+    session.setConfig("mlkem1024", "com.jcraft.jsch.bc.MLKEM1024");
     session.setConfig("xdh", "com.jcraft.jsch.bc.XDH");
     session.setConfig("kex", kex);
     doSftp(session, true);
