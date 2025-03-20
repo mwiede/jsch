@@ -256,7 +256,7 @@
                         <configuration>
                             <rules>
                                 <requireJavaVersion>
-                                    <version>17</version>
+                                    <version>24</version>
                                 </requireJavaVersion>
                                 <dependencyConvergence />
                                 <banDuplicatePomDependencyVersions />
@@ -402,6 +402,19 @@
                             <release>16</release>
                         </configuration>
                     </execution>
+                    <execution>
+                        <id>default-compile-24</id>
+                        <goals>
+                            <goal>compile</goal>
+                        </goals>
+                        <configuration>
+                            <compileSourceRoots>
+                                <compileSourceRoot>${project.basedir}/src/main/java24</compileSourceRoot>
+                            </compileSourceRoots>
+                            <multiReleaseOutput>true</multiReleaseOutput>
+                            <release>24</release>
+                        </configuration>
+                    </execution>
                 </executions>
             </plugin>
             <plugin>
@@ -529,7 +542,7 @@
                     <doclint>none</doclint>
                     <subpackages>com.jcraft.jsch</subpackages>
                     <excludePackageNames>com.jcraft.jsch.*</excludePackageNames>
-                    <sourcepath>${project.build.sourceDirectory}:${project.build.directory}/generated-sources/java-templates:${project.basedir}/src/main/java9:${project.basedir}/src/main/java10:${project.basedir}/src/main/java11:${project.basedir}/src/main/java15:${project.basedir}/src/main/java16</sourcepath>
+                    <sourcepath>${project.build.sourceDirectory}:${project.build.directory}/generated-sources/java-templates:${project.basedir}/src/main/java9:${project.basedir}/src/main/java10:${project.basedir}/src/main/java11:${project.basedir}/src/main/java15:${project.basedir}/src/main/java16:${project.basedir}/src/main/java24</sourcepath>
                 </configuration>
                 <executions>
                     <execution>
@@ -608,6 +621,7 @@
                         <sourceDirectory>${project.basedir}/src/main/java11</sourceDirectory>
                         <sourceDirectory>${project.basedir}/src/main/java15</sourceDirectory>
                         <sourceDirectory>${project.basedir}/src/main/java16</sourceDirectory>
+                        <sourceDirectory>${project.basedir}/src/main/java24</sourceDirectory>
                         <sourceDirectory>${project.basedir}/src/main/java-templates</sourceDirectory>
                     </sourceDirectories>
                 </configuration>
@@ -628,6 +642,7 @@
                         <directory>${project.basedir}/src/main/java11</directory>
                         <directory>${project.basedir}/src/main/java15</directory>
                         <directory>${project.basedir}/src/main/java16</directory>
+                        <directory>${project.basedir}/src/main/java24</directory>
                         <directory>${project.basedir}/src/main/java-templates</directory>
                     </directories>
                 </configuration>
@@ -642,6 +657,8 @@
                         <exclude>com/jcraft/jsch/JplLogger.class</exclude>
                         <exclude>com/jcraft/jsch/UnixDomainSocketFactory.class</exclude>
                         <exclude>com/jcraft/jsch/jce/KeyPairGenEdDSA.class</exclude>
+                        <exclude>com/jcraft/jsch/jce/MLKEM1024.class</exclude>
+                        <exclude>com/jcraft/jsch/jce/MLKEM768.class</exclude>
                         <exclude>com/jcraft/jsch/jce/SignatureEd25519.class</exclude>
                         <exclude>com/jcraft/jsch/jce/SignatureEd448.class</exclude>
                         <exclude>com/jcraft/jsch/jce/XDH.class</exclude>
@@ -836,7 +853,7 @@
         <profile>
             <id>forbiddenapis</id>
             <activation>
-                <jdk>[16,)</jdk>
+                <jdk>[24,)</jdk>
             </activation>
             <build>
                 <plugins>
@@ -844,7 +861,7 @@
                         <groupId>de.thetaphi</groupId>
                         <artifactId>forbiddenapis</artifactId>
                         <configuration>
-                            <releaseVersion>16</releaseVersion>
+                            <releaseVersion>24</releaseVersion>
                         </configuration>
                         <executions>
                             <execution>

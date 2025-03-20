@@ -3,6 +3,8 @@ package com.jcraft.jsch;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.condition.JRE.JAVA_11;
+import static org.junit.jupiter.api.condition.JRE.JAVA_24;
 
 import com.github.valfirst.slf4jtest.LoggingEvent;
 import com.github.valfirst.slf4jtest.TestLogger;
@@ -21,6 +23,7 @@ import org.apache.commons.codec.digest.DigestUtils;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.condition.EnabledForJreRange;
 import org.junit.jupiter.api.io.TempDir;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
@@ -100,9 +103,57 @@ public class Algorithms4IT {
   @ParameterizedTest
   @ValueSource(strings = {"mlkem768x25519-sha256", "sntrup761x25519-sha512",
       "sntrup761x25519-sha512@openssh.com"})
+  @EnabledForJreRange(min = JAVA_11)
+  public void testJava11KEXs(String kex) throws Exception {
+    JSch ssh = createRSAIdentity();
+    Session session = createSession(ssh);
+    session.setConfig("mlkem768", "com.jcraft.jsch.bc.MLKEM768");
+    session.setConfig("xdh", "com.jcraft.jsch.jce.XDH");
+    session.setConfig("kex", kex);
+    doSftp(session, true);
+
+    String expected = String.format(Locale.ROOT, "kex: algorithm: %s.*", kex);
+    checkLogs(expected);
+  }
+
+  @ParameterizedTest
+  @ValueSource(strings = {"mlkem768x25519-sha256"})
+  @EnabledForJreRange(min = JAVA_24)
+  public void testJava24KEXs(String kex) throws Exception {
+    JSch ssh = createRSAIdentity();
+    Session session = createSession(ssh);
+    session.setConfig("mlkem768", "com.jcraft.jsch.jce.MLKEM768");
+    session.setConfig("xdh", "com.jcraft.jsch.jce.XDH");
+    session.setConfig("kex", kex);
+    doSftp(session, true);
+
+    String expected = String.format(Locale.ROOT, "kex: algorithm: %s.*", kex);
+    checkLogs(expected);
+  }
+
+  @ParameterizedTest
+  @ValueSource(strings = {"mlkem768x25519-sha256", "sntrup761x25519-sha512",
+      "sntrup761x25519-sha512@openssh.com"})
   public void testBCKEXs(String kex) throws Exception {
     JSch ssh = createRSAIdentity();
     Session session = createSession(ssh);
+    session.setConfig("mlkem768", "com.jcraft.jsch.bc.MLKEM768");
+    session.setConfig("xdh", "com.jcraft.jsch.bc.XDH");
+    session.setConfig("kex", kex);
+    doSftp(session, true);
+
+    String expected = String.format(Locale.ROOT, "kex: algorithm: %s.*", kex);
+    checkLogs(expected);
+  }
+
+  @ParameterizedTest
+  @ValueSource(strings = {"mlkem768x25519-sha256"})
+  @EnabledForJreRange(min = JAVA_24)
+  public void testJava24BCKEXs(String kex) throws Exception {
+    JSch ssh = createRSAIdentity();
+    Session session = createSession(ssh);
+    session.setConfig("mlkem768", "com.jcraft.jsch.jce.MLKEM768");
+    session.setConfig("xdh", "com.jcraft.jsch.bc.XDH");
     session.setConfig("kex", kex);
     doSftp(session, true);
 

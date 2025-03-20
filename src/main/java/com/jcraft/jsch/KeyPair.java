@@ -1244,6 +1244,67 @@ public abstract class KeyPair {
     dispose();
   }
 
+  public static byte[] extractX509SubjectPublicKeyInfo(byte[] x509SubjectPublicKeyInfo,
+      byte[] algorithmIdentifier, int keyLen) throws JSchException {
+    // SubjectPublicKeyInfo ::= SEQUENCE {
+    // algorithm AlgorithmIdentifier,
+    // subjectPublicKey BIT STRING }
+    // AlgorithmIdentifier ::= SEQUENCE {
+    // algorithm OBJECT IDENTIFIER,
+    // parameters ANY DEFINED BY algorithm OPTIONAL }
+    try {
+      ASN1 subjectPublicKeyInfo = new ASN1(x509SubjectPublicKeyInfo);
+      if (!subjectPublicKeyInfo.isSEQUENCE()) {
+        throw new JSchException(
+            "invalid public key value (SubjectPublicKeyInfo is not a SEQUENCE)");
+      }
+
+      ASN1[] subjectPublicKeyInfoSequence = subjectPublicKeyInfo.getContents();
+      if (subjectPublicKeyInfoSequence.length != 2) {
+        throw new JSchException("invalid public key value (SubjectPublicKeyInfo is wrong length)");
+      }
+
+      ASN1 algorithm = subjectPublicKeyInfoSequence[0];
+      if (!algorithm.isSEQUENCE()) {
+        throw new JSchException(
+            "invalid public key value (SubjectPublicKeyInfo algorithm is not a SEQUENCE)");
+      }
+
+      ASN1[] algorithmSequence = algorithm.getContents();
+      if (algorithmSequence.length < 1) {
+        throw new JSchException(
+            "invalid public key value (SubjectPublicKeyInfo algorithm is wrong length)");
+      }
+
+      ASN1 algorithmObject = algorithmSequence[0];
+      if (!algorithmObject.isOBJECT()) {
+        throw new JSchException(
+            "invalid public key value (AlgorithmIdentifier algorithm is not an OBJECT IDENTIFIER)");
+      }
+
+      if (!Util.array_equals(algorithmObject.getContent(), algorithmIdentifier)) {
+        throw new JSchException(
+            "invalid public key value (AlgorithmIdentifier algorithm is wrong value)");
+      }
+
+      ASN1 subjectPublicKey = subjectPublicKeyInfoSequence[1];
+      if (!subjectPublicKey.isBITSTRING()) {
+        throw new JSchException(
+            "invalid public key value (SubjectPublicKeyInfo subjectPublicKey is not a BIT STRING)");
+      }
+
+      byte[] subjectPublicKeyBitString = subjectPublicKey.getContent();
+      if (subjectPublicKeyBitString[0] != 0 || subjectPublicKeyBitString.length - 1 != keyLen) {
+        throw new JSchException(
+            "invalid public key value (SubjectPublicKeyInfo subjectPublicKey is wrong length)");
+      }
+
+      return Arrays.copyOfRange(subjectPublicKeyBitString, 1, subjectPublicKeyBitString.length);
+    } catch (ASN1Exception e) {
+      throw new JSchException("invalid ASN.1 encoding", e);
+    }
+  }
+
   static KeyPair loadPPK(JSch.InstanceLogger instLogger, byte[] buf) throws JSchException {
     byte[] pubkey = null;
     byte[] prvkey = null;

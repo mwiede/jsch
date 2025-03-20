@@ -42,7 +42,7 @@ public class JSch {
 
   static {
     config.put("kex", Util.getSystemProperty("jsch.kex",
-        "curve25519-sha256,curve25519-sha256@libssh.org,ecdh-sha2-nistp256,ecdh-sha2-nistp384,ecdh-sha2-nistp521,diffie-hellman-group-exchange-sha256,diffie-hellman-group16-sha512,diffie-hellman-group18-sha512,diffie-hellman-group14-sha256"));
+        "mlkem768x25519-sha256,curve25519-sha256,curve25519-sha256@libssh.org,ecdh-sha2-nistp256,ecdh-sha2-nistp384,ecdh-sha2-nistp521,diffie-hellman-group-exchange-sha256,diffie-hellman-group16-sha512,diffie-hellman-group18-sha512,diffie-hellman-group14-sha256"));
     config.put("server_host_key", Util.getSystemProperty("jsch.server_host_key",
         "ssh-ed25519,ecdsa-sha2-nistp256,ecdsa-sha2-nistp384,ecdsa-sha2-nistp521,rsa-sha2-512,rsa-sha2-256"));
     config.put("prefer_known_host_key_types",
@@ -111,8 +111,13 @@ public class JSch {
     config.put("sntrup761x25519-sha512", "com.jcraft.jsch.DH25519SNTRUP761");
     config.put("sntrup761x25519-sha512@openssh.com", "com.jcraft.jsch.DH25519SNTRUP761");
 
-    config.put("mlkem768", "com.jcraft.jsch.bc.MLKEM768");
-    config.put("mlkem1024", "com.jcraft.jsch.bc.MLKEM1024");
+    if (JavaVersion.getVersion() >= 24) {
+      config.put("mlkem768", "com.jcraft.jsch.jce.MLKEM768");
+      config.put("mlkem1024", "com.jcraft.jsch.jce.MLKEM1024");
+    } else {
+      config.put("mlkem768", "com.jcraft.jsch.bc.MLKEM768");
+      config.put("mlkem1024", "com.jcraft.jsch.bc.MLKEM1024");
+    }
     config.put("sntrup761", "com.jcraft.jsch.bc.SNTRUP761");
 
     config.put("dh", "com.jcraft.jsch.jce.DH");
