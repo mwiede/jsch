@@ -31,7 +31,7 @@ jobs:
       uses: actions/setup-java@3a4f6e1af504cf6a31855fa899c6aa5355ba6c12 # v4.7.0
       with:
         distribution: 'zulu'
-        java-version: '21'
+        java-version: '24'
         check-latest: true
     - name: Build with Maven
       run: ./mvnw -B -V -e verify -DskipTests=true -DskipITs=true
@@ -47,7 +47,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        java: ['8', '11', '17', '21', '23']
+        java: ['8', '11', '17', '21', '24']
     steps:
     - name: Checkout repository
       uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
