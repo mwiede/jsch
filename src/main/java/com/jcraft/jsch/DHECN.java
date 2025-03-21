@@ -133,7 +133,7 @@ abstract class DHECN extends KeyExchange {
           return false;
         }
 
-        K = encodeAsMPInt(normalize(ecdh.getSecret(r_s[0], r_s[1])));
+        K = encodeAsMPInt(normalize(ecdh.getSecret(r_s[0], r_s[1])), true);
 
         byte[] sig_of_H = _buf.getString();
 
@@ -150,18 +150,21 @@ abstract class DHECN extends KeyExchange {
 
         // This value is called the exchange hash, and it is used to authenti-
         // cate the key exchange.
-        buf.reset();
-        buf.putString(V_C);
-        buf.putString(V_S);
-        buf.putString(I_C);
-        buf.putString(I_S);
-        buf.putString(K_S);
-        buf.putString(Q_C);
-        buf.putString(Q_S);
-        byte[] foo = new byte[buf.getLength()];
-        buf.getByte(foo);
-
+        byte[] foo = encodeAsString(V_C, false);
         sha.update(foo, 0, foo.length);
+        foo = encodeAsString(V_S, false);
+        sha.update(foo, 0, foo.length);
+        foo = encodeAsString(I_C, false);
+        sha.update(foo, 0, foo.length);
+        foo = encodeAsString(I_S, false);
+        sha.update(foo, 0, foo.length);
+        foo = encodeAsString(K_S, false);
+        sha.update(foo, 0, foo.length);
+        foo = encodeAsString(Q_C, false);
+        sha.update(foo, 0, foo.length);
+        foo = encodeAsString(Q_S, false);
+        sha.update(foo, 0, foo.length);
+
         sha.update(K, 0, K.length);
         H = sha.digest();
 
