@@ -40,6 +40,8 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Properties;
 import java.util.Vector;
+import java.util.concurrent.ThreadFactory;
+import java.util.Objects;
 import javax.crypto.AEADBadTagException;
 
 public class Session {
@@ -173,6 +175,8 @@ public class Session {
 
   JSch jsch;
   Logger logger;
+
+  private ThreadFactory threadFactory = Thread::new;
 
   Session(JSch jsch, String username, String host, int port) throws JSchException {
     super();
@@ -528,7 +532,7 @@ public class Session {
 
       synchronized (lock) {
         if (isConnected) {
-          connectThread = jsch.getThreadFactory().newThread(this::run);
+          connectThread = getThreadFactory().newThread(this::run);
           connectThread.setName("Connect thread " + host + " session");
           if (daemon_thread) {
             connectThread.setDaemon(daemon_thread);
@@ -2005,7 +2009,7 @@ public class Session {
               channel.getData(buf);
               channel.init();
 
-              Thread tmp = jsch.getThreadFactory().newThread(channel::run);
+              Thread tmp = getThreadFactory().newThread(channel::run);
               tmp.setName("Channel " + ctyp + " " + host);
               if (daemon_thread) {
                 tmp.setDaemon(daemon_thread);
@@ -2157,6 +2161,27 @@ public class Session {
   }
 
   /**
+   * Sets a thread factory to be used for creating new threads in this instance.
+   *
+   * @param threadFactory The thread factory to be used; must not be <code>null</code>
+   * @throws NullPointerException if the provided thread factory is <code>null</code>
+   */
+  public void setThreadFactory(ThreadFactory threadFactory) {
+    this.threadFactory = Objects.requireNonNull(threadFactory);
+  }
+
+
+  /**
+   * Returns the thread factory used by this instance.
+   *
+   * @return The thread factory associated with this instance. If no specific thread factory has
+   *         been set, a default thread factory is created and returned.
+   */
+  public ThreadFactory getThreadFactory() {
+    return threadFactory;
+  }
+
+  /**
    * Registers the local port forwarding for loop-back interface. If <code>lport</code> is
    * <code>0</code>, the tcp port will be allocated.
    *
@@ -2230,7 +2255,7 @@ public class Session {
       ServerSocketFactory ssf, int connectTimeout) throws JSchException {
     PortWatcher pw = PortWatcher.addPort(this, bind_address, lport, host, rport, ssf);
     pw.setConnectTimeout(connectTimeout);
-    Thread tmp = jsch.getThreadFactory().newThread(pw::run);
+    Thread tmp = getThreadFactory().newThread(pw::run);
     tmp.setName("PortWatcher Thread for " + host);
     if (daemon_thread) {
       tmp.setDaemon(daemon_thread);
@@ -2243,7 +2268,7 @@ public class Session {
       ServerSocketFactory ssf, int connectTimeout) throws JSchException {
     PortWatcher pw = PortWatcher.addSocket(this, bindAddress, lport, socketPath, ssf);
     pw.setConnectTimeout(connectTimeout);
-    Thread tmp = jsch.getThreadFactory().newThread(pw::run);
+    Thread tmp = getThreadFactory().newThread(pw::run);
     tmp.setName("PortWatcher Thread for " + host);
     if (daemon_thread) {
       tmp.setDaemon(daemon_thread);
