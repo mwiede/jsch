@@ -2175,7 +2175,7 @@ public class Session {
    * Returns the thread factory used by this instance.
    *
    * @return The thread factory associated with this instance. If no specific thread factory has
-   *         been set, a default thread factory is created and returned.
+   *         been set, a default thread factory is returned.
    */
   public ThreadFactory getThreadFactory() {
     return threadFactory;
