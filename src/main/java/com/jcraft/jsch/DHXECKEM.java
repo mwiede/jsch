@@ -161,7 +161,7 @@ abstract class DHXECKEM extends KeyExchange {
           Util.bzero(tmp);
         }
         try {
-          tmp = normalize(xdh.getSecret(xec_public_key_S));
+          tmp = xdh.getSecret(xec_public_key_S);
           sha.update(tmp, 0, tmp.length);
         } finally {
           Util.bzero(tmp);

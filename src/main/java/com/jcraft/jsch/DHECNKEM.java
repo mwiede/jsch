@@ -164,7 +164,7 @@ abstract class DHECNKEM extends KeyExchange {
           Util.bzero(tmp);
         }
         try {
-          tmp = normalize(ecdh.getSecret(r_s[0], r_s[1]));
+          tmp = ecdh.getSecret(r_s[0], r_s[1]);
           sha.update(tmp, 0, tmp.length);
         } finally {
           Util.bzero(tmp);
