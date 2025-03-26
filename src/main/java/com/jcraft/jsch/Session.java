@@ -38,10 +38,10 @@ import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
 import java.util.Properties;
 import java.util.Vector;
 import java.util.concurrent.ThreadFactory;
-import java.util.Objects;
 import javax.crypto.AEADBadTagException;
 
 public class Session {
