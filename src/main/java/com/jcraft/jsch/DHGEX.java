@@ -181,7 +181,7 @@ abstract class DHGEX extends KeyExchange {
 
         dh.checkRange();
 
-        K = encodeAsMPInt(normalize(dh.getK()));
+        K = encodeAsMPInt(normalize(dh.getK()), true);
 
         // The hash H is computed as the HASH hash of the concatenation of the
         // following:
@@ -200,26 +200,32 @@ abstract class DHGEX extends KeyExchange {
         // mpint K, the shared secret
         // This value is called the exchange hash, and it is used to authenti-
         // cate the key exchange.
-
-        buf.reset();
-        buf.putString(V_C);
-        buf.putString(V_S);
-        buf.putString(I_C);
-        buf.putString(I_S);
-        buf.putString(K_S);
-        buf.putInt(min);
-        buf.putInt(preferred);
-        buf.putInt(max);
-        buf.putMPInt(p);
-        buf.putMPInt(g);
-        buf.putMPInt(e);
-        buf.putMPInt(f);
-
-        byte[] foo = new byte[buf.getLength()];
-        buf.getByte(foo);
+        byte[] foo = encodeAsString(V_C, false);
         sha.update(foo, 0, foo.length);
-        sha.update(K, 0, K.length);
+        foo = encodeAsString(V_S, false);
+        sha.update(foo, 0, foo.length);
+        foo = encodeAsString(I_C, false);
+        sha.update(foo, 0, foo.length);
+        foo = encodeAsString(I_S, false);
+        sha.update(foo, 0, foo.length);
+        foo = encodeAsString(K_S, false);
+        sha.update(foo, 0, foo.length);
+        foo = encodeInt(min);
+        sha.update(foo, 0, foo.length);
+        foo = encodeInt(preferred);
+        sha.update(foo, 0, foo.length);
+        foo = encodeInt(max);
+        sha.update(foo, 0, foo.length);
+        foo = encodeAsMPInt(p, false);
+        sha.update(foo, 0, foo.length);
+        foo = encodeAsMPInt(g, false);
+        sha.update(foo, 0, foo.length);
+        foo = encodeAsMPInt(e, false);
+        sha.update(foo, 0, foo.length);
+        foo = encodeAsMPInt(f, false);
+        sha.update(foo, 0, foo.length);
 
+        sha.update(K, 0, K.length);
         H = sha.digest();
 
         // System.err.print("H -> "); dump(H, 0, H.length);

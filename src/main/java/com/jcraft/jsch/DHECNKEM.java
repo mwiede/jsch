@@ -164,12 +164,12 @@ abstract class DHECNKEM extends KeyExchange {
           Util.bzero(tmp);
         }
         try {
-          tmp = normalize(ecdh.getSecret(r_s[0], r_s[1]));
+          tmp = ecdh.getSecret(r_s[0], r_s[1]);
           sha.update(tmp, 0, tmp.length);
         } finally {
           Util.bzero(tmp);
         }
-        K = encodeAsString(sha.digest());
+        K = encodeAsString(sha.digest(), true);
 
         byte[] sig_of_H = _buf.getString();
 
@@ -196,18 +196,21 @@ abstract class DHECNKEM extends KeyExchange {
         // string using the process described in Section 5 of [RFC4251] and is
         // then fed along with other data in H to the key exchange method's HASH
         // function to generate encryption keys.
-        buf.reset();
-        buf.putString(V_C);
-        buf.putString(V_S);
-        buf.putString(I_C);
-        buf.putString(I_S);
-        buf.putString(K_S);
-        buf.putString(C_INIT);
-        buf.putString(S_REPLY);
-        byte[] foo = new byte[buf.getLength()];
-        buf.getByte(foo);
-
+        byte[] foo = encodeAsString(V_C, false);
         sha.update(foo, 0, foo.length);
+        foo = encodeAsString(V_S, false);
+        sha.update(foo, 0, foo.length);
+        foo = encodeAsString(I_C, false);
+        sha.update(foo, 0, foo.length);
+        foo = encodeAsString(I_S, false);
+        sha.update(foo, 0, foo.length);
+        foo = encodeAsString(K_S, false);
+        sha.update(foo, 0, foo.length);
+        foo = encodeAsString(C_INIT, false);
+        sha.update(foo, 0, foo.length);
+        foo = encodeAsString(S_REPLY, false);
+        sha.update(foo, 0, foo.length);
+
         sha.update(K, 0, K.length);
         H = sha.digest();
 

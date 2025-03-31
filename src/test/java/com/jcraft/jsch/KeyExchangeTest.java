@@ -63,6 +63,13 @@ public class KeyExchangeTest {
   }
 
   @Test
+  public void testEncodeIntRandom() {
+    for (int i = 0; i < 1000000; i++) {
+      doEncodeInt(random.nextInt());
+    }
+  }
+
+  @Test
   public void testEncodeAsMPInt1() {
     byte[] secret = new byte[1];
     for (int i = 0; i <= 0xff; i++) {
@@ -183,12 +190,28 @@ public class KeyExchangeTest {
     }
   }
 
+  private void doEncodeInt(int secret) {
+    Buffer b = new Buffer();
+    b.putInt(secret);
+    byte[] expected = new byte[b.getLength()];
+    b.getByte(expected);
+    byte[] actual = kex.encodeInt(secret);
+    try {
+      assertArrayEquals(expected, actual);
+    } catch (Throwable t) {
+      System.out.println("  secret = " + secret);
+      System.out.println("expected = " + Arrays.toString(expected));
+      System.out.println("  actual = " + Arrays.toString(actual));
+      throw t;
+    }
+  }
+
   private void doEncodeAsMPInt(byte[] secret) {
     Buffer b = new Buffer();
     b.putMPInt(secret);
     byte[] expected = new byte[b.getLength()];
     b.getByte(expected);
-    byte[] actual = kex.encodeAsMPInt(Arrays.copyOf(secret, secret.length));
+    byte[] actual = kex.encodeAsMPInt(Arrays.copyOf(secret, secret.length), true);
     try {
       assertArrayEquals(expected, actual);
     } catch (Throwable t) {
@@ -204,7 +227,7 @@ public class KeyExchangeTest {
     b.putString(secret);
     byte[] expected = new byte[b.getLength()];
     b.getByte(expected);
-    byte[] actual = kex.encodeAsString(Arrays.copyOf(secret, secret.length));
+    byte[] actual = kex.encodeAsString(Arrays.copyOf(secret, secret.length), true);
     try {
       assertArrayEquals(expected, actual);
     } catch (Throwable t) {
