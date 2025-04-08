@@ -67,7 +67,7 @@ public class ChannelForwardedTCPIP extends Channel {
 
         daemon.setChannel(this, getInputStream(), out);
         daemon.setArg(_config.arg);
-        new Thread(daemon).start();
+        getSession().getThreadFactory().newThread(daemon).start();
       } else {
         ConfigLHost _config = (ConfigLHost) config;
         socket =

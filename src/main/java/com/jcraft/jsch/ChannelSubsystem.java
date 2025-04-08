@@ -64,7 +64,7 @@ public class ChannelSubsystem extends ChannelSession {
       throw new JSchException("ChannelSubsystem", e);
     }
     if (io.in != null) {
-      thread = new Thread(this::run);
+      thread = _session.getThreadFactory().newThread(this::run);
       thread.setName("Subsystem for " + _session.host);
       if (_session.daemon_thread) {
         thread.setDaemon(_session.daemon_thread);
