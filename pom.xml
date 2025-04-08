@@ -882,7 +882,7 @@
                                 </goals>
                                 <configuration>
                                     <bundledSignatures combine.children="append">
-                                        <bundledSignature>commons-io-unsafe-2.17.0</bundledSignature>
+                                        <bundledSignature>commons-io-unsafe-2.18.0</bundledSignature>
                                     </bundledSignatures>
                                 </configuration>
                             </execution>
