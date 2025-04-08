@@ -12,7 +12,7 @@ jobs:
       uses: actions/setup-java@3a4f6e1af504cf6a31855fa899c6aa5355ba6c12 # v4.7.0
       with:
         distribution: 'zulu'
-        java-version: '21'
+        java-version: '24'
         check-latest: true
         cache: 'maven'
     - uses: vapier/coverity-scan-action@2068473c7bdf8c2fb984a6a40ae76ee7facd7a85 # v1.8.0

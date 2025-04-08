@@ -131,7 +131,7 @@ abstract class DHXEC extends KeyExchange {
           return false;
         }
 
-        K = encodeAsMPInt(normalize(xdh.getSecret(Q_S)));
+        K = encodeAsMPInt(normalize(xdh.getSecret(Q_S)), true);
 
         byte[] sig_of_H = _buf.getString();
 
@@ -162,18 +162,21 @@ abstract class DHXEC extends KeyExchange {
         // of [RFC4251], and the resulting bytes are fed as described in
         // [RFC4253] to the key exchange method's hash function to generate
         // encryption keys.
-        buf.reset();
-        buf.putString(V_C);
-        buf.putString(V_S);
-        buf.putString(I_C);
-        buf.putString(I_S);
-        buf.putString(K_S);
-        buf.putString(Q_C);
-        buf.putString(Q_S);
-        byte[] foo = new byte[buf.getLength()];
-        buf.getByte(foo);
-
+        byte[] foo = encodeAsString(V_C, false);
         sha.update(foo, 0, foo.length);
+        foo = encodeAsString(V_S, false);
+        sha.update(foo, 0, foo.length);
+        foo = encodeAsString(I_C, false);
+        sha.update(foo, 0, foo.length);
+        foo = encodeAsString(I_S, false);
+        sha.update(foo, 0, foo.length);
+        foo = encodeAsString(K_S, false);
+        sha.update(foo, 0, foo.length);
+        foo = encodeAsString(Q_C, false);
+        sha.update(foo, 0, foo.length);
+        foo = encodeAsString(Q_S, false);
+        sha.update(foo, 0, foo.length);
+
         sha.update(K, 0, K.length);
         H = sha.digest();
 
