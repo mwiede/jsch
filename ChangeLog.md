@@ -1,3 +1,8 @@
+* [0.2.25](https://github.com/mwiede/jsch/releases/tag/jsch-0.2.25)
+  * Add support for mlkem768x25519-sha256, mlkem768nistp256-sha256 & mlkem1024nistp384-sha384 KEX algorithms using JEP 496.
+  * Stop abusing the packet buffer for signature verification.
+  * Fix intermittent KEX errors with hybrid PQ/EC algorithms: the EC shared secret should not be stripped of unnecessary leading zero bytes since they are concatenated with the PQ secret and encoded as a string.
+  * Support custom ThreadFactory. by @hstyi in https://github.com/mwiede/jsch/pull/793
 * [0.2.24](https://github.com/mwiede/jsch/releases/tag/jsch-0.2.24)
   * [#768](https://github.com/mwiede/jsch/issues/768) Make more use of dedicated exceptions
   * [#786](https://github.com/mwiede/jsch/issues/786) SSH server comparison the channel id from INT_MAX for a signed value.
