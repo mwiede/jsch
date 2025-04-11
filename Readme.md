@@ -14,6 +14,10 @@ As I explained in a [blog post](http://www.matez.de/index.php/2020/06/22/the-fut
 * No active maintenance of [JSch at SourceForge](https://sourceforge.net/projects/jsch/).
 * Stay in sync with OpenJDK features so there is no need for additional dependencies.
 
+## Is there any documentation?
+
+Not much. Check the example code in the [examples](https://github.com/mwiede/jsch/tree/master/examples) folder. And there are come wiki pages, i.e. [Jsch-Configuration](https://github.com/mwiede/jsch/wiki/Jsch-Configuration) and [Jsch-Logging](https://github.com/mwiede/jsch/wiki/Jsch-Logging).
+
 ## How to you use this library as a replacement for `com.jcraft:jsch`
 
 Make sure, that you only have one jsch dependency on your classpath. For example you can check the output of `mvn dependency:tree`.
