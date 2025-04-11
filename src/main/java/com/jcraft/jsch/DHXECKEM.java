@@ -93,7 +93,7 @@ abstract class DHXECKEM extends KeyExchange {
       System.arraycopy(kem_public_key_C, 0, Q_C, 0, kem_pubkey_len);
       System.arraycopy(xec_public_key_C, 0, Q_C, kem_pubkey_len, xec_key_len);
       buf.putString(Q_C);
-    } catch (Exception | NoClassDefFoundError e) {
+    } catch (Exception | LinkageError e) {
       throw new JSchException(e.toString(), e);
     }
 

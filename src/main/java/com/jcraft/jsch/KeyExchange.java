@@ -176,7 +176,7 @@ public abstract class KeyExchange {
       if (_c2sAEAD) {
         guess[PROPOSAL_MAC_ALGS_CTOS] = null;
       }
-    } catch (Exception | NoClassDefFoundError e) {
+    } catch (Exception | LinkageError e) {
       throw new JSchException(e.toString(), e);
     }
 
@@ -451,7 +451,7 @@ public abstract class KeyExchange {
             Class.forName(session.getConfig(alg)).asSubclass(SignatureEdDSA.class);
         sig = c.getDeclaredConstructor().newInstance();
         sig.init();
-      } catch (Exception | NoClassDefFoundError e) {
+      } catch (Exception | LinkageError e) {
         throw new JSchException(e.toString(), e);
       }
 

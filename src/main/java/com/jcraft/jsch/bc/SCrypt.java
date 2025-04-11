@@ -43,7 +43,7 @@ public class SCrypt implements com.jcraft.jsch.SCrypt {
       this.cost = cost;
       this.blocksize = blocksize;
       this.parallel = parallel;
-    } catch (NoClassDefFoundError e) {
+    } catch (LinkageError e) {
       throw new JSchException("scrypt unavailable", e);
     }
   }

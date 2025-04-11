@@ -1136,7 +1136,7 @@ public abstract class KeyPair {
       }
 
       return kpair;
-    } catch (Exception | NoClassDefFoundError e) {
+    } catch (Exception | LinkageError e) {
       Util.bzero(data);
       if (e instanceof JSchException)
         throw (JSchException) e;
@@ -1188,7 +1188,7 @@ public abstract class KeyPair {
                 Class.forName(JSch.getConfig(cipherName)).asSubclass(Cipher.class);
             kpair.cipher = c.getDeclaredConstructor().newInstance();
             kpair.iv = new byte[kpair.cipher.getIVSize()];
-          } catch (Exception | NoClassDefFoundError e) {
+          } catch (Exception | LinkageError e) {
             throw new JSchException("cipher " + cipherName + " is not available", e);
           }
         } else {
@@ -1204,7 +1204,7 @@ public abstract class KeyPair {
           BCrypt bcrypt = c.getDeclaredConstructor().newInstance();
           bcrypt.init(salt, rounds);
           kpair.kdf = bcrypt;
-        } catch (Exception | NoClassDefFoundError e) {
+        } catch (Exception | LinkageError e) {
           throw new JSchException("kdf " + kdfName + " is not available", e);
         }
       }
@@ -1364,7 +1364,7 @@ public abstract class KeyPair {
                 Class.forName(JSch.getConfig("aes256-cbc")).asSubclass(Cipher.class);
             kpair.cipher = c.getDeclaredConstructor().newInstance();
             kpair.iv = new byte[kpair.cipher.getIVSize()];
-          } catch (Exception | NoClassDefFoundError e) {
+          } catch (Exception | LinkageError e) {
             throw new JSchException("The cipher 'aes256-cbc' is required, but it is not available.",
                 e);
           }
@@ -1378,7 +1378,7 @@ public abstract class KeyPair {
             HASH sha1 = c.getDeclaredConstructor().newInstance();
             sha1.init();
             kpair.sha1 = sha1;
-          } catch (Exception | NoClassDefFoundError e) {
+          } catch (Exception | LinkageError e) {
             throw new JSchException("'sha-1' is required, but it is not available.", e);
           }
         } else {
@@ -1423,7 +1423,7 @@ public abstract class KeyPair {
             kpair.kdf = argon2;
           } catch (NumberFormatException e) {
             throw new JSchException("Invalid argon2 params.", e);
-          } catch (Exception | NoClassDefFoundError e) {
+          } catch (Exception | LinkageError e) {
             throw new JSchException("'argon2' is required, but it is not available.", e);
           }
         }
