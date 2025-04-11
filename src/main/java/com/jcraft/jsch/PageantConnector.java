@@ -58,7 +58,7 @@ public class PageantConnector implements AgentConnector {
     try {
       user32 = User32.INSTANCE;
       kernel32 = Kernel32.INSTANCE;
-    } catch (UnsatisfiedLinkError | NoClassDefFoundError e) {
+    } catch (LinkageError e) {
       throw new AgentProxyException(e.toString(), e);
     }
   }

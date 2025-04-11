@@ -40,7 +40,7 @@ public class JUnixSocketFactory implements USocketFactory {
   public JUnixSocketFactory() throws AgentProxyException {
     // Check to confirm that junixsocket library is available
     try (AFUNIXSocketChannel foo = AFUNIXSocketChannel.open()) {
-    } catch (IOException | NoClassDefFoundError e) {
+    } catch (IOException | LinkageError e) {
       throw new AgentProxyException("junixsocket library unavailable", e);
     }
   }

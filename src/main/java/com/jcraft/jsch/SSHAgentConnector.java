@@ -98,7 +98,7 @@ public class SSHAgentConnector implements AgentConnector {
     } catch (AgentProxyException e) {
       try {
         return new JUnixSocketFactory();
-      } catch (NoClassDefFoundError ee) {
+      } catch (LinkageError ee) {
         AgentProxyException eee = new AgentProxyException("junixsocket library unavailable");
         eee.addSuppressed(e);
         eee.addSuppressed(ee);
