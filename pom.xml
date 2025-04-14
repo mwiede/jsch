@@ -101,7 +101,7 @@
         <dependency>
             <groupId>com.kohlschutter</groupId>
             <artifactId>compiler-annotations</artifactId>
-            <version>1.8.0</version>
+            <version>1.8.2</version>
             <scope>provided</scope>
             <optional>true</optional>
         </dependency>
