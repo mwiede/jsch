@@ -1,3 +1,6 @@
+* [0.2.26](https://github.com/mwiede/jsch/releases/tag/jsch-0.2.26)
+  * Follow lead from OpenSSH and prefer AES-GCM ciphers to AES-CTR ciphers.
+  * Catch LinkageError in order to better handle cases in which classes cannot be loaded via reflection. ([#811](https://github.com/mwiede/jsch/issues/811))
 * [0.2.25](https://github.com/mwiede/jsch/releases/tag/jsch-0.2.25)
   * Add support for mlkem768x25519-sha256, mlkem768nistp256-sha256 & mlkem1024nistp384-sha384 KEX algorithms using JEP 496.
   * Stop abusing the packet buffer for signature verification.
