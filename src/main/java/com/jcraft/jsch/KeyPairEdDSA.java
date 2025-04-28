@@ -76,6 +76,39 @@ abstract class KeyPairEdDSA extends KeyPair {
   }
 
   @Override
+  byte[] getOpenSSHv1PrivateKeyBlob() {
+    byte[] keyTypeName = getKeyTypeName();
+    if (keyTypeName == null || pub_array == null || prv_array == null) {
+      return null;
+    }
+
+    byte[] sk = null;
+    Buffer _buf = null;
+    try {
+      sk = new byte[prv_array.length + pub_array.length];
+      System.arraycopy(prv_array, 0, sk, 0, prv_array.length);
+      System.arraycopy(pub_array, 0, sk, prv_array.length, pub_array.length);
+
+      int _bufLen = 4 + keyTypeName.length;
+      _bufLen += 4 + pub_array.length;
+      _bufLen += 4 + sk.length;
+      _buf = new Buffer(_bufLen);
+      _buf.putString(keyTypeName);
+      _buf.putString(pub_array);
+      _buf.putString(sk);
+
+      return _buf.buffer;
+    } catch (Exception e) {
+      if (_buf != null) {
+        Util.bzero(_buf.buffer);
+      }
+      throw e;
+    } finally {
+      Util.bzero(sk);
+    }
+  }
+
+  @Override
   boolean parse(byte[] plain) {
     if (vendor == VENDOR_PUTTY || vendor == VENDOR_PUTTY_V3) {
       Buffer buf = new Buffer(plain);

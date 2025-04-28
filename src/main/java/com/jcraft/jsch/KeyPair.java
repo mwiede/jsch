@@ -61,6 +61,14 @@ public abstract class KeyPair {
 
   private static final byte[] AUTH_MAGIC = Util.str2byte("openssh-key-v1\0");
   private static final byte[] cr = Util.str2byte("\n");
+  private static final byte[] OPENSSH_V1_BEGIN =
+      Util.str2byte("-----BEGIN OPENSSH PRIVATE KEY-----");
+  private static final byte[] OPENSSH_V1_END = Util.str2byte("-----END OPENSSH PRIVATE KEY-----");
+  private static final byte[] OPENSSH_V1_NONE = Util.str2byte("none");
+  private static final String OPENSSH_V1_DEFAULT_CIPHERNAME = "aes256-ctr";
+  private static final String OPENSSH_V1_KDFNAME = "bcrypt";
+  private static final int OPENSSH_V1_SALT_LEN = 16;
+  private static final int OPENSSH_V1_DEFAULT_ROUNDS = 16;
 
   public static KeyPair genKeyPair(JSch jsch, int type) throws JSchException {
     return genKeyPair(jsch, type, 1024);
@@ -131,6 +139,8 @@ public abstract class KeyPair {
 
   abstract byte[] getPrivateKey();
 
+  abstract byte[] getOpenSSHv1PrivateKeyBlob();
+
   /**
    * Writes the plain private key to the given output stream.
    *
@@ -192,6 +202,226 @@ public abstract class KeyPair {
       if (instLogger.getLogger().isEnabled(Logger.ERROR)) {
         instLogger.getLogger().log(Logger.ERROR, "failed to write private key", e);
       }
+    }
+  }
+
+  /**
+   * Writes the cyphered private key to the given output stream.
+   *
+   * @param out output stream
+   * @param passphrase a passphrase to encrypt the private key
+   */
+  public void writeOpenSSHv1PrivateKey(OutputStream out, byte[] passphrase) throws JSchException {
+    writeOpenSSHv1PrivateKey(out, passphrase, null, OPENSSH_V1_DEFAULT_ROUNDS);
+  }
+
+  /**
+   * Writes the cyphered private key to the given output stream.
+   *
+   * @param out output stream
+   * @param passphrase a passphrase to encrypt the private key
+   * @param cipher the cipher to use
+   */
+  public void writeOpenSSHv1PrivateKey(OutputStream out, byte[] passphrase, String cipher)
+      throws JSchException {
+    writeOpenSSHv1PrivateKey(out, passphrase, cipher, OPENSSH_V1_DEFAULT_ROUNDS);
+  }
+
+  /**
+   * Writes the cyphered private key to the given output stream.
+   *
+   * @param out output stream
+   * @param passphrase a passphrase to encrypt the private key
+   * @param rounds the number of KDF rounds to use
+   */
+  public void writeOpenSSHv1PrivateKey(OutputStream out, byte[] passphrase, int rounds)
+      throws JSchException {
+    writeOpenSSHv1PrivateKey(out, passphrase, null, rounds);
+  }
+
+  /**
+   * Writes the cyphered private key to the given output stream.
+   *
+   * @param out output stream
+   * @param passphrase a passphrase to encrypt the private key
+   * @param cipher the cipher to use
+   * @param rounds the number of KDF rounds to use
+   */
+  public void writeOpenSSHv1PrivateKey(OutputStream out, byte[] passphrase, String cipher,
+      int rounds) throws JSchException {
+    if (passphrase != null && passphrase.length == 0) {
+      passphrase = null;
+    }
+    if (cipher == null) {
+      cipher = OPENSSH_V1_DEFAULT_CIPHERNAME;
+    }
+
+    byte[] cipherName = OPENSSH_V1_NONE;
+    byte[] kdfName = OPENSSH_V1_NONE;
+    int nrKeys = 1;
+    int cipherSize = 8;
+    int tagSize = 0;
+    byte[] publicKeyBlob = getPublicKeyBlob();
+    if (publicKeyBlob == null) {
+      throw new JSchException("Unable to get public key blob");
+    }
+    Buffer kdfOptions = new Buffer(0);
+
+    if (random == null) {
+      random = genRandom();
+    }
+
+    byte[] privateKeyBlob = null;
+    Cipher _cipher = null;
+    KDF _kdf = null;
+    byte[] _keyiv = null;
+    byte[] _key = null;
+    byte[] _iv = null;
+    Buffer privateKeys = null;
+    Buffer _buf = null;
+    byte[] prv = null;
+    try {
+      privateKeyBlob = getOpenSSHv1PrivateKeyBlob();
+      if (privateKeyBlob == null) {
+        throw new JSchException("Unable to get private key blob");
+      }
+
+      if (passphrase != null) {
+        try {
+          Class<? extends Cipher> c =
+              Class.forName(JSch.getConfig(cipher)).asSubclass(Cipher.class);
+          _cipher = c.getDeclaredConstructor().newInstance();
+        } catch (Exception | LinkageError e) {
+          if (e instanceof JSchException)
+            throw (JSchException) e;
+          throw new JSchException("cipher " + cipher + " is not available", e);
+        }
+
+        String kdf = OPENSSH_V1_KDFNAME;
+        try {
+          Class<? extends KDF> c = Class.forName(JSch.getConfig(kdf)).asSubclass(KDF.class);
+          _kdf = c.getDeclaredConstructor().newInstance();
+        } catch (Exception | LinkageError e) {
+          if (e instanceof JSchException)
+            throw (JSchException) e;
+          throw new JSchException("kdf " + kdf + " is not available", e);
+        }
+
+        kdfName = Util.str2byte(kdf);
+        byte[] _salt = new byte[OPENSSH_V1_SALT_LEN];
+        random.fill(_salt, 0, _salt.length);
+
+        int kdfOptionsLen = 4 + _salt.length;
+        kdfOptionsLen += 4; // rounds
+        kdfOptions = new Buffer(kdfOptionsLen);
+        kdfOptions.putString(_salt);
+        kdfOptions.putInt(rounds);
+        _kdf.initWithOpenSSHv1KDFOptions(kdfOptions.buffer);
+
+        cipherName = Util.str2byte(cipher);
+        cipherSize = _cipher.getIVSize();
+        tagSize = _cipher.getTagSize();
+        _key = new byte[_cipher.getBlockSize()];
+        int _ivLen = _cipher.getIVSize();
+        if (_cipher.isChaCha20()) {
+          _ivLen = 0;
+        } else if (_cipher.isAEAD()) {
+          _ivLen = 12;
+        }
+        _iv = new byte[_ivLen];
+        _keyiv = _kdf.getKey(passphrase, _key.length + _iv.length);
+        System.arraycopy(_keyiv, 0, _key, 0, _key.length);
+        System.arraycopy(_keyiv, _key.length, _iv, 0, _iv.length);
+        _cipher.init(Cipher.ENCRYPT_MODE, _key, _iv);
+      }
+
+      byte[] _c = new byte[4];
+      random.fill(_c, 0, _c.length);
+      int _check = ((_c[0] << 24) & 0xff000000) | ((_c[1] << 16) & 0x00ff0000)
+          | ((_c[2] << 8) & 0x0000ff00) | ((_c[3]) & 0x000000ff);
+      byte[] _publicKeyComment = Util.str2byte(getPublicKeyComment());
+      if (_publicKeyComment == null) {
+        _publicKeyComment = new byte[0];
+      }
+
+      int privateKeysLen = 4; // check
+      privateKeysLen += 4; // check
+      privateKeysLen += privateKeyBlob.length;
+      privateKeysLen += 4 + _publicKeyComment.length;
+      privateKeysLen += cipherSize;
+      privateKeysLen += tagSize;
+      privateKeys = new Buffer(privateKeysLen);
+      privateKeys.putInt(_check);
+      privateKeys.putInt(_check);
+      privateKeys.putByte(privateKeyBlob);
+      privateKeys.putString(_publicKeyComment);
+      byte j = (byte) 1;
+      while (privateKeys.getLength() % cipherSize != 0) {
+        privateKeys.putByte(j++);
+      }
+
+      if (passphrase != null) {
+        if (_cipher.isChaCha20()) {
+          _cipher.update(0);
+          _cipher.doFinal(privateKeys.buffer, -4, privateKeys.getLength(), privateKeys.buffer, 0);
+        } else if (_cipher.isAEAD()) {
+          _cipher.doFinal(privateKeys.buffer, 0, privateKeys.getLength(), privateKeys.buffer, 0);
+        } else {
+          _cipher.update(privateKeys.buffer, 0, privateKeys.getLength(), privateKeys.buffer, 0);
+        }
+      }
+
+      int _bufLen = AUTH_MAGIC.length;
+      _bufLen += 4 + cipherName.length;
+      _bufLen += 4 + kdfName.length;
+      _bufLen += 4 + kdfOptions.getLength();
+      _bufLen += 4; // nrKeys
+      _bufLen += 4 + publicKeyBlob.length;
+      _bufLen += 4 + privateKeys.getLength();
+      _bufLen += tagSize;
+      _buf = new Buffer(_bufLen);
+      _buf.putByte(AUTH_MAGIC);
+      _buf.putString(cipherName);
+      _buf.putString(kdfName);
+      _buf.putString(kdfOptions.buffer);
+      _buf.putInt(nrKeys);
+      _buf.putString(publicKeyBlob);
+      _buf.putString(privateKeys.buffer, 0, privateKeys.getLength());
+      _buf.putByte(privateKeys.buffer, privateKeys.getLength(), tagSize);
+      prv = Util.toBase64(_buf.buffer, 0, _buf.getLength(), true);
+
+      out.write(OPENSSH_V1_BEGIN);
+      out.write(cr);
+      int i = 0;
+      while (i < prv.length) {
+        if (i + 70 < prv.length) {
+          out.write(prv, i, 70);
+          out.write(cr);
+          i += 70;
+          continue;
+        }
+        out.write(prv, i, prv.length - i);
+        out.write(cr);
+        break;
+      }
+      out.write(OPENSSH_V1_END);
+      out.write(cr);
+    } catch (Exception e) {
+      if (e instanceof JSchException)
+        throw (JSchException) e;
+      throw new JSchException(e.toString(), e);
+    } finally {
+      Util.bzero(_keyiv);
+      Util.bzero(_key);
+      Util.bzero(_iv);
+      Util.bzero(privateKeyBlob);
+      if (privateKeys != null) {
+        Util.bzero(privateKeys.buffer);
+      }
+      if (_buf != null) {
+        Util.bzero(_buf.buffer);
+      }
+      Util.bzero(prv);
     }
   }
 
@@ -328,6 +558,77 @@ public abstract class KeyPair {
       throws FileNotFoundException, IOException {
     try (OutputStream fos = new FileOutputStream(name)) {
       writePrivateKey(fos, passphrase);
+    }
+  }
+
+  /**
+   * Writes the plain private key to the file.
+   *
+   * @param name file name
+   * @see #writePrivateKey(String name, byte[] passphrase)
+   */
+  public void writeOpenSSHv1PrivateKey(String name)
+      throws FileNotFoundException, IOException, JSchException {
+    this.writeOpenSSHv1PrivateKey(name, null);
+  }
+
+  /**
+   * Writes the cyphered private key to the file.
+   *
+   * @param name file name
+   * @param passphrase a passphrase to encrypt the private key
+   * @see #writePrivateKey(OutputStream out, byte[] passphrase)
+   */
+  public void writeOpenSSHv1PrivateKey(String name, byte[] passphrase)
+      throws FileNotFoundException, IOException, JSchException {
+    try (OutputStream fos = new FileOutputStream(name)) {
+      writeOpenSSHv1PrivateKey(fos, passphrase);
+    }
+  }
+
+  /**
+   * Writes the cyphered private key to the file.
+   *
+   * @param name file name
+   * @param passphrase a passphrase to encrypt the private key
+   * @param rounds the number of KDF rounds to use
+   * @see #writePrivateKey(OutputStream out, byte[] passphrase)
+   */
+  public void writeOpenSSHv1PrivateKey(String name, byte[] passphrase, int rounds)
+      throws FileNotFoundException, IOException, JSchException {
+    try (OutputStream fos = new FileOutputStream(name)) {
+      writeOpenSSHv1PrivateKey(fos, passphrase, rounds);
+    }
+  }
+
+  /**
+   * Writes the cyphered private key to the file.
+   *
+   * @param name file name
+   * @param passphrase a passphrase to encrypt the private key
+   * @param cipher the cipher to use
+   * @see #writePrivateKey(OutputStream out, byte[] passphrase)
+   */
+  public void writeOpenSSHv1PrivateKey(String name, byte[] passphrase, String cipher)
+      throws FileNotFoundException, IOException, JSchException {
+    try (OutputStream fos = new FileOutputStream(name)) {
+      writeOpenSSHv1PrivateKey(fos, passphrase, cipher);
+    }
+  }
+
+  /**
+   * Writes the cyphered private key to the file.
+   *
+   * @param name file name
+   * @param passphrase a passphrase to encrypt the private key
+   * @param cipher the cipher to use
+   * @param rounds the number of KDF rounds to use
+   * @see #writePrivateKey(OutputStream out, byte[] passphrase)
+   */
+  public void writeOpenSSHv1PrivateKey(String name, byte[] passphrase, String cipher, int rounds)
+      throws FileNotFoundException, IOException, JSchException {
+    try (OutputStream fos = new FileOutputStream(name)) {
+      writeOpenSSHv1PrivateKey(fos, passphrase, cipher, rounds);
     }
   }
 

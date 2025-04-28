@@ -111,6 +111,44 @@ class KeyPairDSA extends KeyPair {
   }
 
   @Override
+  byte[] getOpenSSHv1PrivateKeyBlob() {
+    byte[] keyTypeName = getKeyTypeName();
+    if (keyTypeName == null || P_array == null || Q_array == null || G_array == null
+        || pub_array == null || prv_array == null) {
+      return null;
+    }
+
+    Buffer _buf = null;
+    try {
+      int _bufLen = 4 + keyTypeName.length;
+      _bufLen += 4 + P_array.length;
+      _bufLen += (P_array[0] & 0x80) >>> 7;
+      _bufLen += 4 + Q_array.length;
+      _bufLen += (Q_array[0] & 0x80) >>> 7;
+      _bufLen += 4 + G_array.length;
+      _bufLen += (G_array[0] & 0x80) >>> 7;
+      _bufLen += 4 + pub_array.length;
+      _bufLen += (pub_array[0] & 0x80) >>> 7;
+      _bufLen += 4 + prv_array.length;
+      _bufLen += (prv_array[0] & 0x80) >>> 7;
+      _buf = new Buffer(_bufLen);
+      _buf.putString(keyTypeName);
+      _buf.putMPInt(P_array);
+      _buf.putMPInt(Q_array);
+      _buf.putMPInt(G_array);
+      _buf.putMPInt(pub_array);
+      _buf.putMPInt(prv_array);
+
+      return _buf.buffer;
+    } catch (Exception e) {
+      if (_buf != null) {
+        Util.bzero(_buf.buffer);
+      }
+      throw e;
+    }
+  }
+
+  @Override
   boolean parse(byte[] plain) {
     try {
 

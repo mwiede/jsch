@@ -131,6 +131,15 @@ class KeyPairPKCS8 extends KeyPair {
   }
 
   @Override
+  byte[] getOpenSSHv1PrivateKeyBlob() {
+    if (kpair != null) {
+      return kpair.getOpenSSHv1PrivateKeyBlob();
+    } else {
+      return null;
+    }
+  }
+
+  @Override
   boolean parse(byte[] plain) {
 
     /*

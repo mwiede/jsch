@@ -122,6 +122,47 @@ class KeyPairRSA extends KeyPair {
   }
 
   @Override
+  byte[] getOpenSSHv1PrivateKeyBlob() {
+    byte[] keyTypeName = getKeyTypeName();
+    if (keyTypeName == null || n_array == null || pub_array == null || prv_array == null
+        || c_array == null || p_array == null || q_array == null) {
+      return null;
+    }
+
+    Buffer _buf = null;
+    try {
+      int _bufLen = 4 + keyTypeName.length;
+      _bufLen += 4 + n_array.length;
+      _bufLen += (n_array[0] & 0x80) >>> 7;
+      _bufLen += 4 + pub_array.length;
+      _bufLen += (pub_array[0] & 0x80) >>> 7;
+      _bufLen += 4 + prv_array.length;
+      _bufLen += (prv_array[0] & 0x80) >>> 7;
+      _bufLen += 4 + c_array.length;
+      _bufLen += (c_array[0] & 0x80) >>> 7;
+      _bufLen += 4 + p_array.length;
+      _bufLen += (p_array[0] & 0x80) >>> 7;
+      _bufLen += 4 + q_array.length;
+      _bufLen += (q_array[0] & 0x80) >>> 7;
+      _buf = new Buffer(_bufLen);
+      _buf.putString(keyTypeName);
+      _buf.putMPInt(n_array);
+      _buf.putMPInt(pub_array);
+      _buf.putMPInt(prv_array);
+      _buf.putMPInt(c_array);
+      _buf.putMPInt(p_array);
+      _buf.putMPInt(q_array);
+
+      return _buf.buffer;
+    } catch (Exception e) {
+      if (_buf != null) {
+        Util.bzero(_buf.buffer);
+      }
+      throw e;
+    }
+  }
+
+  @Override
   boolean parse(byte[] plain) {
 
     try {

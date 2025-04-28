@@ -152,6 +152,36 @@ class KeyPairECDSA extends KeyPair {
   }
 
   @Override
+  byte[] getOpenSSHv1PrivateKeyBlob() {
+    byte[] keyTypeName = getKeyTypeName();
+    byte[] ecPoint = toPoint(r_array, s_array);
+    if (keyTypeName == null || ecPoint == null || prv_array == null) {
+      return null;
+    }
+
+    Buffer _buf = null;
+    try {
+      int _bufLen = 4 + keyTypeName.length;
+      _bufLen += 4 + name.length;
+      _bufLen += 4 + ecPoint.length;
+      _bufLen += 4 + prv_array.length;
+      _bufLen += (prv_array[0] & 0x80) >>> 7;
+      _buf = new Buffer(_bufLen);
+      _buf.putString(keyTypeName);
+      _buf.putString(name);
+      _buf.putString(ecPoint);
+      _buf.putMPInt(prv_array);
+
+      return _buf.buffer;
+    } catch (Exception e) {
+      if (_buf != null) {
+        Util.bzero(_buf.buffer);
+      }
+      throw e;
+    }
+  }
+
+  @Override
   boolean parse(byte[] plain) {
     try {
 

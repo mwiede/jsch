@@ -171,13 +171,15 @@ class KeyPairTest {
   }
 
   @ParameterizedTest
-  @ValueSource(
-      strings = {"encrypted_openssh_private_key_rsa", "encrypted_openssh_private_key_rsa_aes256gcm",
-          "encrypted_openssh_private_key_rsa_chacha20poly1305", "encrypted_openssh_private_key_dsa",
-          "encrypted_openssh_private_key_dsa_aes256gcm",
-          "encrypted_openssh_private_key_dsa_chacha20poly1305",
-          "encrypted_openssh_private_key_ecdsa", "encrypted_openssh_private_key_ecdsa_aes256gcm",
-          "encrypted_openssh_private_key_ecdsa_chacha20poly1305"})
+  @ValueSource(strings = {"encrypted_openssh_private_key_rsa",
+      "encrypted_openssh_private_key_rsa_aes256gcm",
+      "encrypted_openssh_private_key_rsa_chacha20poly1305", "encrypted_openssh_private_key_dsa",
+      "encrypted_openssh_private_key_dsa_aes256gcm",
+      "encrypted_openssh_private_key_dsa_chacha20poly1305", "encrypted_openssh_private_key_ecdsa",
+      "encrypted_openssh_private_key_ecdsa_aes256gcm",
+      "encrypted_openssh_private_key_ecdsa_chacha20poly1305",
+      "encrypted_openssh_private_key_ed25519", "encrypted_openssh_private_key_ed25519_aes256gcm",
+      "encrypted_openssh_private_key_ed25519_chacha20poly1305"})
   void decryptEncryptedOpensshKey(String keyFile) throws URISyntaxException, JSchException {
     final JSch jSch = new JSch();
     final String prvkey =
@@ -190,7 +192,7 @@ class KeyPairTest {
 
     // From now on, the pair now longer counts as encrypted
     assertFalse(identity.getKeyPair().isEncrypted());
-    assertNotNull(identity.getKeyPair().getPrivateKey());
+    assertNotNull(identity.getKeyPair().getOpenSSHv1PrivateKeyBlob());
     // An unencrypted key pair should allow #decrypt(null)
     // com.jcraft.jsch.UserAuthPublicKey relies on this
     assertTrue(identity.getKeyPair().decrypt((byte[]) null));
