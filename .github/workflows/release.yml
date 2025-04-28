@@ -27,9 +27,9 @@ jobs:
         gpg-key-id: ${{ secrets.GPG_ID }}
         gpg-key: ${{ secrets.GPG_KEY }}
 
-        maven-repo-server-id: ${{ secrets.MVN_REPO_ID }}
-        maven-repo-server-username: ${{ secrets.MVN_REPO_PRIVATE_REPO_USER }}
-        maven-repo-server-password: ${{ secrets.MVN_REPO_PRIVATE_REPO_PASSWORD }}
+        maven-repo-server-id: ${{ secrets.MVN_CENTRAL }}
+        maven-repo-server-username: ${{ secrets.MVN_CENTRAL_USER }}
+        maven-repo-server-password: ${{ secrets.MVN_CENTRAL_PASSWORD }}
 
         #maven-args: "-Dmaven.javadoc.skip=true -DskipTests -DskipITs -Ddockerfile.skip -DdockerCompose.skip"
         maven-args: "-Dgpg.passphrase="
