@@ -32,12 +32,16 @@ class KeyPairTest {
         Arguments.of("docker/ssh_host_rsa_key", null, "ssh-rsa"),
         // encrypted_openssh_private_key_rsa
         Arguments.of("encrypted_openssh_private_key_rsa", "secret123", "ssh-rsa"),
+        Arguments.of("encrypted_openssh_private_key_rsa_aes256gcm", "secret123", "ssh-rsa"),
+        Arguments.of("encrypted_openssh_private_key_rsa_chacha20poly1305", "secret123", "ssh-rsa"),
         // docker/id_dsa
         Arguments.of("docker/id_dsa", null, "ssh-dss"),
         // dsa openssh format
         Arguments.of("docker/ssh_host_dsa_key", null, "ssh-dss"),
         // encrypted dsa
         Arguments.of("encrypted_openssh_private_key_dsa", "secret123", "ssh-dss"),
+        Arguments.of("encrypted_openssh_private_key_dsa_aes256gcm", "secret123", "ssh-dss"),
+        Arguments.of("encrypted_openssh_private_key_dsa_chacha20poly1305", "secret123", "ssh-dss"),
         // unencrypted RSA with windows (\r\n) line endings
         Arguments.of("issue362_rsa", null, "ssh-rsa"),
         Arguments.of("issue_369_rsa_opensshv1", null, "ssh-rsa"),
@@ -53,6 +57,15 @@ class KeyPairTest {
         Arguments.of("docker/ssh_host_ecdsa521_key", null, "ecdsa-sha2-nistp521"),
         // encrypted ecdsa
         Arguments.of("encrypted_openssh_private_key_ecdsa", "secret123", "ecdsa-sha2-nistp256"),
+        Arguments.of("encrypted_openssh_private_key_ecdsa_aes256gcm", "secret123",
+            "ecdsa-sha2-nistp256"),
+        Arguments.of("encrypted_openssh_private_key_ecdsa_chacha20poly1305", "secret123",
+            "ecdsa-sha2-nistp256"),
+        // encrypted ed25519
+        Arguments.of("encrypted_openssh_private_key_ed25519", "secret123", "ssh-ed25519"),
+        Arguments.of("encrypted_openssh_private_key_ed25519_aes256gcm", "secret123", "ssh-ed25519"),
+        Arguments.of("encrypted_openssh_private_key_ed25519_chacha20poly1305", "secret123",
+            "ssh-ed25519"),
         // PuTTY v2 keys
         Arguments.of("ppkv2_dsa_unix.ppk", null, "ssh-dss"),
         Arguments.of("ppkv2_dsa_unix_encrypted.ppk", "secret123", "ssh-dss"),
@@ -158,8 +171,13 @@ class KeyPairTest {
   }
 
   @ParameterizedTest
-  @ValueSource(strings = {"encrypted_openssh_private_key_rsa", "encrypted_openssh_private_key_dsa",
-      "encrypted_openssh_private_key_ecdsa"})
+  @ValueSource(
+      strings = {"encrypted_openssh_private_key_rsa", "encrypted_openssh_private_key_rsa_aes256gcm",
+          "encrypted_openssh_private_key_rsa_chacha20poly1305", "encrypted_openssh_private_key_dsa",
+          "encrypted_openssh_private_key_dsa_aes256gcm",
+          "encrypted_openssh_private_key_dsa_chacha20poly1305",
+          "encrypted_openssh_private_key_ecdsa", "encrypted_openssh_private_key_ecdsa_aes256gcm",
+          "encrypted_openssh_private_key_ecdsa_chacha20poly1305"})
   void decryptEncryptedOpensshKey(String keyFile) throws URISyntaxException, JSchException {
     final JSch jSch = new JSch();
     final String prvkey =

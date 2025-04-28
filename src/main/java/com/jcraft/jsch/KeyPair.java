@@ -393,8 +393,15 @@ public abstract class KeyPair {
       byte[] key = genKey(passphrase, iv);
       cipher.init(Cipher.DECRYPT_MODE, key, iv);
       Util.bzero(key);
-      byte[] plain = new byte[data.length];
-      cipher.update(data, 0, data.length, plain, 0);
+      byte[] plain = new byte[data.length - cipher.getTagSize()];
+      if (cipher.isChaCha20()) {
+        cipher.update(0);
+        cipher.doFinal(data, -4, data.length - cipher.getTagSize(), plain, 0);
+      } else if (cipher.isAEAD()) {
+        cipher.doFinal(data, 0, data.length, plain, 0);
+      } else {
+        cipher.update(data, 0, data.length, plain, 0);
+      }
       return plain;
     } catch (Exception e) {
       if (instLogger.getLogger().isEnabled(Logger.ERROR)) {
@@ -530,7 +537,7 @@ public abstract class KeyPair {
         }
         System.arraycopy(hn, 0, key, 0, key.length);
       } else if (vendor == VENDOR_OPENSSH_V1) {
-        tmp = kdf.getKey(passphrase, cipher.getBlockSize() + cipher.getIVSize());
+        tmp = kdf.getKey(passphrase, key.length + iv.length);
         System.arraycopy(tmp, 0, key, 0, key.length);
         System.arraycopy(tmp, key.length, iv, 0, iv.length);
         Util.bzero(tmp);
@@ -561,7 +568,7 @@ public abstract class KeyPair {
         System.arraycopy(tmp, 0, key, tmp.length, key.length - tmp.length);
         Util.bzero(tmp);
       } else if (vendor == VENDOR_PUTTY_V3) {
-        tmp = kdf.getKey(passphrase, cipher.getBlockSize() + cipher.getIVSize() + 32);
+        tmp = kdf.getKey(passphrase, key.length + iv.length + 32);
         System.arraycopy(tmp, 0, key, 0, key.length);
         System.arraycopy(tmp, key.length, iv, 0, iv.length);
         Util.bzero(tmp);
@@ -1172,27 +1179,36 @@ public abstract class KeyPair {
     kpair.publickeyblob = publickeyblob;
     kpair.vendor = VENDOR_OPENSSH_V1;
     kpair.publicKeyComment = "";
-    kpair.data = buffer.getString();
 
     try {
       if (!kpair.encrypted) {
+        kpair.data = buffer.getString();
         if (!kpair.parse(kpair.data)) {
           throw new JSchException("invalid privatekey");
         } else {
           Util.bzero(kpair.data);
         }
       } else {
-        if (Session.checkCipher(JSch.getConfig(cipherName))) {
-          try {
-            Class<? extends Cipher> c =
-                Class.forName(JSch.getConfig(cipherName)).asSubclass(Cipher.class);
-            kpair.cipher = c.getDeclaredConstructor().newInstance();
-            kpair.iv = new byte[kpair.cipher.getIVSize()];
-          } catch (Exception | LinkageError e) {
-            throw new JSchException("cipher " + cipherName + " is not available", e);
+        try {
+          Class<? extends Cipher> c =
+              Class.forName(JSch.getConfig(cipherName)).asSubclass(Cipher.class);
+          kpair.cipher = c.getDeclaredConstructor().newInstance();
+          int _ivLen = kpair.cipher.getIVSize();
+          if (kpair.cipher.isChaCha20()) {
+            _ivLen = 0;
+          } else if (kpair.cipher.isAEAD()) {
+            _ivLen = 12;
           }
-        } else {
-          throw new JSchException("cipher " + cipherName + " is not available");
+          kpair.iv = new byte[_ivLen];
+
+          // tag is not included with the encrypted data length
+          byte[] _data = buffer.getString();
+          byte[] _authdata = new byte[_data.length + kpair.cipher.getTagSize()];
+          System.arraycopy(_data, 0, _authdata, 0, _data.length);
+          buffer.getByte(_authdata, _data.length, _authdata.length - _data.length);
+          kpair.data = _authdata;
+        } catch (Exception | LinkageError e) {
+          throw new JSchException("cipher " + cipherName + " is not available", e);
         }
 
         try {
@@ -1358,18 +1374,14 @@ public abstract class KeyPair {
       kpair.vendor = ppkVersion;
       kpair.publicKeyComment = v.get("Comment");
       if (kpair.encrypted) {
-        if (Session.checkCipher(JSch.getConfig("aes256-cbc"))) {
-          try {
-            Class<? extends Cipher> c =
-                Class.forName(JSch.getConfig("aes256-cbc")).asSubclass(Cipher.class);
-            kpair.cipher = c.getDeclaredConstructor().newInstance();
-            kpair.iv = new byte[kpair.cipher.getIVSize()];
-          } catch (Exception | LinkageError e) {
-            throw new JSchException("The cipher 'aes256-cbc' is required, but it is not available.",
-                e);
-          }
-        } else {
-          throw new JSchException("The cipher 'aes256-cbc' is required, but it is not available.");
+        try {
+          Class<? extends Cipher> c =
+              Class.forName(JSch.getConfig("aes256-cbc")).asSubclass(Cipher.class);
+          kpair.cipher = c.getDeclaredConstructor().newInstance();
+          kpair.iv = new byte[kpair.cipher.getIVSize()];
+        } catch (Exception | LinkageError e) {
+          throw new JSchException("The cipher 'aes256-cbc' is required, but it is not available.",
+              e);
         }
 
         if (ppkVersion == VENDOR_PUTTY) {
