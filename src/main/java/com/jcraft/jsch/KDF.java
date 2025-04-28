@@ -26,6 +26,20 @@
 
 package com.jcraft.jsch;
 
+import java.util.Map;
+
 public interface KDF {
   byte[] getKey(byte[] pass, int size);
+
+  default void initWithOpenSSHv1KDFOptions(byte[] kdfOptions) throws Exception {
+    throw new JSchException("initWithOpenSSHv1KDFOptions() not supported");
+  }
+
+  default void initWithPPKv3Header(Map<String, String> header) throws Exception {
+    throw new JSchException("initWithPPKv3Header() not supported");
+  }
+
+  default void initWithASN1(byte[] asn1) throws Exception {
+    throw new JSchException("initWithASN1() not supported");
+  }
 }

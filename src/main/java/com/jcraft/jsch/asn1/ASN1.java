@@ -28,6 +28,7 @@ package com.jcraft.jsch.asn1;
 
 import java.math.BigInteger;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class ASN1 {
@@ -138,6 +139,10 @@ public class ASN1 {
     ASN1[] result = new ASN1[values.size()];
     values.toArray(result);
     return result;
+  }
+
+  public byte[] getRaw() {
+    return Arrays.copyOfRange(buf, start, start + length);
   }
 
   public static int parseASN1IntegerAsInt(byte[] content) throws ArithmeticException {

@@ -209,15 +209,11 @@ public class JSch {
     config.put("zlib", "com.jcraft.jsch.jzlib.Compression");
     config.put("zlib@openssh.com", "com.jcraft.jsch.jzlib.Compression");
 
-    config.put("pbkdf2-hmac-sha1", "com.jcraft.jsch.jce.PBKDF2HMACSHA1");
-    config.put("pbkdf2-hmac-sha224", "com.jcraft.jsch.jce.PBKDF2HMACSHA224");
-    config.put("pbkdf2-hmac-sha256", "com.jcraft.jsch.jce.PBKDF2HMACSHA256");
-    config.put("pbkdf2-hmac-sha384", "com.jcraft.jsch.jce.PBKDF2HMACSHA384");
-    config.put("pbkdf2-hmac-sha512", "com.jcraft.jsch.jce.PBKDF2HMACSHA512");
-    config.put("pbkdf2-hmac-sha512-224", "com.jcraft.jsch.jce.PBKDF2HMACSHA512224");
-    config.put("pbkdf2-hmac-sha512-256", "com.jcraft.jsch.jce.PBKDF2HMACSHA512256");
+    config.put("pbkdf2", "com.jcraft.jsch.jce.PBKDF2");
     config.put("bcrypt", "com.jcraft.jsch.jbcrypt.JBCrypt");
-    config.put("argon2", "com.jcraft.jsch.bc.Argon2");
+    config.put("Argon2d", "com.jcraft.jsch.bc.Argon2");
+    config.put("Argon2i", "com.jcraft.jsch.bc.Argon2");
+    config.put("Argon2id", "com.jcraft.jsch.bc.Argon2");
     config.put("scrypt", "com.jcraft.jsch.bc.SCrypt");
 
     if (JavaVersion.getVersion() >= 11) {

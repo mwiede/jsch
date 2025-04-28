@@ -1208,19 +1208,18 @@ public abstract class KeyPair {
           buffer.getByte(_authdata, _data.length, _authdata.length - _data.length);
           kpair.data = _authdata;
         } catch (Exception | LinkageError e) {
+          if (e instanceof JSchException)
+            throw (JSchException) e;
           throw new JSchException("cipher " + cipherName + " is not available", e);
         }
 
         try {
-          Buffer kdfOpts = new Buffer(kdfOptions);
-          byte[] salt = kdfOpts.getString();
-          int rounds = kdfOpts.getInt();
-          Class<? extends BCrypt> c =
-              Class.forName(JSch.getConfig(kdfName)).asSubclass(BCrypt.class);
-          BCrypt bcrypt = c.getDeclaredConstructor().newInstance();
-          bcrypt.init(salt, rounds);
-          kpair.kdf = bcrypt;
+          Class<? extends KDF> c = Class.forName(JSch.getConfig(kdfName)).asSubclass(KDF.class);
+          kpair.kdf = c.getDeclaredConstructor().newInstance();
+          kpair.kdf.initWithOpenSSHv1KDFOptions(kdfOptions);
         } catch (Exception | LinkageError e) {
+          if (e instanceof JSchException)
+            throw (JSchException) e;
           throw new JSchException("kdf " + kdfName + " is not available", e);
         }
       }
@@ -1380,8 +1379,9 @@ public abstract class KeyPair {
           kpair.cipher = c.getDeclaredConstructor().newInstance();
           kpair.iv = new byte[kpair.cipher.getIVSize()];
         } catch (Exception | LinkageError e) {
-          throw new JSchException("The cipher 'aes256-cbc' is required, but it is not available.",
-              e);
+          if (e instanceof JSchException)
+            throw (JSchException) e;
+          throw new JSchException("cipher aes256-cbc is not available", e);
         }
 
         if (ppkVersion == VENDOR_PUTTY) {
@@ -1391,52 +1391,20 @@ public abstract class KeyPair {
             sha1.init();
             kpair.sha1 = sha1;
           } catch (Exception | LinkageError e) {
-            throw new JSchException("'sha-1' is required, but it is not available.", e);
+            if (e instanceof JSchException)
+              throw (JSchException) e;
+            throw new JSchException("hash sha-1 is not available", e);
           }
         } else {
-          String argonTypeStr = v.get("Key-Derivation");
-          String saltStr = v.get("Argon2-Salt");
-          if (argonTypeStr == null || saltStr == null
-              || (saltStr != null && saltStr.length() % 2 != 0)) {
-            throw new JSchException("Invalid argon2 params.");
-          }
-
-          int argonType;
-          switch (argonTypeStr) {
-            case "Argon2d":
-              argonType = Argon2.ARGON2D;
-              break;
-            case "Argon2i":
-              argonType = Argon2.ARGON2I;
-              break;
-            case "Argon2id":
-              argonType = Argon2.ARGON2ID;
-              break;
-            default:
-              throw new JSchException("Invalid argon2 params.");
-          }
-
+          String kdfType = v.get("Key-Derivation");
           try {
-            int memory = Integer.parseInt(v.get("Argon2-Memory"));
-            int passes = Integer.parseInt(v.get("Argon2-Passes"));
-            int parallelism = Integer.parseInt(v.get("Argon2-Parallelism"));
-
-            byte[] salt = new byte[saltStr.length() / 2];
-            for (int i = 0; i < salt.length; i++) {
-              int j = i * 2;
-              salt[i] = (byte) Integer.parseInt(saltStr.substring(j, j + 2), 16);
-            }
-
-            Class<? extends Argon2> c =
-                Class.forName(JSch.getConfig("argon2")).asSubclass(Argon2.class);
-            Argon2 argon2 = c.getDeclaredConstructor().newInstance();
-            argon2.init(salt, passes, argonType, new byte[0], new byte[0], memory, parallelism,
-                Argon2.V13);
-            kpair.kdf = argon2;
-          } catch (NumberFormatException e) {
-            throw new JSchException("Invalid argon2 params.", e);
+            Class<? extends KDF> c = Class.forName(JSch.getConfig(kdfType)).asSubclass(KDF.class);
+            kpair.kdf = c.getDeclaredConstructor().newInstance();
+            kpair.kdf.initWithPPKv3Header(v);
           } catch (Exception | LinkageError e) {
-            throw new JSchException("'argon2' is required, but it is not available.", e);
+            if (e instanceof JSchException)
+              throw (JSchException) e;
+            throw new JSchException("kdf " + kdfType + " is not available", e);
           }
         }
 

@@ -26,16 +26,20 @@
 
 package com.jcraft.jsch.jbcrypt;
 
-public class JBCrypt implements com.jcraft.jsch.BCrypt {
+import com.jcraft.jsch.Buffer;
+import com.jcraft.jsch.KDF;
+
+public class JBCrypt implements KDF {
   private BCrypt bcrypt;
   private byte[] salt;
   private int iteration;
 
   @Override
-  public void init(byte[] salt, int iteration) throws Exception {
+  public void initWithOpenSSHv1KDFOptions(byte[] kdfOptions) {
+    Buffer kdfOpts = new Buffer(kdfOptions);
+    salt = kdfOpts.getString();
+    iteration = kdfOpts.getInt();
     bcrypt = new BCrypt();
-    this.salt = salt;
-    this.iteration = iteration;
   }
 
   @Override

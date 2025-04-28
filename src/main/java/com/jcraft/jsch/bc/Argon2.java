@@ -27,48 +27,56 @@
 package com.jcraft.jsch.bc;
 
 import com.jcraft.jsch.JSchException;
+import com.jcraft.jsch.KDF;
+import java.util.Map;
 import org.bouncycastle.crypto.generators.Argon2BytesGenerator;
 import org.bouncycastle.crypto.params.Argon2Parameters;
 
-public class Argon2 implements com.jcraft.jsch.Argon2 {
+public class Argon2 implements KDF {
   private Argon2BytesGenerator generator;
 
   @Override
-  public void init(byte[] salt, int iteration, int type, byte[] additional, byte[] secret,
-      int memory, int parallelism, int version) throws Exception {
-    switch (type) {
-      case com.jcraft.jsch.Argon2.ARGON2D:
-        type = Argon2Parameters.ARGON2_d;
-        break;
-      case com.jcraft.jsch.Argon2.ARGON2I:
-        type = Argon2Parameters.ARGON2_i;
-        break;
-      case com.jcraft.jsch.Argon2.ARGON2ID:
-        type = Argon2Parameters.ARGON2_id;
-        break;
-      default:
-        throw new JSchException("Invalid argon2 type.");
-    }
-
-    switch (version) {
-      case com.jcraft.jsch.Argon2.V10:
-        version = Argon2Parameters.ARGON2_VERSION_10;
-        break;
-      case com.jcraft.jsch.Argon2.V13:
-        version = Argon2Parameters.ARGON2_VERSION_13;
-        break;
-      default:
-        throw new JSchException("Invalid argon2 version.");
-    }
-
+  public void initWithPPKv3Header(Map<String, String> header) throws Exception {
     try {
-      Argon2Parameters params = new Argon2Parameters.Builder(type).withSalt(salt)
-          .withAdditional(additional).withSecret(secret).withIterations(iteration)
-          .withMemoryAsKB(memory).withParallelism(parallelism).withVersion(version).build();
+      String argonTypeStr = header.get("Key-Derivation");
+      String saltStr = header.get("Argon2-Salt");
+      if (argonTypeStr == null || saltStr == null
+          || (saltStr != null && saltStr.length() % 2 != 0)) {
+        throw new JSchException("Invalid argon2 params.");
+      }
+
+      int type;
+      switch (argonTypeStr) {
+        case "Argon2d":
+          type = Argon2Parameters.ARGON2_d;
+          break;
+        case "Argon2i":
+          type = Argon2Parameters.ARGON2_i;
+          break;
+        case "Argon2id":
+          type = Argon2Parameters.ARGON2_id;
+          break;
+        default:
+          throw new JSchException("Invalid argon2 params.");
+      }
+
+      int memory = Integer.parseInt(header.get("Argon2-Memory"));
+      int passes = Integer.parseInt(header.get("Argon2-Passes"));
+      int parallelism = Integer.parseInt(header.get("Argon2-Parallelism"));
+      byte[] salt = new byte[saltStr.length() / 2];
+      for (int i = 0; i < salt.length; i++) {
+        int j = i * 2;
+        salt[i] = (byte) Integer.parseInt(saltStr.substring(j, j + 2), 16);
+      }
+
+      Argon2Parameters params =
+          new Argon2Parameters.Builder(type).withSalt(salt).withAdditional(new byte[0])
+              .withSecret(new byte[0]).withIterations(passes).withMemoryAsKB(memory)
+              .withParallelism(parallelism).withVersion(Argon2Parameters.ARGON2_VERSION_13).build();
       generator = new Argon2BytesGenerator();
       generator.init(params);
-    } catch (LinkageError e) {
-      throw new JSchException("argon2 unavailable", e);
+    } catch (NumberFormatException e) {
+      throw new JSchException("Invalid argon2 params.", e);
     }
   }
 

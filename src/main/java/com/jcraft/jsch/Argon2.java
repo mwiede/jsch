@@ -26,6 +26,8 @@
 
 package com.jcraft.jsch;
 
+/** Use KDF instead. */
+@Deprecated
 public interface Argon2 extends KDF {
   public static final int ARGON2D = 0;
   public static final int ARGON2I = 1;
