@@ -53,7 +53,7 @@ abstract class KeyPairEdDSA extends KeyPair {
       prv_array = keypairgen.getPrv();
 
       keypairgen = null;
-    } catch (Exception | NoClassDefFoundError e) {
+    } catch (Exception | LinkageError e) {
       throw new JSchException(e.toString(), e);
     }
   }
@@ -125,7 +125,7 @@ abstract class KeyPairEdDSA extends KeyPair {
         pub_array = keypairgen.getPub();
         prv_array = keypairgen.getPrv();
         return true;
-      } catch (Exception | NoClassDefFoundError e) {
+      } catch (Exception | LinkageError e) {
         if (instLogger.getLogger().isEnabled(Logger.ERROR)) {
           instLogger.getLogger().log(Logger.ERROR, "failed to parse key", e);
         }
@@ -178,7 +178,7 @@ abstract class KeyPairEdDSA extends KeyPair {
       tmp[0] = Util.str2byte(alg);
       tmp[1] = sig;
       return Buffer.fromBytes(tmp).buffer;
-    } catch (Exception | NoClassDefFoundError e) {
+    } catch (Exception | LinkageError e) {
       if (instLogger.getLogger().isEnabled(Logger.ERROR)) {
         instLogger.getLogger().log(Logger.ERROR, "failed to generate signature", e);
       }
@@ -207,7 +207,7 @@ abstract class KeyPairEdDSA extends KeyPair {
 
       eddsa.setPubKey(pub_array);
       return eddsa;
-    } catch (Exception | NoClassDefFoundError e) {
+    } catch (Exception | LinkageError e) {
       if (instLogger.getLogger().isEnabled(Logger.ERROR)) {
         instLogger.getLogger().log(Logger.ERROR, "failed to create verifier", e);
       }

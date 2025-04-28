@@ -67,7 +67,7 @@ public class Argon2 implements com.jcraft.jsch.Argon2 {
           .withMemoryAsKB(memory).withParallelism(parallelism).withVersion(version).build();
       generator = new Argon2BytesGenerator();
       generator.init(params);
-    } catch (NoClassDefFoundError e) {
+    } catch (LinkageError e) {
       throw new JSchException("argon2 unavailable", e);
     }
   }

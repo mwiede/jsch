@@ -635,7 +635,7 @@ public class Session {
       Class<? extends KeyExchange> c = Class
           .forName(getConfig(guess[KeyExchange.PROPOSAL_KEX_ALGS])).asSubclass(KeyExchange.class);
       kex = c.getDeclaredConstructor().newInstance();
-    } catch (Exception | NoClassDefFoundError e) {
+    } catch (Exception | LinkageError e) {
       throw new JSchException(e.toString(), e);
     }
 
@@ -1592,7 +1592,7 @@ public class Session {
 
       method = guess[KeyExchange.PROPOSAL_COMP_ALGS_STOC];
       initInflater(method);
-    } catch (Exception | NoClassDefFoundError e) {
+    } catch (Exception | LinkageError e) {
       if (e instanceof JSchException)
         throw e;
       throw new JSchException(e.toString(), e);
@@ -3012,7 +3012,7 @@ public class Session {
       Cipher _c = c.getDeclaredConstructor().newInstance();
       _c.init(Cipher.ENCRYPT_MODE, new byte[_c.getBlockSize()], new byte[_c.getIVSize()]);
       return true;
-    } catch (Exception | NoClassDefFoundError e) {
+    } catch (Exception | LinkageError e) {
       return false;
     }
   }
@@ -3058,7 +3058,7 @@ public class Session {
       MAC _c = c.getDeclaredConstructor().newInstance();
       _c.init(new byte[_c.getBlockSize()]);
       return true;
-    } catch (Exception | NoClassDefFoundError e) {
+    } catch (Exception | LinkageError e) {
       return false;
     }
   }
@@ -3098,7 +3098,7 @@ public class Session {
       KeyExchange _c = c.getDeclaredConstructor().newInstance();
       _c.doInit(s, null, null, null, null);
       return true;
-    } catch (Exception | NoClassDefFoundError e) {
+    } catch (Exception | LinkageError e) {
       return false;
     }
   }
@@ -3119,7 +3119,7 @@ public class Session {
             Class.forName(JSch.getConfig(_sigs[i])).asSubclass(Signature.class);
         final Signature sig = c.getDeclaredConstructor().newInstance();
         sig.init();
-      } catch (Exception | NoClassDefFoundError e) {
+      } catch (Exception | LinkageError e) {
         result.addElement(_sigs[i]);
       }
     }
