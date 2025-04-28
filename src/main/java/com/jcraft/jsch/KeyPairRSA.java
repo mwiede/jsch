@@ -178,23 +178,22 @@ class KeyPairRSA extends KeyPair {
 
       // OPENSSH Key v1 Format
       if (vendor == VENDOR_OPENSSH_V1) {
-        final Buffer prvKEyBuffer = new Buffer(plain);
-        int checkInt1 = prvKEyBuffer.getInt(); // uint32 checkint1
-        int checkInt2 = prvKEyBuffer.getInt(); // uint32 checkint2
+        Buffer prvKeyBuffer = new Buffer(plain);
+        int checkInt1 = prvKeyBuffer.getInt(); // uint32 checkint1
+        int checkInt2 = prvKeyBuffer.getInt(); // uint32 checkint2
         if (checkInt1 != checkInt2) {
           throw new JSchException("check failed");
         }
-        String keyType = Util.byte2str(prvKEyBuffer.getString()); // string keytype
-        n_array = prvKEyBuffer.getMPInt(); // Modulus
-        pub_array = prvKEyBuffer.getMPInt(); // Public Exponent
-        prv_array = prvKEyBuffer.getMPInt(); // Private Exponent
-        c_array = prvKEyBuffer.getMPInt(); // iqmp (q^-1 mod p)
-        p_array = prvKEyBuffer.getMPInt(); // p (Prime 1)
-        q_array = prvKEyBuffer.getMPInt(); // q (Prime 2)
-        if (n_array != null) {
-          key_size = (new BigInteger(n_array)).bitLength();
-        }
-        publicKeyComment = Util.byte2str(prvKEyBuffer.getString());
+
+        String keyType = Util.byte2str(prvKeyBuffer.getString()); // string keytype
+        n_array = prvKeyBuffer.getMPInt(); // Modulus
+        pub_array = prvKeyBuffer.getMPInt(); // Public Exponent
+        prv_array = prvKeyBuffer.getMPInt(); // Private Exponent
+        c_array = prvKeyBuffer.getMPInt(); // iqmp (q^-1 mod p)
+        p_array = prvKeyBuffer.getMPInt(); // p (Prime 1)
+        q_array = prvKeyBuffer.getMPInt(); // q (Prime 2)
+        key_size = (new BigInteger(n_array)).bitLength();
+        publicKeyComment = Util.byte2str(prvKeyBuffer.getString());
 
         getEPArray();
         getEQArray();

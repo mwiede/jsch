@@ -95,19 +95,21 @@ abstract class KeyPairEdDSA extends KeyPair {
     } else if (vendor == VENDOR_OPENSSH_V1) {
       try {
         // OPENSSH Key v1 Format
-        final Buffer buf = new Buffer(plain);
-        int checkInt1 = buf.getInt(); // uint32 checkint1
-        int checkInt2 = buf.getInt(); // uint32 checkint2
+        Buffer prvKeyBuffer = new Buffer(plain);
+        int checkInt1 = prvKeyBuffer.getInt(); // uint32 checkint1
+        int checkInt2 = prvKeyBuffer.getInt(); // uint32 checkint2
         if (checkInt1 != checkInt2) {
           throw new JSchException("check failed");
         }
-        String keyType = Util.byte2str(buf.getString()); // string keytype
-        pub_array = buf.getString(); // public key
+
+        String keyType = Util.byte2str(prvKeyBuffer.getString()); // string keytype
+        pub_array = prvKeyBuffer.getString(); // public key
         // OpenSSH stores private key in first half of string and duplicate copy of public key in
         // second half of string
-        byte[] tmp = buf.getString(); // secret key (private key + public key)
+        byte[] tmp = prvKeyBuffer.getString(); // secret key (private key + public key)
         prv_array = Arrays.copyOf(tmp, getKeySize());
-        publicKeyComment = Util.byte2str(buf.getString());
+        publicKeyComment = Util.byte2str(prvKeyBuffer.getString());
+
         return true;
       } catch (Exception e) {
         if (instLogger.getLogger().isEnabled(Logger.ERROR)) {

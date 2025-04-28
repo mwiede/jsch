@@ -147,23 +147,23 @@ class KeyPairDSA extends KeyPair {
 
       // OPENSSH Key v1 Format
       else if (vendor == VENDOR_OPENSSH_V1) {
-
-        final Buffer prvKEyBuffer = new Buffer(plain);
-        int checkInt1 = prvKEyBuffer.getInt(); // uint32 checkint1
-        int checkInt2 = prvKEyBuffer.getInt(); // uint32 checkint2
+        Buffer prvKeyBuffer = new Buffer(plain);
+        int checkInt1 = prvKeyBuffer.getInt(); // uint32 checkint1
+        int checkInt2 = prvKeyBuffer.getInt(); // uint32 checkint2
         if (checkInt1 != checkInt2) {
           throw new JSchException("check failed");
         }
-        // The private key section contains both the public key and the private key
-        String keyType = Util.byte2str(prvKEyBuffer.getString()); // string keytype
 
-        P_array = prvKEyBuffer.getMPInt();
-        Q_array = prvKEyBuffer.getMPInt();
-        G_array = prvKEyBuffer.getMPInt();
-        pub_array = prvKEyBuffer.getMPInt();
-        prv_array = prvKEyBuffer.getMPInt();
-        publicKeyComment = Util.byte2str(prvKEyBuffer.getString());
-        // if(P_array!=null) key_size = (new BigInteger(P_array)).bitLength();
+        // The private key section contains both the public key and the private key
+        String keyType = Util.byte2str(prvKeyBuffer.getString()); // string keytype
+        P_array = prvKeyBuffer.getMPInt();
+        Q_array = prvKeyBuffer.getMPInt();
+        G_array = prvKeyBuffer.getMPInt();
+        pub_array = prvKeyBuffer.getMPInt();
+        prv_array = prvKeyBuffer.getMPInt();
+        publicKeyComment = Util.byte2str(prvKeyBuffer.getString());
+        key_size = (new BigInteger(P_array)).bitLength();
+
         return true;
       }
 
