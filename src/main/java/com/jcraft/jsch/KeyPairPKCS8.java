@@ -26,6 +26,8 @@
 
 package com.jcraft.jsch;
 
+import com.jcraft.jsch.asn1.ASN1;
+import com.jcraft.jsch.asn1.ASN1Exception;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
@@ -189,7 +191,7 @@ class KeyPairPKCS8 extends KeyPair {
         throw new ASN1Exception();
       }
 
-      int version = parseASN1IntegerAsInt(contents[0].getContent());
+      int version = ASN1.parseASN1IntegerAsInt(contents[0].getContent());
       if (version != 0) {
         throw new ASN1Exception();
       }
@@ -358,7 +360,7 @@ class KeyPairPKCS8 extends KeyPair {
           throw new ASN1Exception();
         }
 
-        version = parseASN1IntegerAsInt(contents[0].getContent());
+        version = ASN1.parseASN1IntegerAsInt(contents[0].getContent());
         if (version != 1) {
           throw new ASN1Exception();
         }
@@ -672,7 +674,7 @@ class KeyPairPKCS8 extends KeyPair {
 
           byte[] prfid = null;
           byte[] salt = contents[0].getContent();
-          int iterations = parseASN1IntegerAsInt(contents[1].getContent());
+          int iterations = ASN1.parseASN1IntegerAsInt(contents[1].getContent());
 
           if (prf != null) {
             contents = prf.getContents();
@@ -715,9 +717,9 @@ class KeyPairPKCS8 extends KeyPair {
           }
 
           byte[] salt = contents[0].getContent();
-          int cost = parseASN1IntegerAsInt(contents[1].getContent());
-          int blocksize = parseASN1IntegerAsInt(contents[2].getContent());
-          int parallel = parseASN1IntegerAsInt(contents[3].getContent());
+          int cost = ASN1.parseASN1IntegerAsInt(contents[1].getContent());
+          int blocksize = ASN1.parseASN1IntegerAsInt(contents[2].getContent());
+          int parallel = ASN1.parseASN1IntegerAsInt(contents[3].getContent());
 
           kdfname = "scrypt";
           SCrypt scryptkdf = getSCrypt();
@@ -857,17 +859,6 @@ class KeyPairPKCS8 extends KeyPair {
       return c.getDeclaredConstructor().newInstance();
     } catch (Exception e) {
       throw new JSchException(name + " is not supported", e);
-    }
-  }
-
-  static int parseASN1IntegerAsInt(byte[] content) {
-    BigInteger b = new BigInteger(content);
-    // https://github.com/mwiede/jsch/issues/392 not using intValueExact() because of Android
-    // incompatibility.
-    if (b.bitLength() <= 31) {
-      return b.intValue();
-    } else {
-      throw new ArithmeticException("BigInteger out of int range");
     }
   }
 }

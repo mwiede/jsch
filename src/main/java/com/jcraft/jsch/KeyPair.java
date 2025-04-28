@@ -26,15 +26,15 @@
 
 package com.jcraft.jsch;
 
+import com.jcraft.jsch.asn1.ASN1;
+import com.jcraft.jsch.asn1.ASN1Exception;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 public abstract class KeyPair {
@@ -1602,120 +1602,5 @@ public abstract class KeyPair {
     this.vendor = kpair.vendor;
     this.publicKeyComment = kpair.publicKeyComment;
     this.cipher = kpair.cipher;
-  }
-
-  static class ASN1Exception extends Exception {
-    private static final long serialVersionUID = -1L;
-  }
-
-  static class ASN1 {
-    byte[] buf;
-    int start;
-    int length;
-
-    ASN1(byte[] buf) throws ASN1Exception {
-      this(buf, 0, buf.length);
-    }
-
-    ASN1(byte[] buf, int start, int length) throws ASN1Exception {
-      this.buf = buf;
-      this.start = start;
-      this.length = length;
-      if (start + length > buf.length)
-        throw new ASN1Exception();
-    }
-
-    int getType() {
-      return buf[start] & 0xff;
-    }
-
-    boolean isSEQUENCE() {
-      return getType() == (0x30 & 0xff);
-    }
-
-    boolean isINTEGER() {
-      return getType() == (0x02 & 0xff);
-    }
-
-    boolean isOBJECT() {
-      return getType() == (0x06 & 0xff);
-    }
-
-    boolean isOCTETSTRING() {
-      return getType() == (0x04 & 0xff);
-    }
-
-    boolean isNULL() {
-      return getType() == (0x05 & 0xff);
-    }
-
-    boolean isBITSTRING() {
-      return getType() == (0x03 & 0xff);
-    }
-
-    boolean isCONTEXTPRIMITIVE(int tag) {
-      if ((tag & ~0xff) != 0 || (tag & 0x60) != 0) {
-        throw new IllegalArgumentException();
-      }
-      return getType() == ((tag | 0x80) & 0xff);
-    }
-
-    boolean isCONTEXTCONSTRUCTED(int tag) {
-      if ((tag & ~0xff) != 0 || (tag & 0x40) != 0) {
-        throw new IllegalArgumentException();
-      }
-      return getType() == ((tag | 0xa0) & 0xff);
-    }
-
-    private int getLength(int[] indexp) {
-      int index = indexp[0];
-      int length = buf[index++] & 0xff;
-      if ((length & 0x80) != 0) {
-        int foo = length & 0x7f;
-        length = 0;
-        while (foo-- > 0) {
-          length = (length << 8) + (buf[index++] & 0xff);
-        }
-      }
-      indexp[0] = index;
-      return length;
-    }
-
-    byte[] getContent() {
-      int[] indexp = new int[1];
-      indexp[0] = start + 1;
-      int length = getLength(indexp);
-      int index = indexp[0];
-      byte[] tmp = new byte[length];
-      System.arraycopy(buf, index, tmp, 0, tmp.length);
-      return tmp;
-    }
-
-    ASN1[] getContents() throws ASN1Exception {
-      int typ = buf[start];
-      int[] indexp = new int[1];
-      indexp[0] = start + 1;
-      int length = getLength(indexp);
-      if (typ == 0x05) {
-        return new ASN1[0];
-      }
-      int index = indexp[0];
-      List<ASN1> values = new ArrayList<>();
-      while (length > 0) {
-        index++;
-        length--;
-        int tmp = index;
-        indexp[0] = index;
-        int l = getLength(indexp);
-        index = indexp[0];
-        length -= (index - tmp);
-        values.add(new ASN1(buf, tmp - 1, 1 + (index - tmp) + l));
-        index += l;
-        length -= l;
-      }
-      ASN1[] result = new ASN1[values.size()];
-      values.toArray(result);
-      return result;
-    }
   }
 }
