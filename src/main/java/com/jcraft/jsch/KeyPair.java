@@ -35,6 +35,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 
 public abstract class KeyPair {
@@ -633,12 +634,13 @@ public abstract class KeyPair {
    * @return finger print
    */
   public String getFingerPrint() {
-    if (hash == null)
-      hash = genHash();
+    HASH _hash = genFingerPrintHash();
+    if (_hash == null)
+      return null;
     byte[] kblob = getPublicKeyBlob();
     if (kblob == null)
       return null;
-    return Util.getFingerPrint(hash, kblob, false, true);
+    return Util.getFingerPrint(_hash, kblob, true, false);
   }
 
   private byte[] encrypt(byte[] plain, byte[][] _iv, byte[] passphrase) {
@@ -790,6 +792,21 @@ public abstract class KeyPair {
       }
     }
     return hash;
+  }
+
+  private HASH genFingerPrintHash() {
+    HASH _hash = null;
+    try {
+      String _c = JSch.getConfig("FingerprintHash").toLowerCase(Locale.ROOT);
+      Class<? extends HASH> c = Class.forName(JSch.getConfig(_c)).asSubclass(HASH.class);
+      _hash = c.getDeclaredConstructor().newInstance();
+      _hash.init();
+    } catch (Exception e) {
+      if (instLogger.getLogger().isEnabled(Logger.ERROR)) {
+        instLogger.getLogger().log(Logger.ERROR, "failed to create hash", e);
+      }
+    }
+    return _hash;
   }
 
   private Cipher genCipher() {
