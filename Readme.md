@@ -16,7 +16,7 @@ As I explained in a [blog post](http://www.matez.de/index.php/2020/06/22/the-fut
 
 ## Is there any documentation?
 
-Not much. Check the example code in the [examples](https://github.com/mwiede/jsch/tree/master/examples) folder. And there are come wiki pages, i.e. [Jsch-Configuration](https://github.com/mwiede/jsch/wiki/Jsch-Configuration) and [Jsch-Logging](https://github.com/mwiede/jsch/wiki/Jsch-Logging).
+Not much. Check the example code in the [examples](https://github.com/mwiede/jsch/tree/master/examples) folder. And there are some wiki pages, i.e. [Jsch-Configuration](https://github.com/mwiede/jsch/wiki/Jsch-Configuration) and [Jsch-Logging](https://github.com/mwiede/jsch/wiki/Jsch-Logging).
 
 ## How to you use this library as a replacement for `com.jcraft:jsch`
 
@@ -37,7 +37,7 @@ with
 <dependency>
   <groupId>com.github.mwiede</groupId>
   <artifactId>jsch</artifactId>
-  <version>0.2.25</version>
+  <version>0.2.26</version>
 </dependency>
 ```
 
@@ -47,7 +47,7 @@ When you have an artifact `foo:bar`, which contains `com.jcraft:jsch` as a trans
 <dependency>
   <groupId>com.github.mwiede</groupId>
   <artifactId>jsch</artifactId>
-  <version>0.2.25</version>
+  <version>0.2.26</version>
 </dependency>
 <dependency>
   <groupId>foo</groupId>
