@@ -128,8 +128,6 @@ public abstract class KeyPair {
   private HASH hash;
   private Random random;
 
-  private byte[] passphrase;
-
   KeyPair(JSch.InstanceLogger instLogger) {
     this.instLogger = instLogger;
   }
@@ -158,9 +156,6 @@ public abstract class KeyPair {
    * @param passphrase a passphrase to encrypt the private key
    */
   public void writePrivateKey(OutputStream out, byte[] passphrase) {
-    if (passphrase == null)
-      passphrase = this.passphrase;
-
     byte[] plain = getPrivateKey();
     byte[][] _iv = new byte[1][];
     byte[] encoded = encrypt(plain, _iv, passphrase);
@@ -887,11 +882,7 @@ public abstract class KeyPair {
    */
   @Deprecated
   public void setPassphrase(String passphrase) {
-    if (passphrase == null || passphrase.length() == 0) {
-      setPassphrase((byte[]) null);
-    } else {
-      setPassphrase(Util.str2byte(passphrase));
-    }
+    throw new UnsupportedOperationException("deprecated");
   }
 
   /**
@@ -899,9 +890,7 @@ public abstract class KeyPair {
    */
   @Deprecated
   public void setPassphrase(byte[] passphrase) {
-    if (passphrase != null && passphrase.length == 0)
-      passphrase = null;
-    this.passphrase = passphrase;
+    throw new UnsupportedOperationException("deprecated");
   }
 
   protected boolean encrypted = false;
@@ -1550,9 +1539,7 @@ public abstract class KeyPair {
     return (byte) (c - 10 + 'A');
   }
 
-  public void dispose() {
-    Util.bzero(passphrase);
-  }
+  public void dispose() {}
 
   @SuppressWarnings("deprecation")
   @Override
