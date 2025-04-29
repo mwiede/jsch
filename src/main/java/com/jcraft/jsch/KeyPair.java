@@ -772,7 +772,7 @@ public abstract class KeyPair {
         Class<? extends Random> c =
             Class.forName(JSch.getConfig("random")).asSubclass(Random.class);
         random = c.getDeclaredConstructor().newInstance();
-      } catch (Exception e) {
+      } catch (Exception | LinkageError e) {
         if (instLogger.getLogger().isEnabled(Logger.ERROR)) {
           instLogger.getLogger().log(Logger.ERROR, "failed to create random", e);
         }
@@ -786,7 +786,7 @@ public abstract class KeyPair {
       Class<? extends HASH> c = Class.forName(JSch.getConfig("md5")).asSubclass(HASH.class);
       hash = c.getDeclaredConstructor().newInstance();
       hash.init();
-    } catch (Exception e) {
+    } catch (Exception | LinkageError e) {
       if (instLogger.getLogger().isEnabled(Logger.ERROR)) {
         instLogger.getLogger().log(Logger.ERROR, "failed to create hash", e);
       }
@@ -801,7 +801,7 @@ public abstract class KeyPair {
       Class<? extends HASH> c = Class.forName(JSch.getConfig(_c)).asSubclass(HASH.class);
       _hash = c.getDeclaredConstructor().newInstance();
       _hash.init();
-    } catch (Exception e) {
+    } catch (Exception | LinkageError e) {
       if (instLogger.getLogger().isEnabled(Logger.ERROR)) {
         instLogger.getLogger().log(Logger.ERROR, "failed to create hash", e);
       }
@@ -814,7 +814,7 @@ public abstract class KeyPair {
       Class<? extends Cipher> c =
           Class.forName(JSch.getConfig("3des-cbc")).asSubclass(Cipher.class);
       cipher = c.getDeclaredConstructor().newInstance();
-    } catch (Exception e) {
+    } catch (Exception | LinkageError e) {
       if (instLogger.getLogger().isEnabled(Logger.ERROR)) {
         instLogger.getLogger().log(Logger.ERROR, "failed to create cipher", e);
       }
