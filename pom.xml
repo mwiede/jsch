@@ -550,6 +550,7 @@
                 <configuration>
                     <includeProvidedScope>false</includeProvidedScope>
                     <includeSystemScope>false</includeSystemScope>
+                    <skipNotDeployed>false</skipNotDeployed>
                 </configuration>
                 <executions>
                     <execution>
