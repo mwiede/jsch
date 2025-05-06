@@ -1,21 +1,54 @@
 package com.jcraft.jsch;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.condition.JRE.JAVA_15;
 
 import java.net.URISyntaxException;
+import java.io.OutputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Locale;
+import java.util.stream.Stream;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.condition.EnabledForJreRange;
+import org.junit.jupiter.api.io.TempDir;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.testcontainers.containers.Container.ExecResult;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.images.builder.ImageFromDockerfile;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
+import org.testcontainers.utility.MountableFile;
 
 @Testcontainers
 public class KeyPair2IT {
 
   // Python can be slow for DH group 18
   private static final int timeout = 10000;
+
+  static String keypairgen_eddsa;
+  static String ssh_ed448;
+
+  @TempDir
+  public Path tmpDir;
+
+  @BeforeAll
+  public static void beforeAll() {
+    keypairgen_eddsa = JSch.getConfig("keypairgen.eddsa");
+    ssh_ed448 = JSch.getConfig("ssh-ed448");
+  }
+
+  @AfterEach
+  public void afterEach() {
+    JSch.setConfig("keypairgen.eddsa", keypairgen_eddsa);
+    JSch.setConfig("ssh-ed448", ssh_ed448);
+  }
 
   @Container
   public GenericContainer<?> sshd = new GenericContainer<>(
@@ -37,6 +70,14 @@ public class KeyPair2IT {
           .withFileFromClasspath("authorized_keys", "docker/authorized_keys.KeyPairIT")
           .withFileFromClasspath("Dockerfile", "docker/Dockerfile.asyncssh"))
       .withExposedPorts(22);
+
+  static Stream<Arguments> java15WriteOpenSSHv1KeyArgs() {
+    return Stream.of(Arguments.of(KeyPair.ED448, 0, null, null),
+        Arguments.of(KeyPair.ED448, 0, "secret123".getBytes(UTF_8), null),
+        Arguments.of(KeyPair.ED448, 0, "secret123".getBytes(UTF_8), "aes256-gcm@openssh.com"),
+        Arguments.of(KeyPair.ED448, 0, "secret123".getBytes(UTF_8),
+            "chacha20-poly1305@openssh.com"));
+  }
 
   @ParameterizedTest
   @MethodSource("com.jcraft.jsch.KeyPair2Test#keyArgs")
@@ -106,6 +147,62 @@ public class KeyPair2IT {
       assertTrue(session.isConnected());
     } finally {
       session.disconnect();
+    }
+  }
+
+  @ParameterizedTest
+  @MethodSource("java15WriteOpenSSHv1KeyArgs")
+  @EnabledForJreRange(min = JAVA_15)
+  void testJava15WriteOpenSSHv1Keys(int type, int key_size, byte[] passphrase, String cipher)
+      throws Exception {
+    JSch.setConfig("keypairgen.eddsa", "com.jcraft.jsch.jce.KeyPairGenEdDSA");
+    JSch.setConfig("ssh-ed448", "com.jcraft.jsch.jce.SignatureEd448");
+    JSch ssh = new JSch();
+    KeyPair kp = KeyPair.genKeyPair(ssh, type, key_size);
+    String name = "java15_" + kp.getKeyTypeString() + "_" + key_size + "_" + cipher;
+    _writeOpenSSHv1Keys(kp, name, passphrase, cipher);
+  }
+
+  @ParameterizedTest
+  @MethodSource("java15WriteOpenSSHv1KeyArgs")
+  void testBCWriteOpenSSHv1Keys(int type, int key_size, byte[] passphrase, String cipher)
+      throws Exception {
+    JSch.setConfig("keypairgen.eddsa", "com.jcraft.jsch.bc.KeyPairGenEdDSA");
+    JSch.setConfig("ssh-ed448", "com.jcraft.jsch.bc.SignatureEd448");
+    JSch ssh = new JSch();
+    KeyPair kp = KeyPair.genKeyPair(ssh, type, key_size);
+    String name = "bc_" + kp.getKeyTypeString() + "_" + key_size + "_" + cipher;
+    _writeOpenSSHv1Keys(kp, name, passphrase, cipher);
+  }
+
+  void _writeOpenSSHv1Keys(KeyPair kp, String name, byte[] passphrase, String cipher)
+      throws Exception {
+    Path foo = tmpDir.resolve(name);
+    kp.writeOpenSSHv1PrivateKey(foo.toString(), passphrase, cipher);
+    MountableFile f = MountableFile.forHostPath(foo);
+    String containerFoo = "/" + foo;
+    sshd.copyFileToContainer(f, containerFoo);
+    ExecResult result = sshd.execInContainer(UTF_8, "chmod", "600", containerFoo);
+    assertEquals(0, result.getExitCode());
+    String script = "import asyncssh\n";
+    script += String.format(Locale.ROOT, "asyncssh.read_private_key('%s', '%s')\n", foo,
+        passphrase != null ? new String(passphrase, UTF_8) : "");
+    result = sshd.execInContainer(UTF_8, "python3", "-c", script);
+    try {
+      assertEquals(0, result.getExitCode());
+    } catch (AssertionError e) {
+      System.out.println(result.getStdout());
+      System.out.println(result.getStderr());
+      System.out.println(foo);
+      try {
+        Files.readAllLines(foo, UTF_8).forEach(System.out::println);
+      } catch (Exception ignore) {
+      } finally {
+        System.out.println("");
+        System.out.println("");
+        System.out.println("");
+      }
+      throw e;
     }
   }
 

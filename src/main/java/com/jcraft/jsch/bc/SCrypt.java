@@ -27,8 +27,11 @@
 package com.jcraft.jsch.bc;
 
 import com.jcraft.jsch.JSchException;
+import com.jcraft.jsch.KDF;
+import com.jcraft.jsch.asn1.ASN1;
+import com.jcraft.jsch.asn1.ASN1Exception;
 
-public class SCrypt implements com.jcraft.jsch.SCrypt {
+public class SCrypt implements KDF {
   private Class<?> ignore;
   private byte[] salt;
   private int cost;
@@ -36,14 +39,43 @@ public class SCrypt implements com.jcraft.jsch.SCrypt {
   private int parallel;
 
   @Override
-  public void init(byte[] salt, int cost, int blocksize, int parallel) throws Exception {
+  public void initWithASN1(byte[] asn1) throws Exception {
     try {
       ignore = org.bouncycastle.crypto.generators.SCrypt.class;
-      this.salt = salt;
-      this.cost = cost;
-      this.blocksize = blocksize;
-      this.parallel = parallel;
-    } catch (LinkageError e) {
+
+      ASN1 content = new ASN1(asn1);
+      if (!content.isSEQUENCE()) {
+        throw new ASN1Exception();
+      }
+      ASN1[] contents = content.getContents();
+      if (contents.length < 4 || contents.length > 5) {
+        throw new ASN1Exception();
+      }
+      if (!contents[0].isOCTETSTRING()) {
+        throw new ASN1Exception();
+      }
+      if (!contents[1].isINTEGER()) {
+        throw new ASN1Exception();
+      }
+      if (!contents[2].isINTEGER()) {
+        throw new ASN1Exception();
+      }
+      if (!contents[3].isINTEGER()) {
+        throw new ASN1Exception();
+      }
+      if (contents.length > 4 && !contents[4].isINTEGER()) {
+        throw new ASN1Exception();
+      }
+
+      salt = contents[0].getContent();
+      cost = ASN1.parseASN1IntegerAsInt(contents[1].getContent());
+      blocksize = ASN1.parseASN1IntegerAsInt(contents[2].getContent());
+      parallel = ASN1.parseASN1IntegerAsInt(contents[3].getContent());
+    } catch (LinkageError | Exception e) {
+      if (e instanceof JSchException)
+        throw (JSchException) e;
+      if (e instanceof ASN1Exception || e instanceof ArithmeticException)
+        throw new JSchException("invalid ASN1", e);
       throw new JSchException("scrypt unavailable", e);
     }
   }

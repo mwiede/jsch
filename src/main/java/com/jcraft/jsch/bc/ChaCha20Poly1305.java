@@ -110,20 +110,30 @@ public class ChaCha20Poly1305 implements Cipher {
     header_cipher.processBytes(foo, s1, len, bar, s2);
   }
 
+  // Negative s1 value allows usage w/o packet length AAD.
+  // This allows it to be used to encrypt/decrypt OpenSSH V1 key files.
   @Override
   public void doFinal(byte[] foo, int s1, int len, byte[] bar, int s2) throws Exception {
     if (this.mode == DECRYPT_MODE) {
       byte[] actual_tag = new byte[tagsize];
       System.arraycopy(foo, len, actual_tag, 0, tagsize);
       byte[] expected_tag = new byte[tagsize];
-      poly1305.update(foo, s1, len);
+      if (s1 < 0) {
+        poly1305.update(foo, s1 + 4, len);
+      } else {
+        poly1305.update(foo, s1, len);
+      }
       poly1305.doFinal(expected_tag, 0);
       if (!arraysequals(actual_tag, expected_tag)) {
         throw new AEADBadTagException("Tag mismatch");
       }
     }
 
-    main_cipher.processBytes(foo, s1 + 4, len - 4, bar, s2 + 4);
+    if (s1 < 0) {
+      main_cipher.processBytes(foo, s1 + 4, len - 4 - s1, bar, s2 + 4 + s1);
+    } else {
+      main_cipher.processBytes(foo, s1 + 4, len - 4, bar, s2 + 4);
+    }
 
     if (this.mode == ENCRYPT_MODE) {
       poly1305.update(bar, s2, len);

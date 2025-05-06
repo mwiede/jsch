@@ -111,6 +111,44 @@ class KeyPairDSA extends KeyPair {
   }
 
   @Override
+  byte[] getOpenSSHv1PrivateKeyBlob() {
+    byte[] keyTypeName = getKeyTypeName();
+    if (keyTypeName == null || P_array == null || Q_array == null || G_array == null
+        || pub_array == null || prv_array == null) {
+      return null;
+    }
+
+    Buffer _buf = null;
+    try {
+      int _bufLen = 4 + keyTypeName.length;
+      _bufLen += 4 + P_array.length;
+      _bufLen += (P_array[0] & 0x80) >>> 7;
+      _bufLen += 4 + Q_array.length;
+      _bufLen += (Q_array[0] & 0x80) >>> 7;
+      _bufLen += 4 + G_array.length;
+      _bufLen += (G_array[0] & 0x80) >>> 7;
+      _bufLen += 4 + pub_array.length;
+      _bufLen += (pub_array[0] & 0x80) >>> 7;
+      _bufLen += 4 + prv_array.length;
+      _bufLen += (prv_array[0] & 0x80) >>> 7;
+      _buf = new Buffer(_bufLen);
+      _buf.putString(keyTypeName);
+      _buf.putMPInt(P_array);
+      _buf.putMPInt(Q_array);
+      _buf.putMPInt(G_array);
+      _buf.putMPInt(pub_array);
+      _buf.putMPInt(prv_array);
+
+      return _buf.buffer;
+    } catch (Exception e) {
+      if (_buf != null) {
+        Util.bzero(_buf.buffer);
+      }
+      throw e;
+    }
+  }
+
+  @Override
   boolean parse(byte[] plain) {
     try {
 
@@ -147,23 +185,23 @@ class KeyPairDSA extends KeyPair {
 
       // OPENSSH Key v1 Format
       else if (vendor == VENDOR_OPENSSH_V1) {
-
-        final Buffer prvKEyBuffer = new Buffer(plain);
-        int checkInt1 = prvKEyBuffer.getInt(); // uint32 checkint1
-        int checkInt2 = prvKEyBuffer.getInt(); // uint32 checkint2
+        Buffer prvKeyBuffer = new Buffer(plain);
+        int checkInt1 = prvKeyBuffer.getInt(); // uint32 checkint1
+        int checkInt2 = prvKeyBuffer.getInt(); // uint32 checkint2
         if (checkInt1 != checkInt2) {
           throw new JSchException("check failed");
         }
-        // The private key section contains both the public key and the private key
-        String keyType = Util.byte2str(prvKEyBuffer.getString()); // string keytype
 
-        P_array = prvKEyBuffer.getMPInt();
-        Q_array = prvKEyBuffer.getMPInt();
-        G_array = prvKEyBuffer.getMPInt();
-        pub_array = prvKEyBuffer.getMPInt();
-        prv_array = prvKEyBuffer.getMPInt();
-        publicKeyComment = Util.byte2str(prvKEyBuffer.getString());
-        // if(P_array!=null) key_size = (new BigInteger(P_array)).bitLength();
+        // The private key section contains both the public key and the private key
+        String keyType = Util.byte2str(prvKeyBuffer.getString()); // string keytype
+        P_array = prvKeyBuffer.getMPInt();
+        Q_array = prvKeyBuffer.getMPInt();
+        G_array = prvKeyBuffer.getMPInt();
+        pub_array = prvKeyBuffer.getMPInt();
+        prv_array = prvKeyBuffer.getMPInt();
+        publicKeyComment = Util.byte2str(prvKeyBuffer.getString());
+        key_size = (new BigInteger(P_array)).bitLength();
+
         return true;
       }
 

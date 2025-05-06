@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2018 ymnk, JCraft,Inc. All rights reserved.
+ * Copyright (c) 2002-2018 ymnk, JCraft,Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification, are permitted
  * provided that the following conditions are met:
@@ -24,11 +24,8 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package com.jcraft.jsch.jce;
+package com.jcraft.jsch.asn1;
 
-public class PBKDF2HMACSHA384 extends PBKDF2 {
-  @Override
-  String getName() {
-    return "PBKDF2WithHmacSHA384";
-  }
+public class ASN1Exception extends Exception {
+  private static final long serialVersionUID = -1L;
 }

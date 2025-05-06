@@ -26,6 +26,8 @@
 
 package com.jcraft.jsch;
 
+import com.jcraft.jsch.asn1.ASN1;
+import com.jcraft.jsch.asn1.ASN1Exception;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
@@ -61,27 +63,6 @@ class KeyPairPKCS8 extends KeyPair {
 
   private static final byte[] scrypt = {(byte) 0x2b, (byte) 0x06, (byte) 0x01, (byte) 0x04,
       (byte) 0x01, (byte) 0xda, (byte) 0x47, (byte) 0x04, (byte) 0x0b};
-
-  private static final byte[] hmacWithSha1 = {(byte) 0x2a, (byte) 0x86, (byte) 0x48, (byte) 0x86,
-      (byte) 0xf7, (byte) 0x0d, (byte) 0x02, (byte) 0x07};
-
-  private static final byte[] hmacWithSha224 = {(byte) 0x2a, (byte) 0x86, (byte) 0x48, (byte) 0x86,
-      (byte) 0xf7, (byte) 0x0d, (byte) 0x02, (byte) 0x08};
-
-  private static final byte[] hmacWithSha256 = {(byte) 0x2a, (byte) 0x86, (byte) 0x48, (byte) 0x86,
-      (byte) 0xf7, (byte) 0x0d, (byte) 0x02, (byte) 0x09};
-
-  private static final byte[] hmacWithSha384 = {(byte) 0x2a, (byte) 0x86, (byte) 0x48, (byte) 0x86,
-      (byte) 0xf7, (byte) 0x0d, (byte) 0x02, (byte) 0x0a};
-
-  private static final byte[] hmacWithSha512 = {(byte) 0x2a, (byte) 0x86, (byte) 0x48, (byte) 0x86,
-      (byte) 0xf7, (byte) 0x0d, (byte) 0x02, (byte) 0x0b};
-
-  private static final byte[] hmacWithSha512224 = {(byte) 0x2a, (byte) 0x86, (byte) 0x48,
-      (byte) 0x86, (byte) 0xf7, (byte) 0x0d, (byte) 0x02, (byte) 0x0c};
-
-  private static final byte[] hmacWithSha512256 = {(byte) 0x2a, (byte) 0x86, (byte) 0x48,
-      (byte) 0x86, (byte) 0xf7, (byte) 0x0d, (byte) 0x02, (byte) 0x0d};
 
   private static final byte[] aes128cbc = {(byte) 0x60, (byte) 0x86, (byte) 0x48, (byte) 0x01,
       (byte) 0x65, (byte) 0x03, (byte) 0x04, (byte) 0x01, (byte) 0x02};
@@ -150,6 +131,15 @@ class KeyPairPKCS8 extends KeyPair {
   }
 
   @Override
+  byte[] getOpenSSHv1PrivateKeyBlob() {
+    if (kpair != null) {
+      return kpair.getOpenSSHv1PrivateKeyBlob();
+    } else {
+      return null;
+    }
+  }
+
+  @Override
   boolean parse(byte[] plain) {
 
     /*
@@ -189,7 +179,7 @@ class KeyPairPKCS8 extends KeyPair {
         throw new ASN1Exception();
       }
 
-      int version = parseASN1IntegerAsInt(contents[0].getContent());
+      int version = ASN1.parseASN1IntegerAsInt(contents[0].getContent());
       if (version != 0) {
         throw new ASN1Exception();
       }
@@ -358,7 +348,7 @@ class KeyPairPKCS8 extends KeyPair {
           throw new ASN1Exception();
         }
 
-        version = parseASN1IntegerAsInt(contents[0].getContent());
+        version = ASN1.parseASN1IntegerAsInt(contents[0].getContent());
         if (version != 1) {
           throw new ASN1Exception();
         }
@@ -635,94 +625,14 @@ class KeyPairPKCS8 extends KeyPair {
         }
 
         byte[] kdfid = contents[0].getContent();
-
         if (Util.array_equals(kdfid, pbkdf2)) {
-          ASN1 pbkdf2func = contents[1];
-          if (!pbkdf2func.isSEQUENCE()) {
-            throw new ASN1Exception();
-          }
-
-          ASN1 prf = null;
-          contents = pbkdf2func.getContents();
-          if (contents.length < 2 || contents.length > 4) {
-            throw new ASN1Exception();
-          }
-          if (!contents[0].isOCTETSTRING()) {
-            throw new ASN1Exception();
-          }
-          if (!contents[1].isINTEGER()) {
-            throw new ASN1Exception();
-          }
-
-          if (contents.length == 4) {
-            if (!contents[2].isINTEGER()) {
-              throw new ASN1Exception();
-            }
-            if (!contents[3].isSEQUENCE()) {
-              throw new ASN1Exception();
-            }
-            prf = contents[3];
-          } else if (contents.length == 3) {
-            if (contents[2].isSEQUENCE()) {
-              prf = contents[2];
-            } else if (!contents[2].isINTEGER()) {
-              throw new ASN1Exception();
-            }
-          }
-
-          byte[] prfid = null;
-          byte[] salt = contents[0].getContent();
-          int iterations = parseASN1IntegerAsInt(contents[1].getContent());
-
-          if (prf != null) {
-            contents = prf.getContents();
-            if (contents.length != 2) {
-              throw new ASN1Exception();
-            }
-            if (!contents[0].isOBJECT()) {
-              throw new ASN1Exception();
-            }
-            if (!contents[1].isNULL()) {
-              throw new ASN1Exception();
-            }
-
-            prfid = contents[0].getContent();
-          }
-
-          kdfname = getPBKDF2Name(prfid);
-          PBKDF2 pbkdf2kdf = getPBKDF2(kdfname);
-          pbkdf2kdf.init(salt, iterations);
-          kdfinst = pbkdf2kdf;
+          kdfname = "pbkdf2";
+          kdfinst = getKDF(kdfname);
+          kdfinst.initWithASN1(contents[1].getRaw());
         } else if (Util.array_equals(kdfid, scrypt)) {
-          contents = contents[1].getContents();
-          if (contents.length < 4 || contents.length > 5) {
-            throw new ASN1Exception();
-          }
-          if (!contents[0].isOCTETSTRING()) {
-            throw new ASN1Exception();
-          }
-          if (!contents[1].isINTEGER()) {
-            throw new ASN1Exception();
-          }
-          if (!contents[2].isINTEGER()) {
-            throw new ASN1Exception();
-          }
-          if (!contents[3].isINTEGER()) {
-            throw new ASN1Exception();
-          }
-          if (contents.length > 4 && !contents[4].isINTEGER()) {
-            throw new ASN1Exception();
-          }
-
-          byte[] salt = contents[0].getContent();
-          int cost = parseASN1IntegerAsInt(contents[1].getContent());
-          int blocksize = parseASN1IntegerAsInt(contents[2].getContent());
-          int parallel = parseASN1IntegerAsInt(contents[3].getContent());
-
           kdfname = "scrypt";
-          SCrypt scryptkdf = getSCrypt();
-          scryptkdf.init(salt, cost, blocksize, parallel);
-          kdfinst = scryptkdf;
+          kdfinst = getKDF(kdfname);
+          kdfinst.initWithASN1(contents[1].getRaw());
         } else {
           throw new JSchException("unsupported kdf oid: " + Util.toHex(kdfid));
         }
@@ -783,45 +693,12 @@ class KeyPairPKCS8 extends KeyPair {
     }
   }
 
-  static String getPBKDF2Name(byte[] id) throws JSchException {
-    String name = null;
-    if (id == null || Util.array_equals(id, hmacWithSha1)) {
-      name = "pbkdf2-hmac-sha1";
-    } else if (Util.array_equals(id, hmacWithSha224)) {
-      name = "pbkdf2-hmac-sha224";
-    } else if (Util.array_equals(id, hmacWithSha256)) {
-      name = "pbkdf2-hmac-sha256";
-    } else if (Util.array_equals(id, hmacWithSha384)) {
-      name = "pbkdf2-hmac-sha384";
-    } else if (Util.array_equals(id, hmacWithSha512)) {
-      name = "pbkdf2-hmac-sha512";
-    } else if (Util.array_equals(id, hmacWithSha512224)) {
-      name = "pbkdf2-hmac-sha512-224";
-    } else if (Util.array_equals(id, hmacWithSha512256)) {
-      name = "pbkdf2-hmac-sha512-256";
-    }
-
-    if (name == null) {
-      throw new JSchException("unsupported pbkdf2 function oid: " + Util.toHex(id));
-    }
-    return name;
-  }
-
-  static PBKDF2 getPBKDF2(String name) throws JSchException {
+  static KDF getKDF(String name) throws JSchException {
     try {
-      Class<? extends PBKDF2> c = Class.forName(JSch.getConfig(name)).asSubclass(PBKDF2.class);
+      Class<? extends KDF> c = Class.forName(JSch.getConfig(name)).asSubclass(KDF.class);
       return c.getDeclaredConstructor().newInstance();
-    } catch (Exception e) {
+    } catch (LinkageError | Exception e) {
       throw new JSchException(name + " is not supported", e);
-    }
-  }
-
-  static SCrypt getSCrypt() throws JSchException {
-    try {
-      Class<? extends SCrypt> c = Class.forName(JSch.getConfig("scrypt")).asSubclass(SCrypt.class);
-      return c.getDeclaredConstructor().newInstance();
-    } catch (Exception e) {
-      throw new JSchException("scrypt is not supported", e);
     }
   }
 
@@ -855,19 +732,8 @@ class KeyPairPKCS8 extends KeyPair {
     try {
       Class<? extends Cipher> c = Class.forName(JSch.getConfig(name)).asSubclass(Cipher.class);
       return c.getDeclaredConstructor().newInstance();
-    } catch (Exception e) {
+    } catch (LinkageError | Exception e) {
       throw new JSchException(name + " is not supported", e);
-    }
-  }
-
-  static int parseASN1IntegerAsInt(byte[] content) {
-    BigInteger b = new BigInteger(content);
-    // https://github.com/mwiede/jsch/issues/392 not using intValueExact() because of Android
-    // incompatibility.
-    if (b.bitLength() <= 31) {
-      return b.intValue();
-    } else {
-      throw new ArithmeticException("BigInteger out of int range");
     }
   }
 }

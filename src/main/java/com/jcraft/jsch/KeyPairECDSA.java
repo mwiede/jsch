@@ -38,6 +38,8 @@ class KeyPairECDSA extends KeyPair {
           (byte) 0x00, (byte) 0x23},};
 
   private static String[] names = {"nistp256", "nistp384", "nistp521"};
+  private static String[] keyTypeNames =
+      Arrays.stream(names).map(s -> "ecdsa-sha2-" + s).toArray(String[]::new);
 
   private byte[] name = Util.str2byte(names[0]);
   private byte[] r_array;
@@ -150,6 +152,36 @@ class KeyPairECDSA extends KeyPair {
   }
 
   @Override
+  byte[] getOpenSSHv1PrivateKeyBlob() {
+    byte[] keyTypeName = getKeyTypeName();
+    byte[] ecPoint = toPoint(r_array, s_array);
+    if (keyTypeName == null || ecPoint == null || prv_array == null) {
+      return null;
+    }
+
+    Buffer _buf = null;
+    try {
+      int _bufLen = 4 + keyTypeName.length;
+      _bufLen += 4 + name.length;
+      _bufLen += 4 + ecPoint.length;
+      _bufLen += 4 + prv_array.length;
+      _bufLen += (prv_array[0] & 0x80) >>> 7;
+      _buf = new Buffer(_bufLen);
+      _buf.putString(keyTypeName);
+      _buf.putString(name);
+      _buf.putString(ecPoint);
+      _buf.putMPInt(prv_array);
+
+      return _buf.buffer;
+    } catch (Exception e) {
+      if (_buf != null) {
+        Util.bzero(_buf.buffer);
+      }
+      throw e;
+    }
+  }
+
+  @Override
   boolean parse(byte[] plain) {
     try {
 
@@ -178,8 +210,7 @@ class KeyPairECDSA extends KeyPair {
 
       // OPENSSH Key v1 Format
       if (vendor == VENDOR_OPENSSH_V1) {
-
-        final Buffer prvKeyBuffer = new Buffer(plain);
+        Buffer prvKeyBuffer = new Buffer(plain);
         int checkInt1 = prvKeyBuffer.getInt(); // uint32 checkint1
         int checkInt2 = prvKeyBuffer.getInt(); // uint32 checkint2
         if (checkInt1 != checkInt2) {
@@ -187,25 +218,43 @@ class KeyPairECDSA extends KeyPair {
         }
 
         String keyType = Util.byte2str(prvKeyBuffer.getString()); // string keytype
-
-        name = prvKeyBuffer.getString();
-        if (!Arrays.asList(names).contains(Util.byte2str(name))) {
-          throw new IllegalArgumentException("unknown curve name " + Util.byte2str(name));
+        if (!Arrays.asList(keyTypeNames).contains(keyType)) {
+          throw new IllegalArgumentException("unknown key type " + keyType);
         }
 
-        final int keyLen = prvKeyBuffer.getInt();
-        final int x04 = prvKeyBuffer.getByte(); // in case of x04 it is uncompressed
-                                                // https://tools.ietf.org/html/rfc5480#page-7
-        final byte[] x = new byte[(keyLen - 1) / 2];
-        final byte[] y = new byte[(keyLen - 1) / 2];
-        prvKeyBuffer.getByte(x);
-        prvKeyBuffer.getByte(y);
+        name = prvKeyBuffer.getString();
+        String nameStr = Util.byte2str(name);
+        if (!Arrays.asList(names).contains(nameStr)) {
+          throw new IllegalArgumentException("unknown curve name " + nameStr);
+        }
 
-        prv_array = prvKeyBuffer.getString();
+        if (!keyType.endsWith(nameStr)) {
+          throw new IllegalArgumentException(
+              "key type " + keyType + " does not match curve name " + nameStr);
+        }
+
+        switch (nameStr) {
+          case "nistp521":
+            key_size = 521;
+            break;
+          case "nistp384":
+            key_size = 384;
+            break;
+          case "nistp256":
+            key_size = 256;
+            break;
+        }
+
+        byte[] ecPoint = prvKeyBuffer.getString();
+        // https://datatracker.ietf.org/doc/html/rfc5480#section-2.2
+        if (ecPoint[0] != (byte) 0x04) {
+          throw new IllegalArgumentException("only uncompressed ECPoint supported");
+        }
+        byte[][] r_s = fromPoint(ecPoint);
+        prv_array = prvKeyBuffer.getMPInt();
         publicKeyComment = Util.byte2str(prvKeyBuffer.getString());
-        r_array = x;
-        s_array = y;
-        key_size = x.length >= 64 ? 521 : (x.length >= 48 ? 384 : 256);
+        r_array = r_s[0];
+        s_array = r_s[1];
 
         return true;
       }

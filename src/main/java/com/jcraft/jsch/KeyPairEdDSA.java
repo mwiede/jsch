@@ -76,6 +76,39 @@ abstract class KeyPairEdDSA extends KeyPair {
   }
 
   @Override
+  byte[] getOpenSSHv1PrivateKeyBlob() {
+    byte[] keyTypeName = getKeyTypeName();
+    if (keyTypeName == null || pub_array == null || prv_array == null) {
+      return null;
+    }
+
+    byte[] sk = null;
+    Buffer _buf = null;
+    try {
+      sk = new byte[prv_array.length + pub_array.length];
+      System.arraycopy(prv_array, 0, sk, 0, prv_array.length);
+      System.arraycopy(pub_array, 0, sk, prv_array.length, pub_array.length);
+
+      int _bufLen = 4 + keyTypeName.length;
+      _bufLen += 4 + pub_array.length;
+      _bufLen += 4 + sk.length;
+      _buf = new Buffer(_bufLen);
+      _buf.putString(keyTypeName);
+      _buf.putString(pub_array);
+      _buf.putString(sk);
+
+      return _buf.buffer;
+    } catch (Exception e) {
+      if (_buf != null) {
+        Util.bzero(_buf.buffer);
+      }
+      throw e;
+    } finally {
+      Util.bzero(sk);
+    }
+  }
+
+  @Override
   boolean parse(byte[] plain) {
     if (vendor == VENDOR_PUTTY || vendor == VENDOR_PUTTY_V3) {
       Buffer buf = new Buffer(plain);
@@ -95,19 +128,21 @@ abstract class KeyPairEdDSA extends KeyPair {
     } else if (vendor == VENDOR_OPENSSH_V1) {
       try {
         // OPENSSH Key v1 Format
-        final Buffer buf = new Buffer(plain);
-        int checkInt1 = buf.getInt(); // uint32 checkint1
-        int checkInt2 = buf.getInt(); // uint32 checkint2
+        Buffer prvKeyBuffer = new Buffer(plain);
+        int checkInt1 = prvKeyBuffer.getInt(); // uint32 checkint1
+        int checkInt2 = prvKeyBuffer.getInt(); // uint32 checkint2
         if (checkInt1 != checkInt2) {
           throw new JSchException("check failed");
         }
-        String keyType = Util.byte2str(buf.getString()); // string keytype
-        pub_array = buf.getString(); // public key
+
+        String keyType = Util.byte2str(prvKeyBuffer.getString()); // string keytype
+        pub_array = prvKeyBuffer.getString(); // public key
         // OpenSSH stores private key in first half of string and duplicate copy of public key in
         // second half of string
-        byte[] tmp = buf.getString(); // secret key (private key + public key)
+        byte[] tmp = prvKeyBuffer.getString(); // secret key (private key + public key)
         prv_array = Arrays.copyOf(tmp, getKeySize());
-        publicKeyComment = Util.byte2str(buf.getString());
+        publicKeyComment = Util.byte2str(prvKeyBuffer.getString());
+
         return true;
       } catch (Exception e) {
         if (instLogger.getLogger().isEnabled(Logger.ERROR)) {
