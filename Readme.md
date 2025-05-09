@@ -18,6 +18,10 @@ As I explained in a [blog post](http://www.matez.de/index.php/2020/06/22/the-fut
 
 Not much. Check the example code in the [examples](https://github.com/mwiede/jsch/tree/master/examples) folder. And there are some wiki pages, i.e. [Jsch-Configuration](https://github.com/mwiede/jsch/wiki/Jsch-Configuration) and [Jsch-Logging](https://github.com/mwiede/jsch/wiki/Jsch-Logging).
 
+## Versioning
+
+Up until `0.2.26` the versioning followed the original jsch scheme, from `2.27.0` on, we switched to [semantic versioning](https://semver.org), expressing that the library api is stable and used in production.
+
 ## How to you use this library as a replacement for `com.jcraft:jsch`
 
 Make sure, that you only have one jsch dependency on your classpath. For example you can check the output of `mvn dependency:tree`.
