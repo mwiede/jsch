@@ -248,6 +248,9 @@
                                 <requireJavaVersion>
                                     <version>24</version>
                                 </requireJavaVersion>
+                                <requireMavenVersion>
+                                    <version>3.9.10</version>
+                                </requireMavenVersion>
                                 <dependencyConvergence />
                                 <banDuplicatePomDependencyVersions />
                                 <reactorModuleConvergence />
