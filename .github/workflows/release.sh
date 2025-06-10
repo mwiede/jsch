@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/usr/bin/bash
 set -e
 git config --global --add safe.directory $(pwd)
 # avoid the release loop by checking if the latest commit is a release commit
@@ -48,8 +48,8 @@ fi
 
 # Do the release
 echo "Do mvn release:prepare with settings $MAVEN_SETTINGS_OPTION and arguments $MAVEN_ARGS"
-mvnw -Dusername=$GITHUB_ACCESS_TOKEN release:prepare -s $GITHUB_WORKSPACE/settings.xml -B -Darguments="$MAVEN_ARGS"
+./mvnw -Dusername=$GITHUB_ACCESS_TOKEN release:prepare -s $GITHUB_WORKSPACE/settings.xml -B -Darguments="$MAVEN_ARGS"
 
 echo "Do mvn release:perform with arguments $MAVEN_ARGS"
-mvnw release:perform -s $GITHUB_WORKSPACE/settings.xml -B -Darguments="$MAVEN_ARGS"
+./mvnw release:perform -s $GITHUB_WORKSPACE/settings.xml -B -Darguments="$MAVEN_ARGS"
 
