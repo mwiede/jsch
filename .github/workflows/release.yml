@@ -44,4 +44,4 @@ jobs:
         GIT_RELEASE_BOT_EMAIL: "mwiede@gmx.de"
 
         GITHUB_ACCESS_TOKEN: ${{ secrets.ACCESS_TOKEN }}   
-      run: .${{ github.workspace }}/.github/workflows/release.sh
+      run: ./.github/workflows/release.sh
