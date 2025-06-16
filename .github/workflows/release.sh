@@ -47,9 +47,9 @@ else
 fi
 
 # Do the release
-echo "Do mvn release:prepare with settings $MAVEN_SETTINGS_OPTION and arguments $MAVEN_ARGS"
-mvnw -Dusername=$GITHUB_ACCESS_TOKEN release:prepare -s $GITHUB_WORKSPACE/settings.xml -B -Darguments="$MAVEN_ARGS"
+echo "Do mvn release:prepare with arguments $MAVEN_ARGS"
+mvnw -Dusername=$GITHUB_ACCESS_TOKEN release:prepare -B -Darguments="$MAVEN_ARGS"
 
 echo "Do mvn release:perform with arguments $MAVEN_ARGS"
-mvnw release:perform -s $GITHUB_WORKSPACE/settings.xml -B -Darguments="$MAVEN_ARGS"
+mvnw release:perform -B -Darguments="$MAVEN_ARGS"
 
