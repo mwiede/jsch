@@ -1,13 +1,12 @@
 name: Release with Maven
 
-# Controls when the action will run. Triggers the workflow on push or pull request
-# events but only for the master branch
 on:
   workflow_dispatch:
   create:
 
-# A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
+  # only run on the release branch
+  if: github.ref == 'refs/heads/release'
   # This workflow contains a single job called "build"
   release:
     # The type of runner that the job will run on

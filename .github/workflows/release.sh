@@ -10,14 +10,6 @@ if [[ "${last_release_commit_hash}" = "${GITHUB_SHA}" ]]; then
      exit 0
 fi
 
-# Filter the branch to execute the release on
-readonly local branch=${GITHUB_REF##*/}
-echo "Current branch: ${branch}"
-if [[ -n "$RELEASE_BRANCH_NAME" && ! "${branch}" = "$RELEASE_BRANCH_NAME" ]]; then
-     echo "Skipping for ${branch} branch"
-     exit 0
-fi
-
 # Making sure we are on top of the branch
 echo "Git checkout branch ${GITHUB_REF##*/}"
 git checkout ${GITHUB_REF##*/}
