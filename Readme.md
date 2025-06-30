@@ -4,6 +4,7 @@ See original [README](README)
 
 [![GitHub release](https://img.shields.io/github/v/tag/mwiede/jsch.svg)](https://github.com/mwiede/jsch/releases/latest)
 [![Maven Central](https://maven-badges.sml.io/maven-central/com.github.mwiede/jsch/badge.svg)](https://maven-badges.sml.io/maven-central/com.github.mwiede/jsch)
+[![Maven Central](https://maven-badges.sml.io/sonatype-central/com.github.mwiede/jsch/badge.svg)](https://maven-badges.sml.io/sonatype-central/com.github.mwiede/jsch)
 ![Java CI with Maven](https://github.com/mwiede/jsch/workflows/Java%20CI%20with%20Maven/badge.svg)
 
 ## Why should you use this library?
