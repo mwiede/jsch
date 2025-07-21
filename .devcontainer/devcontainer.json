@@ -10,7 +10,7 @@
 			"version": "latest",
 			"jdkDistro": "tem",
 			"installMaven": "true",
-			"mavenVersion": "3.9.10",
+			"mavenVersion": "3.9.11",
 			"installGradle": "false"
 		},
 		"ghcr.io/devcontainers/features/docker-in-docker:2": {
