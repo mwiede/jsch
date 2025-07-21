@@ -416,6 +416,7 @@
                 <version>7.1.0</version>
                 <configuration>
                     <bnd><![CDATA[
+                        -noimportjava: true
                         -noextraheaders: false
                         -removeheaders: \
                             Bnd-LastModified,\
