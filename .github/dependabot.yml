@@ -9,6 +9,7 @@ updates:
     directory: "/" # Location of package manifests
     schedule:
       interval: "weekly"
+      day: "wednesday"
     open-pull-requests-limit: 25
   - package-ecosystem: "github-actions"
     # Workflow files stored in the
@@ -16,4 +17,5 @@ updates:
     directory: "/"
     schedule:
       interval: "weekly"
+      day: "wednesday"
     open-pull-requests-limit: 25

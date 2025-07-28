@@ -249,7 +249,7 @@
                                     <version>24</version>
                                 </requireJavaVersion>
                                 <requireMavenVersion>
-                                    <version>3.9.10</version>
+                                    <version>3.9.11</version>
                                 </requireMavenVersion>
                                 <dependencyConvergence />
                                 <banDuplicatePomDependencyVersions />
@@ -416,6 +416,7 @@
                 <version>7.1.0</version>
                 <configuration>
                     <bnd><![CDATA[
+                        -noimportjava: true
                         -noextraheaders: false
                         -removeheaders: \
                             Bnd-LastModified,\
