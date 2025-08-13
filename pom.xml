@@ -445,6 +445,7 @@
                 <artifactId>maven-failsafe-plugin</artifactId>
                 <version>${surefire.version}</version>
                 <configuration>
+                    <argLine>-XX:+IgnoreUnrecognizedVMOptions --enable-native-access=ALL-UNNAMED</argLine>
                     <trimStackTrace>false</trimStackTrace>
                 </configuration>
                 <executions>
