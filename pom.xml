@@ -74,6 +74,7 @@
         <log4j.version>2.25.1</log4j.version>
         <errorprone.version>2.41.0</errorprone.version>
         <surefire.version>3.5.3</surefire.version>
+        <toolchain.jdk.version>[24,)</toolchain.jdk.version>
     </properties>
     <dependencies>
         <dependency>
@@ -86,13 +87,6 @@
             <groupId>com.kohlschutter.junixsocket</groupId>
             <artifactId>junixsocket-common</artifactId>
             <version>${junixsocket.version}</version>
-            <optional>true</optional>
-        </dependency>
-        <dependency>
-            <groupId>com.kohlschutter</groupId>
-            <artifactId>compiler-annotations</artifactId>
-            <version>1.8.2</version>
-            <scope>provided</scope>
             <optional>true</optional>
         </dependency>
         <dependency>
@@ -182,8 +176,24 @@
                     <artifactId>maven-core</artifactId>
                 </exclusion>
                 <exclusion>
+                    <groupId>org.apache.maven</groupId>
+                    <artifactId>maven-model</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.codehaus.plexus</groupId>
+                    <artifactId>plexus-utils</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.mockito</groupId>
+                    <artifactId>mockito-core</artifactId>
+                </exclusion>
+                <exclusion>
                     <groupId>org.assertj</groupId>
                     <artifactId>assertj-core</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.awaitility</groupId>
+                    <artifactId>awaitility</artifactId>
                 </exclusion>
                 <exclusion>
                     <groupId>commons-io</groupId>
@@ -257,6 +267,18 @@
                                 <requireUpperBoundDeps />
                             </rules>
                         </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-toolchains-plugin</artifactId>
+                <version>3.2.0</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>select-jdk-toolchain</goal>
+                        </goals>
                     </execution>
                 </executions>
             </plugin>
@@ -452,6 +474,7 @@
                 <artifactId>maven-failsafe-plugin</artifactId>
                 <version>${surefire.version}</version>
                 <configuration>
+                    <argLine>-XX:+IgnoreUnrecognizedVMOptions --enable-native-access=ALL-UNNAMED</argLine>
                     <trimStackTrace>false</trimStackTrace>
                 </configuration>
                 <executions>
@@ -563,6 +586,17 @@
                         </goals>
                     </execution>
                 </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.spdx</groupId>
+                <artifactId>spdx-maven-plugin</artifactId>
+                <version>1.0.3</version>
+                <configuration>
+                    <includeProvidedScope>false</includeProvidedScope>
+                    <includeSystemScope>false</includeSystemScope>
+                    <includeTestScope>false</includeTestScope>
+                    <sbomType>build</sbomType>
+                </configuration>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -913,6 +947,28 @@
                                 <phase>process-classes</phase>
                                 <goals>
                                     <goal>bnd-process</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <profile>
+            <id>spdx</id>
+            <activation>
+                <jdk>[11,)</jdk>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.spdx</groupId>
+                        <artifactId>spdx-maven-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <phase>package</phase>
+                                <goals>
+                                    <goal>createSPDX</goal>
                                 </goals>
                             </execution>
                         </executions>

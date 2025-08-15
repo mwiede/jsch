@@ -35,7 +35,7 @@ jobs:
     - name: Setup JDK
       uses: actions/setup-java@c5195efecf7bdfc987ee8bae7a71cb8b11521c00 # v4.7.1
       with:
-        distribution: 'zulu'
+        distribution: 'temurin'
         java-version: '24'
         check-latest: true
         cache: 'maven'

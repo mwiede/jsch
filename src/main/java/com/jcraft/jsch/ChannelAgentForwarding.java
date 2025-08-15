@@ -96,7 +96,7 @@ class ChannelAgentForwarding extends Channel {
       packet = new Packet(wbuf);
     }
 
-    rbuf.shift();
+    rbuf.reset();
     if (rbuf.buffer.length < rbuf.index + l) {
       byte[] newbuf = new byte[rbuf.s + l];
       System.arraycopy(rbuf.buffer, 0, newbuf, 0, rbuf.buffer.length);
