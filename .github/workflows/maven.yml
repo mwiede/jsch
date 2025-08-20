@@ -30,7 +30,7 @@ jobs:
     - name: Set up JDK
       uses: actions/setup-java@c5195efecf7bdfc987ee8bae7a71cb8b11521c00 # v4.7.1
       with:
-        distribution: 'zulu'
+        distribution: 'temurin'
         java-version: '24'
         check-latest: true
     - name: Build with Maven
@@ -60,11 +60,20 @@ jobs:
         key: ${{ runner.os }}-test-${{ matrix.java }}-maven-${{ hashFiles('**/pom.xml', '**/maven-wrapper.properties') }}
         restore-keys: |
           ${{ runner.os }}-test-${{ matrix.java }}-maven-
+    - name: Generate list of JDKs to install
+      id: jdks_to_install
+      run: |
+        maven_jdk=24
+        matrix_java="${{ matrix.java }}"
+        echo 'list<<EOF' >> "$GITHUB_OUTPUT"
+        echo "$matrix_java" >> "$GITHUB_OUTPUT"
+        [ "$maven_jdk" != "$matrix_java" ] && echo "$maven_jdk" >> "$GITHUB_OUTPUT"
+        echo 'EOF' >> "$GITHUB_OUTPUT"
     - name: Set up JDK
       uses: actions/setup-java@c5195efecf7bdfc987ee8bae7a71cb8b11521c00 # v4.7.1
       with:
-        distribution: 'zulu'
-        java-version: ${{ matrix.java }}
+        distribution: 'temurin'
+        java-version: ${{ steps.jdks_to_install.outputs.list }}
         check-latest: true
     - name: Download target directory archive
       uses: actions/download-artifact@634f93cb2916e3fdff6788551b99b062d0335ce0 # v5.0.0
@@ -73,7 +82,10 @@ jobs:
     - name: Extract target directory archive
       run: tar -xmf target.tar
     - name: Test with Maven
-      run: ./mvnw -B -V -e -Pcoverage verify -Denforcer.skip=true -Dmaven.resources.skip=true -Dflatten.skip=true -Dmaven.main.skip=true -Dbnd.skip=true -Dassembly.skipAssembly=true -Dmaven.javadoc.skip=true -Dcyclonedx.skip=true -Dformatter.skip=true -Dforbiddenapis.skip=true -DskipTests=false -DskipITs=false
+      run: |
+        LOWER_JDK="${{ matrix.java }}"
+        UPPER_JDK=$((LOWER_JDK+1))
+        ./mvnw -B -V -e -Pcoverage verify -Dtoolchain.jdk.version="[$LOWER_JDK,$UPPER_JDK)" -Dmaven.resources.skip=true -Dflatten.skip=true -Dmaven.main.skip=true -Dbnd.skip=true -Dassembly.skipAssembly=true -Dmaven.javadoc.skip=true -Dcyclonedx.skip=true -Dspdx.skip=true -Dformatter.skip=true -Dforbiddenapis.skip=true -DskipTests=false -DskipITs=false
     - name: Upload test results
       uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
       with:
