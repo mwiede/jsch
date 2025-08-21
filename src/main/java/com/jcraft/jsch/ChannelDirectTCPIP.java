@@ -75,7 +75,7 @@ public class ChannelDirectTCPIP extends Channel {
     } catch (Exception e) {
       io.close();
       io = null;
-      Channel.del(id);
+      Channel.del(this);
       if (e instanceof JSchException) {
         throw (JSchException) e;
       }

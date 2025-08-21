@@ -31,9 +31,11 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 public abstract class Channel {
 
@@ -46,8 +48,11 @@ public abstract class Channel {
   static final int SSH_OPEN_UNKNOWN_CHANNEL_TYPE = 3;
   static final int SSH_OPEN_RESOURCE_SHORTAGE = 4;
 
-  private static AtomicInteger index = new AtomicInteger(0);
-  private static Map<Integer, Channel> pool = new ConcurrentHashMap<>();
+  private static final ReadWriteLock poolLock = new ReentrantReadWriteLock();
+  private static final Lock readLock = poolLock.readLock();
+  private static final Lock writeLock = poolLock.writeLock();
+  private static int index = 0;
+  private static List<Channel> pool = new ArrayList<>();
 
   static Channel getChannel(String type, Session session) {
     Channel ret = null;
@@ -93,14 +98,25 @@ public abstract class Channel {
   }
 
   static Channel getChannel(int id, Session session) {
-    Channel c = pool.get(id);
-    if (c != null && c.session == session)
-      return c;
+    readLock.lock();
+    try {
+      for (Channel c : pool) {
+        if (c.id == id && c.session == session)
+          return c;
+      }
+    } finally {
+      readLock.unlock();
+    }
     return null;
   }
 
-  static void del(int id) {
-    pool.remove(id);
+  static void del(Channel c) {
+    writeLock.lock();
+    try {
+      pool.remove(c);
+    } finally {
+      writeLock.unlock();
+    }
   }
 
   int id;
@@ -133,19 +149,19 @@ public abstract class Channel {
   int notifyme = 0;
 
   Channel() {
-    // OpenSSH 8.0 introduced a bug that rejected channels with an ID that exceeds INT_MAX.
-    // See https://github.com/openssh/openssh-portable/commit/7ec5cb4.
-    // This bug was later resolved in OpenSSH 8.2.
-    // See https://github.com/openssh/openssh-portable/commit/0ecd20b.
-    // To allow compability, cap the ID value to not exceed INT_MAX.
-    int currentIndex;
-    int nextIndex;
-    do {
-      currentIndex = index.get();
-      nextIndex = (currentIndex + 1) & Integer.MAX_VALUE;
-    } while (!index.compareAndSet(currentIndex, nextIndex));
-    id = currentIndex;
-    pool.put(id, this);
+    writeLock.lock();
+    try {
+      id = index++;
+      // OpenSSH 8.0 introduced a bug that rejected channels with an ID that exceeds INT_MAX.
+      // See https://github.com/openssh/openssh-portable/commit/7ec5cb4.
+      // This bug was later resolved in OpenSSH 8.2.
+      // See https://github.com/openssh/openssh-portable/commit/0ecd20b.
+      // To allow compability, cap the ID value to not exceed INT_MAX.
+      index &= Integer.MAX_VALUE;
+      pool.add(this);
+    } finally {
+      writeLock.unlock();
+    }
   }
 
   synchronized void setRecipient(int foo) {
@@ -608,13 +624,22 @@ public abstract class Channel {
   }
 
   static void disconnect(Session session) {
-    for (Channel c : pool.values()) {
-      try {
-        if (c.session == session) {
-          c.disconnect();
+    List<Channel> channels = new ArrayList<>();
+    readLock.lock();
+    try {
+      for (Channel c : pool) {
+        try {
+          if (c.session == session) {
+            channels.add(c);
+          }
+        } catch (Exception e) {
         }
-      } catch (Exception e) {
       }
+    } finally {
+      readLock.unlock();
+    }
+    for (Channel c : channels) {
+      c.disconnect();
     }
   }
 
@@ -646,7 +671,7 @@ public abstract class Channel {
       }
       // io=null;
     } finally {
-      Channel.del(id);
+      Channel.del(this);
     }
   }
 
