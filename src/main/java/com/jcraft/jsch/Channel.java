@@ -49,8 +49,6 @@ public abstract class Channel {
   static final int SSH_OPEN_RESOURCE_SHORTAGE = 4;
 
   private static final ReadWriteLock poolLock = new ReentrantReadWriteLock();
-  private static final Lock readLock = poolLock.readLock();
-  private static final Lock writeLock = poolLock.writeLock();
   private static int index = 0;
   private static List<Channel> pool = new ArrayList<>();
 
@@ -98,24 +96,26 @@ public abstract class Channel {
   }
 
   static Channel getChannel(int id, Session session) {
-    readLock.lock();
+    Lock l = poolLock.readLock();
+    l.lock();
     try {
       for (Channel c : pool) {
         if (c.id == id && c.session == session)
           return c;
       }
     } finally {
-      readLock.unlock();
+      l.unlock();
     }
     return null;
   }
 
   static void del(Channel c) {
-    writeLock.lock();
+    Lock l = poolLock.writeLock();
+    l.lock();
     try {
       pool.remove(c);
     } finally {
-      writeLock.unlock();
+      l.unlock();
     }
   }
 
@@ -149,7 +149,8 @@ public abstract class Channel {
   int notifyme = 0;
 
   Channel() {
-    writeLock.lock();
+    Lock l = poolLock.writeLock();
+    l.lock();
     try {
       id = index++;
       // OpenSSH 8.0 introduced a bug that rejected channels with an ID that exceeds INT_MAX.
@@ -160,7 +161,7 @@ public abstract class Channel {
       index &= Integer.MAX_VALUE;
       pool.add(this);
     } finally {
-      writeLock.unlock();
+      l.unlock();
     }
   }
 
@@ -625,7 +626,8 @@ public abstract class Channel {
 
   static void disconnect(Session session) {
     List<Channel> channels = new ArrayList<>();
-    readLock.lock();
+    Lock l = poolLock.readLock();
+    l.lock();
     try {
       for (Channel c : pool) {
         try {
@@ -636,7 +638,7 @@ public abstract class Channel {
         }
       }
     } finally {
-      readLock.unlock();
+      l.unlock();
     }
     for (Channel c : channels) {
       c.disconnect();
