@@ -630,11 +630,8 @@ public abstract class Channel {
     l.lock();
     try {
       for (Channel c : pool) {
-        try {
-          if (c.session == session) {
-            channels.add(c);
-          }
-        } catch (Exception e) {
+        if (c.session == session) {
+          channels.add(c);
         }
       }
     } finally {
