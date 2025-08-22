@@ -50,7 +50,7 @@ public abstract class Channel {
 
   private static final ReadWriteLock poolLock = new ReentrantReadWriteLock();
   private static int index = 0;
-  private static List<Channel> pool = new ArrayList<>();
+  private static final List<Channel> pool = new ArrayList<>();
 
   static Channel getChannel(String type, Session session) {
     Channel ret = null;
