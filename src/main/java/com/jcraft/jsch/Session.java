@@ -181,6 +181,7 @@ public class Session {
 
   private ThreadFactory threadFactory = Thread::new;
 
+  private boolean disconnectingChannels = false;
   private final List<Channel> channels = new ArrayList<>();
   private final ReadWriteLock channelsLock = new ReentrantReadWriteLock();
 
@@ -1064,12 +1065,13 @@ public class Session {
     }
     try {
       Channel channel = Channel.getChannel(type, this);
-      addChannel(channel);
-      channel.init();
-      if (channel instanceof ChannelSession) {
-        applyConfigChannel((ChannelSession) channel);
+      if (addChannel(channel)) {
+        channel.init();
+        if (channel instanceof ChannelSession) {
+          applyConfigChannel((ChannelSession) channel);
+        }
+        return channel;
       }
-      return channel;
     } catch (Exception e) {
       // e.printStackTrace();
     }
@@ -1367,8 +1369,7 @@ public class Session {
         buf.getInt();
         buf.getShort();
         Channel c = getChannelById(buf.getInt());
-        if (c == null) {
-        } else {
+        if (c != null) {
           c.addRemoteWindowSize(buf.getUInt());
         }
       } else if (type == SSH_MSG_EXT_INFO) {
@@ -2026,16 +2027,25 @@ public class Session {
               write(packet);
             } else {
               channel = Channel.getChannel(ctyp, this);
-              addChannel(channel);
-              channel.getData(buf);
-              channel.init();
+              if (addChannel(channel)) {
+                channel.getData(buf);
+                channel.init();
 
-              Thread tmp = getThreadFactory().newThread(channel::run);
-              tmp.setName("Channel " + ctyp + " " + host);
-              if (daemon_thread) {
-                tmp.setDaemon(daemon_thread);
+                Thread tmp = getThreadFactory().newThread(channel::run);
+                tmp.setName("Channel " + ctyp + " " + host);
+                if (daemon_thread) {
+                  tmp.setDaemon(daemon_thread);
+                }
+                tmp.start();
+              } else {
+                packet.reset();
+                buf.putByte((byte) SSH_MSG_CHANNEL_OPEN_FAILURE);
+                buf.putInt(buf.getInt());
+                buf.putInt(Channel.SSH_OPEN_RESOURCE_SHORTAGE);
+                buf.putString(Util.empty);
+                buf.putString(Util.empty);
+                write(packet);
               }
-              tmp.start();
             }
             break;
           case SSH_MSG_CHANNEL_SUCCESS:
@@ -2132,16 +2142,18 @@ public class Session {
      * } }
      */
 
+    List<Channel> channelsCopy;
     Lock l = channelsLock.writeLock();
     l.lock();
     try {
-      Iterator<Channel> it = channels.iterator();
-      while (it.hasNext()) {
-        it.next()._disconnect();
-        it.remove();
-      }
+      disconnectingChannels = true;
+      channelsCopy = new ArrayList<>(channels);
     } finally {
       l.unlock();
+    }
+
+    for (Channel c : channelsCopy) {
+      c.disconnect();
     }
 
     isConnected = false;
@@ -2181,6 +2193,13 @@ public class Session {
     }
     io = null;
     socket = null;
+    l.lock();
+    try {
+      disconnectingChannels = false;
+      channels.clear();
+    } finally {
+      l.unlock();
+    }
 
     // RFC 4253 6.4. the 'sequence_number' is never reset, even if keys/algorithms are renegotiated
     // later. Hence we only reset these on session disconnect as the sequence has to start at zero
@@ -2585,11 +2604,14 @@ public class Session {
    */
   public Channel getStreamForwarder(String host, int port) throws JSchException {
     ChannelDirectTCPIP channel = new ChannelDirectTCPIP();
-    channel.init();
-    this.addChannel(channel);
-    channel.setHost(host);
-    channel.setPort(port);
-    return channel;
+    if (this.addChannel(channel)) {
+      channel.init();
+      channel.setHost(host);
+      channel.setPort(port);
+      return channel;
+    } else {
+      throw new JSchException("Unable to add channel");
+    }
   }
 
   private static class GlobalRequestReply {
@@ -2753,12 +2775,17 @@ public class Session {
     }
   }
 
-  void addChannel(Channel channel) {
+  boolean addChannel(Channel channel) {
     channel.setSession(this);
     Lock l = channelsLock.writeLock();
     l.lock();
     try {
-      channels.add(channel);
+      if (!disconnectingChannels) {
+        channels.add(channel);
+        return true;
+      } else {
+        return false;
+      }
     } finally {
       l.unlock();
     }
