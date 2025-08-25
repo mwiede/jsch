@@ -1071,9 +1071,17 @@ public class Session {
           applyConfigChannel((ChannelSession) channel);
         }
         return channel;
+      } else {
+        if (getLogger().isEnabled(Logger.DEBUG)) {
+          getLogger().log(Logger.DEBUG,
+              "Failed to add channel of type " + type + " - session may be disconnecting");
+        }
       }
     } catch (Exception e) {
-      // e.printStackTrace();
+      if (getLogger().isEnabled(Logger.DEBUG)) {
+        getLogger().log(Logger.DEBUG,
+            "Exception creating channel of type " + type + ": " + e.getMessage(), e);
+      }
     }
     return null;
   }
@@ -2018,6 +2026,10 @@ public class Session {
                 && !("auth-agent@openssh.com".equals(ctyp) && agent_forwarding)) {
               // System.err.println("Session.run: CHANNEL OPEN "+ctyp);
               // throw new IOException("Session.run: CHANNEL OPEN "+ctyp);
+              if (getLogger().isEnabled(Logger.DEBUG)) {
+                getLogger().log(Logger.DEBUG, "Failed to add channel of type " + ctyp
+                    + " - type either unsupported or prohibited");
+              }
               packet.reset();
               buf.putByte((byte) SSH_MSG_CHANNEL_OPEN_FAILURE);
               buf.putInt(buf.getInt());
@@ -2038,6 +2050,10 @@ public class Session {
                 }
                 tmp.start();
               } else {
+                if (getLogger().isEnabled(Logger.DEBUG)) {
+                  getLogger().log(Logger.DEBUG,
+                      "Failed to add channel of type " + ctyp + " - session may be disconnecting");
+                }
                 packet.reset();
                 buf.putByte((byte) SSH_MSG_CHANNEL_OPEN_FAILURE);
                 buf.putInt(buf.getInt());
@@ -2122,7 +2138,9 @@ public class Session {
     Lock l = channelsLock.writeLock();
     l.lock();
     try {
-      channels.remove(c);
+      if (!disconnectingChannels) {
+        channels.remove(c);
+      }
     } finally {
       l.unlock();
     }
@@ -2610,7 +2628,12 @@ public class Session {
       channel.setPort(port);
       return channel;
     } else {
-      throw new JSchException("Unable to add channel");
+      String msg = "Failed to add DirectTCPIP channel to " + host + ":" + port
+          + " - session may be disconnecting";
+      if (getLogger().isEnabled(Logger.DEBUG)) {
+        getLogger().log(Logger.DEBUG, msg);
+      }
+      throw new JSchException(msg);
     }
   }
 
