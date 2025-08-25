@@ -42,6 +42,9 @@ import java.util.Objects;
 import java.util.Properties;
 import java.util.Vector;
 import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 import javax.crypto.AEADBadTagException;
 
 public class Session {
@@ -177,6 +180,9 @@ public class Session {
   Logger logger;
 
   private ThreadFactory threadFactory = Thread::new;
+
+  private final List<Channel> channels = new ArrayList<>();
+  private final ReadWriteLock channelsLock = new ReentrantReadWriteLock();
 
   Session(JSch jsch, String username, String host, int port) throws JSchException {
     super();
@@ -1133,6 +1139,21 @@ public class Session {
   private int s2ccipher_size = 8;
   private int c2scipher_size = 8;
 
+  private Channel getChannelById(int id) {
+    Lock l = channelsLock.readLock();
+    l.lock();
+    try {
+      for (Channel c : channels) {
+        if (c.id == id) {
+          return c;
+        }
+      }
+    } finally {
+      l.unlock();
+    }
+    return null;
+  }
+
   Buffer read(Buffer buf) throws Exception {
     int j = 0;
     boolean isChaCha20 = (s2ccipher != null && s2ccipher.isChaCha20());
@@ -1345,7 +1366,7 @@ public class Session {
         buf.rewind();
         buf.getInt();
         buf.getShort();
-        Channel c = Channel.getChannel(buf.getInt(), this);
+        Channel c = getChannelById(buf.getInt());
         if (c == null) {
         } else {
           c.addRemoteWindowSize(buf.getUInt());
@@ -1827,7 +1848,7 @@ public class Session {
             buf.getByte();
             buf.getByte();
             i = buf.getInt();
-            channel = Channel.getChannel(i, this);
+            channel = getChannelById(i);
             foo = buf.getString(start, length);
             if (channel == null) {
               break;
@@ -1866,7 +1887,7 @@ public class Session {
             buf.getInt();
             buf.getShort();
             i = buf.getInt();
-            channel = Channel.getChannel(i, this);
+            channel = getChannelById(i);
             buf.getInt(); // data_type_code == 1
             foo = buf.getString(start, length);
             // System.err.println("stderr: "+new String(foo,start[0],length[0]));
@@ -1899,7 +1920,7 @@ public class Session {
             buf.getInt();
             buf.getShort();
             i = buf.getInt();
-            channel = Channel.getChannel(i, this);
+            channel = getChannelById(i);
             if (channel == null) {
               break;
             }
@@ -1910,7 +1931,7 @@ public class Session {
             buf.getInt();
             buf.getShort();
             i = buf.getInt();
-            channel = Channel.getChannel(i, this);
+            channel = getChannelById(i);
             if (channel != null) {
               // channel.eof_remote=true;
               // channel.eof();
@@ -1925,7 +1946,7 @@ public class Session {
             buf.getInt();
             buf.getShort();
             i = buf.getInt();
-            channel = Channel.getChannel(i, this);
+            channel = getChannelById(i);
             if (channel != null) {
               // channel.close();
               channel.disconnect();
@@ -1938,7 +1959,7 @@ public class Session {
             buf.getInt();
             buf.getShort();
             i = buf.getInt();
-            channel = Channel.getChannel(i, this);
+            channel = getChannelById(i);
             int r = buf.getInt();
             long rws = buf.getUInt();
             int rps = buf.getInt();
@@ -1953,7 +1974,7 @@ public class Session {
             buf.getInt();
             buf.getShort();
             i = buf.getInt();
-            channel = Channel.getChannel(i, this);
+            channel = getChannelById(i);
             if (channel != null) {
               int reason_code = buf.getInt();
               // foo=buf.getString(); // additional textual information
@@ -1970,7 +1991,7 @@ public class Session {
             i = buf.getInt();
             foo = buf.getString();
             boolean reply = (buf.getByte() != 0);
-            channel = Channel.getChannel(i, this);
+            channel = getChannelById(i);
             if (channel != null) {
               byte reply_type = (byte) SSH_MSG_CHANNEL_FAILURE;
               if ((Util.byte2str(foo)).equals("exit-status")) {
@@ -2021,7 +2042,7 @@ public class Session {
             buf.getInt();
             buf.getShort();
             i = buf.getInt();
-            channel = Channel.getChannel(i, this);
+            channel = getChannelById(i);
             if (channel == null) {
               break;
             }
@@ -2031,7 +2052,7 @@ public class Session {
             buf.getInt();
             buf.getShort();
             i = buf.getInt();
-            channel = Channel.getChannel(i, this);
+            channel = getChannelById(i);
             if (channel == null) {
               break;
             }
@@ -2087,6 +2108,16 @@ public class Session {
     isConnected = false;
   }
 
+  void delChannel(Channel c) {
+    Lock l = channelsLock.writeLock();
+    l.lock();
+    try {
+      channels.remove(c);
+    } finally {
+      l.unlock();
+    }
+  }
+
   public void disconnect() {
     if (!isConnected)
       return;
@@ -2101,7 +2132,17 @@ public class Session {
      * } }
      */
 
-    Channel.disconnect(this);
+    Lock l = channelsLock.writeLock();
+    l.lock();
+    try {
+      Iterator<Channel> it = channels.iterator();
+      while (it.hasNext()) {
+        it.next()._disconnect();
+        it.remove();
+      }
+    } finally {
+      l.unlock();
+    }
 
     isConnected = false;
 
@@ -2714,6 +2755,13 @@ public class Session {
 
   void addChannel(Channel channel) {
     channel.setSession(this);
+    Lock l = channelsLock.writeLock();
+    l.lock();
+    try {
+      channels.add(channel);
+    } finally {
+      l.unlock();
+    }
   }
 
   String[] getServerSigAlgs() {
