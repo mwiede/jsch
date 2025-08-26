@@ -2799,11 +2799,11 @@ public class Session {
   }
 
   boolean addChannel(Channel channel) {
-    channel.setSession(this);
     Lock l = channelsLock.writeLock();
     l.lock();
     try {
       if (!disconnectingChannels) {
+        channel.setSession(this);
         channels.add(channel);
         return true;
       } else {

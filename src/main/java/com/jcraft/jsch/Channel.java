@@ -85,7 +85,6 @@ public abstract class Channel {
     if (ret == null) {
       return null;
     }
-    ret.setSession(session);
     return ret;
   }
 
