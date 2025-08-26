@@ -2024,8 +2024,6 @@ public class Session {
             String ctyp = Util.byte2str(foo);
             if (!"forwarded-tcpip".equals(ctyp) && !("x11".equals(ctyp) && x11_forwarding)
                 && !("auth-agent@openssh.com".equals(ctyp) && agent_forwarding)) {
-              // System.err.println("Session.run: CHANNEL OPEN "+ctyp);
-              // throw new IOException("Session.run: CHANNEL OPEN "+ctyp);
               if (getLogger().isEnabled(Logger.DEBUG)) {
                 getLogger().log(Logger.DEBUG, "Failed to add channel of type " + ctyp
                     + " - type either unsupported or prohibited");
