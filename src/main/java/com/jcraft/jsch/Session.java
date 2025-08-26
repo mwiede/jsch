@@ -2171,7 +2171,14 @@ public class Session {
     }
 
     for (Channel c : channelsCopy) {
-      c.disconnect();
+      try {
+        c.disconnect();
+      } catch (Exception e) {
+        if (getLogger().isEnabled(Logger.DEBUG)) {
+          getLogger().log(Logger.DEBUG, "Exception disconnecting channel of type "
+              + Util.byte2str(c.type) + ": " + e.getMessage(), e);
+        }
+      }
     }
 
     isConnected = false;
