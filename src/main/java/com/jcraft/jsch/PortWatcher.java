@@ -205,28 +205,51 @@ class PortWatcher {
         OutputStream out = socket.getOutputStream();
         if (socketPath != null && socketPath.length() > 0) {
           ChannelDirectStreamLocal channel = new ChannelDirectStreamLocal();
-          channel.setSession(session);
-          channel.init();
-          channel.setInputStream(in);
-          channel.setOutputStream(out);
-          session.addChannel(channel);
-          channel.setSocketPath(socketPath);
-          channel.setOrgIPAddress(socket.getInetAddress().getHostAddress());
-          channel.setOrgPort(socket.getPort());
-          channel.connect(connectTimeout);
+          if (session.addChannel(channel)) {
+            channel.init();
+            channel.setInputStream(in);
+            channel.setOutputStream(out);
+            channel.setSocketPath(socketPath);
+            channel.setOrgIPAddress(socket.getInetAddress().getHostAddress());
+            channel.setOrgPort(socket.getPort());
+            channel.connect(connectTimeout);
+          } else {
+            try {
+              socket.close();
+            } catch (Exception ignore) {
+              // Ignore close exceptions
+            } finally {
+              if (session.getLogger().isEnabled(Logger.DEBUG)) {
+                session.getLogger().log(Logger.DEBUG,
+                    "Failed to add DirectStreamLocal channel for socket path: " + socketPath
+                        + " - session may be disconnecting");
+              }
+            }
+          }
         } else {
           ChannelDirectTCPIP channel = new ChannelDirectTCPIP();
-          channel.setSession(session);
-          channel.init();
-          channel.setInputStream(in);
-          channel.setOutputStream(out);
-          session.addChannel(channel);
-          channel.setHost(host);
-          channel.setPort(rport);
-          channel.setOrgIPAddress(socket.getInetAddress().getHostAddress());
-          channel.setOrgPort(socket.getPort());
-          channel.connect(connectTimeout);
-          if (channel.exitstatus != -1) {
+          if (session.addChannel(channel)) {
+            channel.init();
+            channel.setInputStream(in);
+            channel.setOutputStream(out);
+            channel.setHost(host);
+            channel.setPort(rport);
+            channel.setOrgIPAddress(socket.getInetAddress().getHostAddress());
+            channel.setOrgPort(socket.getPort());
+            channel.connect(connectTimeout);
+            if (channel.exitstatus != -1) {
+            }
+          } else {
+            try {
+              socket.close();
+            } catch (Exception ignore) {
+              // Ignore close exceptions
+            } finally {
+              if (session.getLogger().isEnabled(Logger.DEBUG)) {
+                session.getLogger().log(Logger.DEBUG, "Failed to add DirectTCPIP channel to " + host
+                    + ":" + rport + " - session may be disconnecting");
+              }
+            }
           }
         }
       }
