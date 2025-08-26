@@ -2138,9 +2138,7 @@ public class Session {
     Lock l = channelsLock.writeLock();
     l.lock();
     try {
-      if (!disconnectingChannels) {
-        channels.remove(c);
-      }
+      channels.remove(c);
     } finally {
       l.unlock();
     }
