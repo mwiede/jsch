@@ -2805,7 +2805,7 @@ public class Session {
     Lock l = channelsLock.writeLock();
     l.lock();
     try {
-      if (!disconnectingChannels) {
+      if (!disconnectingChannels && isConnected) {
         channel.setSession(this);
         channels.add(channel);
         return true;
