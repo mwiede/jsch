@@ -31,7 +31,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
-import java.util.Vector;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public abstract class Channel {
 
@@ -44,68 +44,7 @@ public abstract class Channel {
   static final int SSH_OPEN_UNKNOWN_CHANNEL_TYPE = 3;
   static final int SSH_OPEN_RESOURCE_SHORTAGE = 4;
 
-  static int index = 0;
-  private static Vector<Channel> pool = new Vector<>();
-
-  static Channel getChannel(String type, Session session) {
-    Channel ret = null;
-    if (type.equals("session")) {
-      ret = new ChannelSession();
-    }
-    if (type.equals("shell")) {
-      ret = new ChannelShell();
-    }
-    if (type.equals("exec")) {
-      ret = new ChannelExec();
-    }
-    if (type.equals("x11")) {
-      ret = new ChannelX11();
-    }
-    if (type.equals("auth-agent@openssh.com")) {
-      ret = new ChannelAgentForwarding();
-    }
-    if (type.equals("direct-tcpip")) {
-      ret = new ChannelDirectTCPIP();
-    }
-    if (type.equals("forwarded-tcpip")) {
-      ret = new ChannelForwardedTCPIP();
-    }
-    if (type.equals("sftp")) {
-      ChannelSftp sftp = new ChannelSftp();
-      boolean useWriteFlushWorkaround =
-          session.getConfig("use_sftp_write_flush_workaround").equals("yes");
-      sftp.setUseWriteFlushWorkaround(useWriteFlushWorkaround);
-      ret = sftp;
-    }
-    if (type.equals("subsystem")) {
-      ret = new ChannelSubsystem();
-    }
-    if (type.equals("direct-streamlocal@openssh.com")) {
-      ret = new ChannelDirectStreamLocal();
-    }
-    if (ret == null) {
-      return null;
-    }
-    ret.setSession(session);
-    return ret;
-  }
-
-  static Channel getChannel(int id, Session session) {
-    synchronized (pool) {
-      for (int i = 0; i < pool.size(); i++) {
-        Channel c = pool.elementAt(i);
-        if (c.id == id && c.session == session)
-          return c;
-      }
-    }
-    return null;
-  }
-
-  static void del(Channel c) {
-    synchronized (pool) {
-      pool.removeElement(c);
-    }
-  }
+  private static final AtomicInteger index = new AtomicInteger();
 
   int id;
   volatile int recipient = -1;
@@ -137,16 +76,12 @@ public abstract class Channel {
   int notifyme = 0;
 
   Channel() {
-    synchronized (pool) {
-      id = index++;
-      // OpenSSH 8.0 introduced a bug that rejected channels with an ID that exceeds INT_MAX.
-      // See https://github.com/openssh/openssh-portable/commit/7ec5cb4.
-      // This bug was later resolved in OpenSSH 8.2.
-      // See https://github.com/openssh/openssh-portable/commit/0ecd20b.
-      // To allow compability, cap the ID value to not exceed INT_MAX.
-      index &= Integer.MAX_VALUE;
-      pool.addElement(this);
-    }
+    // OpenSSH 8.0 introduced a bug that rejected channels with an ID that exceeds INT_MAX.
+    // See https://github.com/openssh/openssh-portable/commit/7ec5cb4.
+    // This bug was later resolved in OpenSSH 8.2.
+    // See https://github.com/openssh/openssh-portable/commit/0ecd20b.
+    // To allow compability, cap the ID value to not exceed INT_MAX.
+    id = index.getAndIncrement() & Integer.MAX_VALUE;
   }
 
   synchronized void setRecipient(int foo) {
@@ -608,26 +543,6 @@ public abstract class Channel {
     return close;
   }
 
-  static void disconnect(Session session) {
-    Channel[] channels = null;
-    int count = 0;
-    synchronized (pool) {
-      channels = new Channel[pool.size()];
-      for (int i = 0; i < pool.size(); i++) {
-        try {
-          Channel c = pool.elementAt(i);
-          if (c.session == session) {
-            channels[count++] = c;
-          }
-        } catch (Exception e) {
-        }
-      }
-    }
-    for (int i = 0; i < count; i++) {
-      channels[i].disconnect();
-    }
-  }
-
   public void disconnect() {
     // System.err.println(this+":disconnect "+io+" "+connected);
     // Thread.dumpStack();
@@ -656,7 +571,10 @@ public abstract class Channel {
       }
       // io=null;
     } finally {
-      Channel.del(this);
+      Session _session = this.session;
+      if (_session != null) {
+        _session.delChannel(this);
+      }
     }
   }
 
