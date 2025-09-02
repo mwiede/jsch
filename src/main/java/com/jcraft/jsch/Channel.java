@@ -46,48 +46,6 @@ public abstract class Channel {
 
   private static final AtomicInteger index = new AtomicInteger();
 
-  static Channel getChannel(String type, Session session) {
-    Channel ret = null;
-    if (type.equals("session")) {
-      ret = new ChannelSession();
-    }
-    if (type.equals("shell")) {
-      ret = new ChannelShell();
-    }
-    if (type.equals("exec")) {
-      ret = new ChannelExec();
-    }
-    if (type.equals("x11")) {
-      ret = new ChannelX11();
-    }
-    if (type.equals("auth-agent@openssh.com")) {
-      ret = new ChannelAgentForwarding();
-    }
-    if (type.equals("direct-tcpip")) {
-      ret = new ChannelDirectTCPIP();
-    }
-    if (type.equals("forwarded-tcpip")) {
-      ret = new ChannelForwardedTCPIP();
-    }
-    if (type.equals("sftp")) {
-      ChannelSftp sftp = new ChannelSftp();
-      boolean useWriteFlushWorkaround =
-          session.getConfig("use_sftp_write_flush_workaround").equals("yes");
-      sftp.setUseWriteFlushWorkaround(useWriteFlushWorkaround);
-      ret = sftp;
-    }
-    if (type.equals("subsystem")) {
-      ret = new ChannelSubsystem();
-    }
-    if (type.equals("direct-streamlocal@openssh.com")) {
-      ret = new ChannelDirectStreamLocal();
-    }
-    if (ret == null) {
-      return null;
-    }
-    return ret;
-  }
-
   int id;
   volatile int recipient = -1;
   protected byte[] type = Util.str2byte("foo");

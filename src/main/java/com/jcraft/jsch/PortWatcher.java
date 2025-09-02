@@ -204,9 +204,9 @@ class PortWatcher {
         InputStream in = socket.getInputStream();
         OutputStream out = socket.getOutputStream();
         if (socketPath != null && socketPath.length() > 0) {
-          ChannelDirectStreamLocal channel = new ChannelDirectStreamLocal();
-          if (session.addChannel(channel)) {
-            channel.init();
+          ChannelDirectStreamLocal channel =
+              (ChannelDirectStreamLocal) session.openChannel("direct-streamlocal@openssh.com");
+          if (channel != null) {
             channel.setInputStream(in);
             channel.setOutputStream(out);
             channel.setSocketPath(socketPath);
@@ -227,9 +227,8 @@ class PortWatcher {
             }
           }
         } else {
-          ChannelDirectTCPIP channel = new ChannelDirectTCPIP();
-          if (session.addChannel(channel)) {
-            channel.init();
+          ChannelDirectTCPIP channel = (ChannelDirectTCPIP) session.openChannel("direct-tcpip");
+          if (channel != null) {
             channel.setInputStream(in);
             channel.setOutputStream(out);
             channel.setHost(host);
@@ -237,8 +236,6 @@ class PortWatcher {
             channel.setOrgIPAddress(socket.getInetAddress().getHostAddress());
             channel.setOrgPort(socket.getPort());
             channel.connect(connectTimeout);
-            if (channel.exitstatus != -1) {
-            }
           } else {
             try {
               socket.close();

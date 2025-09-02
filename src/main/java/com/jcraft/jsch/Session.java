@@ -1064,8 +1064,8 @@ public class Session {
       throw new JSchException("session is down");
     }
     try {
-      Channel channel = Channel.getChannel(type, this);
-      if (addChannel(channel)) {
+      Channel channel = createChannel(type);
+      if (channel != null) {
         channel.init();
         if (channel instanceof ChannelSession) {
           applyConfigChannel((ChannelSession) channel);
@@ -1073,8 +1073,8 @@ public class Session {
         return channel;
       } else {
         if (getLogger().isEnabled(Logger.DEBUG)) {
-          getLogger().log(Logger.DEBUG,
-              "Failed to add channel of type " + type + " - session may be disconnecting");
+          getLogger().log(Logger.DEBUG, "Failed to open channel of type " + type
+              + " - type unsupported or session may be disconnecting");
         }
       }
     } catch (Exception e) {
@@ -2036,11 +2036,9 @@ public class Session {
               buf.putString(Util.empty);
               write(packet);
             } else {
-              channel = Channel.getChannel(ctyp, this);
-              if (addChannel(channel)) {
+              channel = openChannel(ctyp);
+              if (channel != null) {
                 channel.getData(buf);
-                channel.init();
-
                 Thread tmp = getThreadFactory().newThread(channel::run);
                 tmp.setName("Channel " + ctyp + " " + host);
                 if (daemon_thread) {
@@ -2624,9 +2622,8 @@ public class Session {
    * @param port remote port, which the given stream will be plugged to.
    */
   public Channel getStreamForwarder(String host, int port) throws JSchException {
-    ChannelDirectTCPIP channel = new ChannelDirectTCPIP();
-    if (this.addChannel(channel)) {
-      channel.init();
+    ChannelDirectTCPIP channel = (ChannelDirectTCPIP) openChannel("direct-tcpip");
+    if (channel != null) {
       channel.setHost(host);
       channel.setPort(port);
       return channel;
@@ -2801,16 +2798,57 @@ public class Session {
     }
   }
 
-  boolean addChannel(Channel channel) {
+  private Channel createChannel(String type) {
+    Channel channel = null;
+    if (type.equals("session")) {
+      channel = new ChannelSession();
+    }
+    if (type.equals("shell")) {
+      channel = new ChannelShell();
+    }
+    if (type.equals("exec")) {
+      channel = new ChannelExec();
+    }
+    if (type.equals("x11")) {
+      channel = new ChannelX11();
+    }
+    if (type.equals("auth-agent@openssh.com")) {
+      channel = new ChannelAgentForwarding();
+    }
+    if (type.equals("direct-tcpip")) {
+      channel = new ChannelDirectTCPIP();
+    }
+    if (type.equals("forwarded-tcpip")) {
+      channel = new ChannelForwardedTCPIP();
+    }
+    if (type.equals("sftp")) {
+      ChannelSftp sftp = new ChannelSftp();
+      boolean useWriteFlushWorkaround = getConfig("use_sftp_write_flush_workaround").equals("yes");
+      sftp.setUseWriteFlushWorkaround(useWriteFlushWorkaround);
+      channel = sftp;
+    }
+    if (type.equals("subsystem")) {
+      channel = new ChannelSubsystem();
+    }
+    if (type.equals("direct-streamlocal@openssh.com")) {
+      channel = new ChannelDirectStreamLocal();
+    }
+    if (channel == null) {
+      return null;
+    }
+    return addChannel(channel);
+  }
+
+  private Channel addChannel(Channel channel) {
     Lock l = channelsLock.writeLock();
     l.lock();
     try {
       if (!disconnectingChannels && isConnected) {
         channel.setSession(this);
         channels.add(channel);
-        return true;
+        return channel;
       } else {
-        return false;
+        return null;
       }
     } finally {
       l.unlock();
