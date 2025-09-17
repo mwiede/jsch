@@ -26,13 +26,19 @@
 
 package com.jcraft.jsch;
 
+
+import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Map;
 import java.util.Vector;
+
+import static com.jcraft.jsch.OpenSshCertificateAwareIdentityFile.isOpenSshCertificate;
+import static java.nio.charset.StandardCharsets.*;
 
 public class JSch {
   /** The version number. */
@@ -239,7 +245,9 @@ public class JSch {
     config.put("PreferredAuthentications", Util.getSystemProperty("jsch.preferred_authentications",
         "gssapi-with-mic,publickey,keyboard-interactive,password"));
     config.put("PubkeyAcceptedAlgorithms", Util.getSystemProperty("jsch.client_pubkey",
-        "ssh-ed25519,ecdsa-sha2-nistp256,ecdsa-sha2-nistp384,ecdsa-sha2-nistp521,rsa-sha2-512,rsa-sha2-256"));
+        "ssh-ed25519,ecdsa-sha2-nistp256,ecdsa-sha2-nistp384,ecdsa-sha2-nistp521,rsa-sha2-512,rsa-sha2-256,"
+            + "ssh-rsa-cert-v01@openssh.com,ssh-dss-cert-v01@openssh.com,ecdsa-sha2-nistp256-cert-v01@openssh.com,"
+            + "ecdsa-sha2-nistp384-cert-v01@openssh.com,ecdsa-sha2-nistp521-cert-v01@openssh.com,ssh-ed25519-cert-v01@openssh.com"));
     config.put("enable_pubkey_auth_query",
         Util.getSystemProperty("jsch.enable_pubkey_auth_query", "yes"));
     config.put("try_additional_pubkey_algorithms",
@@ -320,8 +328,8 @@ public class JSch {
    * "user.name" will be referred.
    *
    * @param host hostname
-   * @throws JSchException if <code>username</code> or <code>host</code> are invalid.
    * @return the instance of <code>Session</code> class.
+   * @throws JSchException if <code>username</code> or <code>host</code> are invalid.
    * @see #getSession(String username, String host, int port)
    * @see com.jcraft.jsch.Session
    * @see com.jcraft.jsch.ConfigRepository
@@ -337,8 +345,8 @@ public class JSch {
    *
    * @param username user name
    * @param host hostname
-   * @throws JSchException if <code>username</code> or <code>host</code> are invalid.
    * @return the instance of <code>Session</code> class.
+   * @throws JSchException if <code>username</code> or <code>host</code> are invalid.
    * @see #getSession(String username, String host, int port)
    * @see com.jcraft.jsch.Session
    */
@@ -354,8 +362,8 @@ public class JSch {
    * @param username user name
    * @param host hostname
    * @param port port number
-   * @throws JSchException if <code>username</code> or <code>host</code> are invalid.
    * @return the instance of <code>Session</code> class.
+   * @throws JSchException if <code>username</code> or <code>host</code> are invalid.
    * @see #getSession(String username, String host, int port)
    * @see com.jcraft.jsch.Session
    */
@@ -492,7 +500,21 @@ public class JSch {
    * @throws JSchException if <code>passphrase</code> is not right.
    */
   public void addIdentity(String prvkey, String pubkey, byte[] passphrase) throws JSchException {
-    Identity identity = IdentityFile.newInstance(prvkey, pubkey, instLogger);
+    String pubkeyFileContent;
+    Identity identity;
+
+    try {
+      pubkeyFileContent = new String(Util.fromFile(pubkey), UTF_8);
+    } catch (IOException e) {
+      throw new JSchException(e.toString(), e);
+    }
+
+    if (isOpenSshCertificate(pubkeyFileContent)) {
+      identity = OpenSshCertificateAwareIdentityFile.newInstance(prvkey, pubkey, instLogger);
+    } else {
+      identity = IdentityFile.newInstance(prvkey, pubkey, instLogger);
+    }
+
     addIdentity(identity, passphrase);
   }
 
@@ -507,7 +529,14 @@ public class JSch {
    */
   public void addIdentity(String name, byte[] prvkey, byte[] pubkey, byte[] passphrase)
       throws JSchException {
-    Identity identity = IdentityFile.newInstance(name, prvkey, pubkey, instLogger);
+    String pubkeyFileContent = new String(pubkey, UTF_8);
+    Identity identity;
+
+    if (isOpenSshCertificate(pubkeyFileContent)) {
+      identity = OpenSshCertificateAwareIdentityFile.newInstance(name, prvkey, pubkey, instLogger);
+    } else {
+      identity = IdentityFile.newInstance(name, prvkey, pubkey, instLogger);
+    }
     addIdentity(identity, passphrase);
   }
 

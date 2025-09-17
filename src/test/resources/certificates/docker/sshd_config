@@ -1,0 +1,12 @@
+PubkeyAuthentication yes
+
+AuthenticationMethods publickey
+
+# PubkeyAcceptedKeyTypes ssh-ed25519, ssh-ed25519-cert-v01@openssh.com, ecdsa-sha2-nistp256,ecdsa-sha2-nistp256-cert-v01@openssh.com, rsa-sha2-512,rsa-sha2-512-cert-v01@openssh.com, rsa-sha2-256, rsa-sha2-256-cert-v01@openssh.com,ssh-rsa, ssh-rsa-cert-v01@openssh.com
+PrintMotd no
+PermitRootLogin yes
+Subsystem sftp internal-sftp
+HostKey /etc/ssh/ssh_host_rsa_key
+HostCertificate /etc/ssh/ssh_host_rsa_key-cert.pub
+TrustedUserCAKeys /etc/ssh/ca_jsch_key.pub
+LogLevel DEBUG3
