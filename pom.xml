@@ -73,7 +73,7 @@
         <jna.version>5.17.0</jna.version>
         <log4j.version>2.25.1</log4j.version>
         <errorprone.version>2.41.0</errorprone.version>
-        <surefire.version>3.5.3</surefire.version>
+        <surefire.version>3.5.4</surefire.version>
         <toolchain.jdk.version>[24,)</toolchain.jdk.version>
     </properties>
     <dependencies>
