@@ -28,9 +28,17 @@ package com.jcraft.jsch;
 
 public class Buffer {
   final byte[] tmp = new byte[4];
-  byte[] buffer;
-  int index;
-  int s;
+  protected byte[] buffer;
+
+  // write position
+  // Tracks the current writing position in the buffer and points to where the next
+  // write operation will occur and increments as data is written
+  protected int index;
+
+  // read position - Tracks the current reading position in the buffer and points to where the next
+  // read operation will
+  // occur and increments as data is read
+  protected int s;
 
   public Buffer(int size) {
     buffer = new byte[size];
