@@ -13,6 +13,7 @@ import static com.jcraft.jsch.OpenSshCertificateAwareIdentityFile.RSA_SHA2_256_C
 import static com.jcraft.jsch.OpenSshCertificateAwareIdentityFile.RSA_SHA2_512_CERT_V01_AT_OPENSSH_DOT_COM;
 import static com.jcraft.jsch.OpenSshCertificateAwareIdentityFile.SSH_DSS_CERT_V01_AT_OPENSSH_DOT_COM;
 import static com.jcraft.jsch.OpenSshCertificateAwareIdentityFile.SSH_ED25519_CERT_V01_AT_OPENSSH_DOT_COM;
+import static com.jcraft.jsch.OpenSshCertificateAwareIdentityFile.SSH_ED448_CERT_V01_AT_OPENSSH_DOT_COM;
 import static com.jcraft.jsch.OpenSshCertificateAwareIdentityFile.SSH_RSA_CERT_V01_AT_OPENSSH_DOT_COM;
 import static com.jcraft.jsch.OpenSshCertificateUtil.extractKeyData;
 import static com.jcraft.jsch.OpenSshCertificateUtil.extractKeyType;
@@ -40,7 +41,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
  * @see <a href="https://cvsweb.openbsd.org/src/usr.bin/ssh/PROTOCOL.certkeys">OpenSSH Certificate
  *      Protocol</a>
  */
-public class OpensshCertificateParser {
+class OpensshCertificateParser {
 
   private final String keyType;
 
@@ -174,6 +175,10 @@ public class OpensshCertificateParser {
         buffer.getByte(ed25519_pub_array);
         return new KeyPairEd25519(instLogger, ed25519_pub_array, null);
 
+      case SSH_ED448_CERT_V01_AT_OPENSSH_DOT_COM:
+        byte[] ed448_pub_array = new byte[buffer.getInt()];
+        buffer.getByte(ed448_pub_array);
+        return new KeyPairEd448(instLogger, ed448_pub_array, null);
       default:
         throw new JSchException("Unsupported Algorithm for Certificate public key: " + keyType);
     }
