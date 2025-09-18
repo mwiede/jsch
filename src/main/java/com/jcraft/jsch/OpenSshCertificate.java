@@ -21,7 +21,7 @@ import java.util.Map;
  * @see <a href="https://datatracker.ietf.org/doc/html/draft-miller-ssh-cert-03">OpenSSH Certificate
  *      Protocol</a>
  */
-public class OpenSshCertificate {
+class OpenSshCertificate {
 
   /**
    * Certificate type constant for user certificates

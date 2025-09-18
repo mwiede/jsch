@@ -1,12 +1,11 @@
 package com.jcraft.jsch;
 
+import java.time.Instant;
 import java.util.Date;
-import java.util.concurrent.TimeUnit;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
-public class OpenSshCertificateUtil {
+class OpenSshCertificateUtil {
 
 
   /**
@@ -154,7 +153,7 @@ public class OpenSshCertificateUtil {
    *         otherwise
    */
   static boolean isValidNow(OpenSshCertificate cert) {
-    long now = MILLISECONDS.toSeconds(System.currentTimeMillis());
+    long now = Instant.now().getEpochSecond();
     return Long.compareUnsigned(cert.getValidAfter(), now) <= 0
         && Long.compareUnsigned(now, cert.getValidBefore()) < 0;
   }
@@ -173,44 +172,31 @@ public class OpenSshCertificateUtil {
     if (timestamp < 0) {
       return "infinity";
     }
-    Date date = new Date(TimeUnit.SECONDS.toMillis(timestamp));
-    return date.toString();
+    return SftpATTRS.toDateString(timestamp);
   }
 
   /**
    * Extracts the raw key type from a given key type string.
    *
-   * This method assumes the key type string is in a specific format, such as
-   * "ssh-rsa-etc-bla-bla@something-cert-something". It splits the string at the "@" character and
-   * then extracts the substring up to the "-cert" part. It is null-safe and handles empty strings
-   * gracefully.
+   * This method searches for the first occurrence of the substring "-cert" and returns all
+   * characters that appear before it. If the substring is not found, the original string is
+   * returned unchanged.
    *
-   * @param keyType The full key type string.
-   * @return The raw key type (e.g., "ssh-rsa"), or {@code null} if the input is null or empty.
+   * @param keyType The full key type string, may be null.
+   * @return The raw key type (e.g., "ssh-rsa"), more in general the substring before the first
+   *         occurrence of "-cert", or the original string if "-cert" is not found, or null if the
+   *         input is null.
    */
   static String getRawKeyType(String keyType) {
     if (isEmpty(keyType)) {
       return null;
     }
-
-    int atIndex = keyType.indexOf("@");
-    if (atIndex == -1) {
-      return null;
-    }
-    String prefix = keyType.substring(0, atIndex);
-
-    int certIndex = prefix.indexOf("-cert");
-    if (certIndex == -1) {
-      return null;
-    }
-    String subPrefix = prefix.substring(0, certIndex);
-
-
-    if (isEmpty(prefix) || isEmpty(subPrefix)) {
-      return null;
+    int index = keyType.indexOf("-cert");
+    if (index == -1) {
+      return keyType; // "-cert" not found, return original string
     }
 
-    return subPrefix;
+    return keyType.substring(0, index);
   }
 
 }

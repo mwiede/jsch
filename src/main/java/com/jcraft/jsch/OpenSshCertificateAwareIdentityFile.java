@@ -25,7 +25,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
  * provides all the functionality needed for SSH authentication using certificates.
  * </p>
  */
-public class OpenSshCertificateAwareIdentityFile implements Identity {
+class OpenSshCertificateAwareIdentityFile implements Identity {
 
   public static final String SSH_RSA_CERT_V01_AT_OPENSSH_DOT_COM = "ssh-rsa-cert-v01@openssh.com";
   public static final String SSH_DSS_CERT_V01_AT_OPENSSH_DOT_COM = "ssh-dss-cert-v01@openssh.com";
@@ -37,6 +37,8 @@ public class OpenSshCertificateAwareIdentityFile implements Identity {
       "ecdsa-sha2-nistp521-cert-v01@openssh.com";
   public static final String SSH_ED25519_CERT_V01_AT_OPENSSH_DOT_COM =
       "ssh-ed25519-cert-v01@openssh.com";
+  public static final String SSH_ED448_CERT_V01_AT_OPENSSH_DOT_COM =
+      "ssh-ed448-cert-v01@openssh.com";
   public static final String RSA_SHA2_256_CERT_V01_AT_OPENSSH_DOT_COM =
       "rsa-sha2-256-cert-v01@openssh.com";
   public static final String RSA_SHA2_512_CERT_V01_AT_OPENSSH_DOT_COM =
@@ -71,6 +73,7 @@ public class OpenSshCertificateAwareIdentityFile implements Identity {
       case ECDSA_SHA2_NISTP384_CERT_V01_AT_OPENSSH_DOT_COM:
       case ECDSA_SHA2_NISTP521_CERT_V01_AT_OPENSSH_DOT_COM:
       case SSH_ED25519_CERT_V01_AT_OPENSSH_DOT_COM:
+      case SSH_ED448_CERT_V01_AT_OPENSSH_DOT_COM:
       case RSA_SHA2_256_CERT_V01_AT_OPENSSH_DOT_COM:
       case RSA_SHA2_512_CERT_V01_AT_OPENSSH_DOT_COM:
         return true;

@@ -1,9 +1,11 @@
 package com.jcraft.jsch;
 
 import java.nio.charset.Charset;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 
 import static com.jcraft.jsch.OpenSshCertificateUtil.*;
@@ -23,7 +25,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
  * arrays are prefixed with their length as a 32-bit integer.
  * </p>
  */
-public class OpenSshCertificateBuffer extends Buffer {
+class OpenSshCertificateBuffer extends Buffer {
 
   private static final byte[] EMPTY_BYTE_ARRAY = {};
 
@@ -33,7 +35,7 @@ public class OpenSshCertificateBuffer extends Buffer {
    *
    * @param certificateByteDecoded the decoded certificate data
    */
-  public OpenSshCertificateBuffer(byte[] certificateByteDecoded) {
+  OpenSshCertificateBuffer(byte[] certificateByteDecoded) {
     super(certificateByteDecoded);
     s = 0;
     index = certificateByteDecoded.length;
@@ -74,7 +76,7 @@ public class OpenSshCertificateBuffer extends Buffer {
    * @return collection of strings
    */
   public Collection<String> getStrings() {
-    Collection<String> list = new LinkedList<>();
+    List<String> list = new ArrayList<>();
     while (getLength() > 0) {
       String s = getString(UTF_8);
       list.add(s);
@@ -135,15 +137,14 @@ public class OpenSshCertificateBuffer extends Buffer {
   /**
    * Writes a UTF-8 encoded string to the buffer with length prefix.
    *
-   * @param string the strin
+   * @param string the string
    */
   public void putString(String string) {
     if (isEmpty(string)) {
+      putInt(0);
       putByte(EMPTY_BYTE_ARRAY);
     } else {
-      byte[] stringBytes = string.getBytes(UTF_8);
-      putInt(stringBytes.length);
-      putByte(stringBytes);
+      putString(string.getBytes(UTF_8));
     }
   }
 
