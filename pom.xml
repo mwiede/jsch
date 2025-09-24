@@ -71,7 +71,7 @@
         <skipITs>true</skipITs>
         <junixsocket.version>2.10.1</junixsocket.version>
         <jna.version>5.17.0</jna.version>
-        <log4j.version>2.25.1</log4j.version>
+        <log4j.version>2.25.2</log4j.version>
         <errorprone.version>2.41.0</errorprone.version>
         <surefire.version>3.5.4</surefire.version>
         <toolchain.jdk.version>[24,)</toolchain.jdk.version>
