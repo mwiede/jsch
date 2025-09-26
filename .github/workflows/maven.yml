@@ -31,7 +31,7 @@ jobs:
       uses: actions/setup-java@dded0888837ed1f317902acf8a20df0ad188d165 # v5.0.0
       with:
         distribution: 'temurin'
-        java-version: '24'
+        java-version: '25'
         check-latest: true
     - name: Build with Maven
       run: ./mvnw -B -V -e verify -DskipTests=true -DskipITs=true
@@ -47,7 +47,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        java: ['8', '11', '17', '21', '24']
+        java: ['8', '11', '17', '21', '25']
     steps:
     - name: Checkout repository
       uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
@@ -63,7 +63,7 @@ jobs:
     - name: Generate list of JDKs to install
       id: jdks_to_install
       run: |
-        maven_jdk=24
+        maven_jdk=25
         matrix_java="${{ matrix.java }}"
         echo 'list<<EOF' >> "$GITHUB_OUTPUT"
         echo "$matrix_java" >> "$GITHUB_OUTPUT"
