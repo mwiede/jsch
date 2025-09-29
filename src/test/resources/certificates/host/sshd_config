@@ -1,0 +1,19 @@
+PubkeyAuthentication yes
+
+AuthenticationMethods publickey
+
+PrintMotd no
+PermitRootLogin yes
+Subsystem sftp internal-sftp
+
+HostKey /etc/ssh/ssh_host_rsa_key
+HostCertificate /etc/ssh/ssh_host_rsa_key-cert.pub
+
+HostKey /etc/ssh/ssh_host_ecdsa_key
+HostCertificate /etc/ssh/ssh_host_ecdsa_key-cert.pub
+
+HostKey /etc/ssh/ssh_host_ed25519_key
+HostCertificate /etc/ssh/ssh_host_ed25519_key-cert.pub
+
+TrustedUserCAKeys /etc/ssh/ca_jsch_key.pub
+LogLevel DEBUG3
