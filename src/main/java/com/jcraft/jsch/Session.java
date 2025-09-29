@@ -931,7 +931,17 @@ public class Session {
     }
   }
 
-  private void checkHost(String chost, int port, KeyExchange kex) throws JSchException {
+
+
+  private void checkHost(String chost, int port, KeyExchange kex) throws Exception {
+    if (!kex.isOpenSshServerHostKeyType) {
+      checkHostKey(chost, port, kex);
+      return;
+    }
+    checkHostCertificate(this, kex);
+  }
+
+  private void checkHostKey(String chost, int port, KeyExchange kex) throws JSchException {
     String shkc = getConfig("StrictHostKeyChecking");
 
     if (hostKeyAlias != null) {
@@ -1170,6 +1180,8 @@ public class Session {
   }
 
   Buffer read(Buffer buf) throws Exception {
+    // determine which encryption and authentication mode is currently active
+    // for the server-to-client (s2c) connection
     int j = 0;
     boolean isChaCha20 = (s2ccipher != null && s2ccipher.isChaCha20());
     boolean isAEAD = (s2ccipher != null && s2ccipher.isAEAD());
@@ -1268,17 +1280,23 @@ public class Session {
           s2ccipher.update(buf.buffer, 4, j, buf.buffer, 4);
         }
       } else {
+        // fall back to the older Encrypt-and-MAC mode.
         io.getByte(buf.buffer, buf.index, s2ccipher_size);
         buf.index += s2ccipher_size;
         if (s2ccipher != null) {
           s2ccipher.update(buf.buffer, 0, s2ccipher_size, buf.buffer, 0);
         }
+
+        // calculating length of the incoming packet
         j = ((buf.buffer[0] << 24) & 0xff000000) | ((buf.buffer[1] << 16) & 0x00ff0000)
             | ((buf.buffer[2] << 8) & 0x0000ff00) | ((buf.buffer[3]) & 0x000000ff);
         // RFC 4253 6.1. Maximum Packet Length
         if (j < 5 || j > PACKET_MAX_SIZE) {
           start_discard(buf, s2ccipher, s2cmac, 0, PACKET_MAX_SIZE);
         }
+
+        // calculates how many more bytes need to be read from the buffer to get the rest of the
+        // encrypted SSH packet
         int need = j + 4 - s2ccipher_size;
         // if(need<0){
         // throw new IOException("invalid data");

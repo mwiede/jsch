@@ -8,7 +8,9 @@ import static com.jcraft.jsch.OpenSshCertificateUtil.extractComment;
 import static com.jcraft.jsch.OpenSshCertificateUtil.extractKeyData;
 import static com.jcraft.jsch.OpenSshCertificateUtil.extractKeyType;
 import static com.jcraft.jsch.OpenSshCertificateUtil.getRawKeyType;
+import static com.jcraft.jsch.OpenSshCertificateUtil.toDateString;
 import static com.jcraft.jsch.OpenSshCertificateUtil.trimToEmptyIfNull;
+import static com.jcraft.jsch.Util.fromBase64;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
@@ -28,21 +30,31 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 class OpenSshCertificateAwareIdentityFile implements Identity {
 
   public static final String SSH_RSA_CERT_V01_AT_OPENSSH_DOT_COM = "ssh-rsa-cert-v01@openssh.com";
+  public static final String SSH_RSA_CERT = "ssh-rsa-cert";
+
   public static final String SSH_DSS_CERT_V01_AT_OPENSSH_DOT_COM = "ssh-dss-cert-v01@openssh.com";
+  public static final String SSH_DSS_CERT = "ssh-dss-cert";
+
   public static final String ECDSA_SHA2_NISTP256_CERT_V01_AT_OPENSSH_DOT_COM =
       "ecdsa-sha2-nistp256-cert-v01@openssh.com";
+  public static final String ECDSA_SHA2_NISTP256_CERT = "ecdsa-sha2-nistp256-cert";
+
   public static final String ECDSA_SHA2_NISTP384_CERT_V01_AT_OPENSSH_DOT_COM =
       "ecdsa-sha2-nistp384-cert-v01@openssh.com";
+  public static final String ECDSA_SHA2_NISTP384_CERT = "ecdsa-sha2-nistp384-cert";
+
   public static final String ECDSA_SHA2_NISTP521_CERT_V01_AT_OPENSSH_DOT_COM =
       "ecdsa-sha2-nistp521-cert-v01@openssh.com";
+  public static final String ECDSA_SHA2_NISTP521_CERT = "ecdsa-sha2-nistp521-cert";
+
+
   public static final String SSH_ED25519_CERT_V01_AT_OPENSSH_DOT_COM =
       "ssh-ed25519-cert-v01@openssh.com";
+  public static final String SSH_ED25519_CERT = "ssh-ed25519-cert";
+
   public static final String SSH_ED448_CERT_V01_AT_OPENSSH_DOT_COM =
       "ssh-ed448-cert-v01@openssh.com";
-  public static final String RSA_SHA2_256_CERT_V01_AT_OPENSSH_DOT_COM =
-      "rsa-sha2-256-cert-v01@openssh.com";
-  public static final String RSA_SHA2_512_CERT_V01_AT_OPENSSH_DOT_COM =
-      "rsa-sha2-512-cert-v01@openssh.com";
+  public static final String SSH_ED448_CERT = "ssh-ed448-cert";
 
 
   /**
@@ -74,30 +86,47 @@ class OpenSshCertificateAwareIdentityFile implements Identity {
       case ECDSA_SHA2_NISTP521_CERT_V01_AT_OPENSSH_DOT_COM:
       case SSH_ED25519_CERT_V01_AT_OPENSSH_DOT_COM:
       case SSH_ED448_CERT_V01_AT_OPENSSH_DOT_COM:
-      case RSA_SHA2_256_CERT_V01_AT_OPENSSH_DOT_COM:
-      case RSA_SHA2_512_CERT_V01_AT_OPENSSH_DOT_COM:
+      case SSH_RSA_CERT:
+      case SSH_DSS_CERT:
+      case ECDSA_SHA2_NISTP256_CERT:
+      case ECDSA_SHA2_NISTP384_CERT:
+      case ECDSA_SHA2_NISTP521_CERT:
+      case SSH_ED25519_CERT:
+      case SSH_ED448_CERT:
         return true;
       default:
         return false;
     }
   }
 
-  /** parsed certificate. **/
+  /**
+   * parsed certificate.
+   **/
   private final OpenSshCertificate certificate;
 
-  /** the key type declared in the first part of the file **/
+  /**
+   * the key type declared in the first part of the file
+   **/
   private final String keyType;
 
-  /** The entire certificate as raw bytes */
+  /**
+   * The entire certificate as raw bytes
+   */
   private final byte[] publicKeyBlob;
 
-  /** The key pair containing the private key */
+  /**
+   * The key pair containing the private key
+   */
   private final KeyPair kpair;
 
-  /** The identity name/path */
+  /**
+   * The identity name/path
+   */
   private final String identity;
 
-  /** Optional comment associated with the identity */
+  /**
+   * Optional comment associated with the identity
+   */
   private final String comment;
 
 
@@ -113,15 +142,15 @@ class OpenSshCertificateAwareIdentityFile implements Identity {
   static Identity newInstance(String prvfile, String pubfile, JSch.InstanceLogger instLogger)
       throws JSchException {
     byte[] prvkey;
-    byte[] pubkey;
+    byte[] certificateFileContent;
 
     try {
       prvkey = Util.fromFile(prvfile);
-      pubkey = Util.fromFile(pubfile);
+      certificateFileContent = Util.fromFile(pubfile);
     } catch (IOException e) {
       throw new JSchException(e.toString(), e);
     }
-    return newInstance(prvfile, prvkey, pubkey, instLogger);
+    return newInstance(prvfile, prvkey, certificateFileContent, instLogger);
   }
 
   /**
@@ -129,35 +158,53 @@ class OpenSshCertificateAwareIdentityFile implements Identity {
    *
    * @param name the identity name
    * @param prvkey the private key bytes
-   * @param pubkey the certificate bytes
+   * @param certificateFileContentBytes the certificate bytes
    * @param instLogger logger instance for debugging
    * @return a new Identity instance
    * @throws JSchException if the certificate cannot be parsed
    */
-  static Identity newInstance(String name, byte[] prvkey, byte[] pubkey,
+  static Identity newInstance(String name, byte[] prvkey, byte[] certificateFileContentBytes,
       JSch.InstanceLogger instLogger) throws JSchException {
-    String certString = new String(pubkey, UTF_8);
+    String certificateFileContentString = new String(certificateFileContentBytes, UTF_8);
     OpenSshCertificate cert;
     byte[] certPublicKey;
     KeyPair kpair;
-    String keyType;
+    String declaredKeyType;
     String comment;
     String base64KeyData;
 
+
     try {
-      cert = new OpensshCertificateParser(instLogger, certString).parse();
+      declaredKeyType = extractKeyType(certificateFileContentString);
+      base64KeyData = extractKeyData(certificateFileContentString);
+      comment = extractComment(certificateFileContentString);
+      byte[] keyData =
+          fromBase64(base64KeyData.getBytes(UTF_8), 0, base64KeyData.getBytes(UTF_8).length);
+      cert = OpenSshCertificateParser.parse(instLogger, keyData);
+
+      // keyType
+      if (cert.getKeyType().isEmpty() || !cert.getKeyType().equals(declaredKeyType)) {
+        instLogger.getLogger().log(Logger.WARN,
+            "Key type declared at the beginning of the certificate file, does not correspond to the encoded key type. Declared type: '"
+                + declaredKeyType + "' - Encoded Key type: '" + base64KeyData + "'"
+                + cert.getKeyType() + "'");
+      }
+
+      if (!cert.isValidNow()) {
+        instLogger.getLogger().log(Logger.WARN,
+            "certificate is not valid. Valid after: " + toDateString(cert.getValidAfter())
+                + " - Valid before: " + toDateString(cert.getValidBefore()));
+      }
+
       certPublicKey = cert.getCertificatePublicKey();
       kpair = KeyPair.load(instLogger, prvkey, certPublicKey);
-      keyType = extractKeyType(certString);
-      base64KeyData = extractKeyData(certString);
-      comment = extractComment(certString);
 
 
-    } catch (IOException | NoSuchAlgorithmException e) {
+    } catch (Exception e) {
       throw new JSchException(e.toString(), e);
     }
-    return new OpenSshCertificateAwareIdentityFile(name, keyType, base64KeyData, cert, kpair,
-        comment);
+    return new OpenSshCertificateAwareIdentityFile(name, declaredKeyType, base64KeyData, cert,
+        kpair, comment);
   }
 
   /**
@@ -227,7 +274,6 @@ class OpenSshCertificateAwareIdentityFile implements Identity {
   public KeyPair getKpair() {
     return kpair;
   }
-
 
   public String getIdentity() {
     return identity;

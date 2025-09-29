@@ -298,6 +298,23 @@ public class Buffer {
     return buf;
   }
 
+  /**
+   * Advances the read position by the specified number of bytes.
+   *
+   * If the requested number of bytes would move the position beyond the end of the available data,
+   * the position is advanced to the very end instead.
+   *
+   * @param bytesToSkip the number of bytes to skip.
+   */
+  public void readSkip(int bytesToSkip) {
+    if (bytesToSkip > getLength()) {
+      s += getLength();
+      return;
+    }
+    s += bytesToSkip;
+  }
+
+
   /*
    * static String[] chars={ "0","1","2","3","4","5","6","7","8","9", "a","b","c","d","e","f" };
    * static void dump_buffer(){ int foo; for(int i=0; i<tmp_buffer_index; i++){

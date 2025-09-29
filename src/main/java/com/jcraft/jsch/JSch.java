@@ -29,7 +29,6 @@ package com.jcraft.jsch;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -38,7 +37,7 @@ import java.util.Map;
 import java.util.Vector;
 
 import static com.jcraft.jsch.OpenSshCertificateAwareIdentityFile.isOpenSshCertificate;
-import static java.nio.charset.StandardCharsets.*;
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 public class JSch {
   /** The version number. */
@@ -50,7 +49,7 @@ public class JSch {
     config.put("kex", Util.getSystemProperty("jsch.kex",
         "mlkem768x25519-sha256,curve25519-sha256,curve25519-sha256@libssh.org,ecdh-sha2-nistp256,ecdh-sha2-nistp384,ecdh-sha2-nistp521,diffie-hellman-group-exchange-sha256,diffie-hellman-group16-sha512,diffie-hellman-group18-sha512,diffie-hellman-group14-sha256"));
     config.put("server_host_key", Util.getSystemProperty("jsch.server_host_key",
-        "ssh-ed25519,ecdsa-sha2-nistp256,ecdsa-sha2-nistp384,ecdsa-sha2-nistp521,rsa-sha2-512,rsa-sha2-256"));
+        "ssh-ed25519-cert-v01@openssh.com,ecdsa-sha2-nistp256-cert-v01@openssh.com,ecdsa-sha2-nistp384-cert-v01@openssh.com,ecdsa-sha2-nistp521-cert-v01@openssh.com,ssh-rsa-cert-v01@openssh.com,ssh-dss-cert-v01@openssh.com,ssh-ed25519,ecdsa-sha2-nistp256,ecdsa-sha2-nistp384,ecdsa-sha2-nistp521,rsa-sha2-512,rsa-sha2-256"));
     config.put("prefer_known_host_key_types",
         Util.getSystemProperty("jsch.prefer_known_host_key_types", "yes"));
     config.put("enable_strict_kex", Util.getSystemProperty("jsch.enable_strict_kex", "yes"));
@@ -512,7 +511,7 @@ public class JSch {
     if (pubkeyFileContent != null && isOpenSshCertificate(pubkeyFileContent)) {
       identity = OpenSshCertificateAwareIdentityFile.newInstance(prvkey, pubkey, instLogger);
     } else {
-      identity = IdentityFile.newInstance(prvkey, pubkeyFileContent, instLogger);
+      identity = IdentityFile.newInstance(prvkey, pubkey, instLogger);
     }
 
     addIdentity(identity, passphrase);

@@ -4,11 +4,10 @@ import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedHashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-import static com.jcraft.jsch.OpenSshCertificateUtil.*;
+import static com.jcraft.jsch.OpenSshCertificateUtil.isEmpty;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
@@ -146,14 +145,5 @@ class OpenSshCertificateBuffer extends Buffer {
     } else {
       putString(string.getBytes(UTF_8));
     }
-  }
-
-
-  public int getReadPosition() {
-    return s;
-  }
-
-  public int getWritePosition() {
-    return index;
   }
 }

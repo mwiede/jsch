@@ -2,24 +2,23 @@ package com.jcraft.jsch;
 
 import com.jcraft.jsch.JSch.InstanceLogger;
 
-import java.io.IOException;
-import java.security.NoSuchAlgorithmException;
 import java.util.Collection;
 
+import static com.jcraft.jsch.OpenSshCertificateAwareIdentityFile.ECDSA_SHA2_NISTP256_CERT;
 import static com.jcraft.jsch.OpenSshCertificateAwareIdentityFile.ECDSA_SHA2_NISTP256_CERT_V01_AT_OPENSSH_DOT_COM;
+import static com.jcraft.jsch.OpenSshCertificateAwareIdentityFile.ECDSA_SHA2_NISTP384_CERT;
 import static com.jcraft.jsch.OpenSshCertificateAwareIdentityFile.ECDSA_SHA2_NISTP384_CERT_V01_AT_OPENSSH_DOT_COM;
+import static com.jcraft.jsch.OpenSshCertificateAwareIdentityFile.ECDSA_SHA2_NISTP521_CERT;
 import static com.jcraft.jsch.OpenSshCertificateAwareIdentityFile.ECDSA_SHA2_NISTP521_CERT_V01_AT_OPENSSH_DOT_COM;
-import static com.jcraft.jsch.OpenSshCertificateAwareIdentityFile.RSA_SHA2_256_CERT_V01_AT_OPENSSH_DOT_COM;
-import static com.jcraft.jsch.OpenSshCertificateAwareIdentityFile.RSA_SHA2_512_CERT_V01_AT_OPENSSH_DOT_COM;
+import static com.jcraft.jsch.OpenSshCertificateAwareIdentityFile.SSH_DSS_CERT;
 import static com.jcraft.jsch.OpenSshCertificateAwareIdentityFile.SSH_DSS_CERT_V01_AT_OPENSSH_DOT_COM;
+import static com.jcraft.jsch.OpenSshCertificateAwareIdentityFile.SSH_ED25519_CERT;
 import static com.jcraft.jsch.OpenSshCertificateAwareIdentityFile.SSH_ED25519_CERT_V01_AT_OPENSSH_DOT_COM;
+import static com.jcraft.jsch.OpenSshCertificateAwareIdentityFile.SSH_ED448_CERT;
 import static com.jcraft.jsch.OpenSshCertificateAwareIdentityFile.SSH_ED448_CERT_V01_AT_OPENSSH_DOT_COM;
+import static com.jcraft.jsch.OpenSshCertificateAwareIdentityFile.SSH_RSA_CERT;
 import static com.jcraft.jsch.OpenSshCertificateAwareIdentityFile.SSH_RSA_CERT_V01_AT_OPENSSH_DOT_COM;
-import static com.jcraft.jsch.OpenSshCertificateUtil.extractKeyData;
-import static com.jcraft.jsch.OpenSshCertificateUtil.extractKeyType;
-import static com.jcraft.jsch.OpenSshCertificateUtil.toDateString;
 import static com.jcraft.jsch.OpenSshCertificateUtil.trimToEmptyIfNull;
-import static com.jcraft.jsch.Util.fromBase64;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
@@ -41,29 +40,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
  * @see <a href="https://cvsweb.openbsd.org/src/usr.bin/ssh/PROTOCOL.certkeys">OpenSSH Certificate
  *      Protocol</a>
  */
-class OpensshCertificateParser {
-
-  private final String keyType;
-
-  private final OpenSshCertificateBuffer buffer;
-
-  private final InstanceLogger instLogger;
-
-  public OpensshCertificateParser(InstanceLogger instLogger, String certificate)
-      throws JSchException {
-    this.instLogger = instLogger;
-
-    this.keyType = extractKeyType(certificate);
-
-    // Decode
-    String base64 = extractKeyData(certificate);
-
-
-    byte[] keyData = fromBase64(base64.getBytes(UTF_8), 0, base64.getBytes(UTF_8).length);
-
-    buffer = new OpenSshCertificateBuffer(keyData);
-  }
-
+class OpenSshCertificateParser {
   /**
    * Parses the certificate data and returns a complete {@link OpenSshCertificate} object.
    *
@@ -88,27 +65,24 @@ class OpensshCertificateParser {
    * <li>Signature</li>
    * </ol>
    *
+   * @param instLogger logger instance for debugging
+   * @param certificateData the certificate data
    * @return the parsed certificate object
-   * @throws IOException if an I/O error occurs during parsing
    * @throws JSchException if the certificate format is invalid or unsupported
-   * @throws NoSuchAlgorithmException if a required cryptographic algorithm is not available
    */
-  public OpenSshCertificate parse() throws IOException, JSchException, NoSuchAlgorithmException {
+  static OpenSshCertificate parse(InstanceLogger instLogger, byte[] certificateData)
+      throws JSchException {
+
+    OpenSshCertificateBuffer buffer = new OpenSshCertificateBuffer(certificateData);
 
     OpenSshCertificate.Builder openSshCertificateBuilder = new OpenSshCertificate.Builder();
 
-    // keyType
     String kTypeFromData = trimToEmptyIfNull(buffer.getString(UTF_8));
-    if (kTypeFromData.isEmpty() || !keyType.equals(kTypeFromData)) {
-      instLogger.getLogger().log(Logger.WARN,
-          "Key type declared does not correspond to the encoded key type: " + keyType + " - "
-              + kTypeFromData);
-    }
 
     openSshCertificateBuilder.keyType(kTypeFromData).nonce(buffer.getString());
 
     // KeyPair.parsePubkeyBlob expect keytype in public key blob
-    KeyPair publicKey = parsePublicKey(keyType, buffer);
+    KeyPair publicKey = parsePublicKey(instLogger, kTypeFromData, buffer);
     openSshCertificateBuilder.certificatePublicKey(publicKey.getPublicKeyBlob())
         .serial(buffer.getLong()).type(buffer.getInt()).id(buffer.getString(UTF_8));
 
@@ -119,39 +93,58 @@ class OpensshCertificateParser {
     openSshCertificateBuilder.principals(principals).validAfter(buffer.getLong())
         .validBefore(buffer.getLong()).criticalOptions(buffer.getCriticalOptions())
         .extensions(buffer.getExtensions()).reserved(buffer.getString(UTF_8))
-        .signatureKey(buffer.getString()).signature(buffer.getString());
+        .signatureKey(buffer.getString());
 
+    int messageEndIndex = buffer.s;
+
+    //
+    byte[] message = new byte[messageEndIndex - 0];
+    System.arraycopy(buffer.buffer, 0, message, 0, messageEndIndex - 0);
+
+    openSshCertificateBuilder.message(message);
+
+    openSshCertificateBuilder.signature(buffer.getString());
 
     OpenSshCertificate certificate = openSshCertificateBuilder.build();
 
-    if (buffer.getReadPosition() != buffer.getWritePosition()) {
-      throw new JSchException("Cannot read OpenSSH certificate, got more data than expected: "
-          + buffer.getReadPosition() + ", actual: " + buffer.getWritePosition()
-          + ". ID of the ca certificate: " + certificate.getId());
+    if (buffer.s != buffer.index) {
+      throw new JSchException(
+          "Cannot read OpenSSH certificate, got more data than expected: " + buffer.s + ", actual: "
+              + buffer.index + ". ID of the ca certificate: " + certificate.getId());
     }
-
-    if (!certificate.isValidNow()) {
-      instLogger.getLogger().log(Logger.WARN,
-          "certificate is not valid. Valid after: " + toDateString(certificate.getValidAfter())
-              + " - Valid before: " + toDateString(certificate.getValidBefore()));
-    }
-
 
     return certificate;
   }
 
-
-  private KeyPair parsePublicKey(String keyType, Buffer buffer) throws JSchException {
+  /**
+   * Parses a public key from a buffer based on the specified key type.
+   *
+   * This method is used to deserialize public key components from a binary buffer, typically from
+   * an SSH certificate or public key file. It uses a {@code switch} statement to handle different
+   * key types, including RSA, DSA, ECDSA, Ed25519, and Ed448, and their corresponding certificate
+   * variations. The method reads the necessary key components (e.g., modulus, exponent, curve
+   * parameters) from the buffer and uses them to construct the appropriate {@link KeyPair} object.
+   *
+   * @param instLogger An instance of {@link JSch.InstanceLogger} for logging.
+   * @param keyType The string identifier for the public key algorithm (e.g.,
+   *        "ssh-rsa-cert-v01@openssh.com").
+   * @param buffer The {@link Buffer} containing the binary representation of the public key.
+   * @return A {@link KeyPair} object representing the parsed public key.
+   * @throws JSchException if the key type is unsupported or if there is an error parsing the key
+   *         components from the buffer.
+   */
+  static KeyPair parsePublicKey(InstanceLogger instLogger, String keyType, Buffer buffer)
+      throws JSchException {
     switch (keyType) {
 
       case SSH_RSA_CERT_V01_AT_OPENSSH_DOT_COM:
-      case RSA_SHA2_256_CERT_V01_AT_OPENSSH_DOT_COM:
-      case RSA_SHA2_512_CERT_V01_AT_OPENSSH_DOT_COM:
+      case SSH_RSA_CERT:
         byte[] pub_array = buffer.getMPInt(); // e
         byte[] n_array = buffer.getMPInt(); // n
         return new KeyPairRSA(instLogger, n_array, pub_array, null);
 
       case SSH_DSS_CERT_V01_AT_OPENSSH_DOT_COM:
+      case SSH_DSS_CERT:
         byte[] p_array = buffer.getMPInt();
         byte[] q_array = buffer.getMPInt();
         byte[] g_array = buffer.getMPInt();
@@ -161,6 +154,9 @@ class OpensshCertificateParser {
       case ECDSA_SHA2_NISTP256_CERT_V01_AT_OPENSSH_DOT_COM:
       case ECDSA_SHA2_NISTP384_CERT_V01_AT_OPENSSH_DOT_COM:
       case ECDSA_SHA2_NISTP521_CERT_V01_AT_OPENSSH_DOT_COM:
+      case ECDSA_SHA2_NISTP256_CERT:
+      case ECDSA_SHA2_NISTP384_CERT:
+      case ECDSA_SHA2_NISTP521_CERT:
         byte[] name = buffer.getString();
         int len = buffer.getInt();
         int x04 = buffer.getByte();
@@ -171,11 +167,13 @@ class OpensshCertificateParser {
         return new KeyPairECDSA(instLogger, name, r_array, s_array, null);
 
       case SSH_ED25519_CERT_V01_AT_OPENSSH_DOT_COM:
+      case SSH_ED25519_CERT:
         byte[] ed25519_pub_array = new byte[buffer.getInt()];
         buffer.getByte(ed25519_pub_array);
         return new KeyPairEd25519(instLogger, ed25519_pub_array, null);
 
       case SSH_ED448_CERT_V01_AT_OPENSSH_DOT_COM:
+      case SSH_ED448_CERT:
         byte[] ed448_pub_array = new byte[buffer.getInt()];
         buffer.getByte(ed448_pub_array);
         return new KeyPairEd448(instLogger, ed448_pub_array, null);

@@ -112,7 +112,7 @@ abstract class DHXECKEM extends KeyExchange {
   }
 
   @Override
-  public boolean next(Buffer _buf) throws Exception {
+  public boolean doNext(Buffer _buf, int sshMessageType) throws Exception {
     int i, j;
     switch (state) {
       case SSH_MSG_KEX_ECDH_REPLY:
@@ -121,12 +121,10 @@ abstract class DHXECKEM extends KeyExchange {
         // string K_S, server's public host key
         // string Q_S, server's ephemeral public key octet string
         // string the signature on the exchange hash
-        j = _buf.getInt();
-        j = _buf.getByte();
-        j = _buf.getByte();
-        if (j != SSH_MSG_KEX_ECDH_REPLY) {
+        if (sshMessageType != SSH_MSG_KEX_ECDH_REPLY) {
           if (session.getLogger().isEnabled(Logger.ERROR)) {
-            session.getLogger().log(Logger.ERROR, "type: must be SSH_MSG_KEX_ECDH_REPLY " + j);
+            session.getLogger().log(Logger.ERROR,
+                "type: must be SSH_MSG_KEX_ECDH_REPLY " + sshMessageType);
           }
           return false;
         }
@@ -217,7 +215,7 @@ abstract class DHXECKEM extends KeyExchange {
         String alg = Util.byte2str(K_S, i, j);
         i += j;
 
-        boolean result = verify(alg, K_S, i, sig_of_H);
+        boolean result = verifyKeyExchangeServerSignature(alg, K_S, i, sig_of_H);
 
         state = STATE_END;
         return result;
