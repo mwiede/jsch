@@ -1,8 +1,14 @@
 package com.jcraft.jsch;
 
+import java.io.IOException;
 import java.time.Instant;
+import java.util.Collection;
 import java.util.Date;
+import java.util.Map;
 
+import static com.jcraft.jsch.OpenSshCertificate.SSH2_CERT_TYPE_HOST;
+import static com.jcraft.jsch.OpenSshCertificateAwareIdentityFile.isOpenSshCertificateKeyType;
+import static com.jcraft.jsch.OpenSshCertificateParser.parsePublicKey;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 class OpenSshCertificateUtil {
@@ -63,6 +69,28 @@ class OpenSshCertificateUtil {
   static boolean isEmpty(CharSequence cs) {
     return cs == null || cs.length() == 0;
   }
+
+
+  /**
+   * Checks if a Collection is empty or null.
+   *
+   * @param c the Collection to check, may be null
+   * @return true if the Collection is null or has 0 elements, false otherwise
+   */
+  static boolean isEmpty(Collection<?> c) {
+    return c == null || c.isEmpty();
+  }
+
+  /**
+   * Checks if a Map is empty or null.
+   *
+   * @param c the Map to check, may be null
+   * @return true if the Map is null or has 0 elements, false otherwise
+   */
+  static boolean isEmpty(Map<?, ?> c) {
+    return c == null || c.isEmpty();
+  }
+
 
   /**
    * Extracts the key type from a certificate file content string. This method assumes the key type
@@ -153,7 +181,9 @@ class OpenSshCertificateUtil {
    *         otherwise
    */
   static boolean isValidNow(OpenSshCertificate cert) {
+
     long now = Instant.now().getEpochSecond();
+
     return Long.compareUnsigned(cert.getValidAfter(), now) <= 0
         && Long.compareUnsigned(now, cert.getValidBefore()) < 0;
   }
@@ -199,4 +229,78 @@ class OpenSshCertificateUtil {
     return keyType.substring(0, index);
   }
 
+  /**
+   * Checks if a given byte array represents an OpenSSH host certificate.
+   *
+   * This method parses the provided byte array to determine if it conforms to the structure of an
+   * OpenSSH certificate and, if so, verifies that its type is a host certificate. It performs
+   * checks for null or empty input, validates the key type, and then extracts the certificate type
+   * from the buffer.
+   *
+   * @param instLogger An instance of {@link JSch.InstanceLogger} for logging purposes.
+   * @param bytes The byte array containing the certificate data to be checked.
+   * @return {@code true} if the byte array represents a valid OpenSSH host certificate;
+   *         {@code false} otherwise.
+   * @throws JSchException if there is an issue parsing the certificate data, such as malformed
+   *         data.
+   */
+  static boolean isOpenSshHostCertificate(JSch.InstanceLogger instLogger, byte[] bytes)
+      throws JSchException {
+    if (bytes == null || bytes.length == 0) {
+      return false;
+    }
+
+    OpenSshCertificateBuffer buffer = new OpenSshCertificateBuffer(bytes);
+
+    String keyType = buffer.getString(UTF_8);
+    if (isEmpty(keyType) || !isOpenSshCertificateKeyType(keyType)) {
+      return false;
+    }
+
+    // discard nonce
+    buffer.getString();
+    // public key
+    parsePublicKey(instLogger, keyType, buffer);
+    // serial
+    buffer.getLong();
+    // type
+    int certificateType = buffer.getInt();
+
+    return certificateType == SSH2_CERT_TYPE_HOST;
+  }
+
+  /**
+   * Reads the entire content of a specified file into a String using UTF-8 encoding. This method
+   * delegates the file reading to a utility function and then converts the resulting byte array
+   * into a String.
+   *
+   * @param filePath The path to the file to be read.
+   * @return A {@code String} containing the entire content of the file.
+   * @throws JSchException If an error related to JSch occurs during file processing (consider if
+   *         this exception is truly necessary here, as basic file reading usually only throws
+   *         IOException).
+   * @throws IOException If an I/O error occurs while reading the file.
+   * @see Util#fromFile(String)
+   */
+  static String fromFile(String filePath) throws JSchException, IOException {
+    byte[] fileContent = Util.fromFile(filePath);
+    return new String(fileContent, UTF_8);
+  }
+
+  /**
+   * Checks if the given {@code HostKey} represents a Certificate Authority (CA) public key entry. A
+   * host key is considered a CA public key entry if its marker is exactly
+   * {@code "@cert-authority"}.
+   *
+   * @param hostKey The {@link HostKey} object to check.
+   * @return {@code true} if the host key's marker indicates it is a CA public key entry;
+   *         {@code false} otherwise, including if the {@code hostKey} is {@code null}.
+   * @see com.jcraft.jsch.HostKey#getMarker()
+   */
+  static boolean isKnownHostCaPublicKeyEntry(HostKey hostKey) {
+    if (hostKey == null) {
+      return false;
+    }
+    return "@cert-authority".equals(hostKey.getMarker());
+  }
 }

@@ -28,6 +28,10 @@ package com.jcraft.jsch;
 
 import java.util.Locale;
 
+import static com.jcraft.jsch.OpenSshCertificateAwareIdentityFile.isOpenSshCertificateKeyType;
+import static com.jcraft.jsch.Util.byte2str;
+import static java.nio.charset.StandardCharsets.*;
+
 public abstract class KeyExchange {
 
   static final int PROPOSAL_KEX_ALGS = 0;
@@ -54,7 +58,7 @@ public abstract class KeyExchange {
   static String enc_c2s = "blowfish-cbc";
   static String enc_s2c = "blowfish-cbc";
   static String mac_c2s = "hmac-md5"; // hmac-md5,hmac-sha1,hmac-ripemd160,
-                                      // hmac-sha1-96,hmac-md5-96
+  // hmac-sha1-96,hmac-md5-96
   static String mac_s2c = "hmac-md5";
   // static String comp_c2s="none"; // zlib
   // static String comp_s2c="none";
@@ -68,6 +72,17 @@ public abstract class KeyExchange {
   protected byte[] K = null;
   protected byte[] H = null;
   protected byte[] K_S = null;
+  protected OpenSshCertificate hostKeyCertificate = null;
+  protected boolean isOpenSshServerHostKeyType = false;
+
+  public OpenSshCertificate getHostKeyCertificate() {
+    return hostKeyCertificate;
+  }
+
+  public boolean isOpenSshServerHostKeyType() {
+    return isOpenSshServerHostKeyType;
+  }
+
 
   public abstract void init(Session session, byte[] V_S, byte[] V_C, byte[] I_S, byte[] I_C)
       throws Exception;
@@ -77,7 +92,27 @@ public abstract class KeyExchange {
     init(session, V_S, V_C, I_S, I_C);
   }
 
-  public abstract boolean next(Buffer buf) throws Exception;
+  public boolean next(Buffer buf) throws Exception {
+
+    /* @formatter:off
+     * After decryption and decompression, the start of the buffer looks like this:
+     *  1. Packet Length (4 bytes): An integer specifying the length of the data that follows (from the padding length
+     *     byte to the end of the padding).
+     *  2. Padding Length (1 byte): A single byte specifying how many bytes of random padding are at the end of the packet.
+     *  3. SSH Message Type (1 byte): This is the byte you're looking for, which identifies the message (e.g., SSH_MSG_CHANNEL_DATA).
+     *  4. Message-Specific Data (n bytes): The rest of the payload.
+     * @formatter:on
+         */
+
+    // skip packet length (4 bytes) and padding length(1 byte)
+    buf.readSkip(5);
+    // get the message type
+    int sshMessageType = buf.getByte();
+
+    return doNext(buf, sshMessageType);
+  }
+
+  protected abstract boolean doNext(Buffer buf, int sshMessageType) throws Exception;
 
   public abstract int getState();
 
@@ -112,11 +147,11 @@ public abstract class KeyExchange {
     if (session.getLogger().isEnabled(Logger.INFO)) {
       for (int i = 0; i < PROPOSAL_MAX; i++) {
         session.getLogger().log(Logger.INFO,
-            "server proposal: " + PROPOSAL_NAMES[i] + ": " + Util.byte2str(sb.getString()));
+            "server proposal: " + PROPOSAL_NAMES[i] + ": " + byte2str(sb.getString()));
       }
       for (int i = 0; i < PROPOSAL_MAX; i++) {
         session.getLogger().log(Logger.INFO,
-            "client proposal: " + PROPOSAL_NAMES[i] + ": " + Util.byte2str(cb.getString()));
+            "client proposal: " + PROPOSAL_NAMES[i] + ": " + byte2str(cb.getString()));
       }
       sb.setOffSet(17);
       cb.setOffSet(17);
@@ -132,16 +167,16 @@ public abstract class KeyExchange {
         while (j < cp.length && cp[j] != ',')
           j++;
         if (k == j)
-          throw new JSchAlgoNegoFailException(i, Util.byte2str(cp), Util.byte2str(sp));
-        String algorithm = Util.byte2str(cp, k, j - k);
+          throw new JSchAlgoNegoFailException(i, byte2str(cp), byte2str(sp));
+        String algorithm = byte2str(cp, k, j - k);
         int l = 0;
         int m = 0;
         while (l < sp.length) {
           while (l < sp.length && sp[l] != ',')
             l++;
           if (m == l)
-            throw new JSchAlgoNegoFailException(i, Util.byte2str(cp), Util.byte2str(sp));
-          if (algorithm.equals(Util.byte2str(sp, m, l - m))) {
+            throw new JSchAlgoNegoFailException(i, byte2str(cp), byte2str(sp));
+          if (algorithm.equals(byte2str(sp, m, l - m))) {
             guess[i] = algorithm;
             break loop;
           }
@@ -154,7 +189,7 @@ public abstract class KeyExchange {
       if (j == 0) {
         guess[i] = "";
       } else if (guess[i] == null) {
-        throw new JSchAlgoNegoFailException(i, Util.byte2str(cp), Util.byte2str(sp));
+        throw new JSchAlgoNegoFailException(i, byte2str(cp), byte2str(sp));
       }
     }
 
@@ -290,187 +325,172 @@ public abstract class KeyExchange {
     return foo;
   }
 
-  protected boolean verify(String alg, byte[] K_S, int index, byte[] sig_of_H) throws Exception {
+
+  protected boolean verifyKeyExchangeServerSignature(String alg, byte[] K_S, int index,
+      byte[] sig_of_H) throws Exception {
     int i, j;
-
-    i = index;
+    OpenSshCertificateBuffer buffer = new OpenSshCertificateBuffer(K_S);
+    buffer.s = index;
     boolean result = false;
+    i = 0;
 
-    if (alg.equals("ssh-rsa")) {
-      byte[] tmp;
-      byte[] ee;
-      byte[] n;
+    if (isOpenSshCertificateKeyType(alg)) {
+      this.isOpenSshServerHostKeyType = true;
+      OpenSshCertificate certificate = OpenSshCertificateParser.parse(session.jsch.instLogger, K_S);
 
-      type = RSA;
-      key_alg_name = alg;
-
-      j = ((K_S[i++] << 24) & 0xff000000) | ((K_S[i++] << 16) & 0x00ff0000)
-          | ((K_S[i++] << 8) & 0x0000ff00) | ((K_S[i++]) & 0x000000ff);
-      tmp = new byte[j];
-      System.arraycopy(K_S, i, tmp, 0, j);
-      i += j;
-      ee = tmp;
-      j = ((K_S[i++] << 24) & 0xff000000) | ((K_S[i++] << 16) & 0x00ff0000)
-          | ((K_S[i++] << 8) & 0x0000ff00) | ((K_S[i++]) & 0x000000ff);
-      tmp = new byte[j];
-      System.arraycopy(K_S, i, tmp, 0, j);
-      i += j;
-      n = tmp;
-
-      SignatureRSA sig = null;
-      Buffer buf = new Buffer(sig_of_H);
-      String foo = Util.byte2str(buf.getString());
-      try {
-        Class<? extends SignatureRSA> c =
-            Class.forName(session.getConfig(foo)).asSubclass(SignatureRSA.class);
-        sig = c.getDeclaredConstructor().newInstance();
-        sig.init();
-      } catch (Exception e) {
-        throw new JSchException(e.toString(), e);
+      // Certificates used for host authentication MUST have "certificate role" of
+      // SSH2_CERT_TYPE_HOST.
+      // Other certificate types MUST not be accepted.
+      if (!certificate.isHostCertificate()) {
+        throw new JSchException(
+            "Server host key is not a valid SSH certificate of type SSH2_CERT_TYPE_HOST.");
       }
-      sig.setPubKey(ee, n);
-      sig.update(H);
-      result = sig.verify(sig_of_H);
-
-      if (session.getLogger().isEnabled(Logger.INFO)) {
-        session.getLogger().log(Logger.INFO, "ssh_rsa_verify: " + foo + " signature " + result);
-      }
-    } else if (alg.equals("ssh-dss")) {
-      byte[] q = null;
-      byte[] tmp;
-      byte[] p;
-      byte[] g;
-      byte[] f;
-
-      type = DSS;
-      key_alg_name = alg;
-
-      j = ((K_S[i++] << 24) & 0xff000000) | ((K_S[i++] << 16) & 0x00ff0000)
-          | ((K_S[i++] << 8) & 0x0000ff00) | ((K_S[i++]) & 0x000000ff);
-      tmp = new byte[j];
-      System.arraycopy(K_S, i, tmp, 0, j);
-      i += j;
-      p = tmp;
-      j = ((K_S[i++] << 24) & 0xff000000) | ((K_S[i++] << 16) & 0x00ff0000)
-          | ((K_S[i++] << 8) & 0x0000ff00) | ((K_S[i++]) & 0x000000ff);
-      tmp = new byte[j];
-      System.arraycopy(K_S, i, tmp, 0, j);
-      i += j;
-      q = tmp;
-      j = ((K_S[i++] << 24) & 0xff000000) | ((K_S[i++] << 16) & 0x00ff0000)
-          | ((K_S[i++] << 8) & 0x0000ff00) | ((K_S[i++]) & 0x000000ff);
-      tmp = new byte[j];
-      System.arraycopy(K_S, i, tmp, 0, j);
-      i += j;
-      g = tmp;
-      j = ((K_S[i++] << 24) & 0xff000000) | ((K_S[i++] << 16) & 0x00ff0000)
-          | ((K_S[i++] << 8) & 0x0000ff00) | ((K_S[i++]) & 0x000000ff);
-      tmp = new byte[j];
-      System.arraycopy(K_S, i, tmp, 0, j);
-      i += j;
-      f = tmp;
-
-      SignatureDSA sig = null;
-      try {
-        Class<? extends SignatureDSA> c =
-            Class.forName(session.getConfig("signature.dss")).asSubclass(SignatureDSA.class);
-        sig = c.getDeclaredConstructor().newInstance();
-        sig.init();
-      } catch (Exception e) {
-        throw new JSchException(e.toString(), e);
-      }
-      sig.setPubKey(f, p, q, g);
-      sig.update(H);
-      result = sig.verify(sig_of_H);
-
-      if (session.getLogger().isEnabled(Logger.INFO)) {
-        session.getLogger().log(Logger.INFO, "ssh_dss_verify: signature " + result);
-      }
-    } else if (alg.equals("ecdsa-sha2-nistp256") || alg.equals("ecdsa-sha2-nistp384")
-        || alg.equals("ecdsa-sha2-nistp521")) {
-      byte[] tmp;
-      byte[] r;
-      byte[] s;
-
-      // RFC 5656,
-      type = ECDSA;
-      key_alg_name = alg;
-
-      j = ((K_S[i++] << 24) & 0xff000000) | ((K_S[i++] << 16) & 0x00ff0000)
-          | ((K_S[i++] << 8) & 0x0000ff00) | ((K_S[i++]) & 0x000000ff);
-      tmp = new byte[j];
-      System.arraycopy(K_S, i, tmp, 0, j);
-      i += j;
-      j = ((K_S[i++] << 24) & 0xff000000) | ((K_S[i++] << 16) & 0x00ff0000)
-          | ((K_S[i++] << 8) & 0x0000ff00) | ((K_S[i++]) & 0x000000ff);
-      i++;
-      tmp = new byte[(j - 1) / 2];
-      System.arraycopy(K_S, i, tmp, 0, tmp.length);
-      i += (j - 1) / 2;
-      r = tmp;
-      tmp = new byte[(j - 1) / 2];
-      System.arraycopy(K_S, i, tmp, 0, tmp.length);
-      i += (j - 1) / 2;
-      s = tmp;
-
-      SignatureECDSA sig = null;
-      try {
-        Class<? extends SignatureECDSA> c =
-            Class.forName(session.getConfig(alg)).asSubclass(SignatureECDSA.class);
-        sig = c.getDeclaredConstructor().newInstance();
-        sig.init();
-      } catch (Exception e) {
-        throw new JSchException(e.toString(), e);
-      }
-
-      sig.setPubKey(r, s);
-
-      sig.update(H);
-
-      result = sig.verify(sig_of_H);
-
-      if (session.getLogger().isEnabled(Logger.INFO)) {
-        session.getLogger().log(Logger.INFO, "ssh_ecdsa_verify: " + alg + " signature " + result);
-      }
-    } else if (alg.equals("ssh-ed25519") || alg.equals("ssh-ed448")) {
-      byte[] tmp;
-
-      // RFC 8709,
-      type = EDDSA;
-      key_alg_name = alg;
-
-      j = ((K_S[i++] << 24) & 0xff000000) | ((K_S[i++] << 16) & 0x00ff0000)
-          | ((K_S[i++] << 8) & 0x0000ff00) | ((K_S[i++]) & 0x000000ff);
-      tmp = new byte[j];
-      System.arraycopy(K_S, i, tmp, 0, j);
-      i += j;
-
-      SignatureEdDSA sig = null;
-      try {
-        Class<? extends SignatureEdDSA> c =
-            Class.forName(session.getConfig(alg)).asSubclass(SignatureEdDSA.class);
-        sig = c.getDeclaredConstructor().newInstance();
-        sig.init();
-      } catch (Exception | LinkageError e) {
-        throw new JSchException(e.toString(), e);
-      }
-
-      sig.setPubKey(tmp);
-
-      sig.update(H);
-
-      result = sig.verify(sig_of_H);
-
-      if (session.getLogger().isEnabled(Logger.INFO)) {
-        session.getLogger().log(Logger.INFO, "ssh_eddsa_verify: " + alg + " signature " + result);
-      }
-    } else {
-      if (session.getLogger().isEnabled(Logger.ERROR)) {
-        session.getLogger().log(Logger.ERROR, "unknown alg: " + alg);
-      }
+      byte[] serverPublicKeyByteArray = certificate.getCertificatePublicKey();
+      buffer = new OpenSshCertificateBuffer(serverPublicKeyByteArray);
+      alg = buffer.getString(UTF_8);
+      this.hostKeyCertificate = certificate;
     }
 
-    return result;
+    switch (alg) {
+      case "ssh-rsa":
+        byte[] ee;
+        byte[] n;
+
+        this.type = RSA;
+        key_alg_name = alg;
+
+        ee = buffer.getMPInt();
+        n = buffer.getMPInt();
+
+        SignatureRSA sig;
+        Buffer buf = new Buffer(sig_of_H);
+        String foo = Util.byte2str(buf.getString());
+        try {
+          Class<? extends SignatureRSA> c =
+              Class.forName(session.getConfig(foo)).asSubclass(SignatureRSA.class);
+          sig = c.getDeclaredConstructor().newInstance();
+          sig.init();
+        } catch (Exception e) {
+          throw new JSchException(e.toString(), e);
+        }
+        sig.setPubKey(ee, n);
+        sig.update(H);
+        result = sig.verify(sig_of_H);
+
+        if (session.getLogger().isEnabled(Logger.INFO)) {
+          session.getLogger().log(Logger.INFO, "ssh_rsa_verify: " + foo + " signature " + result);
+        }
+        return result;
+
+      case "ssh-dss":
+        byte[] q;
+        byte[] p;
+        byte[] g;
+        byte[] y;
+
+        type = DSS;
+        key_alg_name = alg;
+
+        p = buffer.getMPInt();
+        q = buffer.getMPInt();
+        g = buffer.getMPInt();
+        y = buffer.getMPInt();
+
+        SignatureDSA sigDSA;
+        try {
+          Class<? extends SignatureDSA> c =
+              Class.forName(session.getConfig("signature.dss")).asSubclass(SignatureDSA.class);
+          sigDSA = c.getDeclaredConstructor().newInstance();
+          sigDSA.init();
+        } catch (Exception e) {
+          throw new JSchException(e.toString(), e);
+        }
+        sigDSA.setPubKey(y, p, q, g);
+        sigDSA.update(H);
+        result = sigDSA.verify(sig_of_H);
+
+        if (session.getLogger().isEnabled(Logger.INFO)) {
+          session.getLogger().log(Logger.INFO, "ssh_dss_verify: signature " + result);
+        }
+        return result;
+
+      case "ecdsa-sha2-nistp256":
+      case "ecdsa-sha2-nistp384":
+      case "ecdsa-sha2-nistp521":
+
+        byte[] r;
+        byte[] s;
+
+        // RFC 5656,
+        type = ECDSA;
+        this.key_alg_name = alg;
+
+        // https://www.rfc-editor.org/rfc/rfc5656#section-3.1
+        // The string [identifier] is the identifier of the elliptic curve domain parameters.
+        String identifier = byte2str(buffer.getString());
+
+        int len = buffer.getInt();
+        int x04 = buffer.getByte();
+        r = new byte[(len - 1) / 2];
+        s = new byte[(len - 1) / 2];
+        buffer.getByte(r);
+        buffer.getByte(s);
+
+        SignatureECDSA sigECDSA = null;
+        try {
+          Class<? extends SignatureECDSA> c =
+              Class.forName(session.getConfig(alg)).asSubclass(SignatureECDSA.class);
+          sigECDSA = c.getDeclaredConstructor().newInstance();
+          sigECDSA.init();
+        } catch (Exception e) {
+          throw new JSchException(e.toString(), e);
+        }
+
+        sigECDSA.setPubKey(r, s);
+        sigECDSA.update(H);
+        result = sigECDSA.verify(sig_of_H);
+
+        if (session.getLogger().isEnabled(Logger.INFO)) {
+          session.getLogger().log(Logger.INFO, "ssh_ecdsa_verify: " + alg + " signature " + result);
+        }
+        return result;
+
+      case "ssh-ed25519":
+      case "ssh-ed448":
+
+        // RFC 8709,
+        type = EDDSA;
+        key_alg_name = alg;
+        int keyLength = buffer.getInt();
+        byte[] edXXX_pub_array = new byte[keyLength];
+        buffer.getByte(edXXX_pub_array);
+
+        SignatureEdDSA sigEdDSA = null;
+        try {
+          Class<? extends SignatureEdDSA> c =
+              Class.forName(session.getConfig(alg)).asSubclass(SignatureEdDSA.class);
+          sigEdDSA = c.getDeclaredConstructor().newInstance();
+          sigEdDSA.init();
+        } catch (Exception | LinkageError e) {
+          throw new JSchException(e.toString(), e);
+        }
+
+        sigEdDSA.setPubKey(edXXX_pub_array);
+
+        sigEdDSA.update(H);
+
+        result = sigEdDSA.verify(sig_of_H);
+
+        if (session.getLogger().isEnabled(Logger.INFO)) {
+          session.getLogger().log(Logger.INFO, "ssh_eddsa_verify: " + alg + " signature " + result);
+        }
+        return result;
+      default:
+        if (session.getLogger().isEnabled(Logger.ERROR)) {
+          session.getLogger().log(Logger.ERROR, "unknown alg: " + alg);
+        }
+        return result;
+    }
   }
 
   protected byte[] encodeInt(int raw) {
