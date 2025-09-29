@@ -110,6 +110,11 @@ class OpenSshCertificate {
   private final byte[] signature;
 
   /**
+   * The certificate data without the certificate type and the signature
+   */
+  private final byte[] message;
+
+  /**
    * Private constructor to be used exclusively by the Builder.
    */
   private OpenSshCertificate(Builder builder) {
@@ -127,6 +132,7 @@ class OpenSshCertificate {
     this.reserved = builder.reserved;
     this.signatureKey = builder.signatureKey;
     this.signature = builder.signature;
+    this.message = builder.message;
   }
 
   public String getKeyType() {
@@ -197,6 +203,10 @@ class OpenSshCertificate {
     return OpenSshCertificateUtil.isValidNow(this);
   }
 
+  public byte[] getMessage() {
+    return message;
+  }
+
   /**
    * A static inner builder class for creating immutable OpenSshCertificate instances.
    */
@@ -215,6 +225,7 @@ class OpenSshCertificate {
     private String reserved;
     private byte[] signatureKey;
     private byte[] signature;
+    private byte[] message;
 
     public Builder() {}
 
@@ -285,6 +296,11 @@ class OpenSshCertificate {
 
     public Builder signature(byte[] signature) {
       this.signature = signature;
+      return this;
+    }
+
+    public Builder message(byte[] message) {
+      this.message = message;
       return this;
     }
 
