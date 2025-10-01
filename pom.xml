@@ -70,7 +70,7 @@
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <skipITs>true</skipITs>
         <junixsocket.version>2.10.1</junixsocket.version>
-        <jna.version>5.18.0</jna.version>
+        <jna.version>5.18.1</jna.version>
         <log4j.version>2.25.2</log4j.version>
         <errorprone.version>2.42.0</errorprone.version>
         <surefire.version>3.5.4</surefire.version>
