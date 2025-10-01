@@ -26,6 +26,7 @@
 
 package com.jcraft.jsch;
 
+import javax.crypto.AEADBadTagException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InterruptedIOException;
@@ -42,7 +43,9 @@ import java.util.Objects;
 import java.util.Properties;
 import java.util.Vector;
 import java.util.concurrent.ThreadFactory;
-import javax.crypto.AEADBadTagException;
+
+import static com.jcraft.jsch.OpenSshCertificateHostKeyVerifier.checkHostCertificate;
+import static com.jcraft.jsch.Util.byte2str;
 
 public class Session {
 
@@ -313,12 +316,12 @@ public class Session {
       V_S = new byte[i];
       System.arraycopy(buf.buffer, 0, V_S, 0, i);
       // System.err.println("V_S: ("+i+") ["+new String(V_S)+"]");
-      String _v_s = Util.byte2str(V_S);
+      String _v_s = byte2str(V_S);
       sshBugSigType74 = _v_s.startsWith("SSH-2.0-OpenSSH_7.4");
 
       if (getLogger().isEnabled(Logger.INFO)) {
         getLogger().log(Logger.INFO, "Remote version string: " + _v_s);
-        getLogger().log(Logger.INFO, "Local version string: " + Util.byte2str(V_C));
+        getLogger().log(Logger.INFO, "Local version string: " + byte2str(V_C));
       }
 
       enable_server_sig_algs = getConfig("enable_server_sig_algs").equals("yes");
@@ -655,7 +658,7 @@ public class Session {
         l++;
       if (m == l)
         continue;
-      if ("kex-strict-s-v00@openssh.com".equals(Util.byte2str(sp, m, l - m))) {
+      if ("kex-strict-s-v00@openssh.com".equals(byte2str(sp, m, l - m))) {
         return true;
       }
       l++;
@@ -677,7 +680,7 @@ public class Session {
         l++;
       if (m == l)
         continue;
-      if ("ext-info-s".equals(Util.byte2str(sp, m, l - m))) {
+      if ("ext-info-s".equals(byte2str(sp, m, l - m))) {
         return true;
       }
       l++;
@@ -919,7 +922,17 @@ public class Session {
     }
   }
 
-  private void checkHost(String chost, int port, KeyExchange kex) throws JSchException {
+
+
+  private void checkHost(String chost, int port, KeyExchange kex) throws Exception {
+    if (!kex.isOpenSshServerHostKeyType) {
+      checkHostKey(chost, port, kex);
+      return;
+    }
+    checkHostCertificate(this, kex);
+  }
+
+  private void checkHostKey(String chost, int port, KeyExchange kex) throws JSchException {
     String shkc = getConfig("StrictHostKeyChecking");
 
     if (hostKeyAlias != null) {
@@ -1017,7 +1030,7 @@ public class Session {
 
     if (i == HostKeyRepository.OK) {
       HostKey[] keys = hkr.getHostKey(chost, kex.getKeyAlgorithName());
-      String _key = Util.byte2str(Util.toBase64(K_S, 0, K_S.length, true));
+      String _key = byte2str(Util.toBase64(K_S, 0, K_S.length, true));
       for (int j = 0; j < keys.length; j++) {
         if (keys[j].getKey().equals(_key) && keys[j].getMarker().equals("@revoked")) {
           if (userinfo != null) {
@@ -1134,11 +1147,15 @@ public class Session {
   private int c2scipher_size = 8;
 
   Buffer read(Buffer buf) throws Exception {
+    // determine which encryption and authentication mode is currently active
+    // for the server-to-client (s2c) connection
     int j = 0;
     boolean isChaCha20 = (s2ccipher != null && s2ccipher.isChaCha20());
     boolean isAEAD = (s2ccipher != null && s2ccipher.isAEAD());
     boolean isEtM =
         (!isChaCha20 && !isAEAD && s2ccipher != null && s2cmac != null && s2cmac.isEtM());
+
+    // Decripting
     while (true) {
       buf.reset();
       if (isChaCha20) {
@@ -1232,17 +1249,23 @@ public class Session {
           s2ccipher.update(buf.buffer, 4, j, buf.buffer, 4);
         }
       } else {
+        // fall back to the older Encrypt-and-MAC mode.
         io.getByte(buf.buffer, buf.index, s2ccipher_size);
         buf.index += s2ccipher_size;
         if (s2ccipher != null) {
           s2ccipher.update(buf.buffer, 0, s2ccipher_size, buf.buffer, 0);
         }
+
+        // calculating length of the incoming packet
         j = ((buf.buffer[0] << 24) & 0xff000000) | ((buf.buffer[1] << 16) & 0x00ff0000)
             | ((buf.buffer[2] << 8) & 0x0000ff00) | ((buf.buffer[3]) & 0x000000ff);
         // RFC 4253 6.1. Maximum Packet Length
         if (j < 5 || j > PACKET_MAX_SIZE) {
           start_discard(buf, s2ccipher, s2cmac, 0, PACKET_MAX_SIZE);
         }
+
+        // calculates how many more bytes need to be read from the buffer to get the rest of the
+        // encrypted SSH packet
         int need = j + 4 - s2ccipher_size;
         // if(need<0){
         // throw new IOException("invalid data");
@@ -1315,8 +1338,8 @@ public class Session {
         int reason_code = buf.getInt();
         byte[] description_array = buf.getString();
         byte[] language_tag_array = buf.getString();
-        String description = Util.byte2str(description_array);
-        String language_tag = Util.byte2str(language_tag_array);
+        String description = byte2str(description_array);
+        String language_tag = byte2str(language_tag_array);
         throw new JSchSessionDisconnectException(
             "SSH_MSG_DISCONNECT: " + reason_code + " " + description + " " + language_tag,
             reason_code, description, language_tag);
@@ -1382,8 +1405,8 @@ public class Session {
         for (long i = 0; i < num_extensions; i++) {
           byte[] ext_name = buf.getString();
           byte[] ext_value = buf.getString();
-          if (!ignore && Util.byte2str(ext_name).equals("server-sig-algs")) {
-            String foo = Util.byte2str(ext_value);
+          if (!ignore && byte2str(ext_name).equals("server-sig-algs")) {
+            String foo = byte2str(ext_value);
             if (getLogger().isEnabled(Logger.INFO)) {
               getLogger().log(Logger.INFO, "server-sig-algs=<" + foo + ">");
             }
@@ -1973,7 +1996,7 @@ public class Session {
             channel = Channel.getChannel(i, this);
             if (channel != null) {
               byte reply_type = (byte) SSH_MSG_CHANNEL_FAILURE;
-              if ((Util.byte2str(foo)).equals("exit-status")) {
+              if ((byte2str(foo)).equals("exit-status")) {
                 i = buf.getInt(); // exit-status
                 channel.setExitStatus(i);
                 reply_type = (byte) SSH_MSG_CHANNEL_SUCCESS;
@@ -1991,7 +2014,7 @@ public class Session {
             buf.getInt();
             buf.getShort();
             foo = buf.getString();
-            String ctyp = Util.byte2str(foo);
+            String ctyp = byte2str(foo);
             if (!"forwarded-tcpip".equals(ctyp) && !("x11".equals(ctyp) && x11_forwarding)
                 && !("auth-agent@openssh.com".equals(ctyp) && agent_forwarding)) {
               // System.err.println("Session.run: CHANNEL OPEN "+ctyp);
@@ -2355,6 +2378,7 @@ public class Session {
   }
 
   // TODO: This method should return the integer value as the assigned port.
+
   /**
    * Registers the remote port forwarding. If <code>bind_address</code> is an empty string or
    * <code>"*"</code>, the port should be available from all interfaces. If
@@ -2856,11 +2880,11 @@ public class Session {
   }
 
   public String getServerVersion() {
-    return Util.byte2str(V_S);
+    return byte2str(V_S);
   }
 
   public String getClientVersion() {
-    return Util.byte2str(V_C);
+    return byte2str(V_C);
   }
 
   public void setClientVersion(String cv) {
