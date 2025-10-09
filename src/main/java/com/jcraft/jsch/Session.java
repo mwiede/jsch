@@ -653,15 +653,17 @@ public class Session {
     while (l < sp.length) {
       while (l < sp.length && sp[l] != ',')
         l++;
-      if (m == l)
-        continue;
+      if (m == l){
+          l++;
+          m = l;
+          continue;
+      }
       if ("kex-strict-s-v00@openssh.com".equals(Util.byte2str(sp, m, l - m))) {
         return true;
       }
       l++;
       m = l;
     }
-
     return false;
   }
 
