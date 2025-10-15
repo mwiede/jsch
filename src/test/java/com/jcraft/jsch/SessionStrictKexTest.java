@@ -45,6 +45,7 @@ class SessionStrictKexTest {
   void strictKexAbsent() throws Exception {
     Session s = newSession();
     s.I_S = buildIS("diffie-hellman-group1-sha1,curve25519-sha256");
+    assertFalse(s.checkServerStrictKex());
   }
 
   @Test
