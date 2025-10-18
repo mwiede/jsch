@@ -37,11 +37,11 @@ public class OpenSshCertificateHostKeyVerifier {
    *
    * @param session the current JSch session.
    * @param kex the key exchange context, which contains the host certificate.
-   * @throws Exception if the certificate is invalid, expired, not signed by a trusted CA, or fails
-   *         any other validation check. Throws specific subclasses of {@link JSchException} for
-   *         different failure reasons.
+   * @throws JSchException if the certificate is invalid, expired, not signed by a trusted CA, or
+   *         fails any other validation check. Throws specific subclasses of {@link JSchException}
+   *         for different failure reasons.
    */
-  public static void checkHostCertificate(Session session, KeyExchange kex) throws Exception {
+  public static void checkHostCertificate(Session session, KeyExchange kex) throws JSchException {
     OpenSshCertificate certificate = kex.getHostKeyCertificate();
     byte[] caPublicKeyByteArray = certificate.getSignatureKey();
 
@@ -103,9 +103,9 @@ public class OpenSshCertificateHostKeyVerifier {
    * @param certificatePublicKey the raw byte array of the public key blob.
    * @return A 2D byte array where each inner array is a component of the public key (e.g., for RSA,
    *         it returns {exponent, modulus}).
-   * @throws Exception if the public key algorithm is unknown or the key format is corrupt.
+   * @throws JSchException if the public key algorithm is unknown or the key format is corrupt.
    */
-  public static byte[][] parsePublicKey(byte[] certificatePublicKey) throws Exception {
+  public static byte[][] parsePublicKey(byte[] certificatePublicKey) throws JSchException {
     Buffer buffer = new Buffer(certificatePublicKey);
     String algorithm = byte2str(buffer.getString());
 
@@ -155,20 +155,25 @@ public class OpenSshCertificateHostKeyVerifier {
    *
    * @param certificate the certificate to verify.
    * @param caPublicKeyAlgorithm the algorithm of the CA's public key.
-   * @throws Exception if the signature algorithm does not match the CA key algorithm or if the
+   * @throws JSchException if the signature algorithm does not match the CA key algorithm or if the
    *         signature is cryptographically invalid.
    */
   private static void checkSignature(OpenSshCertificate certificate, String caPublicKeyAlgorithm)
-      throws Exception {
+      throws JSchException {
     // Check signature
     SignatureWrapper signature = getSignatureWrapper(certificate, caPublicKeyAlgorithm);
     byte[][] publicKey = parsePublicKey(certificate.getSignatureKey());
+    boolean verified;
+    try {
+      signature.init();
+      signature.setPubKey(publicKey);
+      signature.update(certificate.getMessage());
+      verified = signature.verify(certificate.getSignature());
+    } catch (Exception e) {
+      throw new JSchException("invalid signature key", e);
+    }
 
-    signature.init();
-    signature.setPubKey(publicKey);
-    signature.update(certificate.getMessage());
-
-    if (!signature.verify(certificate.getSignature())) {
+    if (!verified) {
       throw new JSchInvalidHostCertificateException(
           "rejected HostKey: signature verification failed");
     }
@@ -211,9 +216,9 @@ public class OpenSshCertificateHostKeyVerifier {
    *
    * @param knownHosts the repository of known hosts (typically from a known_hosts file).
    * @return a {@link Set} of {@link HostKey} objects representing the trusted CAs.
-   * @throws Exception if there is an error accessing the host key repository.
    */
-  private static Set<HostKey> getTrustedCAs(HostKeyRepository knownHosts) throws Exception {
+
+  private static Set<HostKey> getTrustedCAs(HostKeyRepository knownHosts) {
     HostKey[] hostKeys = knownHosts.getHostKey();
     return hostKeys == null ? new HashSet<>()
         : Arrays.stream(hostKeys).filter(OpenSshCertificateUtil::isKnownHostCaPublicKeyEntry)

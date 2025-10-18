@@ -8,10 +8,12 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.images.builder.ImageFromDockerfile;
+import org.testcontainers.images.builder.dockerfile.DockerfileBuilder;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.util.Arrays;
+import java.util.List;
 
 import static com.jcraft.jsch.ResourceUtil.getResourceFile;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
@@ -52,39 +54,23 @@ public class HostCertificateIT {
    * </ul>
    */
   @Container
-  private GenericContainer<?> sshdContainer =
-      new GenericContainer<>(new ImageFromDockerfile("jsch_host_key_test", false)
-          .withDockerfileFromBuilder(builder -> builder.from("alpine:3.16")
-              .run("apk add --update openssh openssh-server bash && " + "rm /var/cache/apk/*")
-              .run("adduser -D luigi") // Add a user
-              .run("echo 'luigi:passwordLuigi' | chpasswd") // Unlock the user
-              .run("mkdir -p /home/luigi/.ssh").copy("sshd_config", "/etc/ssh/sshd_config")
-              .copy("authorized_keys", "/home/luigi/.ssh/authorized_keys")
-              .copy("entrypoint.sh", "/entrypoint.sh")
-              .copy("ssh_host_rsa_key", "/etc/ssh/ssh_host_rsa_key")
-              .copy("ssh_host_rsa_key-cert.pub", "/etc/ssh/ssh_host_rsa_key-cert.pub")
-              .copy("ssh_host_ecdsa_key", "/etc/ssh/ssh_host_ecdsa_key")
-              .copy("ssh_host_ecdsa_key-cert.pub", "/etc/ssh/ssh_host_ecdsa_key-cert.pub")
-              .copy("ssh_host_ed25519_key", "/etc/ssh/ssh_host_ed25519_key")
-              .copy("ssh_host_ed25519_key-cert.pub", "/etc/ssh/ssh_host_ed25519_key-cert.pub")
-              .entryPoint("/entrypoint.sh").build())
-          .withFileFromClasspath("sshd_config", CERTIFICATES_BASE_FOLDER + "/sshd_config")
-          .withFileFromClasspath("authorized_keys",
-              CERTIFICATES_BASE_FOLDER + "/user_keys/id_ecdsa_nistp521.pub")
-          .withFileFromClasspath("entrypoint.sh", CERTIFICATES_BASE_FOLDER + "/entrypoint.sh")
-          .withFileFromClasspath("ssh_host_rsa_key", CERTIFICATES_BASE_FOLDER + "/ssh_host_rsa_key")
-          .withFileFromClasspath("ssh_host_rsa_key-cert.pub",
-              CERTIFICATES_BASE_FOLDER + "/ssh_host_rsa_key-cert.pub")
-          .withFileFromClasspath("ssh_host_ecdsa_key",
-              CERTIFICATES_BASE_FOLDER + "/ssh_host_ecdsa_key")
-          .withFileFromClasspath("ssh_host_ecdsa_key-cert.pub",
-              CERTIFICATES_BASE_FOLDER + "/ssh_host_ecdsa_key-cert.pub")
-          .withFileFromClasspath("ssh_host_ed25519_key",
-              CERTIFICATES_BASE_FOLDER + "/ssh_host_ed25519_key")
-          .withFileFromClasspath("ssh_host_ed25519_key-cert.pub",
-              CERTIFICATES_BASE_FOLDER + "/ssh_host_ed25519_key-cert.pub"))
-          .withExposedPorts(22)
-          .waitingFor(Wait.forLogMessage(".*Server listening on :: port 22.*", 1));
+  private GenericContainer<?> sshdContainer = new GenericContainer<>(new ImageFromDockerfile()
+      .withFileFromClasspath("sshd_config", CERTIFICATES_BASE_FOLDER + "/sshd_config")
+      .withFileFromClasspath("authorized_keys",
+          CERTIFICATES_BASE_FOLDER + "/user_keys/id_ecdsa_nistp521.pub")
+      .withFileFromClasspath("entrypoint.sh", CERTIFICATES_BASE_FOLDER + "/entrypoint.sh")
+      .withFileFromClasspath("ssh_host_rsa_key", CERTIFICATES_BASE_FOLDER + "/ssh_host_rsa_key")
+      .withFileFromClasspath("ssh_host_rsa_key-cert.pub",
+          CERTIFICATES_BASE_FOLDER + "/ssh_host_rsa_key-cert.pub")
+      .withFileFromClasspath("ssh_host_ecdsa_key", CERTIFICATES_BASE_FOLDER + "/ssh_host_ecdsa_key")
+      .withFileFromClasspath("ssh_host_ecdsa_key-cert.pub",
+          CERTIFICATES_BASE_FOLDER + "/ssh_host_ecdsa_key-cert.pub")
+      .withFileFromClasspath("ssh_host_ed25519_key",
+          CERTIFICATES_BASE_FOLDER + "/ssh_host_ed25519_key")
+      .withFileFromClasspath("ssh_host_ed25519_key-cert.pub",
+          CERTIFICATES_BASE_FOLDER + "/ssh_host_ed25519_key-cert.pub")
+      .withFileFromClasspath("Dockerfile", CERTIFICATES_BASE_FOLDER + "/Dockerfile"))
+      .withExposedPorts(22).waitingFor(Wait.forLogMessage(".*Server listening on :: port 22.*", 1));
 
 
   /**
@@ -93,7 +79,7 @@ public class HostCertificateIT {
    *
    * @return An iterable of host key algorithm strings for test parameterization.
    */
-  public static Iterable<? extends String> privateKeyParams() {
+  public static List<String> privateKeyParams() {
     return Arrays.asList("ssh-ed25519-cert-v01@openssh.com",
         "ecdsa-sha2-nistp256-cert-v01@openssh.com,ecdsa-sha2-nistp384-cert-v01@openssh.com,ecdsa-sha2-nistp521-cert-v01@openssh.com",
         "ssh-rsa-cert-v01@openssh.com,rsa-sha2-512-cert-v01@openssh.com,rsa-sha2-256-cert-v01@openssh.com");

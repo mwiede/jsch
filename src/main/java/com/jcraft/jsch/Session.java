@@ -931,14 +931,12 @@ public class Session {
     }
   }
 
-
-
   private void checkHost(String chost, int port, KeyExchange kex) throws Exception {
     if (!kex.isOpenSshServerHostKeyType) {
       checkHostKey(chost, port, kex);
       return;
     }
-    checkHostCertificate(this, kex);
+    OpenSshCertificateHostKeyVerifier.checkHostCertificate(this, kex);
   }
 
   private void checkHostKey(String chost, int port, KeyExchange kex) throws JSchException {
@@ -1187,6 +1185,8 @@ public class Session {
     boolean isAEAD = (s2ccipher != null && s2ccipher.isAEAD());
     boolean isEtM =
         (!isChaCha20 && !isAEAD && s2ccipher != null && s2cmac != null && s2cmac.isEtM());
+
+    // Decrypting
     while (true) {
       buf.reset();
       if (isChaCha20) {
