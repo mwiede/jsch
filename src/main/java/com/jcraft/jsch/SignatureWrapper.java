@@ -1,6 +1,6 @@
 package com.jcraft.jsch;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
+import java.nio.charset.StandardCharsets;
 
 /**
  * A factory and wrapper class for creating and managing digital signature instances.
@@ -11,7 +11,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
  * sign) by delegating calls to the - * underlying signature instance.
  * </p>
  */
-public class SignatureWrapper implements Signature {
+class SignatureWrapper implements Signature {
 
   private final Signature signature;
 
@@ -28,7 +28,7 @@ public class SignatureWrapper implements Signature {
    *         instance cannot be created.
    */
   public SignatureWrapper(byte[] dataSignature) throws JSchException {
-    this(new OpenSshCertificateBuffer(dataSignature).getString(UTF_8));
+    this(new OpenSshCertificateBuffer(dataSignature).getString(StandardCharsets.UTF_8));
   }
 
   /**
@@ -90,7 +90,6 @@ public class SignatureWrapper implements Signature {
     };
   }
 
-
   /**
    * Initializes the underlying signature instance for signing or verification. This method
    * delegates the call to the wrapped signature object.
@@ -139,7 +138,6 @@ public class SignatureWrapper implements Signature {
     return signature.sign();
   }
 
-
   /**
    * Sets the public key required for signature verification.
    * <p>
@@ -155,7 +153,6 @@ public class SignatureWrapper implements Signature {
     pubKeyParameterValidator.validatePublicKeyParameter(args);
     publicKeySetter.setPubKey(args);
   }
-
 
   /**
    * A functional interface for setting a public key on a {@link Signature} instance.
