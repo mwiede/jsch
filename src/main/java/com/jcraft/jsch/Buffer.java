@@ -306,14 +306,13 @@ public class Buffer {
    *
    * @param bytesToSkip the number of bytes to skip.
    */
-  public void readSkip(int bytesToSkip) {
+  void readSkip(int bytesToSkip) {
     if (bytesToSkip > getLength()) {
       s += getLength();
       return;
     }
     s += bytesToSkip;
   }
-
 
   /*
    * static String[] chars={ "0","1","2","3","4","5","6","7","8","9", "a","b","c","d","e","f" };
