@@ -33,7 +33,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Vector;
 
-import static com.jcraft.jsch.OpenSshCertificateUtil.getRawKeyType;
 
 class UserAuthPublicKey extends UserAuth {
 
@@ -77,7 +76,7 @@ class UserAuthPublicKey extends UserAuth {
           boolean add = false;
           for (String server_sig_alg : server_sig_algs) {
             // This cover the case of the public key is in Openssh certificate format.
-            String pkRawMethod = getRawKeyType(pkmethod);
+            String pkRawMethod = OpenSshCertificateUtil.getRawKeyType(pkmethod);
             if (pkmethod.equals(server_sig_alg)
                 || (pkRawMethod != null && pkRawMethod.equals(server_sig_alg))) {
               add = true;
