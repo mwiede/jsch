@@ -3,11 +3,11 @@
 {
 	"name": "Java",
 	// Or use a Dockerfile or Docker Compose file. More info: https://containers.dev/guide/dockerfile
-	"image": "mcr.microsoft.com/devcontainers/java:1-21",
+	"image": "mcr.microsoft.com/devcontainers/java:25-bookworm",
 
 	"features": {
 		"ghcr.io/devcontainers/features/java:1": {
-			"version": "latest",
+			"version": "25",
 			"jdkDistro": "tem",
 			"installMaven": "true",
 			"mavenVersion": "3.9.11",
