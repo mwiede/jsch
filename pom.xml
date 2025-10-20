@@ -898,7 +898,7 @@
         <profile>
             <id>forbiddenapis</id>
             <activation>
-                <jdk>[24,)</jdk>
+                <jdk>[25,)</jdk>
             </activation>
             <build>
                 <plugins>
@@ -906,7 +906,7 @@
                         <groupId>de.thetaphi</groupId>
                         <artifactId>forbiddenapis</artifactId>
                         <configuration>
-                            <releaseVersion>24</releaseVersion>
+                            <releaseVersion>25</releaseVersion>
                         </configuration>
                         <executions>
                             <execution>
@@ -927,7 +927,7 @@
                                 </goals>
                                 <configuration>
                                     <bundledSignatures combine.children="append">
-                                        <bundledSignature>commons-io-unsafe-2.18.0</bundledSignature>
+                                        <bundledSignature>commons-io-unsafe-2.20.0</bundledSignature>
                                     </bundledSignatures>
                                 </configuration>
                             </execution>
