@@ -143,6 +143,128 @@ public class HostKey {
     return isIncluded(_host);
   }
 
+  /**
+   * Checks if the given hostname matches any of the host patterns in this HostKey, supporting
+   * OpenSSH-style wildcards.
+   * <p>
+   * This method supports wildcard patterns similar to OpenSSH's known_hosts file:
+   * </p>
+   * <ul>
+   * <li>{@code *} - Matches zero or more characters</li>
+   * <li>{@code ?} - Matches exactly one character</li>
+   * </ul>
+   * <p>
+   * The host field can contain multiple comma-separated patterns. The method returns {@code true}
+   * if the hostname matches ANY of the patterns.
+   * </p>
+   * <p>
+   * Examples:
+   * </p>
+   * <ul>
+   * <li>{@code *.example.com} matches {@code host.example.com}, {@code sub.example.com}</li>
+   * <li>{@code host?.example.com} matches {@code host1.example.com}, {@code hosta.example.com}</li>
+   * <li>{@code 192.168.1.*} matches {@code 192.168.1.1}, {@code 192.168.1.100}</li>
+   * <li>{@code host1.com,*.host2.com} matches {@code host1.com} or any subdomain of
+   * {@code host2.com}</li>
+   * </ul>
+   *
+   * @param _host the hostname to test against the patterns, must not be {@code null}
+   * @return {@code true} if the hostname matches any of the patterns (with wildcard support);
+   *         {@code false} otherwise
+   * @see #isMatched(String)
+   */
+  boolean isWildcardMatched(String _host) {
+    if (_host == null) {
+      return false;
+    }
+
+    String hosts = this.host;
+    if (hosts == null || hosts.isEmpty()) {
+      return false;
+    }
+
+    // Split by comma and check each pattern
+    int i = 0;
+    int hostslen = hosts.length();
+    while (i < hostslen) {
+      int j = hosts.indexOf(',', i);
+      String pattern;
+      if (j == -1) {
+        pattern = hosts.substring(i).trim();
+        if (matchesWildcardPattern(pattern, _host)) {
+          return true;
+        }
+        break;
+      } else {
+        pattern = hosts.substring(i, j).trim();
+        if (matchesWildcardPattern(pattern, _host)) {
+          return true;
+        }
+        i = j + 1;
+      }
+    }
+    return false;
+  }
+
+  /**
+   * Tests if a hostname matches a single wildcard pattern.
+   * <p>
+   * This method implements wildcard matching similar to OpenSSH, supporting:
+   * </p>
+   * <ul>
+   * <li>{@code *} - Matches zero or more characters</li>
+   * <li>{@code ?} - Matches exactly one character</li>
+   * </ul>
+   * <p>
+   * The matching is case-sensitive to maintain consistency with OpenSSH behavior.
+   * </p>
+   *
+   * @param pattern the wildcard pattern to match against (e.g., {@code *.example.com})
+   * @param hostname the hostname to test (e.g., {@code host.example.com})
+   * @return {@code true} if the hostname matches the pattern; {@code false} otherwise
+   */
+  private boolean matchesWildcardPattern(String pattern, String hostname) {
+    if (pattern == null || hostname == null) {
+      return false;
+    }
+
+    int pLen = pattern.length();
+    int hLen = hostname.length();
+    int p = 0; // pattern index
+    int h = 0; // hostname index
+    int starIdx = -1; // last '*' position in pattern
+    int matchIdx = 0; // position in hostname after last '*' match
+
+    while (h < hLen) {
+      if (p < pLen && (pattern.charAt(p) == '?' || pattern.charAt(p) == hostname.charAt(h))) {
+        // Match single character or '?'
+        p++;
+        h++;
+      } else if (p < pLen && pattern.charAt(p) == '*') {
+        // Found '*', record position and try to match rest
+        starIdx = p;
+        matchIdx = h;
+        p++;
+      } else if (starIdx != -1) {
+        // No match, but we have a previous '*', backtrack
+        p = starIdx + 1;
+        matchIdx++;
+        h = matchIdx;
+      } else {
+        // No match and no '*' to backtrack to
+        return false;
+      }
+    }
+
+    // Process remaining pattern characters (should be all '*')
+    while (p < pLen && pattern.charAt(p) == '*') {
+      p++;
+    }
+
+    // Match if we've consumed entire pattern
+    return p == pLen;
+  }
+
   private boolean isIncluded(String _host) {
     int i = 0;
     String hosts = this.host;

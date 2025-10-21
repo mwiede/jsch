@@ -215,7 +215,7 @@ abstract class DHXECKEM extends KeyExchange {
         String alg = Util.byte2str(K_S, i, j);
         i += j;
 
-        boolean result = verifyKeyExchangeServerSignature(alg, K_S, i, sig_of_H);
+        boolean result = verify(alg, K_S, i, sig_of_H);
 
         state = STATE_END;
         return result;
