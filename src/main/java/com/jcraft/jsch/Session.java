@@ -83,7 +83,7 @@ public class Session {
   private byte[] V_C = Util.str2byte("SSH-2.0-JSCH_" + JSch.VERSION); // client version
 
   private byte[] I_C; // the payload of the client's SSH_MSG_KEXINIT
-  private byte[] I_S; // the payload of the server's SSH_MSG_KEXINIT
+  byte[] I_S; // the payload of the server's SSH_MSG_KEXINIT
   private byte[] K_S; // the host key
 
   private byte[] session_id;
@@ -643,7 +643,7 @@ public class Session {
     return kex;
   }
 
-  private boolean checkServerStrictKex() {
+  boolean checkServerStrictKex() {
     Buffer sb = new Buffer(I_S);
     sb.setOffSet(17);
     byte[] sp = sb.getString(); // server proposal
@@ -653,15 +653,17 @@ public class Session {
     while (l < sp.length) {
       while (l < sp.length && sp[l] != ',')
         l++;
-      if (m == l)
+      if (m == l) {
+        l++;
+        m = l;
         continue;
+      }
       if ("kex-strict-s-v00@openssh.com".equals(Util.byte2str(sp, m, l - m))) {
         return true;
       }
       l++;
       m = l;
     }
-
     return false;
   }
 
