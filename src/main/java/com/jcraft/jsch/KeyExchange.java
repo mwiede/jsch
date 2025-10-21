@@ -26,9 +26,7 @@
 
 package com.jcraft.jsch;
 
-import java.nio.charset.StandardCharsets;
 import java.util.Locale;
-
 
 public abstract class KeyExchange {
 
@@ -73,11 +71,11 @@ public abstract class KeyExchange {
   protected OpenSshCertificate hostKeyCertificate = null;
   protected boolean isOpenSshServerHostKeyType = false;
 
-  public OpenSshCertificate getHostKeyCertificate() {
+  OpenSshCertificate getHostKeyCertificate() {
     return hostKeyCertificate;
   }
 
-  public boolean isOpenSshServerHostKeyType() {
+  boolean isOpenSshServerHostKeyType() {
     return isOpenSshServerHostKeyType;
   }
 
@@ -233,6 +231,10 @@ public abstract class KeyExchange {
   }
 
   public String getFingerPrint() {
+    return getFingerPrint(getHostKey());
+  }
+
+  public String getFingerPrint(byte[] key) {
     HASH hash = null;
     try {
       String _c = session.getConfig("FingerprintHash").toLowerCase(Locale.ROOT);
@@ -243,7 +245,7 @@ public abstract class KeyExchange {
         session.getLogger().log(Logger.ERROR, "getFingerPrint: " + e.getMessage(), e);
       }
     }
-    return Util.getFingerPrint(hash, getHostKey(), true, false);
+    return Util.getFingerPrint(hash, key, true, false);
   }
 
   byte[] getK() {
@@ -326,13 +328,92 @@ public abstract class KeyExchange {
   }
 
 
-  protected boolean verifyKeyExchangeServerSignature(String alg, byte[] K_S, int index,
-      byte[] sig_of_H) throws Exception {
+  /**
+   * Verifies the cryptographic signature of the SSH key exchange hash.
+   * <p>
+   * This method performs cryptographic verification that the remote server possesses the private
+   * key corresponding to the public key presented during the SSH key exchange. It supports both
+   * traditional SSH public keys and OpenSSH certificates.
+   * </p>
+   *
+   * <h3>Public Key vs. Certificate Handling</h3>
+   * <p>
+   * The method handles two distinct input formats:
+   * </p>
+   * <ul>
+   * <li><b>Plain Public Keys:</b> When {@code alg} is a standard key algorithm (e.g.,
+   * {@code "ssh-rsa"}, {@code "ssh-ed25519"}), the {@code K_S} parameter contains the server's
+   * public key in SSH wire format. The method parses the key components and verifies the signature
+   * directly.</li>
+   *
+   * <li><b>OpenSSH Certificates:</b> When {@code alg} is a certificate type (e.g.,
+   * {@code "ssh-rsa-cert-v01@openssh.com"}), the {@code K_S} parameter contains an OpenSSH
+   * certificate structure. The method:
+   * <ol>
+   * <li>Parses the certificate to extract the embedded public key</li>
+   * <li>Validates that the certificate is a host certificate (not a user certificate)</li>
+   * <li>Replaces {@code K_S} with the extracted public key</li>
+   * <li>Extracts the underlying algorithm name from the public key</li>
+   * <li>Stores the certificate for subsequent CA validation</li>
+   * <li>Proceeds with signature verification using the extracted public key</li>
+   * </ol>
+   * </li>
+   * </ul>
+   *
+   * <h3>Two-Stage Verification for Certificates</h3>
+   * <p>
+   * For OpenSSH certificates, this method performs only the <b>first stage</b> of verification:
+   * proving that the server possesses the private key corresponding to the public key embedded in
+   * the certificate. The <b>second stage</b> (validating the certificate's CA signature, validity
+   * period, principals, and other certificate-specific properties) is performed separately by
+   * {@link OpenSshCertificateHostKeyVerifier#checkHostCertificate(Session, OpenSshCertificate)}.
+   * </p>
+   *
+   * <h3>Signature Verification Process</h3>
+   * <p>
+   * After extracting the public key (either from the plain input or from within a certificate), the
+   * method:
+   * </p>
+   * <ol>
+   * <li>Determines the key algorithm (RSA, DSS, ECDSA, or EdDSA)</li>
+   * <li>Parses the algorithm-specific public key components from the SSH wire format</li>
+   * <li>Instantiates the appropriate signature verification class</li>
+   * <li>Verifies that {@code sig_of_H} is a valid signature of the exchange hash {@code H} using
+   * the public key</li>
+   * </ol>
+   *
+   * @param alg the server host key algorithm name. This can be either a plain key algorithm (e.g.,
+   *        {@code "ssh-rsa"}, {@code "ssh-dss"}, {@code "ecdsa-sha2-nistp256"},
+   *        {@code "ssh-ed25519"}) or a certificate type (e.g.,
+   *        {@code "ssh-rsa-cert-v01@openssh.com"}, {@code "ssh-ed25519-cert-v01@openssh.com"}). For
+   *        certificates, this parameter is internally replaced with the underlying key algorithm
+   *        extracted from the certificate.
+   * @param K_S the server's public key blob in SSH wire format. For plain keys, this contains the
+   *        public key directly. For certificates, this contains the complete OpenSSH certificate
+   *        structure, which includes the public key along with additional metadata (CA signature,
+   *        principals, validity period, etc.). When a certificate is detected, this reference is
+   *        replaced internally with the extracted public key for verification purposes.
+   * @param index the starting byte offset within {@code K_S} from which to begin parsing. For plain
+   *        keys, this is typically the position after the algorithm string. For certificates, this
+   *        is typically {@code 0} (start of the certificate blob), and the offset is recalculated
+   *        after extracting the embedded public key.
+   * @param sig_of_H the signature bytes to verify. This is the server's signature of the exchange
+   *        hash {@code H}, which proves the server possesses the private key. The signature format
+   *        is algorithm-specific and includes both the algorithm identifier and the actual
+   *        signature data in SSH wire format.
+   * @return {@code true} if the signature is cryptographically valid and proves the server
+   *         possesses the private key; {@code false} otherwise.
+   * @throws JSchException if the algorithm is unsupported, if a certificate is detected but is not
+   *         a host certificate (e.g., it's a user certificate), if the signature verification class
+   *         cannot be instantiated, or if any other error occurs during verification.
+   * @throws Exception if an unexpected error occurs during parsing or cryptographic operations.
+   */
+  protected boolean verify(String alg, byte[] K_S, int index, byte[] sig_of_H) throws Exception {
     int i, j;
+    boolean result = false;
     OpenSshCertificateBuffer buffer = new OpenSshCertificateBuffer(K_S);
     buffer.s = index;
-    boolean result = false;
-    i = 0;
+    i = index;
 
     if (OpenSshCertificateAwareIdentityFile.isOpenSshCertificateKeyType(alg)) {
       this.isOpenSshServerHostKeyType = true;
@@ -342,26 +423,44 @@ public abstract class KeyExchange {
       // SSH2_CERT_TYPE_HOST.
       // Other certificate types MUST not be accepted.
       if (!certificate.isHostCertificate()) {
-        throw new JSchException(
-            "Server host key is not a valid SSH certificate of type SSH2_CERT_TYPE_HOST.");
+        throw new JSchInvalidHostCertificateException("Rejected certificate '" + certificate.getId()
+            + "': user certificate presented for host authentication. " + "Host: " + session.host);
       }
-      byte[] serverPublicKeyByteArray = certificate.getCertificatePublicKey();
-      buffer = new OpenSshCertificateBuffer(serverPublicKeyByteArray);
-      alg = buffer.getString(StandardCharsets.UTF_8);
+      K_S = certificate.getCertificatePublicKey();
+
+      // Extract algorithm from certificate public key
+      i = 0;
+      j = 0;
+      j = ((K_S[i++] << 24) & 0xff000000) | ((K_S[i++] << 16) & 0x00ff0000)
+          | ((K_S[i++] << 8) & 0x0000ff00) | ((K_S[i++]) & 0x000000ff);
+      alg = Util.byte2str(K_S, i, j);
+      i += j;
+
       this.hostKeyCertificate = certificate;
     }
 
-    if ("ssh-rsa".equals(alg)) {
+    if (alg.equals("ssh-rsa")) {
+      byte[] tmp;
       byte[] ee;
       byte[] n;
 
-      this.type = RSA;
+      type = RSA;
       key_alg_name = alg;
 
-      ee = buffer.getMPInt();
-      n = buffer.getMPInt();
+      j = ((K_S[i++] << 24) & 0xff000000) | ((K_S[i++] << 16) & 0x00ff0000)
+          | ((K_S[i++] << 8) & 0x0000ff00) | ((K_S[i++]) & 0x000000ff);
+      tmp = new byte[j];
+      System.arraycopy(K_S, i, tmp, 0, j);
+      i += j;
+      ee = tmp;
+      j = ((K_S[i++] << 24) & 0xff000000) | ((K_S[i++] << 16) & 0x00ff0000)
+          | ((K_S[i++] << 8) & 0x0000ff00) | ((K_S[i++]) & 0x000000ff);
+      tmp = new byte[j];
+      System.arraycopy(K_S, i, tmp, 0, j);
+      i += j;
+      n = tmp;
 
-      SignatureRSA sig;
+      SignatureRSA sig = null;
       Buffer buf = new Buffer(sig_of_H);
       String foo = Util.byte2str(buf.getString());
       try {
@@ -379,96 +478,131 @@ public abstract class KeyExchange {
       if (session.getLogger().isEnabled(Logger.INFO)) {
         session.getLogger().log(Logger.INFO, "ssh_rsa_verify: " + foo + " signature " + result);
       }
-    } else if ("ssh-dss".equals(alg)) {
-      byte[] q;
+    } else if (alg.equals("ssh-dss")) {
+      byte[] q = null;
+      byte[] tmp;
       byte[] p;
       byte[] g;
-      byte[] y;
+      byte[] f;
 
       type = DSS;
       key_alg_name = alg;
 
-      p = buffer.getMPInt();
-      q = buffer.getMPInt();
-      g = buffer.getMPInt();
-      y = buffer.getMPInt();
+      j = ((K_S[i++] << 24) & 0xff000000) | ((K_S[i++] << 16) & 0x00ff0000)
+          | ((K_S[i++] << 8) & 0x0000ff00) | ((K_S[i++]) & 0x000000ff);
+      tmp = new byte[j];
+      System.arraycopy(K_S, i, tmp, 0, j);
+      i += j;
+      p = tmp;
+      j = ((K_S[i++] << 24) & 0xff000000) | ((K_S[i++] << 16) & 0x00ff0000)
+          | ((K_S[i++] << 8) & 0x0000ff00) | ((K_S[i++]) & 0x000000ff);
+      tmp = new byte[j];
+      System.arraycopy(K_S, i, tmp, 0, j);
+      i += j;
+      q = tmp;
+      j = ((K_S[i++] << 24) & 0xff000000) | ((K_S[i++] << 16) & 0x00ff0000)
+          | ((K_S[i++] << 8) & 0x0000ff00) | ((K_S[i++]) & 0x000000ff);
+      tmp = new byte[j];
+      System.arraycopy(K_S, i, tmp, 0, j);
+      i += j;
+      g = tmp;
+      j = ((K_S[i++] << 24) & 0xff000000) | ((K_S[i++] << 16) & 0x00ff0000)
+          | ((K_S[i++] << 8) & 0x0000ff00) | ((K_S[i++]) & 0x000000ff);
+      tmp = new byte[j];
+      System.arraycopy(K_S, i, tmp, 0, j);
+      i += j;
+      f = tmp;
 
-      SignatureDSA sigDSA;
+      SignatureDSA sig = null;
       try {
         Class<? extends SignatureDSA> c =
             Class.forName(session.getConfig("signature.dss")).asSubclass(SignatureDSA.class);
-        sigDSA = c.getDeclaredConstructor().newInstance();
-        sigDSA.init();
+        sig = c.getDeclaredConstructor().newInstance();
+        sig.init();
       } catch (Exception e) {
         throw new JSchException(e.toString(), e);
       }
-      sigDSA.setPubKey(y, p, q, g);
-      sigDSA.update(H);
-      result = sigDSA.verify(sig_of_H);
+      sig.setPubKey(f, p, q, g);
+      sig.update(H);
+      result = sig.verify(sig_of_H);
 
       if (session.getLogger().isEnabled(Logger.INFO)) {
         session.getLogger().log(Logger.INFO, "ssh_dss_verify: signature " + result);
       }
-    } else if ("ecdsa-sha2-nistp256".equals(alg) || "ecdsa-sha2-nistp384".equals(alg)
-        || "ecdsa-sha2-nistp521".equals(alg)) {
+    } else if (alg.equals("ecdsa-sha2-nistp256") || alg.equals("ecdsa-sha2-nistp384")
+        || alg.equals("ecdsa-sha2-nistp521")) {
+      byte[] tmp;
       byte[] r;
       byte[] s;
 
       // RFC 5656,
       type = ECDSA;
-      this.key_alg_name = alg;
+      key_alg_name = alg;
 
-      // https://www.rfc-editor.org/rfc/rfc5656#section-3.1
-      // The string [identifier] is the identifier of the elliptic curve domain parameters.
-      String identifier = Util.byte2str(buffer.getString());
+      j = ((K_S[i++] << 24) & 0xff000000) | ((K_S[i++] << 16) & 0x00ff0000)
+          | ((K_S[i++] << 8) & 0x0000ff00) | ((K_S[i++]) & 0x000000ff);
+      tmp = new byte[j];
+      System.arraycopy(K_S, i, tmp, 0, j);
+      i += j;
+      j = ((K_S[i++] << 24) & 0xff000000) | ((K_S[i++] << 16) & 0x00ff0000)
+          | ((K_S[i++] << 8) & 0x0000ff00) | ((K_S[i++]) & 0x000000ff);
+      i++;
+      tmp = new byte[(j - 1) / 2];
+      System.arraycopy(K_S, i, tmp, 0, tmp.length);
+      i += (j - 1) / 2;
+      r = tmp;
+      tmp = new byte[(j - 1) / 2];
+      System.arraycopy(K_S, i, tmp, 0, tmp.length);
+      i += (j - 1) / 2;
+      s = tmp;
 
-      int len = buffer.getInt();
-      int x04 = buffer.getByte();
-      r = new byte[(len - 1) / 2];
-      s = new byte[(len - 1) / 2];
-      buffer.getByte(r);
-      buffer.getByte(s);
-
-      SignatureECDSA sigECDSA = null;
+      SignatureECDSA sig = null;
       try {
         Class<? extends SignatureECDSA> c =
             Class.forName(session.getConfig(alg)).asSubclass(SignatureECDSA.class);
-        sigECDSA = c.getDeclaredConstructor().newInstance();
-        sigECDSA.init();
+        sig = c.getDeclaredConstructor().newInstance();
+        sig.init();
       } catch (Exception e) {
         throw new JSchException(e.toString(), e);
       }
 
-      sigECDSA.setPubKey(r, s);
-      sigECDSA.update(H);
-      result = sigECDSA.verify(sig_of_H);
+      sig.setPubKey(r, s);
+
+      sig.update(H);
+
+      result = sig.verify(sig_of_H);
 
       if (session.getLogger().isEnabled(Logger.INFO)) {
         session.getLogger().log(Logger.INFO, "ssh_ecdsa_verify: " + alg + " signature " + result);
       }
-    } else if ("ssh-ed25519".equals(alg) || "ssh-ed448".equals(alg)) {
+    } else if (alg.equals("ssh-ed25519") || alg.equals("ssh-ed448")) {
+      byte[] tmp;
+
       // RFC 8709,
       type = EDDSA;
       key_alg_name = alg;
-      int keyLength = buffer.getInt();
-      byte[] edXXX_pub_array = new byte[keyLength];
-      buffer.getByte(edXXX_pub_array);
 
-      SignatureEdDSA sigEdDSA = null;
+      j = ((K_S[i++] << 24) & 0xff000000) | ((K_S[i++] << 16) & 0x00ff0000)
+          | ((K_S[i++] << 8) & 0x0000ff00) | ((K_S[i++]) & 0x000000ff);
+      tmp = new byte[j];
+      System.arraycopy(K_S, i, tmp, 0, j);
+      i += j;
+
+      SignatureEdDSA sig = null;
       try {
         Class<? extends SignatureEdDSA> c =
             Class.forName(session.getConfig(alg)).asSubclass(SignatureEdDSA.class);
-        sigEdDSA = c.getDeclaredConstructor().newInstance();
-        sigEdDSA.init();
+        sig = c.getDeclaredConstructor().newInstance();
+        sig.init();
       } catch (Exception | LinkageError e) {
         throw new JSchException(e.toString(), e);
       }
 
-      sigEdDSA.setPubKey(edXXX_pub_array);
+      sig.setPubKey(tmp);
 
-      sigEdDSA.update(H);
+      sig.update(H);
 
-      result = sigEdDSA.verify(sig_of_H);
+      result = sig.verify(sig_of_H);
 
       if (session.getLogger().isEnabled(Logger.INFO)) {
         session.getLogger().log(Logger.INFO, "ssh_eddsa_verify: " + alg + " signature " + result);
@@ -478,8 +612,8 @@ public abstract class KeyExchange {
         session.getLogger().log(Logger.ERROR, "unknown alg: " + alg);
       }
     }
-    return result;
 
+    return result;
   }
 
   protected byte[] encodeInt(int raw) {

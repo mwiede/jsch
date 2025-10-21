@@ -1,9 +1,17 @@
 package com.jcraft.jsch;
 
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.Arrays;
+import java.util.Base64;
+import java.util.List;
+import java.util.Locale;
 import com.github.valfirst.slf4jtest.LoggingEvent;
 import com.github.valfirst.slf4jtest.TestLogger;
 import com.github.valfirst.slf4jtest.TestLoggerFactory;
 import org.apache.commons.codec.digest.DigestUtils;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.slf4j.Logger;
@@ -14,17 +22,6 @@ import org.testcontainers.images.builder.ImageFromDockerfile;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.util.Arrays;
-import java.util.Base64;
-import java.util.List;
-import java.util.Locale;
-
-import static com.jcraft.jsch.ResourceUtil.getResourceFile;
-import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Integrated Test (IT) class to verify the JSch public key authentication mechanism using **OpenSSH
@@ -117,11 +114,12 @@ public class UserCertAuthIT {
   @MethodSource("privateKeyParams")
   @ParameterizedTest(name = "key: {0}, cert: {0}-cert.pub")
   public void opensshCertificateParserTest(String privateKey) throws Exception {
-    HostKey hostKey =
-        readHostKey(getResourceFile(this.getClass(), "certificates/docker/ssh_host_rsa_key.pub"));
+    HostKey hostKey = readHostKey(
+        ResourceUtil.getResourceFile(this.getClass(), "certificates/docker/ssh_host_rsa_key.pub"));
     JSch ssh = new JSch();
-    ssh.addIdentity(getResourceFile(this.getClass(), "certificates/" + privateKey),
-        getResourceFile(this.getClass(), "certificates/" + privateKey + "-cert.pub"), null);
+    ssh.addIdentity(ResourceUtil.getResourceFile(this.getClass(), "certificates/" + privateKey),
+        ResourceUtil.getResourceFile(this.getClass(), "certificates/" + privateKey + "-cert.pub"),
+        null);
     ssh.getHostKeyRepository().add(hostKey, null);
 
     Session session = ssh.getSession("root", sshd.getHost(), sshd.getFirstMappedPort());
@@ -144,7 +142,7 @@ public class UserCertAuthIT {
    * @throws Exception if the file cannot be read or the key content is malformed.
    */
   private HostKey readHostKey(String fileName) throws Exception {
-    List<String> lines = Files.readAllLines(Paths.get(fileName), UTF_8);
+    List<String> lines = Files.readAllLines(Paths.get(fileName), StandardCharsets.UTF_8);
     String[] split = lines.get(0).split("\\s+");
     String hostname = String.format(Locale.ROOT, "[%s]:%d", "localhost", 2222);
     return new HostKey(hostname, Base64.getDecoder().decode(split[1]));
@@ -160,13 +158,13 @@ public class UserCertAuthIT {
    * @throws Exception if connection or SFTP channel setup fails.
    */
   private void doSftp(Session session) throws Exception {
-    assertDoesNotThrow(() -> {
+    Assertions.assertDoesNotThrow(() -> {
       try {
         session.setTimeout(timeout);
         session.connect();
         ChannelSftp sftp = (ChannelSftp) session.openChannel("sftp");
         sftp.connect(timeout);
-        assertTrue(sftp.isConnected());
+        Assertions.assertTrue(sftp.isConnected());
         sftp.disconnect();
         session.disconnect();
       } catch (Exception e) {

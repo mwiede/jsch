@@ -1,14 +1,11 @@
 package com.jcraft.jsch;
 
-import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-
-import static com.jcraft.jsch.OpenSshCertificateUtil.isEmpty;
-import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
  * A specialized buffer for parsing OpenSSH certificate data.
@@ -28,7 +25,6 @@ class OpenSshCertificateBuffer extends Buffer {
 
   private static final byte[] EMPTY_BYTE_ARRAY = {};
 
-
   /**
    * Creates a new OpenSSH certificate buffer from decoded certificate bytes.
    *
@@ -46,23 +42,12 @@ class OpenSshCertificateBuffer extends Buffer {
    *
    * @return the byte array data
    */
-  public byte[] getBytes() {
+  byte[] getBytes() {
     int reqLen = getInt();
     byte[] b = new byte[reqLen];
     getByte(b);
     return b;
   }
-
-  /**
-   * Reads a string with the specified character encoding.
-   *
-   * @param charset the character encoding to use
-   * @return the decoded string
-   */
-  public String getString(Charset charset) {
-    return new String(getString(), charset);
-  }
-
 
   /**
    * Reads a collection of UTF-8 encoded strings from the buffer.
@@ -74,10 +59,10 @@ class OpenSshCertificateBuffer extends Buffer {
    *
    * @return collection of strings
    */
-  public Collection<String> getStrings() {
+  Collection<String> getStrings() {
     List<String> list = new ArrayList<>();
     while (getLength() > 0) {
-      String s = getString(UTF_8);
+      String s = Util.byte2str(getString(), StandardCharsets.UTF_8);
       list.add(s);
     }
     return list;
@@ -92,7 +77,7 @@ class OpenSshCertificateBuffer extends Buffer {
    *
    * @return map of critical option names to values
    */
-  public Map<String, String> getCriticalOptions() {
+  Map<String, String> getCriticalOptions() {
     return getKeyValueData();
   }
 
@@ -105,7 +90,7 @@ class OpenSshCertificateBuffer extends Buffer {
    *
    * @return map of extension names to values
    */
-  public Map<String, String> getExtensions() {
+  Map<String, String> getExtensions() {
     return getKeyValueData();
   }
 
@@ -125,25 +110,11 @@ class OpenSshCertificateBuffer extends Buffer {
     if (getLength() > 0) {
       OpenSshCertificateBuffer keyValueDataBuffer = new OpenSshCertificateBuffer(getString());
       while (keyValueDataBuffer.getLength() > 0) {
-        String key = keyValueDataBuffer.getString(UTF_8);
-        String value = keyValueDataBuffer.getString(UTF_8);
+        String key = Util.byte2str(keyValueDataBuffer.getString(), StandardCharsets.UTF_8);
+        String value = Util.byte2str(keyValueDataBuffer.getString(), StandardCharsets.UTF_8);
         map.put(key, value);
       }
     }
     return map;
-  }
-
-  /**
-   * Writes a UTF-8 encoded string to the buffer with length prefix.
-   *
-   * @param string the string
-   */
-  public void putString(String string) {
-    if (isEmpty(string)) {
-      putInt(0);
-      putByte(EMPTY_BYTE_ARRAY);
-    } else {
-      putString(string.getBytes(UTF_8));
-    }
   }
 }

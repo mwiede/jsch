@@ -9,8 +9,8 @@ import java.util.Map;
  *
  * <p>
  * OpenSSH certificates are a mechanism for providing cryptographic proof of authorization to access
- * SSH resources. They consist of a public key along with identity information and usage
- * restrictions that have been signed by a certificate authority (CA).
+ * SSH resources. They consist of a key along with identity information and usage restrictions that
+ * have been signed by a certificate authority (CA).
  * </p>
  *
  * <p>
@@ -26,22 +26,22 @@ class OpenSshCertificate {
   /**
    * Certificate type constant for user certificates
    */
-  public static final int SSH2_CERT_TYPE_USER = 1;
+  static final int SSH2_CERT_TYPE_USER = 1;
 
   /**
    * Certificate type constant for user certificates
    */
-  public static final int SSH2_CERT_TYPE_HOST = 2;
+  static final int SSH2_CERT_TYPE_HOST = 2;
 
   /**
    * Minimum validity period (epoch start)
    */
-  public static final long MIN_VALIDITY = 0L;
+  static final long MIN_VALIDITY = 0L;
 
   /**
    * Maximum validity period (maximum unsigned 64-bit value)
    */
-  public static final long MAX_VALIDITY = 0xffff_ffff_ffff_ffffL;
+  static final long MAX_VALIDITY = 0xffff_ffff_ffff_ffffL;
 
   /**
    * The certificate key type (e.g., "ssh-rsa-cert-v01@openssh.com")
@@ -54,7 +54,7 @@ class OpenSshCertificate {
   private final byte[] nonce;
 
   /**
-   * The certificate's public key in SSH wire format
+   * The certificate's key in SSH wire format
    */
   private final byte[] certificatePublicKey;
 
@@ -100,7 +100,7 @@ class OpenSshCertificate {
   private final String reserved;
 
   /**
-   * The CA's public key that signed this certificate
+   * The CA's key that signed this certificate
    */
   private final byte[] signatureKey;
 
@@ -135,82 +135,82 @@ class OpenSshCertificate {
     this.message = builder.message;
   }
 
-  public String getKeyType() {
+  String getKeyType() {
     return keyType;
   }
 
-  public byte[] getNonce() {
+  byte[] getNonce() {
     return nonce;
   }
 
-  public byte[] getCertificatePublicKey() {
+  byte[] getCertificatePublicKey() {
     return certificatePublicKey;
   }
 
-  public long getSerial() {
+  long getSerial() {
     return serial;
   }
 
-  public int getType() {
+  int getType() {
     return type;
   }
 
-  public String getId() {
+  String getId() {
     return id;
   }
 
-  public Collection<String> getPrincipals() {
+  Collection<String> getPrincipals() {
     return principals;
   }
 
-  public long getValidAfter() {
+  long getValidAfter() {
     return validAfter;
   }
 
-  public long getValidBefore() {
+  long getValidBefore() {
     return validBefore;
   }
 
-  public Map<String, String> getCriticalOptions() {
+  Map<String, String> getCriticalOptions() {
     return criticalOptions;
   }
 
-  public Map<String, String> getExtensions() {
+  Map<String, String> getExtensions() {
     return extensions;
   }
 
-  public String getReserved() {
+  String getReserved() {
     return reserved;
   }
 
-  public byte[] getSignatureKey() {
+  byte[] getSignatureKey() {
     return signatureKey;
   }
 
-  public byte[] getSignature() {
+  byte[] getSignature() {
     return signature;
   }
 
-  public boolean isUserCertificate() {
+  boolean isUserCertificate() {
     return SSH2_CERT_TYPE_USER == type;
   }
 
-  public boolean isHostCertificate() {
+  boolean isHostCertificate() {
     return SSH2_CERT_TYPE_HOST == type;
   }
 
-  public boolean isValidNow() {
+  boolean isValidNow() {
     return OpenSshCertificateUtil.isValidNow(this);
   }
 
-  public byte[] getMessage() {
+  byte[] getMessage() {
     return message;
   }
 
   /**
    * A static inner builder class for creating immutable OpenSshCertificate instances.
    */
-  public static class Builder {
+  static class Builder {
     private String keyType;
     private byte[] nonce;
     private byte[] certificatePublicKey;
@@ -227,79 +227,79 @@ class OpenSshCertificate {
     private byte[] signature;
     private byte[] message;
 
-    public Builder() {}
+    Builder() {}
 
-    public Builder keyType(String keyType) {
+    Builder keyType(String keyType) {
       this.keyType = keyType;
       return this;
     }
 
-    public Builder nonce(byte[] nonce) {
+    Builder nonce(byte[] nonce) {
       this.nonce = nonce;
       return this;
     }
 
-    public Builder certificatePublicKey(byte[] pk) {
+    Builder certificatePublicKey(byte[] pk) {
       this.certificatePublicKey = pk;
       return this;
     }
 
-    public Builder serial(long serial) {
+    Builder serial(long serial) {
       this.serial = serial;
       return this;
     }
 
-    public Builder type(int type) {
+    Builder type(int type) {
       this.type = type;
       return this;
     }
 
-    public Builder id(String id) {
+    Builder id(String id) {
       this.id = id;
       return this;
     }
 
-    public Builder principals(Collection<String> principals) {
+    Builder principals(Collection<String> principals) {
       this.principals = principals;
       return this;
     }
 
-    public Builder validAfter(long validAfter) {
+    Builder validAfter(long validAfter) {
       this.validAfter = validAfter;
       return this;
     }
 
-    public Builder validBefore(long validBefore) {
+    Builder validBefore(long validBefore) {
       this.validBefore = validBefore;
       return this;
     }
 
-    public Builder criticalOptions(Map<String, String> opts) {
+    Builder criticalOptions(Map<String, String> opts) {
       this.criticalOptions = opts;
       return this;
     }
 
-    public Builder extensions(Map<String, String> exts) {
+    Builder extensions(Map<String, String> exts) {
       this.extensions = exts;
       return this;
     }
 
-    public Builder reserved(String reserved) {
+    Builder reserved(String reserved) {
       this.reserved = reserved;
       return this;
     }
 
-    public Builder signatureKey(byte[] sigKey) {
+    Builder signatureKey(byte[] sigKey) {
       this.signatureKey = sigKey;
       return this;
     }
 
-    public Builder signature(byte[] signature) {
+    Builder signature(byte[] signature) {
       this.signature = signature;
       return this;
     }
 
-    public Builder message(byte[] message) {
+    Builder message(byte[] message) {
       this.message = message;
       return this;
     }
@@ -309,7 +309,7 @@ class OpenSshCertificate {
      *
      * @return A new, immutable OpenSshCertificate object.
      */
-    public OpenSshCertificate build() {
+    OpenSshCertificate build() {
       // You could add validation logic here if needed (e.g., check for null required fields)
       return new OpenSshCertificate(this);
     }

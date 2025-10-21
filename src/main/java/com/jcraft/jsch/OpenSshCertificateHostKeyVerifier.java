@@ -1,14 +1,10 @@
 package com.jcraft.jsch;
 
 import java.util.Arrays;
-import java.util.Base64;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
-
-import static com.jcraft.jsch.OpenSshCertificateUtil.isEmpty;
-import static com.jcraft.jsch.Util.byte2str;
 
 /**
  * A verifier for OpenSSH host certificates.
@@ -25,7 +21,7 @@ import static com.jcraft.jsch.Util.byte2str;
  * <li>Ensuring no unrecognized critical options are present.</li>
  * </ul>
  */
-public class OpenSshCertificateHostKeyVerifier {
+class OpenSshCertificateHostKeyVerifier {
 
   /**
    * Performs a complete verification of a host's OpenSSH certificate.
@@ -36,34 +32,38 @@ public class OpenSshCertificateHostKeyVerifier {
    * </p>
    *
    * @param session the current JSch session.
-   * @param kex the key exchange context, which contains the host certificate.
+   * @param certificate the certificate to check.
    * @throws JSchException if the certificate is invalid, expired, not signed by a trusted CA, or
    *         fails any other validation check. Throws specific subclasses of {@link JSchException}
    *         for different failure reasons.
    */
-  public static void checkHostCertificate(Session session, KeyExchange kex) throws JSchException {
-    OpenSshCertificate certificate = kex.getHostKeyCertificate();
+  static void checkHostCertificate(Session session, OpenSshCertificate certificate)
+      throws JSchException {
+
     byte[] caPublicKeyByteArray = certificate.getSignatureKey();
 
-    String base64CaPublicKey = Base64.getEncoder().encodeToString(caPublicKeyByteArray);
+    String base64CaPublicKey =
+        Util.byte2str(Util.toBase64(caPublicKeyByteArray, 0, caPublicKeyByteArray.length, true));
 
-    boolean caFound = getTrustedCAs(session.getHostKeyRepository()).stream()
-        .anyMatch(trustedCA -> trustedCA.isMatched(session.host) && trustedCA.getKey() != null
-            && trustedCA.getKey().equals(base64CaPublicKey));
+    String host = session.host;
+    HostKeyRepository repository = session.getHostKeyRepository();
+
+    boolean caFound =
+        OpenSshCertificateUtil.isCertificateSignedByTrustedCA(repository, host, base64CaPublicKey);
 
     if (!caFound) {
-      throw new JSchUnknownCAKeyException(
-          "rejected HostKey: Certification Authority not in the known hosts for " + session.host);
+      throw new JSchUnknownCAKeyException("Rejected certificate '" + certificate.getId() + "': "
+          + "Certification Authority not in the known hosts or revoked for " + host);
     }
 
     Buffer caPublicKeyBuffer = new Buffer(caPublicKeyByteArray);
-    String caPublicKeyAlgorithm = byte2str(caPublicKeyBuffer.getString());
+    String caPublicKeyAlgorithm = Util.byte2str(caPublicKeyBuffer.getString());
     String certificateId = certificate.getId();
 
     // check if the certificate is a
     if (!certificate.isHostCertificate()) {
       throw new JSchInvalidHostCertificateException("reject HostKey: certificate id='"
-          + certificateId + "' is not a host certificate. Host:" + session.host);
+          + certificateId + "' is not a host certificate. Host:" + host);
     }
 
     if (!certificate.isValidNow()) {
@@ -72,20 +72,20 @@ public class OpenSshCertificateHostKeyVerifier {
               + certificateId);
     }
 
-    checkSignature(certificate, caPublicKeyAlgorithm);
+    checkSignature(certificate, caPublicKeyAlgorithm, session);
 
     // "As a special case, a zero-length "valid principals" field means the certificate is valid for
     // any principal of the specified type."
     // Empty principals in a host certificate mean the certificate is valid for any host.
     Collection<String> principals = certificate.getPrincipals();
     if (principals != null && !principals.isEmpty()) {
-      if (!principals.contains(session.host)) {
-        throw new JSchException("rejected HostKey: invalid principal '" + session.host
+      if (!principals.contains(host)) {
+        throw new JSchException("rejected HostKey: invalid principal '" + host
             + "', allowed principals: " + principals);
       }
     }
 
-    if (!isEmpty(certificate.getCriticalOptions())) {
+    if (!OpenSshCertificateUtil.isEmpty(certificate.getCriticalOptions())) {
       // no critical option defined for host keys yet
       throw new JSchInvalidHostCertificateException(
           "rejected HostKey: unrecognized critical options " + certificate.getCriticalOptions());
@@ -105,9 +105,9 @@ public class OpenSshCertificateHostKeyVerifier {
    *         it returns {exponent, modulus}).
    * @throws JSchException if the public key algorithm is unknown or the key format is corrupt.
    */
-  public static byte[][] parsePublicKey(byte[] certificatePublicKey) throws JSchException {
+  static byte[][] parsePublicKey(byte[] certificatePublicKey) throws JSchException {
     Buffer buffer = new Buffer(certificatePublicKey);
-    String algorithm = byte2str(buffer.getString());
+    String algorithm = Util.byte2str(buffer.getString());
 
     if (algorithm.startsWith("ssh-rsa") || algorithm.startsWith("rsa-")) {
       byte[] ee = buffer.getMPInt();
@@ -126,7 +126,7 @@ public class OpenSshCertificateHostKeyVerifier {
     if (algorithm.startsWith("ecdsa-sha2-")) {
       // https://www.rfc-editor.org/rfc/rfc5656#section-3.1
       // The string [identifier] is the identifier of the elliptic curve domain parameters.
-      String identifier = byte2str(buffer.getString());
+      String identifier = Util.byte2str(buffer.getString());
       int len = buffer.getInt();
       int x04 = buffer.getByte();
       byte[] r = new byte[(len - 1) / 2];
@@ -158,10 +158,10 @@ public class OpenSshCertificateHostKeyVerifier {
    * @throws JSchException if the signature algorithm does not match the CA key algorithm or if the
    *         signature is cryptographically invalid.
    */
-  private static void checkSignature(OpenSshCertificate certificate, String caPublicKeyAlgorithm)
-      throws JSchException {
+  static void checkSignature(OpenSshCertificate certificate, String caPublicKeyAlgorithm,
+      Session session) throws JSchException {
     // Check signature
-    SignatureWrapper signature = getSignatureWrapper(certificate, caPublicKeyAlgorithm);
+    SignatureWrapper signature = getSignatureWrapper(certificate, caPublicKeyAlgorithm, session);
     byte[][] publicKey = parsePublicKey(certificate.getSignatureKey());
     boolean verified;
     try {
@@ -192,11 +192,11 @@ public class OpenSshCertificateHostKeyVerifier {
    * @throws JSchException if the signature algorithm does not match the CA's key algorithm, or if
    *         the wrapper cannot be instantiated.
    */
-  private static SignatureWrapper getSignatureWrapper(OpenSshCertificate certificate,
-      String caPublicKeyAlgorithm) throws JSchException {
+  static SignatureWrapper getSignatureWrapper(OpenSshCertificate certificate,
+      String caPublicKeyAlgorithm, Session session) throws JSchException {
     byte[] certificateSignature = certificate.getSignature();
     Buffer signatureBuffer = new Buffer(certificateSignature);
-    String signatureAlgorithm = byte2str(signatureBuffer.getString());
+    String signatureAlgorithm = Util.byte2str(signatureBuffer.getString());
 
     if (!caPublicKeyAlgorithm.equals(signatureAlgorithm)) {
       throw new JSchInvalidHostCertificateException(
@@ -204,24 +204,7 @@ public class OpenSshCertificateHostKeyVerifier {
               + signatureAlgorithm + "' - CA public Key algorithm: '" + caPublicKeyAlgorithm + "'");
     }
 
-    return new SignatureWrapper(signatureAlgorithm);
+    return new SignatureWrapper(signatureAlgorithm, session);
   }
 
-  /**
-   * Retrieves all trusted Certificate Authority (CA) host keys from the repository.
-   * <p>
-   * Trusted CAs are identified in the {@code known_hosts} file by the {@code @cert-authority}
-   * marker.
-   * </p>
-   *
-   * @param knownHosts the repository of known hosts (typically from a known_hosts file).
-   * @return a {@link Set} of {@link HostKey} objects representing the trusted CAs.
-   */
-
-  private static Set<HostKey> getTrustedCAs(HostKeyRepository knownHosts) {
-    HostKey[] hostKeys = knownHosts.getHostKey();
-    return hostKeys == null ? new HashSet<>()
-        : Arrays.stream(hostKeys).filter(OpenSshCertificateUtil::isKnownHostCaPublicKeyEntry)
-            .collect(Collectors.toSet());
-  }
 }

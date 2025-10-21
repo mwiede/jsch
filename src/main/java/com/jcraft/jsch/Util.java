@@ -52,6 +52,10 @@ class Util {
     return 0;
   }
 
+  static byte[] fromBase64(byte[] buf) throws JSchException {
+    return fromBase64(buf, 0, buf.length);
+  }
+
   static byte[] fromBase64(byte[] buf, int start, int length) throws JSchException {
     try {
       byte[] foo = new byte[length];
