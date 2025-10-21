@@ -1,5 +1,7 @@
 package com.jcraft.jsch;
 
+import java.util.Arrays;
+import java.util.List;
 import com.github.valfirst.slf4jtest.LoggingEvent;
 import com.github.valfirst.slf4jtest.TestLogger;
 import com.github.valfirst.slf4jtest.TestLoggerFactory;
@@ -8,13 +10,8 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.images.builder.ImageFromDockerfile;
-import org.testcontainers.images.builder.dockerfile.DockerfileBuilder;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
-
-import java.util.Arrays;
-import java.util.List;
-
 import static com.jcraft.jsch.ResourceUtil.getResourceFile;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -106,7 +103,7 @@ public class HostCertificateIT {
 
     ssh.setKnownHosts(getResourceFile(this.getClass(), "certificates/known_hosts"));
     Session session =
-        ssh.getSession("luigi", sshdContainer.getHost(), sshdContainer.getFirstMappedPort());
+        ssh.getSession("root", sshdContainer.getHost(), sshdContainer.getFirstMappedPort());
     session.setConfig("enable_auth_none", "no");
     session.setConfig("StrictHostKeyChecking", "yes");
     session.setConfig("PreferredAuthentications", "publickey");
@@ -143,7 +140,6 @@ public class HostCertificateIT {
     });
   }
 
-
   /**
    * Helper method to create and configure a JSch {@link Session} with common settings for the
    * tests.
@@ -155,7 +151,7 @@ public class HostCertificateIT {
    */
   private Session setup(JSch ssh, String algorithm) throws JSchException {
     Session session =
-        ssh.getSession("luigi", sshdContainer.getHost(), sshdContainer.getFirstMappedPort());
+        ssh.getSession("root", sshdContainer.getHost(), sshdContainer.getFirstMappedPort());
     session.setConfig("enable_auth_none", "no");
     session.setConfig("StrictHostKeyChecking", "yes");
     session.setConfig("PreferredAuthentications", "publickey");

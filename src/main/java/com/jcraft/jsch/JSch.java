@@ -26,7 +26,6 @@
 
 package com.jcraft.jsch;
 
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Collections;
@@ -35,9 +34,6 @@ import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Map;
 import java.util.Vector;
-
-import static com.jcraft.jsch.OpenSshCertificateAwareIdentityFile.isOpenSshCertificate;
-import static java.nio.charset.StandardCharsets.UTF_8;
 
 public class JSch {
   /** The version number. */
@@ -264,6 +260,9 @@ public class JSch {
 
     config.put("MaxAuthTries", Util.getSystemProperty("jsch.max_auth_tries", "6"));
     config.put("ClearAllForwardings", "no");
+    config.put("ClearAllKeys", "no");
+    config.put("HostCertificateToKeyFallback",
+        Util.getSystemProperty("jsch.host_certificate_to_key_fallback", "no"));
   }
 
   final InstanceLogger instLogger = new InstanceLogger();
@@ -497,18 +496,18 @@ public class JSch {
    * @throws JSchException if <code>passphrase</code> is not right.
    */
   public void addIdentity(String prvkey, String pubkey, byte[] passphrase) throws JSchException {
-    String pubkeyFileContent = null;
+    byte[] pubkeyFileContent = null;
     Identity identity;
 
     if (pubkey != null) {
       try {
-        pubkeyFileContent = new String(Util.fromFile(pubkey), UTF_8);
+        pubkeyFileContent = Util.fromFile(pubkey);
       } catch (IOException e) {
         throw new JSchException(e.toString(), e);
       }
     }
-
-    if (pubkeyFileContent != null && isOpenSshCertificate(pubkeyFileContent)) {
+    if (pubkeyFileContent != null
+        && OpenSshCertificateAwareIdentityFile.isOpenSshCertificateFile(pubkeyFileContent)) {
       identity = OpenSshCertificateAwareIdentityFile.newInstance(prvkey, pubkey, instLogger);
     } else {
       identity = IdentityFile.newInstance(prvkey, pubkey, instLogger);
@@ -528,10 +527,8 @@ public class JSch {
    */
   public void addIdentity(String name, byte[] prvkey, byte[] pubkey, byte[] passphrase)
       throws JSchException {
-    String pubkeyFileContent = new String(pubkey, UTF_8);
     Identity identity;
-
-    if (isOpenSshCertificate(pubkeyFileContent)) {
+    if (OpenSshCertificateAwareIdentityFile.isOpenSshCertificateFile(pubkey)) {
       identity = OpenSshCertificateAwareIdentityFile.newInstance(name, prvkey, pubkey, instLogger);
     } else {
       identity = IdentityFile.newInstance(name, prvkey, pubkey, instLogger);

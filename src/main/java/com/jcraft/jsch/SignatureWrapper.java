@@ -20,18 +20,6 @@ class SignatureWrapper implements Signature {
   private final PubKeyParameterValidator pubKeyParameterValidator;
 
   /**
-   * Constructs a {@code SignatureWrapper} by parsing the algorithm name from a signature data blob.
-   *
-   * @param dataSignature a byte array containing the OpenSSH certificate buffer, from which the
-   *        signature algorithm name is extracted.
-   * @throws JSchException if the algorithm name cannot be parsed or if the underlying signature
-   *         instance cannot be created.
-   */
-  public SignatureWrapper(byte[] dataSignature) throws JSchException {
-    this(new OpenSshCertificateBuffer(dataSignature).getString(StandardCharsets.UTF_8));
-  }
-
-  /**
    * Constructs a {@code SignatureWrapper} for the specified signature algorithm.
    * <p>
    * This constructor uses reflection to find and instantiate the appropriate {@link Signature}
@@ -43,9 +31,10 @@ class SignatureWrapper implements Signature {
    * @throws JSchException if the specified algorithm is not recognized, the implementation class
    *         cannot be found, or an instance cannot be created.
    */
-  public SignatureWrapper(String algorithm) throws JSchException {
+  SignatureWrapper(String algorithm, Session session) throws JSchException {
     try {
-      this.signature = Class.forName(JSch.getConfig(algorithm)).asSubclass(Signature.class)
+      // Session.getConfig(algorithm)
+      this.signature = Class.forName(session.getConfig(algorithm)).asSubclass(Signature.class)
           .getDeclaredConstructor().newInstance();
     } catch (Exception e) {
       throw new JSchException("Failed to instantiate signature for algorithm '" + algorithm + "'",
@@ -149,7 +138,7 @@ class SignatureWrapper implements Signature {
    * @throws Exception if the key parameters are invalid or if an error occurs while setting the
    *         public key on the underlying signature instance.
    */
-  public void setPubKey(byte[]... args) throws Exception {
+  void setPubKey(byte[]... args) throws Exception {
     pubKeyParameterValidator.validatePublicKeyParameter(args);
     publicKeySetter.setPubKey(args);
   }
