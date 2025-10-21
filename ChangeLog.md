@@ -1,3 +1,7 @@
+* [2.27.4](https://github.com/mwiede/jsch/releases/tag/jsch-2.27.4)
+  * Slowness due to blocked threads in Channel.getChannel call
+  * fix for infinite looping issue
+  * Store Channel objects associated with a particular Session with the S… 
 * [2.27.0](https://github.com/mwiede/jsch/releases/tag/jsch-2.27.0)
   * switch to semver scheme by @mwiede in https://github.com/mwiede/jsch/pull/828
   * 0.2.27 changes by @norrisjeremy in https://github.com/mwiede/jsch/pull/824
