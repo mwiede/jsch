@@ -31,11 +31,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReadWriteLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public abstract class Channel {
 
@@ -48,76 +44,7 @@ public abstract class Channel {
   static final int SSH_OPEN_UNKNOWN_CHANNEL_TYPE = 3;
   static final int SSH_OPEN_RESOURCE_SHORTAGE = 4;
 
-  private static final ReadWriteLock poolLock = new ReentrantReadWriteLock();
-  private static int index = 0;
-  private static final List<Channel> pool = new ArrayList<>();
-
-  static Channel getChannel(String type, Session session) {
-    Channel ret = null;
-    if (type.equals("session")) {
-      ret = new ChannelSession();
-    }
-    if (type.equals("shell")) {
-      ret = new ChannelShell();
-    }
-    if (type.equals("exec")) {
-      ret = new ChannelExec();
-    }
-    if (type.equals("x11")) {
-      ret = new ChannelX11();
-    }
-    if (type.equals("auth-agent@openssh.com")) {
-      ret = new ChannelAgentForwarding();
-    }
-    if (type.equals("direct-tcpip")) {
-      ret = new ChannelDirectTCPIP();
-    }
-    if (type.equals("forwarded-tcpip")) {
-      ret = new ChannelForwardedTCPIP();
-    }
-    if (type.equals("sftp")) {
-      ChannelSftp sftp = new ChannelSftp();
-      boolean useWriteFlushWorkaround =
-          session.getConfig("use_sftp_write_flush_workaround").equals("yes");
-      sftp.setUseWriteFlushWorkaround(useWriteFlushWorkaround);
-      ret = sftp;
-    }
-    if (type.equals("subsystem")) {
-      ret = new ChannelSubsystem();
-    }
-    if (type.equals("direct-streamlocal@openssh.com")) {
-      ret = new ChannelDirectStreamLocal();
-    }
-    if (ret == null) {
-      return null;
-    }
-    ret.setSession(session);
-    return ret;
-  }
-
-  static Channel getChannel(int id, Session session) {
-    Lock l = poolLock.readLock();
-    l.lock();
-    try {
-      for (Channel c : pool) {
-        if (c.id == id && c.session == session)
-          return c;
-      }
-    } finally {
-      l.unlock();
-    }
-    return null;
-  }
-
-  static void del(Channel c) {
-    Lock l = poolLock.writeLock();
-    l.lock();
-    try {
-      pool.remove(c);
-    } finally {
-      l.unlock();
-    }
-  }
+  private static final AtomicInteger index = new AtomicInteger();
 
   int id;
   volatile int recipient = -1;
@@ -149,20 +76,12 @@ public abstract class Channel {
   int notifyme = 0;
 
   Channel() {
-    Lock l = poolLock.writeLock();
-    l.lock();
-    try {
-      id = index++;
-      // OpenSSH 8.0 introduced a bug that rejected channels with an ID that exceeds INT_MAX.
-      // See https://github.com/openssh/openssh-portable/commit/7ec5cb4.
-      // This bug was later resolved in OpenSSH 8.2.
-      // See https://github.com/openssh/openssh-portable/commit/0ecd20b.
-      // To allow compability, cap the ID value to not exceed INT_MAX.
-      index &= Integer.MAX_VALUE;
-      pool.add(this);
-    } finally {
-      l.unlock();
-    }
+    // OpenSSH 8.0 introduced a bug that rejected channels with an ID that exceeds INT_MAX.
+    // See https://github.com/openssh/openssh-portable/commit/7ec5cb4.
+    // This bug was later resolved in OpenSSH 8.2.
+    // See https://github.com/openssh/openssh-portable/commit/0ecd20b.
+    // To allow compability, cap the ID value to not exceed INT_MAX.
+    id = index.getAndIncrement() & Integer.MAX_VALUE;
   }
 
   synchronized void setRecipient(int foo) {
@@ -624,24 +543,6 @@ public abstract class Channel {
     return close;
   }
 
-  static void disconnect(Session session) {
-    List<Channel> channels = new ArrayList<>();
-    Lock l = poolLock.readLock();
-    l.lock();
-    try {
-      for (Channel c : pool) {
-        if (c.session == session) {
-          channels.add(c);
-        }
-      }
-    } finally {
-      l.unlock();
-    }
-    for (Channel c : channels) {
-      c.disconnect();
-    }
-  }
-
   public void disconnect() {
     // System.err.println(this+":disconnect "+io+" "+connected);
     // Thread.dumpStack();
@@ -670,7 +571,10 @@ public abstract class Channel {
       }
       // io=null;
     } finally {
-      Channel.del(this);
+      Session _session = this.session;
+      if (_session != null) {
+        _session.delChannel(this);
+      }
     }
   }
 
