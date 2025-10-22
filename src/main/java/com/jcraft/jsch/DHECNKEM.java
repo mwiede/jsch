@@ -113,7 +113,7 @@ abstract class DHECNKEM extends KeyExchange {
   }
 
   @Override
-  public boolean next(Buffer _buf) throws Exception {
+  public boolean doNext(Buffer _buf, int sshMessageType) throws Exception {
     int i, j;
     switch (state) {
       case SSH_MSG_KEX_HYBRID_REPLY:
@@ -122,12 +122,11 @@ abstract class DHECNKEM extends KeyExchange {
         // string K_S, server's public host key
         // string S_REPLY
         // string the signature on the exchange hash
-        j = _buf.getInt();
-        j = _buf.getByte();
-        j = _buf.getByte();
-        if (j != SSH_MSG_KEX_HYBRID_REPLY) {
+
+        if (sshMessageType != SSH_MSG_KEX_HYBRID_REPLY) {
           if (session.getLogger().isEnabled(Logger.ERROR)) {
-            session.getLogger().log(Logger.ERROR, "type: must be SSH_MSG_KEX_HYBRID_REPLY " + j);
+            session.getLogger().log(Logger.ERROR,
+                "type: must be SSH_MSG_KEX_HYBRID_REPLY " + sshMessageType);
           }
           return false;
         }
