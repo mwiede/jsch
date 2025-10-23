@@ -525,7 +525,9 @@ public class JSch {
         byte[] goo = new byte[passphrase.length];
         System.arraycopy(passphrase, 0, goo, 0, passphrase.length);
         passphrase = goo;
-        identity.setPassphrase(passphrase);
+        if (!identity.setPassphrase(passphrase)) {
+          throw new JSchException("Incorrect passphrase provided.");
+        }
       } finally {
         Util.bzero(passphrase);
       }
