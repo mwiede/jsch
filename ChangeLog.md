@@ -1,3 +1,5 @@
+* [2.27.5](https://github.com/mwiede/jsch/releases/tag/jsch-2.27.5)
+  * Throw JSchException if an incorrect passphrase is provided to `JSch.addIdentity()`
 * [2.27.4](https://github.com/mwiede/jsch/releases/tag/jsch-2.27.4)
   * Slowness due to blocked threads in Channel.getChannel call
   * fix for infinite looping issue
