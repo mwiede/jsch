@@ -308,10 +308,14 @@ public class OpenSSHConfig implements ConfigRepository {
     public int getPort() {
       String foo = find("Port");
       int port = -1;
-      try {
-        port = Integer.parseInt(foo);
-      } catch (NumberFormatException e) {
-        logError("Port", e);
+      // Port is not required and we don't want to log a failure if its simply missing from the
+      // OpenSSH config
+      if (foo != null) {
+        try {
+          port = Integer.parseInt(foo);
+        } catch (NumberFormatException e) {
+          logError("Port", e);
+        }
       }
       return port;
     }
