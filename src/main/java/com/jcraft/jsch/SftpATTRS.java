@@ -166,10 +166,11 @@ public class SftpATTRS {
   int mtime;
   String[] extended = null;
 
-    /**
-     * Can be public since setting attributes via SFTP does not require reading them from the remote side first. You
-     * can safely set just a subset of attributes at a time, thus the default instance of SftpATTRS is safe to use.
-     */
+  /**
+   * Can be public since setting attributes via SFTP does not require reading them from the remote
+   * side first. You can safely set just a subset of attributes at a time, thus the default instance
+   * of SftpATTRS is safe to use.
+   */
   public SftpATTRS() {}
 
   static SftpATTRS getATTR(Buffer buf) {
