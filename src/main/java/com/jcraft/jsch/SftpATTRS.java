@@ -166,7 +166,7 @@ public class SftpATTRS {
   int mtime;
   String[] extended = null;
 
-  private SftpATTRS() {}
+  public SftpATTRS() {}
 
   static SftpATTRS getATTR(Buffer buf) {
     SftpATTRS attr = new SftpATTRS();
