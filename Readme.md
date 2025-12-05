@@ -132,5 +132,12 @@ When you have an artifact `foo:bar`, which contains `com.jcraft:jsch` as a trans
     * `jsch.max_auth_tries`
       * analogous to `JSch.setConfig("MaxAuthTries", "...")`
 
+## Other Projects Using JSch
+
+* Jsync https://github.com/fizzed/jsync - Provides a simple, efficient, reliable, and pure Java rsync-like file and
+  directory synchronization tool that can be used programmatically.
+* Blaze https://github.com/fizzed/blaze - A way to run Java files as scripts, with powerful SSH, SFTP, and rsync-like
+  features built right in.
+
 ## Changes since fork:
 See [ChangeLog.md](ChangeLog.md)
