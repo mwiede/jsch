@@ -31,9 +31,9 @@ public class WindowsSSHAgentConnector implements AgentConnector {
 		this(fileChannelFactory, DEFAULT_OPENSSH_AGENT_NAMED_PIPE);
 	}
 
-	public WindowsSSHAgentConnector(FileChannelFactory fileChannelFactory, String sshAgentNamedPipePath) {
+	public WindowsSSHAgentConnector(FileChannelFactory fileChannelFactory, String sshAgentNamedPipe) {
 		this.fileChannelFactory = fileChannelFactory;
-		this.sshAgentNamedPipe = sshAgentNamedPipePath;
+		this.sshAgentNamedPipe = sshAgentNamedPipe;
 	}
 
 	@Override
@@ -43,8 +43,8 @@ public class WindowsSSHAgentConnector implements AgentConnector {
 
 	@Override
 	public boolean isAvailable() {
-		try (FileChannel ignored = open()) {
-			return true;
+		try (FileChannel fileChannel = open()) {
+			return fileChannel.isOpen();
 		} catch (IOException e) {
 			return false;
 		}
