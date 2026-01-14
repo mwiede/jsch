@@ -72,7 +72,7 @@
         <junixsocket.version>2.10.1</junixsocket.version>
         <jna.version>5.18.1</jna.version>
         <log4j.version>2.25.3</log4j.version>
-        <errorprone.version>2.45.0</errorprone.version>
+        <errorprone.version>2.46.0</errorprone.version>
         <surefire.version>3.5.4</surefire.version>
         <toolchain.jdk.version>[25,)</toolchain.jdk.version>
     </properties>
