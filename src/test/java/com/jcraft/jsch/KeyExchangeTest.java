@@ -247,7 +247,7 @@ public class KeyExchangeTest {
     }
 
     @Override
-    public boolean doNext(Buffer buf, int sshMessageType) throws Exception {
+    public boolean next(Buffer buf) throws Exception {
       throw new UnsupportedOperationException("Not supported");
     }
 

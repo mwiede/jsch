@@ -944,17 +944,27 @@ public class Session {
     }
   }
 
-  private void checkHost(String chost, int port, KeyExchange kex) throws Exception {
-    if (kex.isOpenSshServerHostKeyType) {
-      OpenSshCertificate certificate = kex.getHostKeyCertificate();
+  private void checkHost(String chost, int port, KeyExchange kex) throws JSchException {
+    OpenSshCertificate certificate = kex.getHostKeyCertificate();
+    if (certificate != null) {
       try {
         OpenSshCertificateHostKeyVerifier.checkHostCertificate(this, certificate);
         return;
       } catch (JSchException e) {
-        if (getConfig("HostCertificateToKeyFallback").equals("no")) {
+        if (getConfig("host_certificate_to_key_fallback").equals("no")) {
           throw e;
         }
+        // Fallback to public key verification - log warning as this bypasses CA validation
+        if (getLogger().isEnabled(Logger.WARN)) {
+          getLogger().log(Logger.WARN,
+              "Host certificate validation failed, falling back to public key verification. "
+                  + "This bypasses CA trust validation. Reason: " + e.getMessage());
+        }
         byte[] K_S = certificate.getCertificatePublicKey();
+        if (K_S == null) {
+          throw new JSchException(
+              "Invalid certificate '" + certificate.getId() + "': missing public key");
+        }
         String key_type = kex.getKeyType();
         String key_footprint = kex.getFingerPrint();
         String keyAlgorithmName = kex.getKeyAlgorithName();
@@ -968,7 +978,6 @@ public class Session {
     if (hostKeyAlias != null) {
       chost = hostKeyAlias;
     }
-    // System.err.println("shkc: "+shkc);
     byte[] K_S = kex.getHostKey();
     String key_type = kex.getKeyType();
     String key_fprint = kex.getFingerPrint();
@@ -985,6 +994,7 @@ public class Session {
     }
 
     String shkc = getConfig("StrictHostKeyChecking");
+    // System.err.println("shkc: "+shkc);
 
     HostKeyRepository hkr = getHostKeyRepository();
 
@@ -2302,7 +2312,6 @@ public class Session {
     this.threadFactory = Objects.requireNonNull(threadFactory);
   }
 
-
   /**
    * Returns the thread factory used by this instance.
    *
@@ -2487,7 +2496,6 @@ public class Session {
   }
 
   // TODO: This method should return the integer value as the assigned port.
-
   /**
    * Registers the remote port forwarding. If <code>bind_address</code> is an empty string or
    * <code>"*"</code>, the port should be available from all interfaces. If
@@ -3308,8 +3316,11 @@ public class Session {
     String[] _sigs = Util.split(sigs, ",");
     for (int i = 0; i < _sigs.length; i++) {
       try {
+        // Map certificate algorithm names to their base signature algorithm.
+        // Certificate algorithms use the same Signature implementations as their base algorithms.
+        String sigToCheck = OpenSshCertificateKeyTypes.getBaseKeyType(_sigs[i]);
         Class<? extends Signature> c =
-            Class.forName(JSch.getConfig(_sigs[i])).asSubclass(Signature.class);
+            Class.forName(JSch.getConfig(sigToCheck)).asSubclass(Signature.class);
         final Signature sig = c.getDeclaredConstructor().newInstance();
         sig.init();
       } catch (Exception | LinkageError e) {
@@ -3326,6 +3337,57 @@ public class Session {
       }
     }
     return foo;
+  }
+
+  /**
+   * Checks if a CA signature algorithm is allowed and available at runtime.
+   * <p>
+   * This method validates that the given algorithm is:
+   * <ol>
+   * <li>Listed in the configured {@code ca_signature_algorithms}</li>
+   * <li>Not in the list of unavailable signature algorithms (as determined by
+   * {@code CheckSignatures})</li>
+   * </ol>
+   * </p>
+   *
+   * @param algorithm the CA signature algorithm to check
+   * @throws JSchException if the algorithm is not allowed or not available at runtime
+   */
+  void checkCASignatureAlgorithm(String algorithm) throws JSchException {
+    String caSignatureAlgorithms = getConfig("ca_signature_algorithms");
+
+    if (caSignatureAlgorithms != null && !caSignatureAlgorithms.isEmpty()) {
+      // Check if algorithm is in the allowed list
+      String[] allowedAlgorithms = Util.split(caSignatureAlgorithms, ",");
+      boolean isAllowed = false;
+      for (String allowed : allowedAlgorithms) {
+        if (allowed.equals(algorithm)) {
+          isAllowed = true;
+          break;
+        }
+      }
+
+      if (!isAllowed) {
+        throw new JSchException("CA signature algorithm '" + algorithm
+            + "' is not in the allowed ca_signature_algorithms list: " + caSignatureAlgorithms);
+      }
+    }
+
+    // Check if the algorithm is in the cached unavailable signatures list.
+    // Copy volatile field to local variable to avoid race condition.
+    String[] unavailableSigs = not_available_shks;
+    if (unavailableSigs != null) {
+      for (String unavailable : unavailableSigs) {
+        if (unavailable.equals(algorithm)) {
+          throw new JSchException(
+              "CA signature algorithm '" + algorithm + "' is not available at runtime. "
+                  + "This may be due to missing cryptographic provider support "
+                  + "(e.g., Ed25519 on Java 8 without Bouncy Castle).");
+        }
+      }
+    }
+    // If unavailableSigs is null, either all probed algorithms are available,
+    // or the user chose not to probe via CheckSignatures - respect that choice.
   }
 
   /**

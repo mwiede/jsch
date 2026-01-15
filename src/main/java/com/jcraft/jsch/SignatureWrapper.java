@@ -1,14 +1,12 @@
 package com.jcraft.jsch;
 
-import java.nio.charset.StandardCharsets;
-
 /**
  * A factory and wrapper class for creating and managing digital signature instances.
  * <p>
  * This class abstracts the creation of specific signature algorithm implementations (like RSA, DSA,
  * ECDSA, EdDSA) by dynamically loading them based on an algorithm name. It also provides a generic
  * interface for setting the public key and performing signature operations (init, update, verify,
- * sign) by delegating calls to the - * underlying signature instance.
+ * sign) by delegating calls to the underlying signature instance.
  * </p>
  */
 class SignatureWrapper implements Signature {
@@ -36,7 +34,7 @@ class SignatureWrapper implements Signature {
       // Session.getConfig(algorithm)
       this.signature = Class.forName(session.getConfig(algorithm)).asSubclass(Signature.class)
           .getDeclaredConstructor().newInstance();
-    } catch (Exception e) {
+    } catch (Exception | LinkageError e) {
       throw new JSchException("Failed to instantiate signature for algorithm '" + algorithm + "'",
           e);
     }
@@ -65,16 +63,16 @@ class SignatureWrapper implements Signature {
    * Generates a validator for the public key parameters.
    *
    * @param algorithm the algorithm name, used for error messages.
-   * @param expectedParametersNo the exact number of byte arrays expected for the public key.
+   * @param expectedNumParams the exact number of byte arrays expected for the public key.
    * @return a {@link PubKeyParameterValidator} instance.
    * @throws JSchException if the number of provided parameters does not match the expected count.
    */
-  private static PubKeyParameterValidator generateValidator(String algorithm,
-      int expectedParametersNo) throws JSchException {
+  private static PubKeyParameterValidator generateValidator(String algorithm, int expectedNumParams)
+      throws JSchException {
     return (byte[][] params) -> {
-      if (params.length != expectedParametersNo) {
+      if (params.length != expectedNumParams) {
         throw new JSchException("wrong number of arguments:" + algorithm + " signatures expects "
-            + expectedParametersNo + " parameters, found " + params.length);
+            + expectedNumParams + " parameters, found " + params.length);
       }
     };
   }

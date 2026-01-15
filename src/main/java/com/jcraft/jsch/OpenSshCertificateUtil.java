@@ -24,7 +24,7 @@ class OpenSshCertificateUtil {
    * certificates presented by hosts during authentication.
    * </p>
    */
-  static Predicate<HostKey> isKnownHostCaPublicKeyEntry =
+  static final Predicate<HostKey> isKnownHostCaPublicKeyEntry =
       hostKey -> Objects.nonNull(hostKey) && "@cert-authority".equals(hostKey.getMarker());
 
   /**
@@ -35,38 +35,74 @@ class OpenSshCertificateUtil {
    * {@code null} entries as revoked.
    * </p>
    */
-  static Predicate<HostKey> isMarkedRevoked =
+  static final Predicate<HostKey> isMarkedRevoked =
       hostKey -> hostKey == null || "@revoked".equals(hostKey.getMarker());
 
   /**
-   * Converts a byte array to a UTF-8 string, replaces tab characters with spaces, and trims
-   * whitespace.
+   * EC point format indicator for uncompressed points (SEC 1, section 2.3.3).
+   * <p>
+   * In the uncompressed point format, the first byte is 0x04, followed by the X and Y coordinates.
+   * This is the standard format used in SSH for ECDSA public keys.
+   * </p>
    *
-   * @param s the byte array to convert and process, may be null
-   * @return the processed string with tabs converted to spaces and whitespace trimmed, or an empty
-   *         string if the input is null
-   * @see #tabToSpaceAndTrim(String)
+   * @see <a href="https://www.secg.org/sec1-v2.pdf">SEC 1: Elliptic Curve Cryptography</a>
    */
-  static String tabToSpaceAndTrim(byte[] s) {
-    String str = new String(s, StandardCharsets.UTF_8);
-    return tabToSpaceAndTrim(str);
-  }
+  static final int EC_POINT_FORMAT_UNCOMPRESSED = 0x04;
 
   /**
-   * Replaces all tab characters in the input string with space characters and trims leading and
-   * trailing whitespace.
+   * Expected public key length for Ed25519 keys (32 bytes).
+   * <p>
+   * Ed25519 uses a 256-bit (32-byte) public key as defined in RFC 8032.
+   * </p>
    *
-   * @param s the string to process, may be null
-   * @return the processed string with tabs converted to spaces and whitespace trimmed, or an empty
-   *         string if the input is null
-   * @see #trimToEmptyIfNull(String)
+   * @see <a href="https://www.rfc-editor.org/rfc/rfc8032">RFC 8032: Edwards-Curve Digital Signature
+   *      Algorithm (EdDSA)</a>
    */
-  static String tabToSpaceAndTrim(String s) {
-    if (s != null) {
-      s = s.replace('\t', ' ');
-    }
-    return trimToEmptyIfNull(s);
-  }
+  static final int ED25519_PUBLIC_KEY_LENGTH = 32;
+
+  /**
+   * Expected public key length for Ed448 keys (57 bytes).
+   * <p>
+   * Ed448 uses a 456-bit public key, which requires 57 bytes when encoded, as defined in RFC 8032.
+   * </p>
+   *
+   * @see <a href="https://www.rfc-editor.org/rfc/rfc8032">RFC 8032: Edwards-Curve Digital Signature
+   *      Algorithm (EdDSA)</a>
+   */
+  static final int ED448_PUBLIC_KEY_LENGTH = 57;
+
+  /**
+   * Expected uncompressed EC point length for NIST P-256 keys (65 bytes).
+   * <p>
+   * The uncompressed point format is: 0x04 || X coordinate (32 bytes) || Y coordinate (32 bytes).
+   * </p>
+   *
+   * @see <a href="https://www.rfc-editor.org/rfc/rfc5656">RFC 5656: Elliptic Curve Algorithm
+   *      Integration in the Secure Shell Transport Layer</a>
+   */
+  static final int ECDSA_P256_POINT_LENGTH = 65;
+
+  /**
+   * Expected uncompressed EC point length for NIST P-384 keys (97 bytes).
+   * <p>
+   * The uncompressed point format is: 0x04 || X coordinate (48 bytes) || Y coordinate (48 bytes).
+   * </p>
+   *
+   * @see <a href="https://www.rfc-editor.org/rfc/rfc5656">RFC 5656: Elliptic Curve Algorithm
+   *      Integration in the Secure Shell Transport Layer</a>
+   */
+  static final int ECDSA_P384_POINT_LENGTH = 97;
+
+  /**
+   * Expected uncompressed EC point length for NIST P-521 keys (133 bytes).
+   * <p>
+   * The uncompressed point format is: 0x04 || X coordinate (66 bytes) || Y coordinate (66 bytes).
+   * </p>
+   *
+   * @see <a href="https://www.rfc-editor.org/rfc/rfc5656">RFC 5656: Elliptic Curve Algorithm
+   *      Integration in the Secure Shell Transport Layer</a>
+   */
+  static final int ECDSA_P521_POINT_LENGTH = 133;
 
   /**
    * Trims leading and trailing whitespace from the input string. Returns an empty string if the
@@ -118,36 +154,34 @@ class OpenSshCertificateUtil {
    * type is the first field (index 0) in the space-delimited string.
    *
    * @param certificateFileContent The content of the certificate file as a byte array.
-   * @return The key type string, or {@code null} if the content is invalid or the field does not
-   *         exist.
-   * @throws IllegalArgumentException if the certificate content is null or empty after trimming.
+   * @return The key type as a byte array, or {@code null} if the content is null, empty, or the
+   *         field does not exist.
    */
-  static byte[] extractKeyType(byte[] certificateFileContent) throws IllegalArgumentException {
+  static byte[] extractKeyType(byte[] certificateFileContent) {
     return extractSpaceDelimitedString(certificateFileContent, 0);
   }
 
   /**
-   * Extracts the comment from a certificate file content string. This method assumes the comment is
-   * the third field (index 2) in the space-delimited string.
+   * Extracts the comment from a certificate file content byte array. This method assumes the
+   * comment is the third field (index 2) in the space-delimited string.
    *
-   * @param certificateFileContent The content of the certificate file as a single string.
-   * @return The comment string, or {@code null} if the content is invalid or the field does not
-   *         exist.
-   * @throws IllegalArgumentException if the certificate content is null or empty after trimming.
+   * @param certificateFileContent The content of the certificate file as a byte array.
+   * @return The comment as a byte array, or {@code null} if the content is null, empty, or the
+   *         field does not exist.
    */
-  static byte[] extractComment(byte[] certificateFileContent) throws IllegalArgumentException {
+  static byte[] extractComment(byte[] certificateFileContent) {
     return extractSpaceDelimitedString(certificateFileContent, 2);
   }
 
   /**
-   * Extracts the key data from a certificate file content string. This method assumes the key data
-   * is the second field (index 1) in the space-delimited string.
+   * Extracts the key data from a certificate file content byte array. This method assumes the key
+   * data is the second field (index 1) in the space-delimited string.
    *
-   * @param certificateFileContent The content of the certificate file as a single string.
-   * @return The key data string, or {@code null} if the content is invalid or the field does not
-   *         exist.
+   * @param certificateFileContent The content of the certificate file as a byte array.
+   * @return The key data as a byte array, or {@code null} if the content is null, empty, or the
+   *         field does not exist.
    */
-  static byte[] extractKeyData(byte[] certificateFileContent) throws IllegalArgumentException {
+  static byte[] extractKeyData(byte[] certificateFileContent) {
     return extractSpaceDelimitedString(certificateFileContent, 1);
   }
 
@@ -174,6 +208,9 @@ class OpenSshCertificateUtil {
    */
   static byte[] extractSpaceDelimitedString(byte[] certificate, int index) {
     if (certificate == null || certificate.length == 0) {
+      return null;
+    }
+    if (index < 0) {
       return null;
     }
 
@@ -233,9 +270,18 @@ class OpenSshCertificateUtil {
    *         otherwise
    */
   static boolean isValidNow(OpenSshCertificate cert) {
+    return isValidNow(cert, Instant.now().getEpochSecond());
+  }
 
-    long now = Instant.now().getEpochSecond();
-
+  /**
+   * Determines whether the given {@link OpenSshCertificate} is valid at the given time.
+   *
+   * @param cert to check
+   * @param now the current time in seconds since epoch
+   * @return {@code true} if the certificate is valid according to its timestamps, {@code false}
+   *         otherwise
+   */
+  static boolean isValidNow(OpenSshCertificate cert, long now) {
     return Long.compareUnsigned(cert.getValidAfter(), now) <= 0
         && Long.compareUnsigned(now, cert.getValidBefore()) < 0;
   }
@@ -260,66 +306,20 @@ class OpenSshCertificateUtil {
   /**
    * Extracts the raw key type from a given key type string.
    * <p>
-   * This method searches for the first occurrence of the substring "-cert" and returns all
-   * characters that appear before it. If the substring is not found, the original string is
-   * returned unchanged.
+   * For certificate key types (ending with {@code -cert-v01@openssh.com}), this method returns the
+   * base algorithm name (e.g., {@code ssh-rsa-cert-v01@openssh.com} returns {@code ssh-rsa}). For
+   * non-certificate key types, the original string is returned unchanged.
+   * </p>
+   * <p>
+   * This method delegates to {@link OpenSshCertificateKeyTypes#getBaseKeyType(String)}.
+   * </p>
    *
    * @param keyType The full key type string, may be null.
-   * @return The raw key type (e.g., "ssh-rsa"), more in general the substring before the first
-   *         occurrence of "-cert", or the original string if "-cert" is not found, or null if the
-   *         input is null.
+   * @return The raw key type (e.g., "ssh-rsa"), or the original string if not a certificate type,
+   *         or null if the input is null or empty.
    */
   static String getRawKeyType(String keyType) {
-    if (isEmpty(keyType)) {
-      return null;
-    }
-    int index = keyType.indexOf("-cert");
-    if (index == -1) {
-      return keyType; // "-cert" not found, return original string
-    }
-
-    return keyType.substring(0, index);
-  }
-
-  /**
-   * Checks if a given byte array represents an OpenSSH host certificate.
-   * <p>
-   * This method parses the provided byte array to determine if it conforms to the structure of an
-   * OpenSSH certificate and, if so, verifies that its type is a host certificate. It performs
-   * checks for null or empty input, validates the key type, and then extracts the certificate type
-   * from the buffer.
-   *
-   * @param instLogger An instance of {@link JSch.InstanceLogger} for logging purposes.
-   * @param bytes The byte array containing the certificate data to be checked.
-   * @return {@code true} if the byte array represents a valid OpenSSH host certificate;
-   *         {@code false} otherwise.
-   * @throws JSchException if there is an issue parsing the certificate data, such as malformed
-   *         data.
-   */
-  static boolean isOpenSshHostCertificate(JSch.InstanceLogger instLogger, byte[] bytes)
-      throws JSchException {
-    if (bytes == null || bytes.length == 0) {
-      return false;
-    }
-
-    OpenSshCertificateBuffer buffer = new OpenSshCertificateBuffer(bytes);
-
-    String keyType = Util.byte2str(buffer.getString(), StandardCharsets.UTF_8);
-    if (isEmpty(keyType)
-        || !OpenSshCertificateAwareIdentityFile.isOpenSshCertificateKeyType(keyType)) {
-      return false;
-    }
-
-    // discard nonce
-    buffer.getString();
-    // public key
-    OpenSshCertificateParser.parsePublicKey(instLogger, keyType, buffer);
-    // serial
-    buffer.getLong();
-    // type
-    int certificateType = buffer.getInt();
-
-    return certificateType == OpenSshCertificate.SSH2_CERT_TYPE_HOST;
+    return OpenSshCertificateKeyTypes.getBaseKeyType(keyType);
   }
 
   /**
@@ -340,8 +340,7 @@ class OpenSshCertificateUtil {
    * <ul>
    * <li>{@code ssh-ed25519} → {@code ssh-ed25519-cert-v01@openssh.com}</li>
    * <li>{@code ssh-ed448} → {@code ssh-ed448-cert-v01@openssh.com}</li>
-   * <li>{@code ssh-rsa} → {@code ssh-rsa-cert-v01@openssh.com},
-   * {@code rsa-sha2-256-cert-v01@openssh.com}, {@code rsa-sha2-512-cert-v01@openssh.com}</li>
+   * <li>{@code ssh-rsa} → {@code ssh-rsa-cert-v01@openssh.com}</li>
    * <li>{@code rsa-sha2-256} → {@code rsa-sha2-256-cert-v01@openssh.com}</li>
    * <li>{@code rsa-sha2-512} → {@code rsa-sha2-512-cert-v01@openssh.com}</li>
    * <li>{@code ssh-dss} → {@code ssh-dss-cert-v01@openssh.com}</li>
@@ -349,11 +348,6 @@ class OpenSshCertificateUtil {
    * <li>{@code ecdsa-sha2-nistp384} → {@code ecdsa-sha2-nistp384-cert-v01@openssh.com}</li>
    * <li>{@code ecdsa-sha2-nistp521} → {@code ecdsa-sha2-nistp521-cert-v01@openssh.com}</li>
    * </ul>
-   * <p>
-   * <b>Note:</b> RSA has special handling because {@code ssh-rsa} being unavailable implies that
-   * RSA signature verification is completely unavailable, so all RSA-based certificate types are
-   * removed.
-   * </p>
    *
    * @param serverHostKey comma-separated list of server host key algorithms to filter. This
    *        typically contains a mix of plain key algorithms (e.g., {@code ssh-ed25519}) and
@@ -381,31 +375,14 @@ class OpenSshCertificateUtil {
     List<String> certsToRemove = new ArrayList<String>();
 
     for (String unavailableSig : unavailableSignatures) {
-      // For each unavailable signature, add corresponding certificate types
-      if ("ssh-ed25519".equals(unavailableSig)) {
-        certsToRemove.add("ssh-ed25519-cert-v01@openssh.com");
-      } else if ("ssh-ed448".equals(unavailableSig)) {
-        certsToRemove.add("ssh-ed448-cert-v01@openssh.com");
-      } else if ("ssh-rsa".equals(unavailableSig)) {
-        certsToRemove.add("ssh-rsa-cert-v01@openssh.com");
-        certsToRemove.add("rsa-sha2-256-cert-v01@openssh.com");
-        certsToRemove.add("rsa-sha2-512-cert-v01@openssh.com");
-      } else if ("rsa-sha2-256".equals(unavailableSig)) {
-        certsToRemove.add("rsa-sha2-256-cert-v01@openssh.com");
-      } else if ("rsa-sha2-512".equals(unavailableSig)) {
-        certsToRemove.add("rsa-sha2-512-cert-v01@openssh.com");
-      } else if ("ssh-dss".equals(unavailableSig)) {
-        certsToRemove.add("ssh-dss-cert-v01@openssh.com");
-      } else if ("ecdsa-sha2-nistp256".equals(unavailableSig)) {
-        certsToRemove.add("ecdsa-sha2-nistp256-cert-v01@openssh.com");
-      } else if ("ecdsa-sha2-nistp384".equals(unavailableSig)) {
-        certsToRemove.add("ecdsa-sha2-nistp384-cert-v01@openssh.com");
-      } else if ("ecdsa-sha2-nistp521".equals(unavailableSig)) {
-        certsToRemove.add("ecdsa-sha2-nistp521-cert-v01@openssh.com");
+      // Map base algorithm to corresponding certificate type using centralized mapping
+      String certType = OpenSshCertificateKeyTypes.getCertificateKeyType(unavailableSig);
+      if (certType != null) {
+        certsToRemove.add(certType);
       }
     }
 
-    if (certsToRemove.size() > 0) {
+    if (!certsToRemove.isEmpty()) {
       String[] certsArray = new String[certsToRemove.size()];
       certsToRemove.toArray(certsArray);
       serverHostKey = Util.diffString(serverHostKey, certsArray);
@@ -461,27 +438,22 @@ class OpenSshCertificateUtil {
    *        {@code null}
    * @param host the hostname or host pattern being connected to (e.g., "host.example.com" or
    *        "[host.example.com]:2222"), must not be {@code null}
-   * @param base64CaPublicKey the Base64-encoded CA public key from the certificate that needs
-   *        validation, must not be {@code null}
+   * @param caPublicKey the raw CA public key bytes from the certificate that needs validation, must
+   *        not be {@code null}
    * @return {@code true} if a trusted, non-revoked CA matching the host pattern signed the
    *         certificate; {@code false} if no matching CA exists, all matching CAs are revoked, or
    *         the CA key doesn't match
    */
   static boolean isCertificateSignedByTrustedCA(HostKeyRepository repository, String host,
-      String base64CaPublicKey) throws JSchException {
-    final Set<HostKey> revokedKeys = getRevokedKeys(repository);
-    byte[] publicKeyBytes = Util.fromBase64(base64CaPublicKey.getBytes(StandardCharsets.UTF_8));
-
+      byte[] caPublicKey) throws JSchException {
     return getTrustedCAs(repository).stream().filter(Objects::nonNull)
         .filter(hostkey -> !hasBeenRevoked(repository, hostkey)).anyMatch(trustedCA -> {
-          try {
-            byte[] trustedCAKeyBytes =
-                Util.fromBase64(trustedCA.getKey().getBytes(StandardCharsets.UTF_8));
-            return trustedCA.isWildcardMatched(host) && trustedCA.getKey() != null
-                && Arrays.equals(trustedCAKeyBytes, publicKeyBytes);
-          } catch (Exception e) {
+          byte[] trustedCAKeyBytes = trustedCA.key;
+          if (trustedCAKeyBytes == null) {
             return false;
           }
+          return trustedCA.isWildcardMatched(host)
+              && Util.arraysequals(trustedCAKeyBytes, caPublicKey);
         });
   }
 
@@ -554,7 +526,110 @@ class OpenSshCertificateUtil {
     if (key == null) {
       return true;
     }
+    byte[] keyBytes = key.key;
+    if (keyBytes == null) {
+      // Fail-closed: treat keys with null key value as revoked
+      return true;
+    }
+    // Compare raw byte arrays directly using timing-safe comparison
     return getRevokedKeys(knownHosts).stream().filter(Objects::nonNull)
-        .anyMatch(revokedKey -> revokedKey.getKey().equals(key.getKey()));
+        .map(revokedKey -> revokedKey.key).filter(Objects::nonNull)
+        .anyMatch(revokedKeyBytes -> Util.arraysequals(revokedKeyBytes, keyBytes));
+  }
+
+  /**
+   * Parses a raw public key byte array into its constituent mathematical components.
+   * <p>
+   * Different public key algorithms (RSA, DSS, ECDSA, EdDSA) have different structures. This method
+   * decodes the algorithm-specific format and returns the components needed for cryptographic
+   * operations.
+   * </p>
+   *
+   * @param publicKeyBlob the raw byte array of the public key blob in SSH wire format.
+   * @return A 2D byte array where each inner array is a component of the public key.
+   * @throws JSchException if the public key algorithm is unknown or the key format is corrupt.
+   */
+  static byte[][] parsePublicKeyComponents(byte[] publicKeyBlob) throws JSchException {
+    Buffer buffer = new Buffer(publicKeyBlob);
+    String algorithm = Util.byte2str(buffer.getString());
+    return parsePublicKeyComponentsFromBuffer(algorithm, buffer);
+  }
+
+  /**
+   * Parses public key components from a buffer based on the algorithm.
+   * <p>
+   * This method reads key components from the current buffer position. The buffer should be
+   * positioned after the algorithm string.
+   * </p>
+   *
+   * @param algorithm the public key algorithm name.
+   * @param buffer the buffer containing the key components.
+   * @return A 2D byte array where each inner array is a component of the public key.
+   * @throws JSchException if the algorithm is unknown or the key format is invalid.
+   */
+  static byte[][] parsePublicKeyComponentsFromBuffer(String algorithm, Buffer buffer)
+      throws JSchException {
+
+    if (algorithm.startsWith("ssh-rsa") || algorithm.startsWith("rsa-")) {
+      byte[] e = buffer.getMPInt();
+      byte[] n = buffer.getMPInt();
+      return new byte[][] {e, n};
+    }
+
+    if (algorithm.startsWith("ssh-dss")) {
+      byte[] p = buffer.getMPInt();
+      byte[] q = buffer.getMPInt();
+      byte[] g = buffer.getMPInt();
+      byte[] y = buffer.getMPInt();
+      // Order matches SignatureDSA.setPubKey(y, p, q, g)
+      return new byte[][] {y, p, q, g};
+    }
+
+    if (algorithm.startsWith("ecdsa-sha2-")) {
+      // https://www.rfc-editor.org/rfc/rfc5656#section-3.1
+      buffer.getString(); // skip curve identifier
+      int len = buffer.getInt();
+      if (len < ECDSA_P256_POINT_LENGTH || len > ECDSA_P521_POINT_LENGTH) {
+        throw new JSchException("Invalid ECDSA public key length: " + len + " (expected between "
+            + ECDSA_P256_POINT_LENGTH + " and " + ECDSA_P521_POINT_LENGTH + ")");
+      }
+      int pointFormat = buffer.getByte();
+      if (pointFormat != EC_POINT_FORMAT_UNCOMPRESSED) {
+        throw new JSchException(
+            "Invalid ECDSA public key format: expected uncompressed point (0x04), got 0x"
+                + Integer.toHexString(pointFormat & 0xff));
+      }
+      byte[] r = new byte[(len - 1) / 2];
+      byte[] s = new byte[(len - 1) / 2];
+      buffer.getByte(r);
+      buffer.getByte(s);
+      // Order matches SignatureECDSA.setPubKey(r, s)
+      return new byte[][] {r, s};
+    }
+
+    if (algorithm.startsWith("ssh-ed25519")) {
+      int keyLength = buffer.getInt();
+      if (keyLength != ED25519_PUBLIC_KEY_LENGTH) {
+        throw new JSchException("Invalid Ed25519 public key length: expected "
+            + ED25519_PUBLIC_KEY_LENGTH + ", got " + keyLength);
+      }
+      byte[] pubKey = new byte[keyLength];
+      buffer.getByte(pubKey);
+      return new byte[][] {pubKey};
+    }
+
+    if (algorithm.startsWith("ssh-ed448")) {
+      int keyLength = buffer.getInt();
+      if (keyLength != ED448_PUBLIC_KEY_LENGTH) {
+        throw new JSchException("Invalid Ed448 public key length: expected "
+            + ED448_PUBLIC_KEY_LENGTH + ", got " + keyLength);
+      }
+      byte[] pubKey = new byte[keyLength];
+      buffer.getByte(pubKey);
+      return new byte[][] {pubKey};
+    }
+
+    throw new JSchUnknownPublicKeyAlgorithmException(
+        "Unknown algorithm '" + algorithm.trim() + "'");
   }
 }

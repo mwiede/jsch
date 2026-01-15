@@ -19,22 +19,14 @@ import java.nio.charset.StandardCharsets;
  */
 class OpenSshCertificateAwareIdentityFile implements Identity {
 
-  static final String SSH_RSA_CERT_V01_AT_OPENSSH_DOT_COM = "ssh-rsa-cert-v01@openssh.com";
-
-  static final String SSH_DSS_CERT_V01_AT_OPENSSH_DOT_COM = "ssh-dss-cert-v01@openssh.com";
-
-  static final String ECDSA_SHA2_NISTP256_CERT_V01_AT_OPENSSH_DOT_COM =
-      "ecdsa-sha2-nistp256-cert-v01@openssh.com";
-
-  static final String ECDSA_SHA2_NISTP384_CERT_V01_AT_OPENSSH_DOT_COM =
-      "ecdsa-sha2-nistp384-cert-v01@openssh.com";
-
-  static final String ECDSA_SHA2_NISTP521_CERT_V01_AT_OPENSSH_DOT_COM =
-      "ecdsa-sha2-nistp521-cert-v01@openssh.com";
-
-  static final String SSH_ED25519_CERT_V01_AT_OPENSSH_DOT_COM = "ssh-ed25519-cert-v01@openssh.com";
-
-  static final String SSH_ED448_CERT_V01_AT_OPENSSH_DOT_COM = "ssh-ed448-cert-v01@openssh.com";
+  /**
+   * Maximum expected length for a key type string. Used as a sanity check to quickly reject
+   * obviously invalid data before performing string conversion. The longest current certificate key
+   * type is 41 characters (ecdsa-sha2-nistp521-cert-v01@openssh.com), so 100 provides sufficient
+   * headroom for potential future key types while still being small enough for an effective
+   * early-exit check.
+   */
+  static final int MAX_KEY_TYPE_LENGTH = 100;
 
   /**
    * parsed certificate.
@@ -83,46 +75,14 @@ class OpenSshCertificateAwareIdentityFile implements Identity {
         OpenSshCertificateUtil.extractSpaceDelimitedString(certificateFileContent, 0);
 
     // avoid converting byte array to string if the keyType is clearly not a supported certificate
-    if (keyTypeBytes == null || keyTypeBytes.length == 0 || keyTypeBytes.length > 100) {
+    if (keyTypeBytes == null || keyTypeBytes.length == 0
+        || keyTypeBytes.length > MAX_KEY_TYPE_LENGTH) {
       return false;
     }
 
     String keyType = new String(keyTypeBytes, StandardCharsets.UTF_8);
 
-    return isOpenSshCertificateKeyType(keyType);
-
-    /*
-     * switch(keyType){ case SSH_RSA_CERT_V01_AT_OPENSSH_DOT_COM: case
-     * SSH_DSS_CERT_V01_AT_OPENSSH_DOT_COM: case ECDSA_SHA2_NISTP256_CERT_V01_AT_OPENSSH_DOT_COM:
-     * case ECDSA_SHA2_NISTP384_CERT_V01_AT_OPENSSH_DOT_COM: case
-     * ECDSA_SHA2_NISTP521_CERT_V01_AT_OPENSSH_DOT_COM: case
-     * SSH_ED25519_CERT_V01_AT_OPENSSH_DOT_COM: case SSH_ED448_CERT_V01_AT_OPENSSH_DOT_COM: return
-     * true; default: return false; }
-     */
-  }
-
-
-
-  /**
-   * Determines if the given key type represents an OpenSSH certificate.
-   *
-   * @param publicKeyType the key type string to check
-   * @return {@code true} if the type is a supported OpenSSH certificate type, {@code false}
-   *         otherwise
-   */
-  static boolean isOpenSshCertificateKeyType(String publicKeyType) {
-    switch (publicKeyType) {
-      case SSH_RSA_CERT_V01_AT_OPENSSH_DOT_COM:
-      case SSH_DSS_CERT_V01_AT_OPENSSH_DOT_COM:
-      case ECDSA_SHA2_NISTP256_CERT_V01_AT_OPENSSH_DOT_COM:
-      case ECDSA_SHA2_NISTP384_CERT_V01_AT_OPENSSH_DOT_COM:
-      case ECDSA_SHA2_NISTP521_CERT_V01_AT_OPENSSH_DOT_COM:
-      case SSH_ED25519_CERT_V01_AT_OPENSSH_DOT_COM:
-      case SSH_ED448_CERT_V01_AT_OPENSSH_DOT_COM:
-        return true;
-      default:
-        return false;
-    }
+    return OpenSshCertificateKeyTypes.isCertificateKeyType(keyType);
   }
 
   /**
@@ -165,19 +125,27 @@ class OpenSshCertificateAwareIdentityFile implements Identity {
     KeyPair kpair;
     byte[] declaredKeyTypeBytes;
     byte[] commentBytes;
-    byte[] base64KeyDataBytes;
+    byte[] keyData;
     String declaredKeyType;
     String comment;
 
     try {
       declaredKeyTypeBytes = OpenSshCertificateUtil.extractKeyType(certificateFileContentBytes);
-      base64KeyDataBytes = OpenSshCertificateUtil.extractKeyData(certificateFileContentBytes);
+      if (declaredKeyTypeBytes == null || declaredKeyTypeBytes.length == 0) {
+        throw new JSchException("Invalid certificate file: missing or empty key type");
+      }
+      byte[] base64KeyDataBytes =
+          OpenSshCertificateUtil.extractKeyData(certificateFileContentBytes);
+      if (base64KeyDataBytes == null || base64KeyDataBytes.length == 0) {
+        throw new JSchException("Invalid certificate file: missing or empty key data");
+      }
       commentBytes = OpenSshCertificateUtil.extractComment(certificateFileContentBytes);
-      byte[] keyData = Util.fromBase64(base64KeyDataBytes, 0, base64KeyDataBytes.length);
+
+      keyData = Util.fromBase64(base64KeyDataBytes, 0, base64KeyDataBytes.length);
       cert = OpenSshCertificateParser.parse(instLogger, keyData);
 
       declaredKeyType = Util.byte2str(declaredKeyTypeBytes, StandardCharsets.UTF_8);
-      comment = Util.byte2str(commentBytes, StandardCharsets.UTF_8);
+      comment = commentBytes != null ? Util.byte2str(commentBytes, StandardCharsets.UTF_8) : null;
 
       // keyType
       if (OpenSshCertificateUtil.isEmpty(cert.getKeyType())
@@ -195,13 +163,22 @@ class OpenSshCertificateAwareIdentityFile implements Identity {
       }
 
       certPublicKey = cert.getCertificatePublicKey();
+      if (certPublicKey == null) {
+        throw new JSchException("Invalid certificate: missing public key");
+      }
       kpair = KeyPair.load(instLogger, prvkey, certPublicKey);
 
-    } catch (Exception e) {
-      throw new JSchException(e.toString(), e);
+    } catch (JSchException e) {
+      throw e;
+    } catch (IllegalArgumentException e) {
+      throw new JSchException("Invalid certificate format: " + e.getMessage(), e);
+    } catch (IllegalStateException e) {
+      throw new JSchException("Invalid certificate data: " + e.getMessage(), e);
+    } catch (RuntimeException e) {
+      throw new JSchException("Unexpected error parsing certificate: " + e.getMessage(), e);
     }
-    return new OpenSshCertificateAwareIdentityFile(name, declaredKeyType, base64KeyDataBytes, cert,
-        kpair, comment);
+    return new OpenSshCertificateAwareIdentityFile(name, declaredKeyType, keyData, cert, kpair,
+        comment);
   }
 
   /**
@@ -209,18 +186,19 @@ class OpenSshCertificateAwareIdentityFile implements Identity {
    *
    * @param name the identity name
    * @param keyType the key type declared in the certificate file
+   * @param publicKeyBlob the decoded public key blob (certificate in binary form)
    * @param certificate the parsed certificate
    * @param kpair the key pair containing the private key
    * @param comment the optional comment from the certificate file
    */
-  private OpenSshCertificateAwareIdentityFile(String name, String keyType, byte[] base64KeyData,
-      OpenSshCertificate certificate, KeyPair kpair, String comment) throws JSchException {
+  private OpenSshCertificateAwareIdentityFile(String name, String keyType, byte[] publicKeyBlob,
+      OpenSshCertificate certificate, KeyPair kpair, String comment) {
     this.identity = name;
     this.certificate = certificate;
     this.kpair = kpair;
     this.comment = comment;
     this.keyType = keyType;
-    this.publicKeyBlob = Util.fromBase64(base64KeyData, 0, base64KeyData.length);
+    this.publicKeyBlob = publicKeyBlob;
   }
 
   @Override
@@ -241,7 +219,8 @@ class OpenSshCertificateAwareIdentityFile implements Identity {
   @Override
   public byte[] getSignature(byte[] data, String alg) {
     String rawKeyType = OpenSshCertificateUtil.getRawKeyType(keyType);
-    return kpair.getSignature(data, rawKeyType);
+    // Fall back to keyType if rawKeyType is null (defensive check)
+    return kpair.getSignature(data, rawKeyType != null ? rawKeyType : keyType);
   }
 
   @Override

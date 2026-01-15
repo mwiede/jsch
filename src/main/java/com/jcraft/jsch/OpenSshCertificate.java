@@ -1,6 +1,7 @@
 package com.jcraft.jsch;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Map;
 
 /**
@@ -29,7 +30,7 @@ class OpenSshCertificate {
   static final int SSH2_CERT_TYPE_USER = 1;
 
   /**
-   * Certificate type constant for user certificates
+   * Certificate type constant for host certificates
    */
   static final int SSH2_CERT_TYPE_HOST = 2;
 
@@ -140,11 +141,11 @@ class OpenSshCertificate {
   }
 
   byte[] getNonce() {
-    return nonce;
+    return nonce == null ? null : nonce.clone();
   }
 
   byte[] getCertificatePublicKey() {
-    return certificatePublicKey;
+    return certificatePublicKey == null ? null : certificatePublicKey.clone();
   }
 
   long getSerial() {
@@ -160,7 +161,7 @@ class OpenSshCertificate {
   }
 
   Collection<String> getPrincipals() {
-    return principals;
+    return principals == null ? null : Collections.unmodifiableCollection(principals);
   }
 
   long getValidAfter() {
@@ -172,11 +173,11 @@ class OpenSshCertificate {
   }
 
   Map<String, String> getCriticalOptions() {
-    return criticalOptions;
+    return criticalOptions == null ? null : Collections.unmodifiableMap(criticalOptions);
   }
 
   Map<String, String> getExtensions() {
-    return extensions;
+    return extensions == null ? null : Collections.unmodifiableMap(extensions);
   }
 
   String getReserved() {
@@ -184,11 +185,11 @@ class OpenSshCertificate {
   }
 
   byte[] getSignatureKey() {
-    return signatureKey;
+    return signatureKey == null ? null : signatureKey.clone();
   }
 
   byte[] getSignature() {
-    return signature;
+    return signature == null ? null : signature.clone();
   }
 
   boolean isUserCertificate() {
@@ -204,7 +205,7 @@ class OpenSshCertificate {
   }
 
   byte[] getMessage() {
-    return message;
+    return message == null ? null : message.clone();
   }
 
   /**
@@ -308,10 +309,42 @@ class OpenSshCertificate {
      * Constructs and returns an immutable OpenSshCertificate instance.
      *
      * @return A new, immutable OpenSshCertificate object.
+     * @throws IllegalStateException if any required field is missing or invalid.
      */
     OpenSshCertificate build() {
-      // You could add validation logic here if needed (e.g., check for null required fields)
+      validate();
       return new OpenSshCertificate(this);
+    }
+
+    /**
+     * Validates that all required fields are present and valid.
+     *
+     * @throws IllegalStateException if any required field is missing or invalid.
+     */
+    private void validate() {
+      if (keyType == null || keyType.trim().isEmpty()) {
+        throw new IllegalStateException("keyType is required and cannot be null or empty");
+      }
+      if (nonce == null || nonce.length == 0) {
+        throw new IllegalStateException("nonce is required and cannot be null or empty");
+      }
+      if (certificatePublicKey == null || certificatePublicKey.length == 0) {
+        throw new IllegalStateException(
+            "certificatePublicKey is required and cannot be null or empty");
+      }
+      if (type != SSH2_CERT_TYPE_USER && type != SSH2_CERT_TYPE_HOST) {
+        throw new IllegalStateException(
+            "type must be SSH2_CERT_TYPE_USER (1) or SSH2_CERT_TYPE_HOST (2), got: " + type);
+      }
+      if (signatureKey == null || signatureKey.length == 0) {
+        throw new IllegalStateException("signatureKey is required and cannot be null or empty");
+      }
+      if (signature == null || signature.length == 0) {
+        throw new IllegalStateException("signature is required and cannot be null or empty");
+      }
+      if (message == null || message.length == 0) {
+        throw new IllegalStateException("message is required and cannot be null or empty");
+      }
     }
   }
 }

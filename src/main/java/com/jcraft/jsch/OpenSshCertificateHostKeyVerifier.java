@@ -1,10 +1,7 @@
 package com.jcraft.jsch;
 
-import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.stream.Collectors;
+import java.util.Locale;
 
 /**
  * A verifier for OpenSSH host certificates.
@@ -42,14 +39,14 @@ class OpenSshCertificateHostKeyVerifier {
 
     byte[] caPublicKeyByteArray = certificate.getSignatureKey();
 
-    String base64CaPublicKey =
-        Util.byte2str(Util.toBase64(caPublicKeyByteArray, 0, caPublicKeyByteArray.length, true));
-
     String host = session.host;
+    if (host == null) {
+      throw new JSchException("Cannot verify host certificate: session host is null");
+    }
     HostKeyRepository repository = session.getHostKeyRepository();
 
-    boolean caFound =
-        OpenSshCertificateUtil.isCertificateSignedByTrustedCA(repository, host, base64CaPublicKey);
+    boolean caFound = OpenSshCertificateUtil.isCertificateSignedByTrustedCA(repository, host,
+        caPublicKeyByteArray);
 
     if (!caFound) {
       throw new JSchUnknownCAKeyException("Rejected certificate '" + certificate.getId() + "': "
@@ -60,29 +57,32 @@ class OpenSshCertificateHostKeyVerifier {
     String caPublicKeyAlgorithm = Util.byte2str(caPublicKeyBuffer.getString());
     String certificateId = certificate.getId();
 
-    // check if the certificate is a
+    // check if this is a Host certificate
     if (!certificate.isHostCertificate()) {
-      throw new JSchInvalidHostCertificateException("reject HostKey: certificate id='"
+      throw new JSchInvalidHostCertificateException("rejected HostKey: certificate id='"
           + certificateId + "' is not a host certificate. Host:" + host);
     }
 
     if (!certificate.isValidNow()) {
       throw new JSchInvalidHostCertificateException(
-          "rejected HostKey: signature verification failed, " + "certificate expired for id:"
+          "rejected HostKey: certificate not valid (expired or not yet valid) for id:"
               + certificateId);
     }
 
     checkSignature(certificate, caPublicKeyAlgorithm, session);
 
-    // "As a special case, a zero-length "valid principals" field means the certificate is valid for
-    // any principal of the specified type."
-    // Empty principals in a host certificate mean the certificate is valid for any host.
     Collection<String> principals = certificate.getPrincipals();
-    if (principals != null && !principals.isEmpty()) {
-      if (!principals.contains(host)) {
-        throw new JSchException("rejected HostKey: invalid principal '" + host
-            + "', allowed principals: " + principals);
-      }
+    if (principals == null || principals.isEmpty()) {
+      throw new JSchException("rejected HostKey: invalid principal '" + host
+          + "', allowed principals list is null or empty.");
+    }
+
+    // Convert host to lowercase for principal matching (same as OpenSSH ssh_login())
+    String principalHost = host.toLowerCase(Locale.ROOT);
+
+    if (!principals.contains(principalHost)) {
+      throw new JSchException("rejected HostKey: invalid principal '" + principalHost
+          + "', allowed principals: " + principals);
     }
 
     if (!OpenSshCertificateUtil.isEmpty(certificate.getCriticalOptions())) {
@@ -90,60 +90,6 @@ class OpenSshCertificateHostKeyVerifier {
       throw new JSchInvalidHostCertificateException(
           "rejected HostKey: unrecognized critical options " + certificate.getCriticalOptions());
     }
-  }
-
-  /**
-   * Parses a raw public key byte array into its constituent mathematical components.
-   * <p>
-   * Different public key algorithms (RSA, DSS, ECDSA, etc.) have different structures. This method
-   * decodes the algorithm-specific format and returns the components needed for cryptographic
-   * operations.
-   * </p>
-   *
-   * @param certificatePublicKey the raw byte array of the public key blob.
-   * @return A 2D byte array where each inner array is a component of the public key (e.g., for RSA,
-   *         it returns {exponent, modulus}).
-   * @throws JSchException if the public key algorithm is unknown or the key format is corrupt.
-   */
-  static byte[][] parsePublicKey(byte[] certificatePublicKey) throws JSchException {
-    Buffer buffer = new Buffer(certificatePublicKey);
-    String algorithm = Util.byte2str(buffer.getString());
-
-    if (algorithm.startsWith("ssh-rsa") || algorithm.startsWith("rsa-")) {
-      byte[] ee = buffer.getMPInt();
-      byte[] n = buffer.getMPInt();
-      return new byte[][] {ee, n};
-    }
-
-    if (algorithm.startsWith("ssh-dss")) {
-      byte[] p = buffer.getMPInt();
-      byte[] q = buffer.getMPInt();
-      byte[] g = buffer.getMPInt();
-      byte[] y = buffer.getMPInt();
-      return new byte[][] {y, p, q, g};
-    }
-
-    if (algorithm.startsWith("ecdsa-sha2-")) {
-      // https://www.rfc-editor.org/rfc/rfc5656#section-3.1
-      // The string [identifier] is the identifier of the elliptic curve domain parameters.
-      String identifier = Util.byte2str(buffer.getString());
-      int len = buffer.getInt();
-      int x04 = buffer.getByte();
-      byte[] r = new byte[(len - 1) / 2];
-      byte[] s = new byte[(len - 1) / 2];
-      buffer.getByte(r);
-      buffer.getByte(s);
-      return new byte[][] {r, s};
-    }
-
-    if (algorithm.startsWith("ssh-ed25519") || algorithm.startsWith("ssh-ed448")) {
-      int keyLength = buffer.getInt();
-      byte[] edXXX_pub_array = new byte[keyLength];
-      buffer.getByte(edXXX_pub_array);
-      return new byte[][] {edXXX_pub_array};
-    }
-    throw new JSchUnknownPublicKeyAlgorithmException(
-        "Unknown algorithm '" + algorithm.trim() + "'");
   }
 
   /**
@@ -162,7 +108,8 @@ class OpenSshCertificateHostKeyVerifier {
       Session session) throws JSchException {
     // Check signature
     SignatureWrapper signature = getSignatureWrapper(certificate, caPublicKeyAlgorithm, session);
-    byte[][] publicKey = parsePublicKey(certificate.getSignatureKey());
+    byte[][] publicKey =
+        OpenSshCertificateUtil.parsePublicKeyComponents(certificate.getSignatureKey());
     boolean verified;
     try {
       signature.init();
@@ -183,14 +130,17 @@ class OpenSshCertificateHostKeyVerifier {
    * Creates and validates a {@link SignatureWrapper} for the certificate.
    * <p>
    * This helper method extracts the signature algorithm from the certificate and verifies that it
-   * matches the algorithm of the signing CA's key.
+   * matches the algorithm of the signing CA's key. It also validates that the signature algorithm
+   * is allowed and available according to the {@code ca_signature_algorithms} configuration.
    * </p>
    *
    * @param certificate the OpenSSH certificate.
    * @param caPublicKeyAlgorithm the expected public key algorithm of the CA.
+   * @param session the current session.
    * @return a configured {@link SignatureWrapper} instance.
-   * @throws JSchException if the signature algorithm does not match the CA's key algorithm, or if
-   *         the wrapper cannot be instantiated.
+   * @throws JSchException if the signature algorithm does not match the CA's key algorithm, is not
+   *         in the allowed CA signature algorithms list, is not available at runtime, or if the
+   *         wrapper cannot be instantiated.
    */
   static SignatureWrapper getSignatureWrapper(OpenSshCertificate certificate,
       String caPublicKeyAlgorithm, Session session) throws JSchException {
@@ -203,6 +153,9 @@ class OpenSshCertificateHostKeyVerifier {
           "rejected HostKey: signature verification failed, " + "signature algorithm: '"
               + signatureAlgorithm + "' - CA public Key algorithm: '" + caPublicKeyAlgorithm + "'");
     }
+
+    // Validate that the CA signature algorithm is allowed and available at runtime
+    session.checkCASignatureAlgorithm(signatureAlgorithm);
 
     return new SignatureWrapper(signatureAlgorithm, session);
   }
