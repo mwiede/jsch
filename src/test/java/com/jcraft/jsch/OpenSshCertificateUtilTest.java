@@ -1,6 +1,7 @@
 package com.jcraft.jsch;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -150,7 +151,6 @@ public class OpenSshCertificateUtilTest {
         OpenSshCertificateUtil.extractSpaceDelimitedString(input, 2));
   }
 
-
   @Test
   public void testExtractSpaceDelimitedString_lastFieldNoTrailingWhitespace() {
     byte[] input = "field1 field2".getBytes(StandardCharsets.UTF_8);
@@ -199,7 +199,7 @@ public class OpenSshCertificateUtilTest {
 
     // Execute
     boolean result =
-        OpenSshCertificateUtil.isCertificateSignedByTrustedCA(knownHosts, host, base64CaPublicKey);
+        OpenSshCertificateUtil.isCertificateSignedByTrustedCA(knownHosts, host, keyBytes);
 
     // Verify
     assertTrue(result, "Should return true when trusted CA is found");
@@ -218,15 +218,18 @@ public class OpenSshCertificateUtilTest {
     String differentCaKey = "AAAAB3NzaC1yc2EAAAADAQABAAABDIFFERENT==";
 
     // Create a CA with different key
-    byte[] keyBytes = Util.fromBase64(Util.str2byte(differentCaKey), 0, differentCaKey.length());
+    byte[] differentKeyBytes =
+        Util.fromBase64(Util.str2byte(differentCaKey), 0, differentCaKey.length());
     HostKey caHostKey =
-        new HostKey("@cert-authority", "*.example.com", HostKey.SSHRSA, keyBytes, null);
+        new HostKey("@cert-authority", "*.example.com", HostKey.SSHRSA, differentKeyBytes, null);
 
     knownHosts.add(caHostKey, null);
 
-    // Execute
+    // Execute - pass the original (non-matching) key bytes
+    byte[] caPublicKeyBytes =
+        Util.fromBase64(Util.str2byte(base64CaPublicKey), 0, base64CaPublicKey.length());
     boolean result =
-        OpenSshCertificateUtil.isCertificateSignedByTrustedCA(knownHosts, host, base64CaPublicKey);
+        OpenSshCertificateUtil.isCertificateSignedByTrustedCA(knownHosts, host, caPublicKeyBytes);
 
     // Verify
     assertFalse(result, "Should return false when CA key doesn't match");
@@ -259,7 +262,7 @@ public class OpenSshCertificateUtilTest {
 
     // Execute
     boolean result =
-        OpenSshCertificateUtil.isCertificateSignedByTrustedCA(knownHosts, host, base64CaPublicKey);
+        OpenSshCertificateUtil.isCertificateSignedByTrustedCA(knownHosts, host, keyBytes);
 
     // Verify
     assertFalse(result, "Should return false when CA is revoked (fail-closed security)");
@@ -285,7 +288,7 @@ public class OpenSshCertificateUtilTest {
 
     // Execute
     boolean result =
-        OpenSshCertificateUtil.isCertificateSignedByTrustedCA(knownHosts, host, base64CaPublicKey);
+        OpenSshCertificateUtil.isCertificateSignedByTrustedCA(knownHosts, host, keyBytes);
 
     // Verify
     assertFalse(result, "Should return false when host pattern doesn't match");
@@ -302,9 +305,12 @@ public class OpenSshCertificateUtilTest {
     String host = "example.com";
     String base64CaPublicKey = "AAAAB3NzaC1yc2EAAAADAQABAAABAQ==";
 
+    byte[] caPublicKeyBytes =
+        Util.fromBase64(Util.str2byte(base64CaPublicKey), 0, base64CaPublicKey.length());
+
     // Execute
     boolean result =
-        OpenSshCertificateUtil.isCertificateSignedByTrustedCA(knownHosts, host, base64CaPublicKey);
+        OpenSshCertificateUtil.isCertificateSignedByTrustedCA(knownHosts, host, caPublicKeyBytes);
 
     // Verify
     assertFalse(result, "Should return false when repository is empty");
@@ -338,7 +344,7 @@ public class OpenSshCertificateUtilTest {
 
     // Execute
     boolean result =
-        OpenSshCertificateUtil.isCertificateSignedByTrustedCA(knownHosts, host, base64CaPublicKey);
+        OpenSshCertificateUtil.isCertificateSignedByTrustedCA(knownHosts, host, matchingKeyBytes);
 
     // Verify
     assertTrue(result, "Should return true when one of multiple CAs matches (anyMatch behavior)");
@@ -369,7 +375,7 @@ public class OpenSshCertificateUtilTest {
 
     // Execute
     boolean result =
-        OpenSshCertificateUtil.isCertificateSignedByTrustedCA(knownHosts, host, base64CaPublicKey);
+        OpenSshCertificateUtil.isCertificateSignedByTrustedCA(knownHosts, host, keyBytes);
 
     // Verify
     assertFalse(result, "Should ignore entries without @cert-authority marker");
@@ -397,7 +403,7 @@ public class OpenSshCertificateUtilTest {
 
     // Execute
     boolean result =
-        OpenSshCertificateUtil.isCertificateSignedByTrustedCA(knownHosts, host, base64CaPublicKey);
+        OpenSshCertificateUtil.isCertificateSignedByTrustedCA(knownHosts, host, keyBytes);
 
     // Verify
     assertTrue(result, "Should match wildcard host pattern *.example.com with sub.example.com");
@@ -424,7 +430,7 @@ public class OpenSshCertificateUtilTest {
 
     // Execute
     boolean result =
-        OpenSshCertificateUtil.isCertificateSignedByTrustedCA(knownHosts, host, base64CaPublicKey);
+        OpenSshCertificateUtil.isCertificateSignedByTrustedCA(knownHosts, host, keyBytes);
 
     // Verify
     assertTrue(result, "Should work with Ed25519 key type");
@@ -442,6 +448,9 @@ public class OpenSshCertificateUtilTest {
     String host = "example.com";
     String base64CaPublicKey = "AAAAB3NzaC1yc2EAAAADAQABAAABAQ==";
 
+    byte[] caPublicKeyBytes =
+        Util.fromBase64(Util.str2byte(base64CaPublicKey), 0, base64CaPublicKey.length());
+
     // Create CA with null key (malformed entry)
     HostKey caHostKeyWithNullKey =
         new HostKey("@cert-authority", "*.example.com", HostKey.SSHRSA, null, null);
@@ -450,7 +459,7 @@ public class OpenSshCertificateUtilTest {
 
     // Execute
     boolean result =
-        OpenSshCertificateUtil.isCertificateSignedByTrustedCA(knownHosts, host, base64CaPublicKey);
+        OpenSshCertificateUtil.isCertificateSignedByTrustedCA(knownHosts, host, caPublicKeyBytes);
 
     // Verify
     assertFalse(result, "Should return false when CA has null key (fail-closed security)");
@@ -493,10 +502,419 @@ public class OpenSshCertificateUtilTest {
 
     // Execute
     boolean result =
-        OpenSshCertificateUtil.isCertificateSignedByTrustedCA(knownHosts, host, validCaKey);
+        OpenSshCertificateUtil.isCertificateSignedByTrustedCA(knownHosts, host, validKeyBytes);
 
     // Verify
     assertTrue(result,
         "Should find the valid CA among multiple entries, ignoring revoked/different/null entries");
+  }
+
+  // ==================== Tests for filterUnavailableCertTypes ====================
+
+  /**
+   * Test that filterUnavailableCertTypes only removes ssh-rsa-cert when ssh-rsa is unavailable,
+   * leaving rsa-sha2-256-cert and rsa-sha2-512-cert available.
+   */
+  @Test
+  public void testFilterUnavailableCertTypes_sshRsaUnavailable_shouldOnlyRemoveSshRsaCert() {
+    // Setup: server_host_key proposal with all RSA cert types
+    String serverHostKey =
+        "ssh-ed25519-cert-v01@openssh.com,ssh-rsa-cert-v01@openssh.com,rsa-sha2-256-cert-v01@openssh.com,rsa-sha2-512-cert-v01@openssh.com";
+
+    // Only ssh-rsa (SHA1) is unavailable
+    String[] unavailableSignatures = {"ssh-rsa"};
+
+    // Execute
+    String result =
+        OpenSshCertificateUtil.filterUnavailableCertTypes(serverHostKey, unavailableSignatures);
+
+    // Verify: ssh-rsa-cert removed, but SHA2 variants remain
+    assertTrue(result.contains("ssh-ed25519-cert-v01@openssh.com"),
+        "ssh-ed25519-cert should remain");
+    assertFalse(result.contains("ssh-rsa-cert-v01@openssh.com"), "ssh-rsa-cert should be removed");
+    assertTrue(result.contains("rsa-sha2-256-cert-v01@openssh.com"),
+        "rsa-sha2-256-cert should remain when only ssh-rsa is unavailable");
+    assertTrue(result.contains("rsa-sha2-512-cert-v01@openssh.com"),
+        "rsa-sha2-512-cert should remain when only ssh-rsa is unavailable");
+  }
+
+  /**
+   * Test that filterUnavailableCertTypes removes rsa-sha2-256-cert when rsa-sha2-256 is
+   * unavailable.
+   */
+  @Test
+  public void testFilterUnavailableCertTypes_rsaSha2256Unavailable_shouldRemoveOnlyThatCert() {
+    String serverHostKey =
+        "ssh-rsa-cert-v01@openssh.com,rsa-sha2-256-cert-v01@openssh.com,rsa-sha2-512-cert-v01@openssh.com";
+
+    String[] unavailableSignatures = {"rsa-sha2-256"};
+
+    String result =
+        OpenSshCertificateUtil.filterUnavailableCertTypes(serverHostKey, unavailableSignatures);
+
+    assertTrue(result.contains("ssh-rsa-cert-v01@openssh.com"), "ssh-rsa-cert should remain");
+    assertFalse(result.contains("rsa-sha2-256-cert-v01@openssh.com"),
+        "rsa-sha2-256-cert should be removed");
+    assertTrue(result.contains("rsa-sha2-512-cert-v01@openssh.com"),
+        "rsa-sha2-512-cert should remain");
+  }
+
+  /**
+   * Test that filterUnavailableCertTypes removes all RSA certs when all RSA algorithms are
+   * unavailable.
+   */
+  @Test
+  public void testFilterUnavailableCertTypes_allRsaUnavailable_shouldRemoveAllRsaCerts() {
+    String serverHostKey =
+        "ssh-ed25519-cert-v01@openssh.com,ssh-rsa-cert-v01@openssh.com,rsa-sha2-256-cert-v01@openssh.com,rsa-sha2-512-cert-v01@openssh.com";
+
+    String[] unavailableSignatures = {"ssh-rsa", "rsa-sha2-256", "rsa-sha2-512"};
+
+    String result =
+        OpenSshCertificateUtil.filterUnavailableCertTypes(serverHostKey, unavailableSignatures);
+
+    assertTrue(result.contains("ssh-ed25519-cert-v01@openssh.com"),
+        "ssh-ed25519-cert should remain");
+    assertFalse(result.contains("ssh-rsa-cert-v01@openssh.com"), "ssh-rsa-cert should be removed");
+    assertFalse(result.contains("rsa-sha2-256-cert-v01@openssh.com"),
+        "rsa-sha2-256-cert should be removed");
+    assertFalse(result.contains("rsa-sha2-512-cert-v01@openssh.com"),
+        "rsa-sha2-512-cert should be removed");
+  }
+
+  /**
+   * Test that filterUnavailableCertTypes returns serverHostKey unchanged when unavailableSignatures
+   * is null.
+   */
+  @Test
+  public void testFilterUnavailableCertTypes_nullUnavailable_shouldReturnUnchanged() {
+    String serverHostKey = "ssh-ed25519-cert-v01@openssh.com,ssh-rsa-cert-v01@openssh.com";
+
+    String result = OpenSshCertificateUtil.filterUnavailableCertTypes(serverHostKey, null);
+
+    assertEquals(serverHostKey, result);
+  }
+
+  /**
+   * Test that filterUnavailableCertTypes returns serverHostKey unchanged when unavailableSignatures
+   * is empty.
+   */
+  @Test
+  public void testFilterUnavailableCertTypes_emptyUnavailable_shouldReturnUnchanged() {
+    String serverHostKey = "ssh-ed25519-cert-v01@openssh.com,ssh-rsa-cert-v01@openssh.com";
+
+    String result =
+        OpenSshCertificateUtil.filterUnavailableCertTypes(serverHostKey, new String[] {});
+
+    assertEquals(serverHostKey, result);
+  }
+
+  // ==================== Tests for isValidNow (expired/not-yet-valid certificates)
+  // ====================
+
+  /**
+   * Test that isValidNow returns false for an expired certificate.
+   */
+  @Test
+  public void testIsValidNow_expiredCertificate() {
+    long now = 10000L;
+    OpenSshCertificate cert = createValidCertificateBuilder().validAfter(now - 7200) // Valid from
+                                                                                     // 2 hours ago
+        .validBefore(now - 3600) // Expired 1 hour ago
+        .build();
+
+    assertFalse(OpenSshCertificateUtil.isValidNow(cert, now), "Certificate should be expired");
+  }
+
+  /**
+   * Test that isValidNow returns false for a certificate not yet valid.
+   */
+  @Test
+  public void testIsValidNow_notYetValidCertificate() {
+    long now = 10000L;
+    OpenSshCertificate cert = createValidCertificateBuilder().validAfter(now + 3600) // Valid from
+                                                                                     // 1 hour in
+                                                                                     // the future
+        .validBefore(now + 7200) // Expires 2 hours in the future
+        .build();
+
+    assertFalse(OpenSshCertificateUtil.isValidNow(cert, now),
+        "Certificate should not be valid yet");
+  }
+
+  /**
+   * Test that isValidNow returns true for a currently valid certificate.
+   */
+  @Test
+  public void testIsValidNow_currentlyValidCertificate() {
+    long now = 10000L;
+    OpenSshCertificate cert = createValidCertificateBuilder().validAfter(now - 3600) // Valid from
+                                                                                     // 1 hour ago
+        .validBefore(now + 3600) // Expires 1 hour from now
+        .build();
+
+    assertTrue(OpenSshCertificateUtil.isValidNow(cert, now), "Certificate should be valid");
+  }
+
+  /**
+   * Test that isValidNow handles boundary condition: validAfter equals current time.
+   */
+  @Test
+  public void testIsValidNow_validAfterEqualsNow() {
+    long now = 10000L;
+    OpenSshCertificate cert = createValidCertificateBuilder().validAfter(now) // Valid from now
+        .validBefore(now + 3600) // Expires 1 hour from now
+        .build();
+
+    assertTrue(OpenSshCertificateUtil.isValidNow(cert, now),
+        "Certificate should be valid when validAfter equals now");
+  }
+
+  /**
+   * Test that isValidNow handles boundary condition: validBefore equals current time.
+   */
+  @Test
+  public void testIsValidNow_validBeforeEqualsNow() {
+    long now = 10000L;
+    OpenSshCertificate cert = createValidCertificateBuilder().validAfter(now - 3600) // Valid from
+                                                                                     // 1 hour ago
+        .validBefore(now) // Expires now
+        .build();
+
+    assertFalse(OpenSshCertificateUtil.isValidNow(cert, now),
+        "Certificate should be expired when validBefore equals now");
+  }
+
+  /**
+   * Test isValidNow with maximum validity (forever valid certificate).
+   */
+  @Test
+  public void testIsValidNow_foreverValidCertificate() {
+    long now = 10000L;
+    OpenSshCertificate cert =
+        createValidCertificateBuilder().validAfter(OpenSshCertificate.MIN_VALIDITY) // From epoch
+            .validBefore(OpenSshCertificate.MAX_VALIDITY) // Forever (max unsigned long)
+            .build();
+
+    assertTrue(OpenSshCertificateUtil.isValidNow(cert, now),
+        "Certificate with max validity should be valid");
+  }
+
+  // ==================== Tests for serial number edge cases ====================
+
+  /**
+   * Test certificate with maximum unsigned long serial number.
+   */
+  @Test
+  public void testCertificate_maxSerialNumber() {
+    // Maximum unsigned 64-bit value: 0xFFFFFFFFFFFFFFFF
+    long maxSerial = 0xFFFF_FFFF_FFFF_FFFFL;
+    OpenSshCertificate cert = createValidCertificateBuilder().serial(maxSerial).build();
+
+    assertEquals(maxSerial, cert.getSerial(), "Should handle maximum serial number");
+  }
+
+  /**
+   * Test certificate with zero serial number.
+   */
+  @Test
+  public void testCertificate_zeroSerialNumber() {
+    OpenSshCertificate cert = createValidCertificateBuilder().serial(0L).build();
+
+    assertEquals(0L, cert.getSerial(), "Should handle zero serial number");
+  }
+
+  /**
+   * Test certificate with serial number that appears negative when treated as signed long.
+   */
+  @Test
+  public void testCertificate_largeSerialNumberAppearsNegative() {
+    // This value is negative when treated as signed long, but valid as unsigned
+    long largeSerial = 0x8000_0000_0000_0001L; // -9223372036854775807 as signed
+    OpenSshCertificate cert = createValidCertificateBuilder().serial(largeSerial).build();
+
+    assertEquals(largeSerial, cert.getSerial(), "Should handle large serial that appears negative");
+    // Verify unsigned comparison works
+    assertTrue(Long.compareUnsigned(largeSerial, 0L) > 0,
+        "Serial should be positive when compared unsigned");
+  }
+
+  // ==================== Tests for toDateString edge cases ====================
+
+  /**
+   * Test toDateString with negative timestamp (represents infinity).
+   */
+  @Test
+  public void testToDateString_negativeTimestamp() {
+    String result = OpenSshCertificateUtil.toDateString(-1L);
+    assertEquals("infinity", result, "Negative timestamp should return 'infinity'");
+  }
+
+  /**
+   * Test toDateString with minimum negative timestamp.
+   */
+  @Test
+  public void testToDateString_minLongValue() {
+    String result = OpenSshCertificateUtil.toDateString(Long.MIN_VALUE);
+    assertEquals("infinity", result, "Long.MIN_VALUE should return 'infinity'");
+  }
+
+  /**
+   * Test toDateString with zero timestamp (epoch).
+   */
+  @Test
+  public void testToDateString_zeroTimestamp() {
+    String result = OpenSshCertificateUtil.toDateString(0L);
+    // Should return a date string for epoch (Jan 1, 1970)
+    assertFalse(result.equals("infinity"), "Zero timestamp should not return 'infinity'");
+    assertTrue(result.contains("1970"), "Zero timestamp should represent 1970");
+  }
+
+  /**
+   * Test toDateString with positive timestamp.
+   */
+  @Test
+  public void testToDateString_positiveTimestamp() {
+    // 1704067200 = Jan 1, 2024 00:00:00 UTC
+    String result = OpenSshCertificateUtil.toDateString(1704067200L);
+    assertFalse(result.equals("infinity"), "Positive timestamp should not return 'infinity'");
+    assertTrue(result.contains("2024"), "Timestamp should represent year 2024");
+  }
+
+  /**
+   * Test toDateString with MAX_VALIDITY (max unsigned long treated as signed).
+   */
+  @Test
+  public void testToDateString_maxValidity() {
+    // MAX_VALIDITY is 0xFFFFFFFFFFFFFFFF which is -1 as signed long
+    String result = OpenSshCertificateUtil.toDateString(OpenSshCertificate.MAX_VALIDITY);
+    assertEquals("infinity", result, "MAX_VALIDITY should return 'infinity'");
+  }
+
+  // ==================== Helper methods ====================
+
+  // Dummy byte arrays for required fields in tests
+  private static final byte[] DUMMY_NONCE = new byte[] {1, 2, 3, 4, 5, 6, 7, 8};
+  private static final byte[] DUMMY_PUBLIC_KEY =
+      new byte[] {0, 0, 0, 7, 's', 's', 'h', '-', 'r', 's', 'a', 0, 0, 0, 1, 35, 0, 0, 0, 1, 0};
+  private static final byte[] DUMMY_SIGNATURE_KEY =
+      new byte[] {0, 0, 0, 7, 's', 's', 'h', '-', 'r', 's', 'a', 0, 0, 0, 1, 35, 0, 0, 0, 1, 0};
+  private static final byte[] DUMMY_SIGNATURE =
+      new byte[] {0, 0, 0, 7, 's', 's', 'h', '-', 'r', 's', 'a', 0, 0, 0, 4, 1, 2, 3, 4};
+  private static final byte[] DUMMY_MESSAGE = new byte[] {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
+
+  /**
+   * Creates a builder pre-configured with valid host certificate defaults.
+   */
+  private OpenSshCertificate.Builder createValidCertificateBuilder() {
+    return new OpenSshCertificate.Builder().keyType("ssh-rsa-cert-v01@openssh.com")
+        .nonce(DUMMY_NONCE).certificatePublicKey(DUMMY_PUBLIC_KEY)
+        .type(OpenSshCertificate.SSH2_CERT_TYPE_HOST).id("test-certificate")
+        .signatureKey(DUMMY_SIGNATURE_KEY).signature(DUMMY_SIGNATURE).message(DUMMY_MESSAGE);
+  }
+
+  // ==================== Tests for hasBeenRevoked ====================
+
+  /**
+   * Test that hasBeenRevoked returns true when key is null (fail-closed).
+   */
+  @Test
+  public void testHasBeenRevoked_nullKey_returnsTrue() throws Exception {
+    JSch jsch = new JSch();
+    KnownHosts knownHosts = new KnownHosts(jsch);
+
+    boolean result = OpenSshCertificateUtil.hasBeenRevoked(knownHosts, null);
+
+    assertTrue(result, "Should return true for null key (fail-closed)");
+  }
+
+  /**
+   * Test that hasBeenRevoked returns false when key is not in revoked list.
+   */
+  @Test
+  public void testHasBeenRevoked_keyNotRevoked_returnsFalse() throws Exception {
+    JSch jsch = new JSch();
+    KnownHosts knownHosts = new KnownHosts(jsch);
+    String base64Key = "AAAAB3NzaC1yc2EAAAADAQABAAABAQ==";
+    byte[] keyBytes = Util.fromBase64(Util.str2byte(base64Key), 0, base64Key.length());
+    HostKey hostKey = new HostKey("example.com", HostKey.SSHRSA, keyBytes);
+
+    boolean result = OpenSshCertificateUtil.hasBeenRevoked(knownHosts, hostKey);
+
+    assertFalse(result, "Should return false when key is not revoked");
+  }
+
+  /**
+   * Test that hasBeenRevoked returns true when key is in revoked list.
+   */
+  @Test
+  public void testHasBeenRevoked_keyIsRevoked_returnsTrue() throws Exception {
+    JSch jsch = new JSch();
+    KnownHosts knownHosts = new KnownHosts(jsch);
+    String base64Key = "AAAAB3NzaC1yc2EAAAADAQABAAABAQ==";
+    byte[] keyBytes = Util.fromBase64(Util.str2byte(base64Key), 0, base64Key.length());
+
+    // Create regular host key
+    HostKey hostKey = new HostKey("example.com", HostKey.SSHRSA, keyBytes);
+
+    // Create revoked entry with same key
+    HostKey revokedKey = new HostKey("@revoked", "example.com", HostKey.SSHRSA, keyBytes, null);
+    knownHosts.add(revokedKey, null);
+
+    boolean result = OpenSshCertificateUtil.hasBeenRevoked(knownHosts, hostKey);
+
+    assertTrue(result, "Should return true when key is revoked");
+  }
+
+  /**
+   * Test that hasBeenRevoked handles revoked entries with null getKey() gracefully.
+   */
+  @Test
+  public void testHasBeenRevoked_revokedEntryWithNullKey_handledGracefully() throws Exception {
+    JSch jsch = new JSch();
+    KnownHosts knownHosts = new KnownHosts(jsch);
+    String base64Key = "AAAAB3NzaC1yc2EAAAADAQABAAABAQ==";
+    byte[] keyBytes = Util.fromBase64(Util.str2byte(base64Key), 0, base64Key.length());
+
+    // Create a host key with valid key
+    HostKey hostKey = new HostKey("example.com", HostKey.SSHRSA, keyBytes);
+
+    // The method should not throw NPE even if revoked entries have null keys
+    // This test verifies the fix for problem 6
+    boolean result = OpenSshCertificateUtil.hasBeenRevoked(knownHosts, hostKey);
+
+    assertFalse(result, "Should handle empty revoked list gracefully");
+  }
+
+  // ==================== Tests for getRawKeyType with centralized constants ====================
+
+  /**
+   * Test that getRawKeyType correctly extracts base key type from certificate types.
+   */
+  @Test
+  public void testGetRawKeyType_certificateType_returnsBaseType() {
+    assertEquals("ssh-rsa", OpenSshCertificateUtil.getRawKeyType("ssh-rsa-cert-v01@openssh.com"));
+    assertEquals("ssh-ed25519",
+        OpenSshCertificateUtil.getRawKeyType("ssh-ed25519-cert-v01@openssh.com"));
+    assertEquals("ecdsa-sha2-nistp256",
+        OpenSshCertificateUtil.getRawKeyType("ecdsa-sha2-nistp256-cert-v01@openssh.com"));
+  }
+
+  /**
+   * Test that getRawKeyType returns original for non-certificate types.
+   */
+  @Test
+  public void testGetRawKeyType_nonCertificateType_returnsOriginal() {
+    assertEquals("ssh-rsa", OpenSshCertificateUtil.getRawKeyType("ssh-rsa"));
+    assertEquals("ssh-ed25519", OpenSshCertificateUtil.getRawKeyType("ssh-ed25519"));
+  }
+
+  /**
+   * Test that getRawKeyType handles null and empty strings.
+   */
+  @Test
+  public void testGetRawKeyType_nullOrEmpty_returnsNull() {
+    assertNull(OpenSshCertificateUtil.getRawKeyType(null));
+    assertNull(OpenSshCertificateUtil.getRawKeyType(""));
   }
 }

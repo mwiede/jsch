@@ -69,14 +69,9 @@ public abstract class KeyExchange {
   protected byte[] H = null;
   protected byte[] K_S = null;
   protected OpenSshCertificate hostKeyCertificate = null;
-  protected boolean isOpenSshServerHostKeyType = false;
 
   OpenSshCertificate getHostKeyCertificate() {
     return hostKeyCertificate;
-  }
-
-  boolean isOpenSshServerHostKeyType() {
-    return isOpenSshServerHostKeyType;
   }
 
   public abstract void init(Session session, byte[] V_S, byte[] V_C, byte[] I_S, byte[] I_C)
@@ -87,30 +82,7 @@ public abstract class KeyExchange {
     init(session, V_S, V_C, I_S, I_C);
   }
 
-  public boolean next(Buffer buf) throws Exception {
-
-    /* @formatter:off
-     * After decryption and decompression, the start of the buffer looks like this:
-     *  1. Packet Length (4 bytes): An integer specifying the length of the data that follows (from the padding length
-     *     byte to the end of the padding).
-     *  2. Padding Length (1 byte): A single byte specifying how many bytes of random padding are at the end of the packet.
-     *  3. SSH Message Type (1 byte): This is the byte you're looking for, which identifies the message (e.g., SSH_MSG_CHANNEL_DATA).
-     *  4. Message-Specific Data (n bytes): The rest of the payload.
-     * @formatter:on
-     */
-
-    // skip packet length (4 bytes) and padding length(1 byte)
-    buf.readSkip(5);
-    // get the message type
-    int sshMessageType = buf.getByte();
-
-    return doNext(buf, sshMessageType);
-  }
-
-
-  protected boolean doNext(Buffer buf, int sshMessageType) throws Exception {
-    throw new IllegalStateException("this should never be called!");
-  }
+  public abstract boolean next(Buffer buf) throws Exception;
 
   public abstract int getState();
 
@@ -231,10 +203,6 @@ public abstract class KeyExchange {
   }
 
   public String getFingerPrint() {
-    return getFingerPrint(getHostKey());
-  }
-
-  public String getFingerPrint(byte[] key) {
     HASH hash = null;
     try {
       String _c = session.getConfig("FingerprintHash").toLowerCase(Locale.ROOT);
@@ -245,7 +213,7 @@ public abstract class KeyExchange {
         session.getLogger().log(Logger.ERROR, "getFingerPrint: " + e.getMessage(), e);
       }
     }
-    return Util.getFingerPrint(hash, key, true, false);
+    return Util.getFingerPrint(hash, getHostKey(), true, false);
   }
 
   byte[] getK() {
@@ -326,7 +294,6 @@ public abstract class KeyExchange {
     Util.bzero(secret);
     return foo;
   }
-
 
   /**
    * Verifies the cryptographic signature of the SSH key exchange hash.
@@ -411,12 +378,9 @@ public abstract class KeyExchange {
   protected boolean verify(String alg, byte[] K_S, int index, byte[] sig_of_H) throws Exception {
     int i, j;
     boolean result = false;
-    OpenSshCertificateBuffer buffer = new OpenSshCertificateBuffer(K_S);
-    buffer.s = index;
     i = index;
 
-    if (OpenSshCertificateAwareIdentityFile.isOpenSshCertificateKeyType(alg)) {
-      this.isOpenSshServerHostKeyType = true;
+    if (OpenSshCertificateKeyTypes.isCertificateKeyType(alg)) {
       OpenSshCertificate certificate = OpenSshCertificateParser.parse(session.jsch.instLogger, K_S);
 
       // Certificates used for host authentication MUST have "certificate role" of
@@ -427,6 +391,10 @@ public abstract class KeyExchange {
             + "': user certificate presented for host authentication. " + "Host: " + session.host);
       }
       K_S = certificate.getCertificatePublicKey();
+      if (K_S == null) {
+        throw new JSchException(
+            "Invalid certificate '" + certificate.getId() + "': missing public key");
+      }
 
       // Extract algorithm from certificate public key
       i = 0;

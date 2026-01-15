@@ -108,17 +108,19 @@ abstract class DHGEX extends KeyExchange {
   }
 
   @Override
-  public boolean doNext(Buffer _buf, int sshMessageType) throws Exception {
+  public boolean next(Buffer _buf) throws Exception {
     int i, j;
     switch (state) {
       case SSH_MSG_KEX_DH_GEX_GROUP:
         // byte SSH_MSG_KEX_DH_GEX_GROUP(31)
         // mpint p, safe prime
         // mpint g, generator for subgroup in GF (p)
-        if (sshMessageType != SSH_MSG_KEX_DH_GEX_GROUP) {
+        _buf.getInt();
+        _buf.getByte();
+        j = _buf.getByte();
+        if (j != SSH_MSG_KEX_DH_GEX_GROUP) {
           if (session.getLogger().isEnabled(Logger.ERROR)) {
-            session.getLogger().log(Logger.ERROR,
-                "type: must be SSH_MSG_KEX_DH_GEX_GROUP " + sshMessageType);
+            session.getLogger().log(Logger.ERROR, "type: must be SSH_MSG_KEX_DH_GEX_GROUP " + j);
           }
           return false;
         }
@@ -160,10 +162,12 @@ abstract class DHGEX extends KeyExchange {
         // string server public host key and certificates (K_S)
         // mpint f
         // string signature of H
-        if (sshMessageType != SSH_MSG_KEX_DH_GEX_REPLY) {
+        j = _buf.getInt();
+        j = _buf.getByte();
+        j = _buf.getByte();
+        if (j != SSH_MSG_KEX_DH_GEX_REPLY) {
           if (session.getLogger().isEnabled(Logger.ERROR)) {
-            session.getLogger().log(Logger.ERROR,
-                "type: must be SSH_MSG_KEX_DH_GEX_REPLY " + sshMessageType);
+            session.getLogger().log(Logger.ERROR, "type: must be SSH_MSG_KEX_DH_GEX_REPLY " + j);
           }
           return false;
         }

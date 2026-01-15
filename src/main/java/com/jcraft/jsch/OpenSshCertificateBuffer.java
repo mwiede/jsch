@@ -23,8 +23,6 @@ import java.util.Map;
  */
 class OpenSshCertificateBuffer extends Buffer {
 
-  private static final byte[] EMPTY_BYTE_ARRAY = {};
-
   /**
    * Creates a new OpenSSH certificate buffer from decoded certificate bytes.
    *
@@ -41,9 +39,18 @@ class OpenSshCertificateBuffer extends Buffer {
    * Reads a length-prefixed byte array from the buffer.
    *
    * @return the byte array data
+   * @throws IllegalArgumentException if the length prefix is negative or exceeds available data
    */
   byte[] getBytes() {
     int reqLen = getInt();
+    if (reqLen < 0) {
+      throw new IllegalArgumentException(
+          "Invalid length in certificate data: negative length " + reqLen);
+    }
+    if (reqLen > getLength()) {
+      throw new IllegalArgumentException("Invalid length in certificate data: requested " + reqLen
+          + " bytes but only " + getLength() + " available");
+    }
     byte[] b = new byte[reqLen];
     getByte(b);
     return b;

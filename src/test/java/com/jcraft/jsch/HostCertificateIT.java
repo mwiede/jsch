@@ -1,17 +1,20 @@
 package com.jcraft.jsch;
 
-import java.util.Arrays;
-import java.util.List;
 import com.github.valfirst.slf4jtest.LoggingEvent;
 import com.github.valfirst.slf4jtest.TestLogger;
 import com.github.valfirst.slf4jtest.TestLoggerFactory;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.images.builder.ImageFromDockerfile;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
+
+import java.util.Arrays;
+import java.util.List;
+
 import static com.jcraft.jsch.ResourceUtil.getResourceFile;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -25,7 +28,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  * to validate server host keys signed by a Certificate Authority (CA) against a {@code known_hosts}
  * file.
  */
-
 @Testcontainers
 public class HostCertificateIT {
 
@@ -37,7 +39,14 @@ public class HostCertificateIT {
   private static final TestLogger jschLogger = TestLoggerFactory.getTestLogger(JSch.class);
   /** Test logger for capturing SSH server logs (via a placeholder class). */
   private static final TestLogger sshdLogger =
-      TestLoggerFactory.getTestLogger(UserCertAuthIT.class);
+      TestLoggerFactory.getTestLogger(HostCertificateIT.class);
+  private static org.slf4j.Logger LOGGER = LoggerFactory.getLogger(HostCertificateIT.class);
+
+  /*
+   * @BeforeAll static void beforeAll() { JSch.setLogger(LOGGER); }
+   *
+   * @AfterAll static void afterAll() { JSch.setLogger(null); }
+   */
 
   /**
    * Defines and configures the SSH server Docker container using Testcontainers. The container is
@@ -68,7 +77,6 @@ public class HostCertificateIT {
           CERTIFICATES_BASE_FOLDER + "/ssh_host_ed25519_key-cert.pub")
       .withFileFromClasspath("Dockerfile", CERTIFICATES_BASE_FOLDER + "/Dockerfile"))
       .withExposedPorts(22).waitingFor(Wait.forLogMessage(".*Server listening on :: port 22.*", 1));
-
 
   /**
    * Provides a stream of server host key algorithms to be used in parameterized tests. Each string
@@ -127,7 +135,6 @@ public class HostCertificateIT {
   @ParameterizedTest(name = "hostkey algorithm: {0}")
   public void hostKeyTestNotTrustedCA(String algorithm) throws Exception {
     JSch ssh = new JSch();
-
     ssh.addIdentity(
         getResourceFile(this.getClass(), CERTIFICATES_BASE_FOLDER + "/user_keys/id_ecdsa_nistp521"),
         getResourceFile(this.getClass(),
@@ -191,8 +198,5 @@ public class HostCertificateIT {
         .forEach(System.out::println);
     sshdLogger.getAllLoggingEvents().stream().map(LoggingEvent::getFormattedMessage)
         .forEach(System.out::println);
-    System.out.println("");
-    System.out.println("");
-    System.out.println("");
   }
 }
