@@ -105,7 +105,7 @@ abstract class DHGN extends KeyExchange {
   }
 
   @Override
-  public boolean doNext(Buffer _buf, int sshMessageType) throws Exception {
+  public boolean next(Buffer _buf) throws Exception {
     int i, j;
 
     switch (state) {
@@ -115,10 +115,12 @@ abstract class DHGN extends KeyExchange {
         // string server public host key and certificates (K_S)
         // mpint f
         // string signature of H
-        if (sshMessageType != SSH_MSG_KEXDH_REPLY) {
+        j = _buf.getInt();
+        j = _buf.getByte();
+        j = _buf.getByte();
+        if (j != SSH_MSG_KEXDH_REPLY) {
           if (session.getLogger().isEnabled(Logger.ERROR)) {
-            session.getLogger().log(Logger.ERROR,
-                "type: must be SSH_MSG_KEXDH_REPLY " + sshMessageType);
+            session.getLogger().log(Logger.ERROR, "type: must be SSH_MSG_KEXDH_REPLY " + j);
           }
           return false;
         }

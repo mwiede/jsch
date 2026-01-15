@@ -32,14 +32,12 @@ import org.testcontainers.junit.jupiter.Testcontainers;
  * is configured to trust the certificate authority (CA) key that signed the user certificates being
  * tested.
  */
-
 @Testcontainers
 public class UserCertAuthIT {
   /**
    * Standard SLF4J logger for this test class.
    */
   private static final Logger logger = LoggerFactory.getLogger(UserCertAuthIT.class);
-
   /**
    * Timeout value (in milliseconds) for session and channel connections.
    */
@@ -57,9 +55,6 @@ public class UserCertAuthIT {
    */
   private static final TestLogger sshdLogger =
       TestLoggerFactory.getTestLogger(UserCertAuthIT.class);
-
-
-
   /**
    * The Testcontainers instance for the SSHD server.
    * <p>
@@ -82,7 +77,6 @@ public class UserCertAuthIT {
       .withFileFromClasspath("sshd_config", "certificates/docker/sshd_config")
       .withFileFromClasspath("Dockerfile", "certificates/docker/Dockerfile")).withExposedPorts(22)
       .waitingFor(Wait.forLogMessage(".*Server listening on :: port 22.*", 1));
-
 
   /**
    * Provides the list of private key parameters used for the parameterized test.
@@ -126,6 +120,9 @@ public class UserCertAuthIT {
     session.setConfig("enable_auth_none", "yes");
     session.setConfig("StrictHostKeyChecking", "no");
     session.setConfig("PreferredAuthentications", "publickey");
+    // Include ssh-rsa-cert-v01@openssh.com for RSA certificate test (not in defaults per OpenSSH)
+    session.setConfig("PubkeyAcceptedAlgorithms",
+        "ssh-ed25519-cert-v01@openssh.com,ecdsa-sha2-nistp256-cert-v01@openssh.com,ecdsa-sha2-nistp384-cert-v01@openssh.com,ecdsa-sha2-nistp521-cert-v01@openssh.com,ssh-rsa-cert-v01@openssh.com,ssh-ed25519,ecdsa-sha2-nistp256,ecdsa-sha2-nistp384,ecdsa-sha2-nistp521,rsa-sha2-512,rsa-sha2-256");
     session.setConfig("server_host_key",
         "ssh-ed25519,ecdsa-sha2-nistp256,ecdsa-sha2-nistp384,ecdsa-sha2-nistp521,rsa-sha2-512,rsa-sha2-256");
     doSftp(session);

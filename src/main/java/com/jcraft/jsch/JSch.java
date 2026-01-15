@@ -26,6 +26,7 @@
 
 package com.jcraft.jsch;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Collections;
@@ -39,13 +40,19 @@ public class JSch {
   /** The version number. */
   public static final String VERSION = Version.getVersion();
 
+  private static final String CERTIFICATE_FILENAME_SUFFIX = "-cert.pub";
+
   static Hashtable<String, String> config = new Hashtable<>();
 
   static {
     config.put("kex", Util.getSystemProperty("jsch.kex",
         "mlkem768x25519-sha256,curve25519-sha256,curve25519-sha256@libssh.org,ecdh-sha2-nistp256,ecdh-sha2-nistp384,ecdh-sha2-nistp521,diffie-hellman-group-exchange-sha256,diffie-hellman-group16-sha512,diffie-hellman-group18-sha512,diffie-hellman-group14-sha256"));
     config.put("server_host_key", Util.getSystemProperty("jsch.server_host_key",
-        "ssh-ed25519-cert-v01@openssh.com,ecdsa-sha2-nistp256-cert-v01@openssh.com,ecdsa-sha2-nistp384-cert-v01@openssh.com,ecdsa-sha2-nistp521-cert-v01@openssh.com,ssh-rsa-cert-v01@openssh.com,ssh-dss-cert-v01@openssh.com,ssh-ed25519,ecdsa-sha2-nistp256,ecdsa-sha2-nistp384,ecdsa-sha2-nistp521,rsa-sha2-512,rsa-sha2-256"));
+        "ssh-ed25519-cert-v01@openssh.com,ecdsa-sha2-nistp256-cert-v01@openssh.com,ecdsa-sha2-nistp384-cert-v01@openssh.com,ecdsa-sha2-nistp521-cert-v01@openssh.com,ssh-ed25519,ecdsa-sha2-nistp256,ecdsa-sha2-nistp384,ecdsa-sha2-nistp521,rsa-sha2-512,rsa-sha2-256"));
+    // CASignatureAlgorithms: specifies which algorithms are allowed for signing of certificates
+    // by certificate authorities (CAs). Default matches OpenSSH 8.2+ (excludes ssh-rsa/SHA-1).
+    config.put("ca_signature_algorithms", Util.getSystemProperty("jsch.ca_signature_algorithms",
+        "ssh-ed25519,ecdsa-sha2-nistp256,ecdsa-sha2-nistp384,ecdsa-sha2-nistp521,rsa-sha2-512,rsa-sha2-256"));
     config.put("prefer_known_host_key_types",
         Util.getSystemProperty("jsch.prefer_known_host_key_types", "yes"));
     config.put("enable_strict_kex", Util.getSystemProperty("jsch.enable_strict_kex", "yes"));
@@ -240,7 +247,7 @@ public class JSch {
     config.put("PreferredAuthentications", Util.getSystemProperty("jsch.preferred_authentications",
         "gssapi-with-mic,publickey,keyboard-interactive,password"));
     config.put("PubkeyAcceptedAlgorithms", Util.getSystemProperty("jsch.client_pubkey",
-        "ssh-ed25519-cert-v01@openssh.com,ecdsa-sha2-nistp256-cert-v01@openssh.com,ecdsa-sha2-nistp384-cert-v01@openssh.com,ecdsa-sha2-nistp521-cert-v01@openssh.com,ssh-rsa-cert-v01@openssh.com,ssh-dss-cert-v01@openssh.com,ssh-ed25519,ecdsa-sha2-nistp256,ecdsa-sha2-nistp384,ecdsa-sha2-nistp521,rsa-sha2-512,rsa-sha2-256"));
+        "ssh-ed25519-cert-v01@openssh.com,ecdsa-sha2-nistp256-cert-v01@openssh.com,ecdsa-sha2-nistp384-cert-v01@openssh.com,ecdsa-sha2-nistp521-cert-v01@openssh.com,ssh-ed25519,ecdsa-sha2-nistp256,ecdsa-sha2-nistp384,ecdsa-sha2-nistp521,rsa-sha2-512,rsa-sha2-256"));
     config.put("enable_pubkey_auth_query",
         Util.getSystemProperty("jsch.enable_pubkey_auth_query", "yes"));
     config.put("try_additional_pubkey_algorithms",
@@ -260,9 +267,15 @@ public class JSch {
 
     config.put("MaxAuthTries", Util.getSystemProperty("jsch.max_auth_tries", "6"));
     config.put("ClearAllForwardings", "no");
-    config.put("ClearAllKeys", "no");
-    config.put("HostCertificateToKeyFallback",
-        Util.getSystemProperty("jsch.host_certificate_to_key_fallback", "no"));
+    /*
+     * host_certificate_to_key_fallback: Controls behavior when host certificate validation fails. -
+     * "yes" (default): Fall back to standard public key verification using the certificate's
+     * embedded public key. This matches OpenSSH behavior, which always performs this fallback. -
+     * "no": Reject connection if certificate validation fails (more secure, but may break existing
+     * setups when upgrading to a JSch version with certificate support).
+     */
+    config.put("host_certificate_to_key_fallback",
+        Util.getSystemProperty("jsch.host_certificate_to_key_fallback", "yes"));
   }
 
   final InstanceLogger instLogger = new InstanceLogger();
@@ -497,18 +510,34 @@ public class JSch {
    */
   public void addIdentity(String prvkey, String pubkey, byte[] passphrase) throws JSchException {
     byte[] pubkeyFileContent = null;
+    String pubkeyFile = pubkey;
     Identity identity;
 
-    if (pubkey != null) {
-      try {
-        pubkeyFileContent = Util.fromFile(pubkey);
-      } catch (IOException e) {
-        throw new JSchException(e.toString(), e);
+    // If pubkey is null, try to auto-discover certificate file (prvkey + "-cert.pub")
+    // This mimics KeyPair.load() behavior which tries prvkey + ".pub"
+    if (pubkeyFile == null) {
+      String certFile = prvkey + CERTIFICATE_FILENAME_SUFFIX;
+      if (new File(certFile).exists()) {
+        pubkeyFile = certFile;
       }
     }
+
+    if (pubkeyFile != null) {
+      try {
+        pubkeyFileContent = Util.fromFile(pubkeyFile);
+      } catch (IOException e) {
+        // Only throw if pubkey was explicitly provided (not auto-discovered)
+        // This matches KeyPair.load() behavior
+        if (pubkey != null) {
+          throw new JSchException(e.toString(), e);
+        }
+        // Otherwise, silently ignore and fall through to IdentityFile
+      }
+    }
+
     if (pubkeyFileContent != null
         && OpenSshCertificateAwareIdentityFile.isOpenSshCertificateFile(pubkeyFileContent)) {
-      identity = OpenSshCertificateAwareIdentityFile.newInstance(prvkey, pubkey, instLogger);
+      identity = OpenSshCertificateAwareIdentityFile.newInstance(prvkey, pubkeyFile, instLogger);
     } else {
       identity = IdentityFile.newInstance(prvkey, pubkey, instLogger);
     }
