@@ -74,15 +74,15 @@ class OpenSshCertificateHostKeyVerifier {
 
     checkSignature(certificate, caPublicKeyAlgorithm, session);
 
-    // "As a special case, a zero-length "valid principals" field means the certificate is valid for
-    // any principal of the specified type."
-    // Empty principals in a host certificate mean the certificate is valid for any host.
     Collection<String> principals = certificate.getPrincipals();
-    if (principals != null && !principals.isEmpty()) {
-      if (!principals.contains(host)) {
-        throw new JSchException("rejected HostKey: invalid principal '" + host
-            + "', allowed principals: " + principals);
-      }
+    if (principals == null || principals.isEmpty()) {
+      throw new JSchException("rejected HostKey: invalid principal '" + host
+          + "', allowed principals list is null or empty.");
+    }
+
+    if (!principals.contains(host)) {
+      throw new JSchException(
+          "rejected HostKey: invalid principal '" + host + "', allowed principals: " + principals);
     }
 
     if (!OpenSshCertificateUtil.isEmpty(certificate.getCriticalOptions())) {

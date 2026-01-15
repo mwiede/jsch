@@ -1,6 +1,7 @@
 package com.jcraft.jsch;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -498,5 +499,105 @@ public class OpenSshCertificateUtilTest {
     // Verify
     assertTrue(result,
         "Should find the valid CA among multiple entries, ignoring revoked/different/null entries");
+  }
+
+  // ==================== Tests for filterUnavailableCertTypes ====================
+
+  /**
+   * Test that filterUnavailableCertTypes only removes ssh-rsa-cert when ssh-rsa is unavailable,
+   * leaving rsa-sha2-256-cert and rsa-sha2-512-cert available.
+   */
+  @Test
+  public void testFilterUnavailableCertTypes_sshRsaUnavailable_shouldOnlyRemoveSshRsaCert() {
+    // Setup: server_host_key proposal with all RSA cert types
+    String serverHostKey =
+        "ssh-ed25519-cert-v01@openssh.com,ssh-rsa-cert-v01@openssh.com,rsa-sha2-256-cert-v01@openssh.com,rsa-sha2-512-cert-v01@openssh.com";
+
+    // Only ssh-rsa (SHA1) is unavailable
+    String[] unavailableSignatures = {"ssh-rsa"};
+
+    // Execute
+    String result =
+        OpenSshCertificateUtil.filterUnavailableCertTypes(serverHostKey, unavailableSignatures);
+
+    // Verify: ssh-rsa-cert removed, but SHA2 variants remain
+    assertTrue(result.contains("ssh-ed25519-cert-v01@openssh.com"),
+        "ssh-ed25519-cert should remain");
+    assertFalse(result.contains("ssh-rsa-cert-v01@openssh.com"), "ssh-rsa-cert should be removed");
+    assertTrue(result.contains("rsa-sha2-256-cert-v01@openssh.com"),
+        "rsa-sha2-256-cert should remain when only ssh-rsa is unavailable");
+    assertTrue(result.contains("rsa-sha2-512-cert-v01@openssh.com"),
+        "rsa-sha2-512-cert should remain when only ssh-rsa is unavailable");
+  }
+
+  /**
+   * Test that filterUnavailableCertTypes removes rsa-sha2-256-cert when rsa-sha2-256 is
+   * unavailable.
+   */
+  @Test
+  public void testFilterUnavailableCertTypes_rsaSha2256Unavailable_shouldRemoveOnlyThatCert() {
+    String serverHostKey =
+        "ssh-rsa-cert-v01@openssh.com,rsa-sha2-256-cert-v01@openssh.com,rsa-sha2-512-cert-v01@openssh.com";
+
+    String[] unavailableSignatures = {"rsa-sha2-256"};
+
+    String result =
+        OpenSshCertificateUtil.filterUnavailableCertTypes(serverHostKey, unavailableSignatures);
+
+    assertTrue(result.contains("ssh-rsa-cert-v01@openssh.com"), "ssh-rsa-cert should remain");
+    assertFalse(result.contains("rsa-sha2-256-cert-v01@openssh.com"),
+        "rsa-sha2-256-cert should be removed");
+    assertTrue(result.contains("rsa-sha2-512-cert-v01@openssh.com"),
+        "rsa-sha2-512-cert should remain");
+  }
+
+  /**
+   * Test that filterUnavailableCertTypes removes all RSA certs when all RSA algorithms are
+   * unavailable.
+   */
+  @Test
+  public void testFilterUnavailableCertTypes_allRsaUnavailable_shouldRemoveAllRsaCerts() {
+    String serverHostKey =
+        "ssh-ed25519-cert-v01@openssh.com,ssh-rsa-cert-v01@openssh.com,rsa-sha2-256-cert-v01@openssh.com,rsa-sha2-512-cert-v01@openssh.com";
+
+    String[] unavailableSignatures = {"ssh-rsa", "rsa-sha2-256", "rsa-sha2-512"};
+
+    String result =
+        OpenSshCertificateUtil.filterUnavailableCertTypes(serverHostKey, unavailableSignatures);
+
+    assertTrue(result.contains("ssh-ed25519-cert-v01@openssh.com"),
+        "ssh-ed25519-cert should remain");
+    assertFalse(result.contains("ssh-rsa-cert-v01@openssh.com"), "ssh-rsa-cert should be removed");
+    assertFalse(result.contains("rsa-sha2-256-cert-v01@openssh.com"),
+        "rsa-sha2-256-cert should be removed");
+    assertFalse(result.contains("rsa-sha2-512-cert-v01@openssh.com"),
+        "rsa-sha2-512-cert should be removed");
+  }
+
+  /**
+   * Test that filterUnavailableCertTypes returns serverHostKey unchanged when unavailableSignatures
+   * is null.
+   */
+  @Test
+  public void testFilterUnavailableCertTypes_nullUnavailable_shouldReturnUnchanged() {
+    String serverHostKey = "ssh-ed25519-cert-v01@openssh.com,ssh-rsa-cert-v01@openssh.com";
+
+    String result = OpenSshCertificateUtil.filterUnavailableCertTypes(serverHostKey, null);
+
+    assertEquals(serverHostKey, result);
+  }
+
+  /**
+   * Test that filterUnavailableCertTypes returns serverHostKey unchanged when unavailableSignatures
+   * is empty.
+   */
+  @Test
+  public void testFilterUnavailableCertTypes_emptyUnavailable_shouldReturnUnchanged() {
+    String serverHostKey = "ssh-ed25519-cert-v01@openssh.com,ssh-rsa-cert-v01@openssh.com";
+
+    String result =
+        OpenSshCertificateUtil.filterUnavailableCertTypes(serverHostKey, new String[] {});
+
+    assertEquals(serverHostKey, result);
   }
 }

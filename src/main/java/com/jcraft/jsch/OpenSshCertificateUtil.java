@@ -340,8 +340,7 @@ class OpenSshCertificateUtil {
    * <ul>
    * <li>{@code ssh-ed25519} → {@code ssh-ed25519-cert-v01@openssh.com}</li>
    * <li>{@code ssh-ed448} → {@code ssh-ed448-cert-v01@openssh.com}</li>
-   * <li>{@code ssh-rsa} → {@code ssh-rsa-cert-v01@openssh.com},
-   * {@code rsa-sha2-256-cert-v01@openssh.com}, {@code rsa-sha2-512-cert-v01@openssh.com}</li>
+   * <li>{@code ssh-rsa} → {@code ssh-rsa-cert-v01@openssh.com}</li>
    * <li>{@code rsa-sha2-256} → {@code rsa-sha2-256-cert-v01@openssh.com}</li>
    * <li>{@code rsa-sha2-512} → {@code rsa-sha2-512-cert-v01@openssh.com}</li>
    * <li>{@code ssh-dss} → {@code ssh-dss-cert-v01@openssh.com}</li>
@@ -349,11 +348,6 @@ class OpenSshCertificateUtil {
    * <li>{@code ecdsa-sha2-nistp384} → {@code ecdsa-sha2-nistp384-cert-v01@openssh.com}</li>
    * <li>{@code ecdsa-sha2-nistp521} → {@code ecdsa-sha2-nistp521-cert-v01@openssh.com}</li>
    * </ul>
-   * <p>
-   * <b>Note:</b> RSA has special handling because {@code ssh-rsa} being unavailable implies that
-   * RSA signature verification is completely unavailable, so all RSA-based certificate types are
-   * removed.
-   * </p>
    *
    * @param serverHostKey comma-separated list of server host key algorithms to filter. This
    *        typically contains a mix of plain key algorithms (e.g., {@code ssh-ed25519}) and
@@ -387,9 +381,10 @@ class OpenSshCertificateUtil {
       } else if ("ssh-ed448".equals(unavailableSig)) {
         certsToRemove.add("ssh-ed448-cert-v01@openssh.com");
       } else if ("ssh-rsa".equals(unavailableSig)) {
+        // Only remove ssh-rsa-cert (SHA1), not the SHA2 variants.
+        // SHA2 variants (rsa-sha2-256, rsa-sha2-512) are checked independently
+        // and may still be available even if ssh-rsa (SHA1) is disabled.
         certsToRemove.add("ssh-rsa-cert-v01@openssh.com");
-        certsToRemove.add("rsa-sha2-256-cert-v01@openssh.com");
-        certsToRemove.add("rsa-sha2-512-cert-v01@openssh.com");
       } else if ("rsa-sha2-256".equals(unavailableSig)) {
         certsToRemove.add("rsa-sha2-256-cert-v01@openssh.com");
       } else if ("rsa-sha2-512".equals(unavailableSig)) {

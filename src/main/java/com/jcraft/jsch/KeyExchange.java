@@ -69,14 +69,13 @@ public abstract class KeyExchange {
   protected byte[] H = null;
   protected byte[] K_S = null;
   protected OpenSshCertificate hostKeyCertificate = null;
-  protected boolean isOpenSshServerHostKeyType = false;
 
   OpenSshCertificate getHostKeyCertificate() {
     return hostKeyCertificate;
   }
 
-  boolean isOpenSshServerHostKeyType() {
-    return isOpenSshServerHostKeyType;
+  boolean hasHostCertificate() {
+    return hostKeyCertificate != null;
   }
 
   public abstract void init(Session session, byte[] V_S, byte[] V_C, byte[] I_S, byte[] I_C)
@@ -106,7 +105,6 @@ public abstract class KeyExchange {
 
     return doNext(buf, sshMessageType);
   }
-
 
   protected boolean doNext(Buffer buf, int sshMessageType) throws Exception {
     throw new IllegalStateException("this should never be called!");
@@ -327,7 +325,6 @@ public abstract class KeyExchange {
     return foo;
   }
 
-
   /**
    * Verifies the cryptographic signature of the SSH key exchange hash.
    * <p>
@@ -416,7 +413,6 @@ public abstract class KeyExchange {
     i = index;
 
     if (OpenSshCertificateAwareIdentityFile.isOpenSshCertificateKeyType(alg)) {
-      this.isOpenSshServerHostKeyType = true;
       OpenSshCertificate certificate = OpenSshCertificateParser.parse(session.jsch.instLogger, K_S);
 
       // Certificates used for host authentication MUST have "certificate role" of

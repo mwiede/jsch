@@ -942,8 +942,8 @@ public class Session {
   }
 
   private void checkHost(String chost, int port, KeyExchange kex) throws Exception {
-    if (kex.isOpenSshServerHostKeyType) {
-      OpenSshCertificate certificate = kex.getHostKeyCertificate();
+    OpenSshCertificate certificate = kex.getHostKeyCertificate();
+    if (certificate != null) {
       try {
         OpenSshCertificateHostKeyVerifier.checkHostCertificate(this, certificate);
         return;
@@ -2298,7 +2298,6 @@ public class Session {
   public void setThreadFactory(ThreadFactory threadFactory) {
     this.threadFactory = Objects.requireNonNull(threadFactory);
   }
-
 
   /**
    * Returns the thread factory used by this instance.

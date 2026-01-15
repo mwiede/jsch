@@ -123,23 +123,19 @@ class OpenSshCertificateParser {
   static KeyPair parsePublicKey(InstanceLogger instLogger, String keyType, Buffer buffer)
       throws JSchException {
     switch (keyType) {
-
       case OpenSshCertificateAwareIdentityFile.SSH_RSA_CERT_V01_AT_OPENSSH_DOT_COM:
         byte[] pub_array = buffer.getMPInt(); // e
         byte[] n_array = buffer.getMPInt(); // n
         return new KeyPairRSA(instLogger, n_array, pub_array, null);
-
       case OpenSshCertificateAwareIdentityFile.SSH_DSS_CERT_V01_AT_OPENSSH_DOT_COM:
         byte[] p_array = buffer.getMPInt();
         byte[] q_array = buffer.getMPInt();
         byte[] g_array = buffer.getMPInt();
         byte[] y_array = buffer.getMPInt();
         return new KeyPairDSA(instLogger, p_array, q_array, g_array, y_array, null);
-
       case OpenSshCertificateAwareIdentityFile.ECDSA_SHA2_NISTP256_CERT_V01_AT_OPENSSH_DOT_COM:
       case OpenSshCertificateAwareIdentityFile.ECDSA_SHA2_NISTP384_CERT_V01_AT_OPENSSH_DOT_COM:
       case OpenSshCertificateAwareIdentityFile.ECDSA_SHA2_NISTP521_CERT_V01_AT_OPENSSH_DOT_COM:
-
         byte[] name = buffer.getString();
         int len = buffer.getInt();
         int x04 = buffer.getByte();
@@ -148,12 +144,10 @@ class OpenSshCertificateParser {
         buffer.getByte(r_array);
         buffer.getByte(s_array);
         return new KeyPairECDSA(instLogger, name, r_array, s_array, null);
-
       case OpenSshCertificateAwareIdentityFile.SSH_ED25519_CERT_V01_AT_OPENSSH_DOT_COM:
         byte[] ed25519_pub_array = new byte[buffer.getInt()];
         buffer.getByte(ed25519_pub_array);
         return new KeyPairEd25519(instLogger, ed25519_pub_array, null);
-
       case OpenSshCertificateAwareIdentityFile.SSH_ED448_CERT_V01_AT_OPENSSH_DOT_COM:
         byte[] ed448_pub_array = new byte[buffer.getInt()];
         buffer.getByte(ed448_pub_array);

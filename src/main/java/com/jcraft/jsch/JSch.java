@@ -26,6 +26,7 @@
 
 package com.jcraft.jsch;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Collections;
@@ -38,6 +39,8 @@ import java.util.Vector;
 public class JSch {
   /** The version number. */
   public static final String VERSION = Version.getVersion();
+
+  private static final String CERTIFICATE_FILENAME_SUFFIX = "-cert.pub";
 
   static Hashtable<String, String> config = new Hashtable<>();
 
@@ -497,18 +500,34 @@ public class JSch {
    */
   public void addIdentity(String prvkey, String pubkey, byte[] passphrase) throws JSchException {
     byte[] pubkeyFileContent = null;
+    String pubkeyFile = pubkey;
     Identity identity;
 
-    if (pubkey != null) {
-      try {
-        pubkeyFileContent = Util.fromFile(pubkey);
-      } catch (IOException e) {
-        throw new JSchException(e.toString(), e);
+    // If pubkey is null, try to auto-discover certificate file (prvkey + "-cert.pub")
+    // This mimics KeyPair.load() behavior which tries prvkey + ".pub"
+    if (pubkeyFile == null) {
+      String certFile = prvkey + CERTIFICATE_FILENAME_SUFFIX;
+      if (new File(certFile).exists()) {
+        pubkeyFile = certFile;
       }
     }
+
+    if (pubkeyFile != null) {
+      try {
+        pubkeyFileContent = Util.fromFile(pubkeyFile);
+      } catch (IOException e) {
+        // Only throw if pubkey was explicitly provided (not auto-discovered)
+        // This matches KeyPair.load() behavior
+        if (pubkey != null) {
+          throw new JSchException(e.toString(), e);
+        }
+        // Otherwise, silently ignore and fall through to IdentityFile
+      }
+    }
+
     if (pubkeyFileContent != null
         && OpenSshCertificateAwareIdentityFile.isOpenSshCertificateFile(pubkeyFileContent)) {
-      identity = OpenSshCertificateAwareIdentityFile.newInstance(prvkey, pubkey, instLogger);
+      identity = OpenSshCertificateAwareIdentityFile.newInstance(prvkey, pubkeyFile, instLogger);
     } else {
       identity = IdentityFile.newInstance(prvkey, pubkey, instLogger);
     }

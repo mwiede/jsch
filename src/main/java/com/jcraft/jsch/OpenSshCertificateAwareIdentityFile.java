@@ -90,18 +90,7 @@ class OpenSshCertificateAwareIdentityFile implements Identity {
     String keyType = new String(keyTypeBytes, StandardCharsets.UTF_8);
 
     return isOpenSshCertificateKeyType(keyType);
-
-    /*
-     * switch(keyType){ case SSH_RSA_CERT_V01_AT_OPENSSH_DOT_COM: case
-     * SSH_DSS_CERT_V01_AT_OPENSSH_DOT_COM: case ECDSA_SHA2_NISTP256_CERT_V01_AT_OPENSSH_DOT_COM:
-     * case ECDSA_SHA2_NISTP384_CERT_V01_AT_OPENSSH_DOT_COM: case
-     * ECDSA_SHA2_NISTP521_CERT_V01_AT_OPENSSH_DOT_COM: case
-     * SSH_ED25519_CERT_V01_AT_OPENSSH_DOT_COM: case SSH_ED448_CERT_V01_AT_OPENSSH_DOT_COM: return
-     * true; default: return false; }
-     */
   }
-
-
 
   /**
    * Determines if the given key type represents an OpenSSH certificate.

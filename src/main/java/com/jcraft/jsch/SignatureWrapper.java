@@ -36,7 +36,7 @@ class SignatureWrapper implements Signature {
       // Session.getConfig(algorithm)
       this.signature = Class.forName(session.getConfig(algorithm)).asSubclass(Signature.class)
           .getDeclaredConstructor().newInstance();
-    } catch (Exception e) {
+    } catch (Exception | LinkageError e) {
       throw new JSchException("Failed to instantiate signature for algorithm '" + algorithm + "'",
           e);
     }
@@ -65,16 +65,16 @@ class SignatureWrapper implements Signature {
    * Generates a validator for the public key parameters.
    *
    * @param algorithm the algorithm name, used for error messages.
-   * @param expectedParametersNo the exact number of byte arrays expected for the public key.
+   * @param expectedNumParams the exact number of byte arrays expected for the public key.
    * @return a {@link PubKeyParameterValidator} instance.
    * @throws JSchException if the number of provided parameters does not match the expected count.
    */
-  private static PubKeyParameterValidator generateValidator(String algorithm,
-      int expectedParametersNo) throws JSchException {
+  private static PubKeyParameterValidator generateValidator(String algorithm, int expectedNumParams)
+      throws JSchException {
     return (byte[][] params) -> {
-      if (params.length != expectedParametersNo) {
+      if (params.length != expectedNumParams) {
         throw new JSchException("wrong number of arguments:" + algorithm + " signatures expects "
-            + expectedParametersNo + " parameters, found " + params.length);
+            + expectedNumParams + " parameters, found " + params.length);
       }
     };
   }
