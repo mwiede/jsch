@@ -806,6 +806,19 @@ public class Session {
         getLogger().log(Logger.DEBUG,
             "server_host_key proposal after removing unavailable algos is: " + server_host_key);
       }
+
+      // Also filter out certificate types for unavailable base algorithms
+      server_host_key =
+          OpenSshCertificateUtil.filterUnavailableCertTypes(server_host_key, not_available_shks);
+      if (server_host_key == null) {
+        throw new JSchException("There are not any available sig algorithm.");
+      }
+
+      if (getLogger().isEnabled(Logger.DEBUG)) {
+        getLogger().log(Logger.DEBUG,
+            "server_host_key proposal after removing unavailable cert algos is: "
+                + server_host_key);
+      }
     }
 
     String prefer_hkr = getConfig("prefer_known_host_key_types");
@@ -928,22 +941,47 @@ public class Session {
     }
   }
 
-  private void checkHost(String chost, int port, KeyExchange kex) throws JSchException {
-    String shkc = getConfig("StrictHostKeyChecking");
+  private void checkHost(String chost, int port, KeyExchange kex) throws Exception {
+    OpenSshCertificate certificate = kex.getHostKeyCertificate();
+    if (certificate != null) {
+      try {
+        OpenSshCertificateHostKeyVerifier.checkHostCertificate(this, certificate);
+        return;
+      } catch (JSchException e) {
+        if (getConfig("HostCertificateToKeyFallback").equals("no")) {
+          throw e;
+        }
+        byte[] K_S = certificate.getCertificatePublicKey();
+        String key_type = kex.getKeyType();
+        String key_footprint = kex.getFingerPrint();
+        String keyAlgorithmName = kex.getKeyAlgorithName();
+        doCheckHostKey(chost, key_type, key_footprint, keyAlgorithmName, K_S);
+      }
+    }
+    checkHostKey(chost, port, kex);
+  }
 
+  private void checkHostKey(String chost, int port, KeyExchange kex) throws JSchException {
     if (hostKeyAlias != null) {
       chost = hostKeyAlias;
     }
-
     // System.err.println("shkc: "+shkc);
-
     byte[] K_S = kex.getHostKey();
     String key_type = kex.getKeyType();
     String key_fprint = kex.getFingerPrint();
+    String keyAlgorithmName = kex.getKeyAlgorithName();
+
+    doCheckHostKey(chost, key_type, key_fprint, keyAlgorithmName, K_S);
+  }
+
+  private void doCheckHostKey(String chost, String key_type, String key_fprint,
+      String keyAlgorithmName, byte[] K_S) throws JSchException {
 
     if (hostKeyAlias == null && port != 22) {
       chost = ("[" + chost + "]:" + port);
     }
+
+    String shkc = getConfig("StrictHostKeyChecking");
 
     HostKeyRepository hkr = getHostKeyRepository();
 
@@ -993,7 +1031,7 @@ public class Session {
       }
 
       synchronized (hkr) {
-        hkr.remove(chost, kex.getKeyAlgorithName(), null);
+        hkr.remove(chost, keyAlgorithmName, null);
         insert = true;
       }
     }
@@ -1025,7 +1063,7 @@ public class Session {
     }
 
     if (i == HostKeyRepository.OK) {
-      HostKey[] keys = hkr.getHostKey(chost, kex.getKeyAlgorithName());
+      HostKey[] keys = hkr.getHostKey(chost, keyAlgorithmName);
       String _key = Util.byte2str(Util.toBase64(K_S, 0, K_S.length, true));
       for (int j = 0; j < keys.length; j++) {
         if (keys[j].getKey().equals(_key) && keys[j].getMarker().equals("@revoked")) {
@@ -1167,11 +1205,15 @@ public class Session {
   }
 
   Buffer read(Buffer buf) throws Exception {
+    // determine which encryption and authentication mode is currently active
+    // for the server-to-client (s2c) connection
     int j = 0;
     boolean isChaCha20 = (s2ccipher != null && s2ccipher.isChaCha20());
     boolean isAEAD = (s2ccipher != null && s2ccipher.isAEAD());
     boolean isEtM =
         (!isChaCha20 && !isAEAD && s2ccipher != null && s2cmac != null && s2cmac.isEtM());
+
+    // Decrypting
     while (true) {
       buf.reset();
       if (isChaCha20) {
@@ -1265,17 +1307,23 @@ public class Session {
           s2ccipher.update(buf.buffer, 4, j, buf.buffer, 4);
         }
       } else {
+        // fall back to the older Encrypt-and-MAC mode.
         io.getByte(buf.buffer, buf.index, s2ccipher_size);
         buf.index += s2ccipher_size;
         if (s2ccipher != null) {
           s2ccipher.update(buf.buffer, 0, s2ccipher_size, buf.buffer, 0);
         }
+
+        // calculating length of the incoming packet
         j = ((buf.buffer[0] << 24) & 0xff000000) | ((buf.buffer[1] << 16) & 0x00ff0000)
             | ((buf.buffer[2] << 8) & 0x0000ff00) | ((buf.buffer[3]) & 0x000000ff);
         // RFC 4253 6.1. Maximum Packet Length
         if (j < 5 || j > PACKET_MAX_SIZE) {
           start_discard(buf, s2ccipher, s2cmac, 0, PACKET_MAX_SIZE);
         }
+
+        // calculates how many more bytes need to be read from the buffer to get the rest of the
+        // encrypted SSH packet
         int need = j + 4 - s2ccipher_size;
         // if(need<0){
         // throw new IOException("invalid data");
@@ -2251,7 +2299,6 @@ public class Session {
     this.threadFactory = Objects.requireNonNull(threadFactory);
   }
 
-
   /**
    * Returns the thread factory used by this instance.
    *
@@ -2436,6 +2483,7 @@ public class Session {
   }
 
   // TODO: This method should return the integer value as the assigned port.
+
   /**
    * Registers the remote port forwarding. If <code>bind_address</code> is an empty string or
    * <code>"*"</code>, the port should be available from all interfaces. If
