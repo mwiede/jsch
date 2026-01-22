@@ -69,6 +69,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <skipITs>true</skipITs>
+        <releaseParallelPut>false</releaseParallelPut>
         <junixsocket.version>2.10.1</junixsocket.version>
         <jna.version>5.18.1</jna.version>
         <log4j.version>2.25.3</log4j.version>
@@ -605,6 +606,8 @@
                 <configuration>
                     <useReleaseProfile>false</useReleaseProfile>
                     <releaseProfiles>release</releaseProfiles>
+                    <!-- https://github.com/sonatype/nexus-public/issues/885 -->
+                    <arguments>-Daether.connector.basic.parallelPut=${releaseParallelPut}</arguments>
                 </configuration>
             </plugin>
             <plugin>
