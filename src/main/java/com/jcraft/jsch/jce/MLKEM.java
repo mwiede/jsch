@@ -26,9 +26,24 @@
 
 package com.jcraft.jsch.jce;
 
-public class SignatureEd448 extends SignatureEdDSA {
+abstract class MLKEM implements com.jcraft.jsch.KEM {
 
-  public SignatureEd448() {
-    throw new UnsupportedOperationException("SignatureEd448 requires Java15+.");
+  MLKEM() {
+    throw new UnsupportedOperationException("MLKEM requires Java24+.");
+  }
+
+  @Override
+  public void init() throws Exception {
+    throw new UnsupportedOperationException("MLKEM requires Java24+.");
+  }
+
+  @Override
+  public byte[] getPublicKey() throws Exception {
+    throw new UnsupportedOperationException("MLKEM requires Java24+.");
+  }
+
+  @Override
+  public byte[] decapsulate(byte[] encapsulation) throws Exception {
+    throw new UnsupportedOperationException("MLKEM requires Java24+.");
   }
 }
