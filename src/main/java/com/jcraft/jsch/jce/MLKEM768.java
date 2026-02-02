@@ -26,26 +26,9 @@
 
 package com.jcraft.jsch.jce;
 
-import com.jcraft.jsch.KEM;
-
-public class MLKEM768 implements KEM {
+public class MLKEM768 extends MLKEM {
 
   public MLKEM768() {
-    throw new UnsupportedOperationException("MLKEM768 requires Java24+.");
-  }
-
-  @Override
-  public void init() throws Exception {
-    throw new UnsupportedOperationException("MLKEM768 requires Java24+.");
-  }
-
-  @Override
-  public byte[] getPublicKey() throws Exception {
-    throw new UnsupportedOperationException("MLKEM768 requires Java24+.");
-  }
-
-  @Override
-  public byte[] decapsulate(byte[] encapsulation) throws Exception {
     throw new UnsupportedOperationException("MLKEM768 requires Java24+.");
   }
 }

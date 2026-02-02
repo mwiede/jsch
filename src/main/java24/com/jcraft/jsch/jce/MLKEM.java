@@ -36,9 +36,9 @@ import java.util.List;
 import javax.crypto.KEM;
 
 abstract class MLKEM implements com.jcraft.jsch.KEM {
-  protected NamedParameterSpec params;
-  protected byte[] algorithmIdentifier;
-  protected int publicKeyLen;
+  NamedParameterSpec params;
+  byte[] algorithmIdentifier;
+  int publicKeyLen;
   KEM.Decapsulator decapsulator;
   byte[] publicKey;
 

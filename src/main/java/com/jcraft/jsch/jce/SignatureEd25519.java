@@ -26,41 +26,9 @@
 
 package com.jcraft.jsch.jce;
 
-import com.jcraft.jsch.SignatureEdDSA;
-
-public class SignatureEd25519 implements SignatureEdDSA {
+public class SignatureEd25519 extends SignatureEdDSA {
 
   public SignatureEd25519() {
-    throw new UnsupportedOperationException("SignatureEd25519 requires Java15+.");
-  }
-
-  @Override
-  public void init() throws Exception {
-    throw new UnsupportedOperationException("SignatureEd25519 requires Java15+.");
-  }
-
-  @Override
-  public void setPubKey(byte[] y_arr) throws Exception {
-    throw new UnsupportedOperationException("SignatureEd25519 requires Java15+.");
-  }
-
-  @Override
-  public void setPrvKey(byte[] bytes) throws Exception {
-    throw new UnsupportedOperationException("SignatureEd25519 requires Java15+.");
-  }
-
-  @Override
-  public byte[] sign() throws Exception {
-    throw new UnsupportedOperationException("SignatureEd25519 requires Java15+.");
-  }
-
-  @Override
-  public void update(byte[] foo) throws Exception {
-    throw new UnsupportedOperationException("SignatureEd25519 requires Java15+.");
-  }
-
-  @Override
-  public boolean verify(byte[] sig) throws Exception {
     throw new UnsupportedOperationException("SignatureEd25519 requires Java15+.");
   }
 }
