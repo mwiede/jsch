@@ -674,7 +674,7 @@ public class Session {
     return false;
   }
 
-  private boolean checkServerExtInfo() {
+  boolean checkServerExtInfo() {
     Buffer sb = new Buffer(I_S);
     sb.setOffSet(17);
     byte[] sp = sb.getString(); // server proposal
@@ -684,8 +684,11 @@ public class Session {
     while (l < sp.length) {
       while (l < sp.length && sp[l] != ',')
         l++;
-      if (m == l)
+      if (m == l) {
+        l++;
+        m = l;
         continue;
+      }
       if ("ext-info-s".equals(Util.byte2str(sp, m, l - m))) {
         return true;
       }
