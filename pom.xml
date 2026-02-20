@@ -272,6 +272,41 @@
                 </executions>
             </plugin>
             <plugin>
+                <groupId>net.codecrete.windows-api</groupId>
+                <artifactId>windowsapi-maven-plugin</artifactId>
+                <version>0.8.4</version>
+                <configuration>
+                    <sourceDirectory>.</sourceDirectory>
+                    <basePackage>com.jcraft.jsch.windowsapi</basePackage>
+                    <addAsSourceRoot>false</addAsSourceRoot>
+                    <functions>
+                        <function>CloseHandle</function>
+                        <function>CreateFileMappingA</function>
+                        <function>FindWindowA</function>
+                        <function>GetCurrentProcessId</function>
+                        <function>MapViewOfFile</function>
+                        <function>SendMessageA</function>
+                        <function>UnmapViewOfFile</function>
+                    </functions>
+                    <structs>
+                        <struct>COPYDATASTRUCT</struct>
+                    </structs>
+                    <enumerations>
+                        <enumeration>FILE_MAP</enumeration>
+                        <enumeration>PAGE_PROTECTION_FLAGS</enumeration>
+                    </enumerations>
+                    <constants>
+                        <constant>INVALID_HANDLE_VALUE</constant>
+                        <constant>WM_COPYDATA</constant>
+                    </constants>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>software.xdev</groupId>
+                <artifactId>find-and-replace-maven-plugin</artifactId>
+                <version>1.0.5</version>
+            </plugin>
+            <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-toolchains-plugin</artifactId>
                 <version>3.2.0</version>
@@ -432,6 +467,23 @@
                         </configuration>
                     </execution>
                     <execution>
+                        <id>default-compile-23</id>
+                        <goals>
+                            <goal>compile</goal>
+                        </goals>
+                        <configuration>
+                            <compileSourceRoots>
+                                <compileSourceRoot>${project.basedir}/src/main/java23</compileSourceRoot>
+                                <compileSourceRoot>${project.build.directory}/generated-sources/windows-api</compileSourceRoot>
+                            </compileSourceRoots>
+                            <multiReleaseOutput>true</multiReleaseOutput>
+                            <release>23</release>
+                            <compilerArgs>
+                                <arg>-Xlint:all,-processing,-classfile,-options,-restricted</arg>
+                            </compilerArgs>
+                        </configuration>
+                    </execution>
+                    <execution>
                         <id>default-compile-24</id>
                         <goals>
                             <goal>compile</goal>
@@ -572,8 +624,8 @@
                     <quiet>true</quiet>
                     <doclint>none</doclint>
                     <subpackages>com.jcraft.jsch</subpackages>
-                    <excludePackageNames>com.jcraft.jsch.*</excludePackageNames>
-                    <sourcepath>${project.build.sourceDirectory}:${project.build.directory}/generated-sources/java-templates:${project.basedir}/src/main/java9:${project.basedir}/src/main/java10:${project.basedir}/src/main/java11:${project.basedir}/src/main/java15:${project.basedir}/src/main/java16:${project.basedir}/src/main/java19:${project.basedir}/src/main/java24</sourcepath>
+                    <excludePackageNames>com.jcraft.jsch.*,com.jcraft.jsch.windowsapi.windows.win32.*,com.jcraft.jsch.windowsapi.windows.win32.system.*,com.jcraft.jsch.windowsapi.windows.win32.ui.*</excludePackageNames>
+                    <sourcepath>${project.build.sourceDirectory}:${project.build.directory}/generated-sources/java-templates:${project.basedir}/src/main/java9:${project.basedir}/src/main/java10:${project.basedir}/src/main/java11:${project.basedir}/src/main/java15:${project.basedir}/src/main/java16:${project.basedir}/src/main/java19:${project.basedir}/src/main/java23:${project.build.directory}/generated-sources/windows-api:${project.basedir}/src/main/java24</sourcepath>
                 </configuration>
                 <executions>
                     <execution>
@@ -672,6 +724,7 @@
                         <sourceDirectory>${project.basedir}/src/main/java15</sourceDirectory>
                         <sourceDirectory>${project.basedir}/src/main/java16</sourceDirectory>
                         <sourceDirectory>${project.basedir}/src/main/java19</sourceDirectory>
+                        <sourceDirectory>${project.basedir}/src/main/java23</sourceDirectory>
                         <sourceDirectory>${project.basedir}/src/main/java24</sourceDirectory>
                         <sourceDirectory>${project.basedir}/src/main/java-templates</sourceDirectory>
                     </sourceDirectories>
@@ -694,6 +747,7 @@
                         <directory>${project.basedir}/src/main/java15</directory>
                         <directory>${project.basedir}/src/main/java16</directory>
                         <directory>${project.basedir}/src/main/java19</directory>
+                        <directory>${project.basedir}/src/main/java23</directory>
                         <directory>${project.basedir}/src/main/java24</directory>
                         <directory>${project.basedir}/src/main/java-templates</directory>
                     </directories>
@@ -708,6 +762,7 @@
                         <exclude>com/jcraft/jsch/JavaThreadId.class</exclude>
                         <exclude>com/jcraft/jsch/JavaVersion.class</exclude>
                         <exclude>com/jcraft/jsch/JplLogger.class</exclude>
+                        <exclude>com/jcraft/jsch/PageantFFMConnector.class</exclude>
                         <exclude>com/jcraft/jsch/UnixDomainSocketFactory.class</exclude>
                         <exclude>com/jcraft/jsch/jce/KeyPairGenEdDSA.class</exclude>
                         <exclude>com/jcraft/jsch/jce/MLKEM.class</exclude>
@@ -998,6 +1053,65 @@
                                 <goals>
                                     <goal>createSPDX</goal>
                                 </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <profile>
+            <id>windowsapi</id>
+            <activation>
+                <property>
+                    <name>windowsapi.skip</name>
+                    <value>!true</value>
+                </property>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>net.codecrete.windows-api</groupId>
+                        <artifactId>windowsapi-maven-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <goals>
+                                    <goal>windows-api</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <!-- see https://github.com/manuelbl/WindowsApiGenerator/issues/7 -->
+                    <plugin>
+                        <groupId>software.xdev</groupId>
+                        <artifactId>find-and-replace-maven-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>fix-mapviewoffile-signature</id>
+                                <phase>process-sources</phase>
+                                <goals>
+                                    <goal>file-contents</goal>
+                                </goals>
+                                <configuration>
+                                    <baseDir>${project.build.directory}/generated-sources/windows-api/com/jcraft/jsch/windowsapi/windows/win32/system/memory/</baseDir>
+                                    <fileMask>Apis.java</fileMask>
+                                    <encoding>UTF-8</encoding>
+                                    <findRegex>MapViewOfFile\(MemorySegment lastErrorState</findRegex>
+                                    <replaceValue>MapViewOfFile(SegmentAllocator allocator, MemorySegment lastErrorState</replaceValue>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>fix-mapviewoffile-downcall</id>
+                                <phase>process-sources</phase>
+                                <goals>
+                                    <goal>file-contents</goal>
+                                </goals>
+                                <configuration>
+                                    <baseDir>${project.build.directory}/generated-sources/windows-api/com/jcraft/jsch/windowsapi/windows/win32/system/memory/</baseDir>
+                                    <fileMask>Apis.java</fileMask>
+                                    <encoding>UTF-8</encoding>
+                                    <findRegex>MapViewOfFile\$IMPL\.HANDLE\.invokeExact\(lastErrorState</findRegex>
+                                    <replaceValue>MapViewOfFile\$IMPL.HANDLE.invokeExact(allocator, lastErrorState</replaceValue>
+                                </configuration>
                             </execution>
                         </executions>
                     </plugin>
