@@ -85,7 +85,7 @@ jobs:
       run: |
         LOWER_JDK="${{ matrix.java }}"
         UPPER_JDK=$((LOWER_JDK+1))
-        ./mvnw -B -V -e -Pcoverage verify -Dtoolchain.jdk.version="[$LOWER_JDK,$UPPER_JDK)" -Dmaven.resources.skip=true -Dflatten.skip=true -Dmaven.main.skip=true -Dbnd.skip=true -Dassembly.skipAssembly=true -Dmaven.javadoc.skip=true -Dcyclonedx.skip=true -Dspdx.skip=true -Dformatter.skip=true -Dforbiddenapis.skip=true -DskipTests=false -DskipITs=false
+        ./mvnw -B -V -e -Pcoverage verify -Dtoolchain.jdk.version="[$LOWER_JDK,$UPPER_JDK)" -Dwindowsapi.skip=true -Dmaven.resources.skip=true -Dflatten.skip=true -Dmaven.main.skip=true -Dbnd.skip=true -Dassembly.skipAssembly=true -Dmaven.javadoc.skip=true -Dcyclonedx.skip=true -Dspdx.skip=true -Dformatter.skip=true -Dforbiddenapis.skip=true -DskipTests=false -DskipITs=false
     - name: Upload test results
       uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
       with:
