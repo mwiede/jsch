@@ -85,8 +85,8 @@ public class PageantConnector implements AgentConnector {
       throw new AgentProxyException("Pageant is not runnning.");
     }
 
-    String mapname =
-        String.format(Locale.ROOT, "PageantRequest%08x", kernel32.GetCurrentThreadId());
+    String mapname = String.format(Locale.ROOT, "JSchPageantRequest%08x%08x",
+        kernel32.GetCurrentProcessId(), JavaThreadId.get());
 
     HANDLE sharedFile = null;
     Pointer sharedMemory = null;
