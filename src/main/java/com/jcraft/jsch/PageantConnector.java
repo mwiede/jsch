@@ -98,7 +98,7 @@ public class PageantConnector implements AgentConnector {
       sharedFile = kernel32.CreateFileMapping(WinBase.INVALID_HANDLE_VALUE, psa,
           WinNT.PAGE_READWRITE, 0, AGENT_MAX_MSGLEN, mapname);
       int lastError = kernel32.GetLastError();
-      if (sharedFile == null || sharedFile == WinBase.INVALID_HANDLE_VALUE) {
+      if (sharedFile == null) {
         throw new AgentProxyException(
             "Unable to create shared file mapping: GetLastError() = " + lastError);
       }
@@ -136,7 +136,7 @@ public class PageantConnector implements AgentConnector {
     } finally {
       if (sharedMemory != null)
         kernel32.UnmapViewOfFile(sharedMemory);
-      if (sharedFile != null && sharedFile != WinBase.INVALID_HANDLE_VALUE)
+      if (sharedFile != null)
         kernel32.CloseHandle(sharedFile);
     }
   }
