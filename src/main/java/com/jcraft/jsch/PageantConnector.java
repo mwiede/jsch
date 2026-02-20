@@ -129,7 +129,7 @@ public class PageantConnector implements AgentConnector {
     } finally {
       if (sharedMemory != null)
         kernel32.UnmapViewOfFile(sharedMemory);
-      if (sharedFile != null)
+      if (sharedFile != null && sharedFile != WinBase.INVALID_HANDLE_VALUE)
         kernel32.CloseHandle(sharedFile);
     }
   }
