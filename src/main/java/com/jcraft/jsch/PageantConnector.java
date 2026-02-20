@@ -100,7 +100,7 @@ public class PageantConnector implements AgentConnector {
         throw new AgentProxyException("Unable to create shared file mapping.");
       }
 
-      sharedMemory = kernel32.MapViewOfFile(sharedFile, WinNT.SECTION_MAP_WRITE, 0, 0, 0);
+      sharedMemory = kernel32.MapViewOfFile(sharedFile, WinBase.FILE_MAP_WRITE, 0, 0, 0);
       if (sharedMemory == null) {
         throw new AgentProxyException("Unable to create shared file mapping.");
       }
