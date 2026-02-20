@@ -36,6 +36,7 @@ import com.sun.jna.platform.win32.WinBase.SECURITY_ATTRIBUTES;
 import com.sun.jna.platform.win32.WinDef.HWND;
 import com.sun.jna.platform.win32.WinDef.LPARAM;
 import com.sun.jna.platform.win32.WinDef.LRESULT;
+import com.sun.jna.platform.win32.WinError;
 import com.sun.jna.platform.win32.WinNT;
 import com.sun.jna.platform.win32.WinNT.HANDLE;
 import com.sun.jna.platform.win32.WinUser;
@@ -96,9 +97,13 @@ public class PageantConnector implements AgentConnector {
 
       sharedFile = kernel32.CreateFileMapping(WinBase.INVALID_HANDLE_VALUE, psa,
           WinNT.PAGE_READWRITE, 0, AGENT_MAX_MSGLEN, mapname);
+      int lastError = kernel32.GetLastError();
       if (sharedFile == null || sharedFile == WinBase.INVALID_HANDLE_VALUE) {
         throw new AgentProxyException(
-            "Unable to create shared file mapping: GetLastError() = " + kernel32.GetLastError());
+            "Unable to create shared file mapping: GetLastError() = " + lastError);
+      }
+      if (lastError == WinError.ERROR_ALREADY_EXISTS) {
+        throw new AgentProxyException("Shared file mapping already exists");
       }
 
       sharedMemory = kernel32.MapViewOfFile(sharedFile, WinBase.FILE_MAP_WRITE, 0, 0, 0);

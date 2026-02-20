@@ -26,6 +26,7 @@
 
 package com.jcraft.jsch;
 
+import com.jcraft.jsch.windowsapi.windows.win32.foundation.WIN32_ERROR;
 import com.jcraft.jsch.windowsapi.windows.win32.system.dataexchange.COPYDATASTRUCT;
 import com.jcraft.jsch.windowsapi.windows.win32.system.memory.FILE_MAP;
 import com.jcraft.jsch.windowsapi.windows.win32.system.memory.MEMORY_MAPPED_VIEW_ADDRESS;
@@ -122,9 +123,13 @@ public class PageantFFMConnector implements AgentConnector {
 
         sharedFile = CreateFileMappingA(errorState, INVALID_HANDLE_VALUE, psa,
             PAGE_PROTECTION_FLAGS.PAGE_READWRITE, 0, AGENT_MAX_MSGLEN, mapname);
+        int lastError = (int) getLastErrorVarHandle.get(errorState, 0);
         if (sharedFile.equals(MemorySegment.NULL) || sharedFile.equals(INVALID_HANDLE_VALUE)) {
-          throw new AgentProxyException("Unable to create shared file mapping: GetLastError() = "
-              + (int) getLastErrorVarHandle.get(errorState, 0));
+          throw new AgentProxyException(
+              "Unable to create shared file mapping: GetLastError() = " + lastError);
+        }
+        if (lastError == WIN32_ERROR.ERROR_ALREADY_EXISTS) {
+          throw new AgentProxyException("Shared file mapping already exists");
         }
 
         mmva = MapViewOfFile(arena, errorState, sharedFile, FILE_MAP.WRITE, 0, 0, 0);
