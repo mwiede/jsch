@@ -70,6 +70,20 @@
       </includes>
     </fileSet>
     <fileSet>
+      <directory>${project.basedir}/src/main/java23</directory>
+      <outputDirectory>META-INF/versions/23</outputDirectory>
+      <includes>
+        <include>**/*.java</include>
+      </includes>
+    </fileSet>
+    <fileSet>
+      <directory>${project.build.directory}/generated-sources/windows-api</directory>
+      <outputDirectory>META-INF/versions/23</outputDirectory>
+      <includes>
+        <include>**/*.java</include>
+      </includes>
+    </fileSet>
+    <fileSet>
       <directory>${project.basedir}/src/main/java24</directory>
       <outputDirectory>META-INF/versions/24</outputDirectory>
       <includes>
