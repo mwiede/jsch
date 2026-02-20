@@ -419,6 +419,19 @@
                         </configuration>
                     </execution>
                     <execution>
+                        <id>default-compile-19</id>
+                        <goals>
+                            <goal>compile</goal>
+                        </goals>
+                        <configuration>
+                            <compileSourceRoots>
+                                <compileSourceRoot>${project.basedir}/src/main/java19</compileSourceRoot>
+                            </compileSourceRoots>
+                            <multiReleaseOutput>true</multiReleaseOutput>
+                            <release>19</release>
+                        </configuration>
+                    </execution>
+                    <execution>
                         <id>default-compile-24</id>
                         <goals>
                             <goal>compile</goal>
@@ -560,7 +573,7 @@
                     <doclint>none</doclint>
                     <subpackages>com.jcraft.jsch</subpackages>
                     <excludePackageNames>com.jcraft.jsch.*</excludePackageNames>
-                    <sourcepath>${project.build.sourceDirectory}:${project.build.directory}/generated-sources/java-templates:${project.basedir}/src/main/java9:${project.basedir}/src/main/java10:${project.basedir}/src/main/java11:${project.basedir}/src/main/java15:${project.basedir}/src/main/java16:${project.basedir}/src/main/java24</sourcepath>
+                    <sourcepath>${project.build.sourceDirectory}:${project.build.directory}/generated-sources/java-templates:${project.basedir}/src/main/java9:${project.basedir}/src/main/java10:${project.basedir}/src/main/java11:${project.basedir}/src/main/java15:${project.basedir}/src/main/java16:${project.basedir}/src/main/java19:${project.basedir}/src/main/java24</sourcepath>
                 </configuration>
                 <executions>
                     <execution>
@@ -658,6 +671,7 @@
                         <sourceDirectory>${project.basedir}/src/main/java11</sourceDirectory>
                         <sourceDirectory>${project.basedir}/src/main/java15</sourceDirectory>
                         <sourceDirectory>${project.basedir}/src/main/java16</sourceDirectory>
+                        <sourceDirectory>${project.basedir}/src/main/java19</sourceDirectory>
                         <sourceDirectory>${project.basedir}/src/main/java24</sourceDirectory>
                         <sourceDirectory>${project.basedir}/src/main/java-templates</sourceDirectory>
                     </sourceDirectories>
@@ -679,6 +693,7 @@
                         <directory>${project.basedir}/src/main/java11</directory>
                         <directory>${project.basedir}/src/main/java15</directory>
                         <directory>${project.basedir}/src/main/java16</directory>
+                        <directory>${project.basedir}/src/main/java19</directory>
                         <directory>${project.basedir}/src/main/java24</directory>
                         <directory>${project.basedir}/src/main/java-templates</directory>
                     </directories>
@@ -690,6 +705,7 @@
                 <version>0.8.14</version>
                 <configuration>
                     <excludes>
+                        <exclude>com/jcraft/jsch/JavaThreadId.class</exclude>
                         <exclude>com/jcraft/jsch/JavaVersion.class</exclude>
                         <exclude>com/jcraft/jsch/JplLogger.class</exclude>
                         <exclude>com/jcraft/jsch/UnixDomainSocketFactory.class</exclude>
@@ -703,6 +719,7 @@
                         <exclude>com/jcraft/jsch/jce/XDH.class</exclude>
                         <exclude>META-INF/versions/9/com/jcraft/jsch/JavaVersion.class</exclude>
                         <exclude>META-INF/versions/10/com/jcraft/jsch/JavaVersion.class</exclude>
+                        <exclude>META-INF/versions/19/com/jcraft/jsch/JavaThreadId.class</exclude>
                     </excludes>
                 </configuration>
             </plugin>
