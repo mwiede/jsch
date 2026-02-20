@@ -284,6 +284,7 @@
                         <function>CreateFileMappingA</function>
                         <function>FindWindowA</function>
                         <function>GetCurrentProcessId</function>
+                        <function>GetCurrentThreadId</function>
                         <function>MapViewOfFile</function>
                         <function>SendMessageA</function>
                         <function>UnmapViewOfFile</function>
