@@ -46,6 +46,7 @@ import static com.jcraft.jsch.windowsapi.windows.win32.system.memory.Apis.Create
 import static com.jcraft.jsch.windowsapi.windows.win32.system.memory.Apis.MapViewOfFile;
 import static com.jcraft.jsch.windowsapi.windows.win32.system.memory.Apis.UnmapViewOfFile;
 import static com.jcraft.jsch.windowsapi.windows.win32.system.threading.Apis.GetCurrentProcessId;
+import static com.jcraft.jsch.windowsapi.windows.win32.system.threading.Apis.GetCurrentThreadId;
 import static com.jcraft.jsch.windowsapi.windows.win32.ui.windowsandmessaging.Apis.FindWindowA;
 import static com.jcraft.jsch.windowsapi.windows.win32.ui.windowsandmessaging.Apis.SendMessageA;
 import static com.jcraft.jsch.windowsapi.windows.win32.ui.windowsandmessaging.Constants.WM_COPYDATA;
@@ -113,9 +114,11 @@ public class PageantFFMConnector implements AgentConnector {
         throw new AgentProxyException("Pageant is not runnning.");
       }
 
+      String threadId = JavaVersion.getVersion() >= 19
+          ? String.format(Locale.ROOT, "%08x%08x", GetCurrentProcessId(), JavaThreadId.get())
+          : String.format(Locale.ROOT, "%08x", GetCurrentThreadId());
       MemorySegment mapname =
-          arena.allocateFrom(String.format(Locale.ROOT, "JSchPageantRequest%08x%08x",
-              GetCurrentProcessId(), JavaThreadId.get()), StandardCharsets.US_ASCII);
+          arena.allocateFrom("JSchPageantRequest" + threadId, StandardCharsets.US_ASCII);
 
       try {
         // TODO
