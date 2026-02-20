@@ -97,12 +97,14 @@ public class PageantConnector implements AgentConnector {
       sharedFile = kernel32.CreateFileMapping(WinBase.INVALID_HANDLE_VALUE, psa,
           WinNT.PAGE_READWRITE, 0, AGENT_MAX_MSGLEN, mapname);
       if (sharedFile == null || sharedFile == WinBase.INVALID_HANDLE_VALUE) {
-        throw new AgentProxyException("Unable to create shared file mapping.");
+        throw new AgentProxyException(
+            "Unable to create shared file mapping: GetLastError() = " + kernel32.GetLastError());
       }
 
       sharedMemory = kernel32.MapViewOfFile(sharedFile, WinBase.FILE_MAP_WRITE, 0, 0, 0);
       if (sharedMemory == null) {
-        throw new AgentProxyException("Unable to create shared file mapping.");
+        throw new AgentProxyException(
+            "Unable to create shared memory mapping: GetLastError() = " + kernel32.GetLastError());
       }
 
       sharedMemory.write(0, buffer.buffer, 0, buffer.getLength());
@@ -124,7 +126,7 @@ public class PageantConnector implements AgentConnector {
         sharedMemory.read(4, buffer.buffer, 0, i);
       } else {
         throw new AgentProxyException(
-            "User32.SendMessage() returned 0 with cds.dwData: " + Long.toHexString(foo));
+            "SendMessage() returned 0 with cds.dwData: " + Long.toHexString(foo));
       }
     } finally {
       if (sharedMemory != null)
