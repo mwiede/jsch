@@ -27,6 +27,12 @@
 package com.jcraft.jsch;
 
 import com.jcraft.jsch.windowsapi.windows.win32.foundation.WIN32_ERROR;
+import com.jcraft.jsch.windowsapi.windows.win32.security.SECURITY_ATTRIBUTES;
+import com.jcraft.jsch.windowsapi.windows.win32.security.SECURITY_DESCRIPTOR;
+import com.jcraft.jsch.windowsapi.windows.win32.security.SID_AND_ATTRIBUTES;
+import com.jcraft.jsch.windowsapi.windows.win32.security.TOKEN_ACCESS_MASK;
+import com.jcraft.jsch.windowsapi.windows.win32.security.TOKEN_INFORMATION_CLASS;
+import com.jcraft.jsch.windowsapi.windows.win32.security.TOKEN_USER;
 import com.jcraft.jsch.windowsapi.windows.win32.system.dataexchange.COPYDATASTRUCT;
 import com.jcraft.jsch.windowsapi.windows.win32.system.memory.FILE_MAP;
 import com.jcraft.jsch.windowsapi.windows.win32.system.memory.MEMORY_MAPPED_VIEW_ADDRESS;
@@ -36,17 +42,28 @@ import java.lang.foreign.Linker;
 import java.lang.foreign.MemoryLayout;
 import java.lang.foreign.MemorySegment;
 import java.lang.foreign.StructLayout;
+import java.lang.foreign.ValueLayout;
 import java.lang.invoke.VarHandle;
 import java.nio.charset.StandardCharsets;
 import java.util.Locale;
 
 import static com.jcraft.jsch.windowsapi.windows.win32.foundation.Constants.INVALID_HANDLE_VALUE;
 import static com.jcraft.jsch.windowsapi.windows.win32.foundation.Apis.CloseHandle;
+import static com.jcraft.jsch.windowsapi.windows.win32.security.Apis.CopySid;
+import static com.jcraft.jsch.windowsapi.windows.win32.security.Apis.GetLengthSid;
+import static com.jcraft.jsch.windowsapi.windows.win32.security.Apis.GetTokenInformation;
+import static com.jcraft.jsch.windowsapi.windows.win32.security.Apis.InitializeSecurityDescriptor;
+import static com.jcraft.jsch.windowsapi.windows.win32.security.Apis.IsValidSid;
+import static com.jcraft.jsch.windowsapi.windows.win32.security.Apis.SetSecurityDescriptorOwner;
 import static com.jcraft.jsch.windowsapi.windows.win32.system.memory.Apis.CreateFileMappingA;
 import static com.jcraft.jsch.windowsapi.windows.win32.system.memory.Apis.MapViewOfFile;
 import static com.jcraft.jsch.windowsapi.windows.win32.system.memory.Apis.UnmapViewOfFile;
+import static com.jcraft.jsch.windowsapi.windows.win32.system.systemservices.Constants.MAXIMUM_ALLOWED;
+import static com.jcraft.jsch.windowsapi.windows.win32.system.systemservices.Constants.SECURITY_DESCRIPTOR_REVISION;
 import static com.jcraft.jsch.windowsapi.windows.win32.system.threading.Apis.GetCurrentProcessId;
 import static com.jcraft.jsch.windowsapi.windows.win32.system.threading.Apis.GetCurrentThreadId;
+import static com.jcraft.jsch.windowsapi.windows.win32.system.threading.Apis.OpenProcess;
+import static com.jcraft.jsch.windowsapi.windows.win32.system.threading.Apis.OpenProcessToken;
 import static com.jcraft.jsch.windowsapi.windows.win32.ui.windowsandmessaging.Apis.FindWindowA;
 import static com.jcraft.jsch.windowsapi.windows.win32.ui.windowsandmessaging.Apis.SendMessageA;
 import static com.jcraft.jsch.windowsapi.windows.win32.ui.windowsandmessaging.Constants.WM_COPYDATA;
@@ -71,6 +88,7 @@ public class PageantFFMConnector implements AgentConnector {
 
       // Force class initialization to catch UnsatisfiedLinkError
       Object foo = com.jcraft.jsch.windowsapi.windows.win32.foundation.Apis.CloseHandle$handle();
+      foo = com.jcraft.jsch.windowsapi.windows.win32.security.Apis.CopySid$handle();
       foo = com.jcraft.jsch.windowsapi.windows.win32.system.memory.Apis.CreateFileMappingA$handle();
       foo = com.jcraft.jsch.windowsapi.windows.win32.system.threading.Apis
           .GetCurrentProcessId$handle();
@@ -114,16 +132,28 @@ public class PageantFFMConnector implements AgentConnector {
         throw new AgentProxyException("Pageant is not runnning.");
       }
 
-      String threadId = JavaVersion.getVersion() >= 19
-          ? String.format(Locale.ROOT, "%08x%08x", GetCurrentProcessId(), JavaThreadId.get())
-          : String.format(Locale.ROOT, "%08x", GetCurrentThreadId());
+      MemorySegment usersid = getUserSid(arena, errorState);
+      MemorySegment psd = SECURITY_DESCRIPTOR.allocate(arena);
+      if (InitializeSecurityDescriptor(errorState, psd, SECURITY_DESCRIPTOR_REVISION) == 0) {
+        throw new AgentProxyException("Unable to InitializeSecurityDescriptor(): GetLastError() = "
+            + (int) getLastErrorVarHandle.get(errorState, 0));
+      }
+      if (SetSecurityDescriptorOwner(errorState, psd, usersid, 0) == 0) {
+        throw new AgentProxyException("Unable to SetSecurityDescriptorOwner(): GetLastError() = "
+            + (int) getLastErrorVarHandle.get(errorState, 0));
+      }
+
+      MemorySegment psa = SECURITY_ATTRIBUTES.allocate(arena);
+      SECURITY_ATTRIBUTES.nLength(psa, (int) SECURITY_ATTRIBUTES.sizeof());
+      SECURITY_ATTRIBUTES.bInheritHandle(psa, 1);
+      SECURITY_ATTRIBUTES.lpSecurityDescriptor(psa, psd);
+
+      String threadId = String.format(Locale.ROOT, "%08x%08x", GetCurrentProcessId(),
+          Thread.currentThread().threadId());
       MemorySegment mapname =
           arena.allocateFrom("JSchPageantRequest" + threadId, StandardCharsets.US_ASCII);
 
       try {
-        // TODO
-        MemorySegment psa = MemorySegment.NULL;
-
         sharedFile = CreateFileMappingA(errorState, INVALID_HANDLE_VALUE, psa,
             PAGE_PROTECTION_FLAGS.PAGE_READWRITE, 0, AGENT_MAX_MSGLEN, mapname);
         int lastError = (int) getLastErrorVarHandle.get(errorState, 0);
@@ -177,6 +207,75 @@ public class PageantFFMConnector implements AgentConnector {
           UnmapViewOfFile(errorState, mmva);
         if (!sharedFile.equals(MemorySegment.NULL))
           CloseHandle(errorState, sharedFile);
+      }
+    }
+  }
+
+  private MemorySegment getUserSid(Arena arena, MemorySegment errorState)
+      throws AgentProxyException {
+    MemorySegment proc = MemorySegment.NULL;
+    MemorySegment tok = MemorySegment.NULL;
+
+    try {
+      proc = OpenProcess(errorState, MAXIMUM_ALLOWED, 0, GetCurrentProcessId());
+      if (proc.equals(MemorySegment.NULL)) {
+        throw new AgentProxyException("Unable to OpenProcess(): GetLastError() = "
+            + (int) getLastErrorVarHandle.get(errorState, 0));
+      }
+
+      MemorySegment ptok = arena.allocate(ValueLayout.ADDRESS);
+      if (OpenProcessToken(errorState, proc, TOKEN_ACCESS_MASK.TOKEN_QUERY, ptok) == 0) {
+        throw new AgentProxyException("Unable to OpenProcessToken(): GetLastError() = "
+            + (int) getLastErrorVarHandle.get(errorState, 0));
+      }
+
+      tok = ptok.get(ValueLayout.ADDRESS, 0);
+      if (tok.equals(MemorySegment.NULL)) {
+        throw new AgentProxyException("ProcessToken is NULL");
+      }
+
+      MemorySegment ptoklen = arena.allocate(ValueLayout.JAVA_INT);
+      if (GetTokenInformation(errorState, tok, TOKEN_INFORMATION_CLASS.TokenUser,
+          MemorySegment.NULL, 0, ptoklen) == 0) {
+        int lastError = (int) getLastErrorVarHandle.get(errorState, 0);
+        if (lastError != WIN32_ERROR.ERROR_INSUFFICIENT_BUFFER) {
+          throw new AgentProxyException(
+              "Unable to GetTokenInformation() toklen: GetLastError() = " + lastError);
+        }
+      }
+
+      long toklen = ptoklen.get(ValueLayout.JAVA_INT, 0) & 0xffffffffL;
+      if (toklen < TOKEN_USER.sizeof()) {
+        throw new AgentProxyException(String.format(Locale.ROOT,
+            "toklen (%d) < sizeof(TOKEN_USER) (%d)", toklen, TOKEN_USER.sizeof()));
+      }
+
+      MemorySegment user = arena.allocate(toklen, ValueLayout.ADDRESS.byteAlignment());
+      if (GetTokenInformation(errorState, tok, TOKEN_INFORMATION_CLASS.TokenUser, user,
+          (int) toklen, ptoklen) == 0) {
+        throw new AgentProxyException("Unable to GetTokenInformation() user: GetLastError() = "
+            + (int) getLastErrorVarHandle.get(errorState, 0));
+      }
+
+      MemorySegment psid = SID_AND_ATTRIBUTES.Sid(TOKEN_USER.User(user));
+      if (IsValidSid(psid) == 0) {
+        throw new AgentProxyException("IsValidSid() failed");
+      }
+
+      long sidlen = GetLengthSid(psid) & 0xffffffffL;
+      MemorySegment usersid = arena.allocate(sidlen, ValueLayout.ADDRESS.byteAlignment());
+      if (CopySid(errorState, (int) sidlen, usersid, psid) == 0) {
+        throw new AgentProxyException("Unable to CopySid(): GetLastError() = "
+            + (int) getLastErrorVarHandle.get(errorState, 0));
+      }
+
+      return usersid;
+    } finally {
+      if (!tok.equals(MemorySegment.NULL)) {
+        CloseHandle(errorState, tok);
+      }
+      if (!proc.equals(MemorySegment.NULL)) {
+        CloseHandle(errorState, proc);
       }
     }
   }
