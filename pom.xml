@@ -281,23 +281,39 @@
                     <addAsSourceRoot>false</addAsSourceRoot>
                     <functions>
                         <function>CloseHandle</function>
+                        <function>CopySid</function>
                         <function>CreateFileMappingA</function>
                         <function>FindWindowA</function>
                         <function>GetCurrentProcessId</function>
                         <function>GetCurrentThreadId</function>
+                        <function>GetLengthSid</function>
+                        <function>GetTokenInformation</function>
+                        <function>InitializeSecurityDescriptor</function>
+                        <function>IsValidSid</function>
                         <function>MapViewOfFile</function>
+                        <function>OpenProcess</function>
+                        <function>OpenProcessToken</function>
                         <function>SendMessageA</function>
+                        <function>SetSecurityDescriptorOwner</function>
                         <function>UnmapViewOfFile</function>
                     </functions>
                     <structs>
                         <struct>COPYDATASTRUCT</struct>
+                        <struct>SECURITY_ATTRIBUTES</struct>
+                        <struct>SECURITY_DESCRIPTOR</struct>
+                        <struct>SID_AND_ATTRIBUTES</struct>
+                        <struct>TOKEN_USER</struct>
                     </structs>
                     <enumerations>
                         <enumeration>FILE_MAP</enumeration>
                         <enumeration>PAGE_PROTECTION_FLAGS</enumeration>
+                        <enumeration>TOKEN_ACCESS_MASK</enumeration>
+                        <enumeration>TOKEN_INFORMATION_CLASS</enumeration>
                     </enumerations>
                     <constants>
                         <constant>INVALID_HANDLE_VALUE</constant>
+                        <constant>MAXIMUM_ALLOWED</constant>
+                        <constant>SECURITY_DESCRIPTOR_REVISION</constant>
                         <constant>WM_COPYDATA</constant>
                     </constants>
                 </configuration>
