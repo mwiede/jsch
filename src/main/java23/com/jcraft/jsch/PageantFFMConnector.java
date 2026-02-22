@@ -159,7 +159,7 @@ public class PageantFFMConnector implements AgentConnector {
         int lastError = (int) getLastErrorVarHandle.get(errorState, 0);
         if (sharedFile.equals(MemorySegment.NULL)) {
           throw new AgentProxyException(
-              "Unable to create shared file mapping: GetLastError() = " + lastError);
+              "Unable to CreateFileMapping(): GetLastError() = " + lastError);
         }
         if (lastError == WIN32_ERROR.ERROR_ALREADY_EXISTS) {
           throw new AgentProxyException("Shared file mapping already exists");
@@ -168,7 +168,7 @@ public class PageantFFMConnector implements AgentConnector {
         mmva = MapViewOfFile(arena, errorState, sharedFile, FILE_MAP.WRITE, 0, 0, 0);
         sharedMemory = MEMORY_MAPPED_VIEW_ADDRESS.Value(mmva);
         if (sharedMemory.equals(MemorySegment.NULL)) {
-          throw new AgentProxyException("Unable to create shared memory mapping: GetLastError() = "
+          throw new AgentProxyException("Unable to MapViewOfFile(): GetLastError() = "
               + (int) getLastErrorVarHandle.get(errorState, 0));
         }
         sharedMemory = sharedMemory.reinterpret(AGENT_MAX_MSGLEN);
