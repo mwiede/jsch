@@ -136,11 +136,11 @@ public class PageantFFMConnector implements AgentConnector {
       MemorySegment psd = SECURITY_DESCRIPTOR.allocate(arena);
       if (InitializeSecurityDescriptor(errorState, psd, SECURITY_DESCRIPTOR_REVISION) == 0) {
         throw new AgentProxyException("Unable to InitializeSecurityDescriptor(): GetLastError() = "
-            + (int) getLastErrorVarHandle.get(errorState, 0));
+            + GetLastError(errorState));
       }
       if (SetSecurityDescriptorOwner(errorState, psd, usersid, 0) == 0) {
-        throw new AgentProxyException("Unable to SetSecurityDescriptorOwner(): GetLastError() = "
-            + (int) getLastErrorVarHandle.get(errorState, 0));
+        throw new AgentProxyException(
+            "Unable to SetSecurityDescriptorOwner(): GetLastError() = " + GetLastError(errorState));
       }
 
       MemorySegment psa = SECURITY_ATTRIBUTES.allocate(arena);
@@ -156,7 +156,7 @@ public class PageantFFMConnector implements AgentConnector {
       try {
         sharedFile = CreateFileMappingA(errorState, INVALID_HANDLE_VALUE, psa,
             PAGE_PROTECTION_FLAGS.PAGE_READWRITE, 0, AGENT_MAX_MSGLEN, mapname);
-        int lastError = (int) getLastErrorVarHandle.get(errorState, 0);
+        int lastError = GetLastError(errorState);
         if (sharedFile.equals(MemorySegment.NULL)) {
           throw new AgentProxyException(
               "Unable to CreateFileMapping(): GetLastError() = " + lastError);
@@ -168,8 +168,8 @@ public class PageantFFMConnector implements AgentConnector {
         mmva = MapViewOfFile(arena, errorState, sharedFile, FILE_MAP.WRITE, 0, 0, 0);
         sharedMemory = MEMORY_MAPPED_VIEW_ADDRESS.Value(mmva);
         if (sharedMemory.equals(MemorySegment.NULL)) {
-          throw new AgentProxyException("Unable to MapViewOfFile(): GetLastError() = "
-              + (int) getLastErrorVarHandle.get(errorState, 0));
+          throw new AgentProxyException(
+              "Unable to MapViewOfFile(): GetLastError() = " + GetLastError(errorState));
         }
         sharedMemory = sharedMemory.reinterpret(AGENT_MAX_MSGLEN);
 
@@ -219,14 +219,14 @@ public class PageantFFMConnector implements AgentConnector {
     try {
       proc = OpenProcess(errorState, MAXIMUM_ALLOWED, 0, GetCurrentProcessId());
       if (proc.equals(MemorySegment.NULL)) {
-        throw new AgentProxyException("Unable to OpenProcess(): GetLastError() = "
-            + (int) getLastErrorVarHandle.get(errorState, 0));
+        throw new AgentProxyException(
+            "Unable to OpenProcess(): GetLastError() = " + GetLastError(errorState));
       }
 
       MemorySegment ptok = arena.allocate(ValueLayout.ADDRESS);
       if (OpenProcessToken(errorState, proc, TOKEN_ACCESS_MASK.TOKEN_QUERY, ptok) == 0) {
-        throw new AgentProxyException("Unable to OpenProcessToken(): GetLastError() = "
-            + (int) getLastErrorVarHandle.get(errorState, 0));
+        throw new AgentProxyException(
+            "Unable to OpenProcessToken(): GetLastError() = " + GetLastError(errorState));
       }
 
       tok = ptok.get(ValueLayout.ADDRESS, 0);
@@ -237,7 +237,7 @@ public class PageantFFMConnector implements AgentConnector {
       MemorySegment ptoklen = arena.allocate(ValueLayout.JAVA_INT);
       if (GetTokenInformation(errorState, tok, TOKEN_INFORMATION_CLASS.TokenUser,
           MemorySegment.NULL, 0, ptoklen) == 0) {
-        int lastError = (int) getLastErrorVarHandle.get(errorState, 0);
+        int lastError = GetLastError(errorState);
         if (lastError != WIN32_ERROR.ERROR_INSUFFICIENT_BUFFER) {
           throw new AgentProxyException(
               "Unable to GetTokenInformation() toklen: GetLastError() = " + lastError);
@@ -253,8 +253,8 @@ public class PageantFFMConnector implements AgentConnector {
       MemorySegment user = arena.allocate(toklen, ValueLayout.ADDRESS.byteAlignment());
       if (GetTokenInformation(errorState, tok, TOKEN_INFORMATION_CLASS.TokenUser, user,
           (int) toklen, ptoklen) == 0) {
-        throw new AgentProxyException("Unable to GetTokenInformation() user: GetLastError() = "
-            + (int) getLastErrorVarHandle.get(errorState, 0));
+        throw new AgentProxyException(
+            "Unable to GetTokenInformation() user: GetLastError() = " + GetLastError(errorState));
       }
 
       MemorySegment psid = SID_AND_ATTRIBUTES.Sid(TOKEN_USER.User(user));
@@ -265,8 +265,8 @@ public class PageantFFMConnector implements AgentConnector {
       long sidlen = GetLengthSid(psid) & 0xffffffffL;
       MemorySegment usersid = arena.allocate(sidlen, ValueLayout.ADDRESS.byteAlignment());
       if (CopySid(errorState, (int) sidlen, usersid, psid) == 0) {
-        throw new AgentProxyException("Unable to CopySid(): GetLastError() = "
-            + (int) getLastErrorVarHandle.get(errorState, 0));
+        throw new AgentProxyException(
+            "Unable to CopySid(): GetLastError() = " + GetLastError(errorState));
       }
 
       return usersid;
@@ -278,5 +278,9 @@ public class PageantFFMConnector implements AgentConnector {
         CloseHandle(errorState, proc);
       }
     }
+  }
+
+  private int GetLastError(MemorySegment errorState) {
+    return (int) getLastErrorVarHandle.get(errorState, 0);
   }
 }
