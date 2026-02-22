@@ -102,7 +102,7 @@ public class PageantConnector implements AgentConnector {
       int lastError = kernel32.GetLastError();
       if (sharedFile == null) {
         throw new AgentProxyException(
-            "Unable to create shared file mapping: GetLastError() = " + lastError);
+            "Unable to CreateFileMapping(): GetLastError() = " + lastError);
       }
       if (lastError == WinError.ERROR_ALREADY_EXISTS) {
         throw new AgentProxyException("Shared file mapping already exists");
@@ -111,7 +111,7 @@ public class PageantConnector implements AgentConnector {
       sharedMemory = kernel32.MapViewOfFile(sharedFile, WinBase.FILE_MAP_WRITE, 0, 0, 0);
       if (sharedMemory == null) {
         throw new AgentProxyException(
-            "Unable to create shared memory mapping: GetLastError() = " + kernel32.GetLastError());
+            "Unable to MapViewOfFile(): GetLastError() = " + kernel32.GetLastError());
       }
 
       sharedMemory.write(0, buffer.buffer, 0, buffer.getLength());
