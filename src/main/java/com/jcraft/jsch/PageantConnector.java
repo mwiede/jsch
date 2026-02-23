@@ -136,10 +136,15 @@ public class PageantConnector implements AgentConnector {
             "SendMessage() returned 0 with cds.dwData: " + Long.toHexString(foo));
       }
     } finally {
-      if (sharedMemory != null)
-        kernel32.UnmapViewOfFile(sharedMemory);
-      if (sharedFile != null)
-        kernel32.CloseHandle(sharedFile);
+      try {
+        if (sharedMemory != null) {
+          kernel32.UnmapViewOfFile(sharedMemory);
+        }
+      } finally {
+        if (sharedFile != null) {
+          kernel32.CloseHandle(sharedFile);
+        }
+      }
     }
   }
 
