@@ -17,15 +17,18 @@ import java.util.stream.Collectors;
 class OpenSshCertificateUtil {
 
   /**
-   * Predicate that identifies Certificate Authority (CA) public key entries in a known_hosts file.
-   * <p>
-   * This predicate tests whether a {@link HostKey} represents a trusted CA entry, identified by the
-   * {@code @cert-authority} marker in the known_hosts file. CA entries are used to validate OpenSSH
-   * certificates presented by hosts during authentication.
-   * </p>
+   * Checks whether a {@link HostKey} represents a Certificate Authority (CA) entry in the
+   * known_hosts file. A CA entry is identified by the {@code @cert-authority} marker. Such entries
+   * designate trusted CAs used to validate OpenSSH certificates presented by hosts during
+   * authentication.
+   *
+   * @param hostKey the {@link HostKey} to test, may be {@code null}
+   * @return {@code true} if {@code hostKey} is non-null and carries the {@code @cert-authority}
+   *         marker; {@code false} otherwise
    */
-  static final Predicate<HostKey> isKnownHostCaPublicKeyEntry =
-      hostKey -> Objects.nonNull(hostKey) && "@cert-authority".equals(hostKey.getMarker());
+  static boolean isKnownHostCaPublicKeyEntry(HostKey hostKey) {
+    return Objects.nonNull(hostKey) && "@cert-authority".equals(hostKey.getMarker());
+  }
 
   /**
    * Predicate that identifies revoked key entries in a known_hosts file.
@@ -473,7 +476,8 @@ class OpenSshCertificateUtil {
   static Set<HostKey> getTrustedCAs(HostKeyRepository knownHosts) {
     HostKey[] hostKeys = knownHosts.getHostKey();
     return hostKeys == null ? new HashSet<>()
-        : Arrays.stream(hostKeys).filter(isKnownHostCaPublicKeyEntry).collect(Collectors.toSet());
+        : Arrays.stream(hostKeys).filter(OpenSshCertificateUtil::isKnownHostCaPublicKeyEntry)
+            .collect(Collectors.toSet());
   }
 
   /**

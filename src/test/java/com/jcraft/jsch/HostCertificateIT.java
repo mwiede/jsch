@@ -1,8 +1,19 @@
 package com.jcraft.jsch;
 
+import static com.jcraft.jsch.ResourceUtil.getResourceFile;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.condition.JRE.JAVA_15;
+
+import java.util.Arrays;
+import java.util.List;
+
 import com.github.valfirst.slf4jtest.LoggingEvent;
 import com.github.valfirst.slf4jtest.TestLogger;
 import com.github.valfirst.slf4jtest.TestLoggerFactory;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.EnabledForJreRange;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.slf4j.LoggerFactory;
@@ -11,14 +22,6 @@ import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.images.builder.ImageFromDockerfile;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
-
-import java.util.Arrays;
-import java.util.List;
-
-import static com.jcraft.jsch.ResourceUtil.getResourceFile;
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Integration tests for SSH host certificate validation.
@@ -85,7 +88,7 @@ public class HostCertificateIT {
    * @return An iterable of host key algorithm strings for test parameterization.
    */
   public static List<String> privateKeyParams() {
-    return Arrays.asList("ssh-ed25519-cert-v01@openssh.com",
+    return Arrays.asList(
         "ecdsa-sha2-nistp256-cert-v01@openssh.com,ecdsa-sha2-nistp384-cert-v01@openssh.com,ecdsa-sha2-nistp521-cert-v01@openssh.com",
         "ssh-rsa-cert-v01@openssh.com,rsa-sha2-512-cert-v01@openssh.com,rsa-sha2-256-cert-v01@openssh.com");
   }
@@ -145,6 +148,110 @@ public class HostCertificateIT {
     assertThrows(JSchHostKeyException.class, () -> {
       connectSftp(session);
     });
+  }
+
+  /**
+   * Tests the happy-path scenario for {@code ssh-ed25519-cert-v01@openssh.com} host certificates
+   * using the default Ed25519 verification implementation.
+   *
+   * @throws Exception if any error occurs during the test.
+   */
+  @Test
+  public void hostKeyTestHappyPathEd25519CertTest() throws Exception {
+    Session session = createEd25519HostCertSession(true);
+    assertDoesNotThrow(() -> connectSftp(session));
+  }
+
+  /**
+   * Tests the happy-path scenario for {@code ssh-ed25519-cert-v01@openssh.com} host certificates
+   * using the BouncyCastle Ed25519 verification implementation.
+   *
+   * @throws Exception if any error occurs during the test.
+   */
+  @Test
+  public void hostKeyTestHappyPathEd25519CertBCTest() throws Exception {
+    Session session = createEd25519HostCertSession(true);
+    session.setConfig("keypairgen.eddsa", "com.jcraft.jsch.bc.KeyPairGenEdDSA");
+    session.setConfig("ssh-ed25519", "com.jcraft.jsch.bc.SignatureEd25519");
+    assertDoesNotThrow(() -> connectSftp(session));
+  }
+
+  /**
+   * Tests the happy-path scenario for {@code ssh-ed25519-cert-v01@openssh.com} host certificates
+   * using the native Java 15+ JCE Ed25519 verification implementation.
+   *
+   * @throws Exception if any error occurs during the test.
+   */
+  @Test
+  @EnabledForJreRange(min = JAVA_15)
+  public void hostKeyTestHappyPathEd25519CertJava15Test() throws Exception {
+    Session session = createEd25519HostCertSession(true);
+    session.setConfig("keypairgen.eddsa", "com.jcraft.jsch.jce.KeyPairGenEdDSA");
+    session.setConfig("ssh-ed25519", "com.jcraft.jsch.jce.SignatureEd25519");
+    assertDoesNotThrow(() -> connectSftp(session));
+  }
+
+  /**
+   * Tests the failure scenario for {@code ssh-ed25519-cert-v01@openssh.com} host certificates
+   * (untrusted CA) using the default Ed25519 verification implementation.
+   *
+   * @throws Exception if any error occurs during the test.
+   */
+  @Test
+  public void hostKeyTestNotTrustedCAEd25519CertTest() throws Exception {
+    Session session = createEd25519HostCertSession(false);
+    assertThrows(JSchHostKeyException.class, () -> connectSftp(session));
+  }
+
+  /**
+   * Tests the failure scenario for {@code ssh-ed25519-cert-v01@openssh.com} host certificates
+   * (untrusted CA) using the BouncyCastle Ed25519 verification implementation.
+   *
+   * @throws Exception if any error occurs during the test.
+   */
+  @Test
+  public void hostKeyTestNotTrustedCAEd25519CertBCTest() throws Exception {
+    Session session = createEd25519HostCertSession(false);
+    session.setConfig("keypairgen.eddsa", "com.jcraft.jsch.bc.KeyPairGenEdDSA");
+    session.setConfig("ssh-ed25519", "com.jcraft.jsch.bc.SignatureEd25519");
+    assertThrows(JSchHostKeyException.class, () -> connectSftp(session));
+  }
+
+  /**
+   * Tests the failure scenario for {@code ssh-ed25519-cert-v01@openssh.com} host certificates
+   * (untrusted CA) using the native Java 15+ JCE Ed25519 verification implementation.
+   *
+   * @throws Exception if any error occurs during the test.
+   */
+  @Test
+  @EnabledForJreRange(min = JAVA_15)
+  public void hostKeyTestNotTrustedCAEd25519CertJava15Test() throws Exception {
+    Session session = createEd25519HostCertSession(false);
+    session.setConfig("keypairgen.eddsa", "com.jcraft.jsch.jce.KeyPairGenEdDSA");
+    session.setConfig("ssh-ed25519", "com.jcraft.jsch.jce.SignatureEd25519");
+    assertThrows(JSchHostKeyException.class, () -> connectSftp(session));
+  }
+
+  /**
+   * Creates a session configured for {@code ssh-ed25519-cert-v01@openssh.com} host certificate
+   * validation, optionally with the trusted CA in the client's {@code known_hosts} file.
+   *
+   * @param trustedCA {@code true} to load the trusted-CA {@code known_hosts} file; {@code false} to
+   *        leave the CA untrusted (simulating a host key rejection scenario).
+   * @return A configured {@link Session} ready for connection.
+   * @throws Exception if any error occurs during setup.
+   */
+  private Session createEd25519HostCertSession(boolean trustedCA) throws Exception {
+    JSch ssh = new JSch();
+    ssh.addIdentity(
+        getResourceFile(this.getClass(), CERTIFICATES_BASE_FOLDER + "/user_keys/id_ecdsa_nistp521"),
+        getResourceFile(this.getClass(),
+            CERTIFICATES_BASE_FOLDER + "/user_keys/id_ecdsa_nistp521.pub"),
+        null);
+    if (trustedCA) {
+      ssh.setKnownHosts(getResourceFile(this.getClass(), "certificates/known_hosts"));
+    }
+    return setup(ssh, "ssh-ed25519-cert-v01@openssh.com");
   }
 
   /**

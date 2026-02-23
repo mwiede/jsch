@@ -1,0 +1,14 @@
+PubkeyAuthentication yes
+AuthenticationMethods publickey
+PrintMotd no
+PermitRootLogin yes
+Subsystem sftp internal-sftp
+
+HostKey /etc/ssh/ssh_host_dsa_key
+HostCertificate /etc/ssh/ssh_host_dsa_key-cert.pub
+
+# OpenSSH 7.0+ excludes ssh-dss from the default proposal; re-enable it explicitly
+# so the server advertises ssh-dss-cert-v01@openssh.com in its KEXINIT.
+HostKeyAlgorithms +ssh-dss-cert-v01@openssh.com,ssh-dss
+
+LogLevel DEBUG3

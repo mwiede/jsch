@@ -1,5 +1,7 @@
 package com.jcraft.jsch;
 
+import static org.junit.jupiter.api.condition.JRE.JAVA_15;
+
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -12,6 +14,8 @@ import com.github.valfirst.slf4jtest.TestLogger;
 import com.github.valfirst.slf4jtest.TestLoggerFactory;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.EnabledForJreRange;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.slf4j.Logger;
@@ -91,7 +95,7 @@ public class UserCertAuthIT {
         // disable dss because dsa algorithm is deprecated and removed by openssh server
         /* "dss/root_dsa_key", */
         "ecdsa_p256/root_ecdsa_sha2_nistp256_key", "ecdsa_p384/root_ecdsa-sha2-nistp384_key",
-        "ecdsa_p521/root_ecdsa_sha2_nistp521_key", "ed25519/root_ed25519_key", "rsa/root_rsa_key");
+        "ecdsa_p521/root_ecdsa_sha2_nistp521_key", "rsa/root_rsa_key");
   }
 
   /**
@@ -126,6 +130,69 @@ public class UserCertAuthIT {
     session.setConfig("server_host_key",
         "ssh-ed25519,ecdsa-sha2-nistp256,ecdsa-sha2-nistp384,ecdsa-sha2-nistp521,rsa-sha2-512,rsa-sha2-256");
     doSftp(session);
+  }
+
+  /**
+   * Tests JSch's ability to authenticate with an {@code ssh-ed25519-cert-v01@openssh.com} user
+   * certificate using the default Ed25519 signing implementation.
+   *
+   * @throws Exception if any error occurs during key reading, session setup, or connection.
+   */
+  @Test
+  public void opensshCertificateEd25519CertTest() throws Exception {
+    Session session = createEd25519CertSession();
+    doSftp(session);
+  }
+
+  /**
+   * Tests JSch's ability to authenticate with an {@code ssh-ed25519-cert-v01@openssh.com} user
+   * certificate using the BouncyCastle Ed25519 signing implementation.
+   *
+   * @throws Exception if any error occurs during key reading, session setup, or connection.
+   */
+  @Test
+  public void opensshCertificateEd25519CertBCTest() throws Exception {
+    Session session = createEd25519CertSession();
+    session.setConfig("keypairgen.eddsa", "com.jcraft.jsch.bc.KeyPairGenEdDSA");
+    session.setConfig("ssh-ed25519", "com.jcraft.jsch.bc.SignatureEd25519");
+    doSftp(session);
+  }
+
+  /**
+   * Tests JSch's ability to authenticate with an {@code ssh-ed25519-cert-v01@openssh.com} user
+   * certificate using the native Java 15+ JCE Ed25519 signing implementation.
+   *
+   * @throws Exception if any error occurs during key reading, session setup, or connection.
+   */
+  @Test
+  @EnabledForJreRange(min = JAVA_15)
+  public void opensshCertificateEd25519CertJava15Test() throws Exception {
+    Session session = createEd25519CertSession();
+    session.setConfig("keypairgen.eddsa", "com.jcraft.jsch.jce.KeyPairGenEdDSA");
+    session.setConfig("ssh-ed25519", "com.jcraft.jsch.jce.SignatureEd25519");
+    doSftp(session);
+  }
+
+  private Session createEd25519CertSession() throws Exception {
+    HostKey hostKey = readHostKey(
+        ResourceUtil.getResourceFile(this.getClass(), "certificates/docker/ssh_host_rsa_key.pub"));
+    JSch ssh = new JSch();
+    ssh.addIdentity(
+        ResourceUtil.getResourceFile(this.getClass(), "certificates/ed25519/root_ed25519_key"),
+        ResourceUtil.getResourceFile(this.getClass(),
+            "certificates/ed25519/root_ed25519_key-cert.pub"),
+        null);
+    ssh.getHostKeyRepository().add(hostKey, null);
+
+    Session session = ssh.getSession("root", sshd.getHost(), sshd.getFirstMappedPort());
+    session.setConfig("enable_auth_none", "yes");
+    session.setConfig("StrictHostKeyChecking", "no");
+    session.setConfig("PreferredAuthentications", "publickey");
+    session.setConfig("PubkeyAcceptedAlgorithms",
+        "ssh-ed25519-cert-v01@openssh.com,ssh-ed25519,ecdsa-sha2-nistp256,ecdsa-sha2-nistp384,ecdsa-sha2-nistp521,rsa-sha2-512,rsa-sha2-256");
+    session.setConfig("server_host_key",
+        "ssh-ed25519,ecdsa-sha2-nistp256,ecdsa-sha2-nistp384,ecdsa-sha2-nistp521,rsa-sha2-512,rsa-sha2-256");
+    return session;
   }
 
   /**

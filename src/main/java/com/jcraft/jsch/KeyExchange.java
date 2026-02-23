@@ -377,8 +377,9 @@ public abstract class KeyExchange {
    */
   protected boolean verify(String alg, byte[] K_S, int index, byte[] sig_of_H) throws Exception {
     int i, j;
-    boolean result = false;
+
     i = index;
+    boolean result = false;
 
     if (OpenSshCertificateKeyTypes.isCertificateKeyType(alg)) {
       OpenSshCertificate certificate = OpenSshCertificateParser.parse(session.jsch.instLogger, K_S);

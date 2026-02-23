@@ -150,9 +150,11 @@ class OpenSshCertificateAwareIdentityFile implements Identity {
       // keyType
       if (OpenSshCertificateUtil.isEmpty(cert.getKeyType())
           || !cert.getKeyType().equals(declaredKeyType)) {
-        instLogger.getLogger().log(Logger.WARN,
+        instLogger.getLogger().log(Logger.ERROR,
             "Key type declared at the beginning of the certificate file, does not correspond to the encoded key type. Declared type: '"
                 + declaredKeyType + "' - Encoded Key type: '" + cert.getKeyType() + "'");
+        throw new JSchException("Certificate key type mismatch: declared type '" + declaredKeyType
+            + "' does not match encoded type '" + cert.getKeyType() + "'");
       }
 
       if (!cert.isValidNow()) {
@@ -168,8 +170,6 @@ class OpenSshCertificateAwareIdentityFile implements Identity {
       }
       kpair = KeyPair.load(instLogger, prvkey, certPublicKey);
 
-    } catch (JSchException e) {
-      throw e;
     } catch (IllegalArgumentException e) {
       throw new JSchException("Invalid certificate format: " + e.getMessage(), e);
     } catch (IllegalStateException e) {

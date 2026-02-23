@@ -1,0 +1,14 @@
+PubkeyAuthentication yes
+AuthenticationMethods publickey
+PrintMotd no
+PermitRootLogin yes
+Subsystem sftp internal-sftp
+
+# Trust the CA that signed the DSA user certificates
+TrustedUserCAKeys /etc/ssh/ca_jsch_key.pub
+
+# OpenSSH 7.0+ removes ssh-dss from its default proposal; re-enable it
+# so the server accepts ssh-dss-cert-v01@openssh.com user certificates.
+PubkeyAcceptedKeyTypes +ssh-dss-cert-v01@openssh.com,ssh-dss
+
+LogLevel DEBUG3

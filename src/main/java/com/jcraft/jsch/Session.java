@@ -814,7 +814,7 @@ public class Session {
       server_host_key =
           OpenSshCertificateUtil.filterUnavailableCertTypes(server_host_key, not_available_shks);
       if (server_host_key == null) {
-        throw new JSchException("There are not any available sig algorithm.");
+        throw new JSchException("There are not any available signature algorithms.");
       }
 
       if (getLogger().isEnabled(Logger.DEBUG)) {
@@ -847,11 +847,24 @@ public class Session {
         while (it.hasNext()) {
           String algo = it.next();
           String type = algo;
+
+          // Normalize certificate types to base types for matching against known_hosts
+          // This aligns with OpenSSH behavior where certificate algorithms are matched
+          // against their base key types (e.g., ssh-rsa-cert-v01@openssh.com -> ssh-rsa)
+          // See:
+          // https://github.com/openssh/openssh-portable/blob/5f98660c51e673f521e0216c7ed20205c4af10ed/sshconnect2.c#L186-L189
+          String baseType = OpenSshCertificateKeyTypes.getBaseKeyType(type);
+          if (baseType != null && !baseType.equals(type)) {
+            type = baseType;
+          }
+
+          // Normalize RSA signature variants to base type
           if (type.equals("rsa-sha2-256") || type.equals("rsa-sha2-512")
               || type.equals("ssh-rsa-sha224@ssh.com") || type.equals("ssh-rsa-sha256@ssh.com")
               || type.equals("ssh-rsa-sha384@ssh.com") || type.equals("ssh-rsa-sha512@ssh.com")) {
             type = "ssh-rsa";
           }
+
           for (HostKey hk : hks) {
             if (hk.getType().equals(type)) {
               pref_shks.add(algo);
@@ -969,6 +982,7 @@ public class Session {
         String key_footprint = kex.getFingerPrint();
         String keyAlgorithmName = kex.getKeyAlgorithName();
         doCheckHostKey(chost, key_type, key_footprint, keyAlgorithmName, K_S);
+        return;
       }
     }
     checkHostKey(chost, port, kex);

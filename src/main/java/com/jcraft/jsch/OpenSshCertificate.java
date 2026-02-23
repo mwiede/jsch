@@ -79,10 +79,14 @@ class OpenSshCertificate {
    */
   private final Collection<String> principals;
 
-  // match ssh-keygen behavior where the default is the epoch
+  /**
+   * match ssh-keygen behavior where the default is the epoch
+   */
   private final long validAfter;
 
-  // match ssh-keygen behavior where the default would be forever
+  /**
+   * match ssh-keygen behavior where the default would be forever
+   */
   private final long validBefore;
 
   /**
