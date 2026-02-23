@@ -32,7 +32,6 @@ class OpenSshCertificateBuffer extends Buffer {
     super(certificateByteDecoded);
     s = 0;
     index = certificateByteDecoded.length;
-
   }
 
   /**

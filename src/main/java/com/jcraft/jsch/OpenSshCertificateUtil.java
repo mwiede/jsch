@@ -11,32 +11,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
-import java.util.function.Predicate;
+
 import java.util.stream.Collectors;
 
 class OpenSshCertificateUtil {
-
-  /**
-   * Predicate that identifies Certificate Authority (CA) public key entries in a known_hosts file.
-   * <p>
-   * This predicate tests whether a {@link HostKey} represents a trusted CA entry, identified by the
-   * {@code @cert-authority} marker in the known_hosts file. CA entries are used to validate OpenSSH
-   * certificates presented by hosts during authentication.
-   * </p>
-   */
-  static final Predicate<HostKey> isKnownHostCaPublicKeyEntry =
-      hostKey -> Objects.nonNull(hostKey) && "@cert-authority".equals(hostKey.getMarker());
-
-  /**
-   * Predicate that identifies revoked key entries in a known_hosts file.
-   * <p>
-   * This predicate tests whether a {@link HostKey} is marked as revoked (using the {@code @revoked}
-   * marker) or is {@code null}. It implements fail-closed security semantics by treating
-   * {@code null} entries as revoked.
-   * </p>
-   */
-  static final Predicate<HostKey> isMarkedRevoked =
-      hostKey -> hostKey == null || "@revoked".equals(hostKey.getMarker());
 
   /**
    * EC point format indicator for uncompressed points (SEC 1, section 2.3.3).
@@ -103,6 +81,33 @@ class OpenSshCertificateUtil {
    *      Integration in the Secure Shell Transport Layer</a>
    */
   static final int ECDSA_P521_POINT_LENGTH = 133;
+
+  /**
+   * Checks whether a {@link HostKey} represents a Certificate Authority (CA) entry in the
+   * known_hosts file. A CA entry is identified by the {@code @cert-authority} marker. Such entries
+   * designate trusted CAs used to validate OpenSSH certificates presented by hosts during
+   * authentication.
+   *
+   * @param hostKey the {@link HostKey} to test, may be {@code null}
+   * @return {@code true} if {@code hostKey} is non-null and carries the {@code @cert-authority}
+   *         marker; {@code false} otherwise
+   */
+  static boolean isKnownHostCaPublicKeyEntry(HostKey hostKey) {
+    return Objects.nonNull(hostKey) && "@cert-authority".equals(hostKey.getMarker());
+  }
+
+  /**
+   * Checks whether a {@link HostKey} is marked as revoked in the known_hosts file, or is
+   * {@code null}. It implements fail-closed security semantics by treating {@code null} entries as
+   * revoked.
+   *
+   * @param hostKey the {@link HostKey} to test, may be {@code null}
+   * @return {@code true} if {@code hostKey} is {@code null} or carries the {@code @revoked} marker;
+   *         {@code false} otherwise
+   */
+  static boolean isMarkedRevoked(HostKey hostKey) {
+    return hostKey == null || "@revoked".equals(hostKey.getMarker());
+  }
 
   /**
    * Trims leading and trailing whitespace from the input string. Returns an empty string if the
@@ -428,9 +433,10 @@ class OpenSshCertificateUtil {
    * <h3>Revocation Checking</h3>
    * <p>
    * A CA is considered revoked if there exists a {@code @revoked} entry in the known_hosts file
-   * with the same public key value. The revocation check uses
-   * {@link #hasBeenRevoked(HostKeyRepository, HostKey)} to ensure that compromised CA keys are
-   * rejected even if they appear as {@code @cert-authority}.
+   * with the same public key value. If a matching CA for the given host and key is found to be
+   * revoked, a {@link JSchRevokedHostKeyException} is thrown immediately. This is a hard failure
+   * that must not be caught for fallback purposes, matching OpenSSH behavior where {@code @revoked}
+   * is a terminal rejection.
    * </p>
    *
    *
@@ -441,11 +447,27 @@ class OpenSshCertificateUtil {
    * @param caPublicKey the raw CA public key bytes from the certificate that needs validation, must
    *        not be {@code null}
    * @return {@code true} if a trusted, non-revoked CA matching the host pattern signed the
-   *         certificate; {@code false} if no matching CA exists, all matching CAs are revoked, or
-   *         the CA key doesn't match
+   *         certificate; {@code false} if no matching CA exists or the CA key doesn't match
+   * @throws JSchRevokedHostKeyException if the matching CA key has been revoked
    */
   static boolean isCertificateSignedByTrustedCA(HostKeyRepository repository, String host,
       byte[] caPublicKey) throws JSchException {
+    // First, check if any matching CA has been revoked — revocation is a hard failure
+    // that must not fall back to plain key checking (matches OpenSSH behavior)
+    boolean matchingCARevoked = getTrustedCAs(repository).stream().filter(Objects::nonNull)
+        .filter(hostkey -> hasBeenRevoked(repository, hostkey)).anyMatch(revokedCA -> {
+          byte[] revokedCAKeyBytes = revokedCA.key;
+          if (revokedCAKeyBytes == null) {
+            return false;
+          }
+          return revokedCA.isWildcardMatched(host)
+              && Util.arraysequals(revokedCAKeyBytes, caPublicKey);
+        });
+    if (matchingCARevoked) {
+      throw new JSchRevokedHostKeyException(
+          "Rejected certificate: signing CA key has been revoked for " + host);
+    }
+
     return getTrustedCAs(repository).stream().filter(Objects::nonNull)
         .filter(hostkey -> !hasBeenRevoked(repository, hostkey)).anyMatch(trustedCA -> {
           byte[] trustedCAKeyBytes = trustedCA.key;
@@ -473,7 +495,8 @@ class OpenSshCertificateUtil {
   static Set<HostKey> getTrustedCAs(HostKeyRepository knownHosts) {
     HostKey[] hostKeys = knownHosts.getHostKey();
     return hostKeys == null ? new HashSet<>()
-        : Arrays.stream(hostKeys).filter(isKnownHostCaPublicKeyEntry).collect(Collectors.toSet());
+        : Arrays.stream(hostKeys).filter(OpenSshCertificateUtil::isKnownHostCaPublicKeyEntry)
+            .collect(Collectors.toSet());
   }
 
   /**
@@ -504,7 +527,36 @@ class OpenSshCertificateUtil {
   static Set<HostKey> getRevokedKeys(HostKeyRepository knownHosts) {
     HostKey[] hostKeys = knownHosts.getHostKey();
     return hostKeys == null ? new HashSet<>()
-        : Arrays.stream(hostKeys).filter(isMarkedRevoked).collect(Collectors.toSet());
+        : Arrays.stream(hostKeys).filter(OpenSshCertificateUtil::isMarkedRevoked)
+            .collect(Collectors.toSet());
+  }
+
+  /**
+   * Checks if a certificate's embedded public key has been revoked.
+   * <p>
+   * This method checks whether the public key contained within a host certificate appears in any
+   * {@code @revoked} entry in the known_hosts file. This is separate from CA revocation — even if
+   * the CA is trusted, the individual host key may have been compromised and explicitly revoked.
+   * </p>
+   * <p>
+   * This matches OpenSSH behavior in {@code check_key_not_revoked()} (hostfile.c), which checks
+   * both the host key itself and the CA signing key against {@code @revoked} entries.
+   * </p>
+   *
+   * @param knownHosts the {@link HostKeyRepository} to query for revoked entries, must not be
+   *        {@code null}
+   * @param certPublicKey the raw public key bytes embedded in the certificate, must not be
+   *        {@code null}
+   * @return {@code true} if the certificate's public key matches any {@code @revoked} entry;
+   *         {@code false} otherwise
+   */
+  static boolean isCertificateKeyRevoked(HostKeyRepository knownHosts, byte[] certPublicKey) {
+    if (certPublicKey == null) {
+      return true;
+    }
+    return getRevokedKeys(knownHosts).stream().filter(Objects::nonNull)
+        .map(revokedKey -> revokedKey.key).filter(Objects::nonNull)
+        .anyMatch(revokedKeyBytes -> Util.arraysequals(revokedKeyBytes, certPublicKey));
   }
 
   /**

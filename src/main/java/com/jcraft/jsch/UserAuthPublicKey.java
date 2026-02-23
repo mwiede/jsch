@@ -388,7 +388,7 @@ class UserAuthPublicKey extends UserAuth {
    * @param session the current session (for logging)
    * @return true if the algorithm is unavailable and should be skipped, false otherwise
    */
-  private boolean isAlgorithmUnavailable(String pkmethod, List<String> not_available_pks,
+  private static boolean isAlgorithmUnavailable(String pkmethod, List<String> not_available_pks,
       Identity identity, Session session) {
     String baseAlgorithm = OpenSshCertificateKeyTypes.getBaseKeyType(pkmethod);
     if (not_available_pks.contains(baseAlgorithm) && !(identity instanceof AgentIdentity)) {

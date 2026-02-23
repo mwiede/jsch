@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.nio.charset.StandardCharsets;
@@ -236,14 +237,16 @@ public class OpenSshCertificateUtilTest {
   }
 
   /**
-   * Test that isCertificateSignedByTrustedCA returns false when the CA is revoked.
+   * Test that isCertificateSignedByTrustedCA throws JSchRevokedHostKeyException when the CA is
+   * revoked. This matches OpenSSH behavior where @revoked is a terminal rejection that must not
+   * fall back to plain key checking.
    */
   @Test
   public void testIsCertificateSignedByTrustedCA_caIsRevoked() throws Exception {
     // Setup
     JSch jsch = new JSch();
     KnownHosts knownHosts = new KnownHosts(jsch);
-    String host = "example.com";
+    String host = "server.example.com";
     String base64CaPublicKey = "AAAAB3NzaC1yc2EAAAADAQABAAABAQ==";
 
     byte[] keyBytes =
@@ -260,12 +263,10 @@ public class OpenSshCertificateUtilTest {
     knownHosts.add(caHostKey, null);
     knownHosts.add(revokedHostKey, null);
 
-    // Execute
-    boolean result =
-        OpenSshCertificateUtil.isCertificateSignedByTrustedCA(knownHosts, host, keyBytes);
-
-    // Verify
-    assertFalse(result, "Should return false when CA is revoked (fail-closed security)");
+    // Execute & Verify - revoked CA must throw, not silently return false
+    assertThrows(JSchRevokedHostKeyException.class,
+        () -> OpenSshCertificateUtil.isCertificateSignedByTrustedCA(knownHosts, host, keyBytes),
+        "Should throw JSchRevokedHostKeyException when CA is revoked");
   }
 
   /**
@@ -507,6 +508,111 @@ public class OpenSshCertificateUtilTest {
     // Verify
     assertTrue(result,
         "Should find the valid CA among multiple entries, ignoring revoked/different/null entries");
+  }
+
+  // ==================== Tests for isCertificateKeyRevoked ====================
+
+  /**
+   * Test that isCertificateKeyRevoked returns true when the certificate's own public key is found
+   * in a @revoked entry.
+   */
+  @Test
+  public void testIsCertificateKeyRevoked_keyIsRevoked() throws Exception {
+    JSch jsch = new JSch();
+    KnownHosts knownHosts = new KnownHosts(jsch);
+    String base64Key = "AAAAB3NzaC1yc2EAAAADAQABAAABAQ==";
+    byte[] keyBytes = Util.fromBase64(Util.str2byte(base64Key), 0, base64Key.length());
+
+    // Create a @revoked entry for the host's own public key
+    HostKey revokedHostKey =
+        new HostKey("@revoked", "server.example.com", HostKey.SSHRSA, keyBytes, null);
+    knownHosts.add(revokedHostKey, null);
+
+    assertTrue(OpenSshCertificateUtil.isCertificateKeyRevoked(knownHosts, keyBytes),
+        "Should return true when certificate public key is revoked");
+  }
+
+  /**
+   * Test that isCertificateKeyRevoked returns false when the certificate's public key is not in any
+   *
+   * @revoked entry.
+   */
+  @Test
+  public void testIsCertificateKeyRevoked_keyIsNotRevoked() throws Exception {
+    JSch jsch = new JSch();
+    KnownHosts knownHosts = new KnownHosts(jsch);
+    String base64Key = "AAAAB3NzaC1yc2EAAAADAQABAAABAQ==";
+    String base64DifferentKey = "AAAAB3NzaC1yc2EDIFFERENTKEY==";
+    byte[] keyBytes = Util.fromBase64(Util.str2byte(base64Key), 0, base64Key.length());
+    byte[] differentKeyBytes =
+        Util.fromBase64(Util.str2byte(base64DifferentKey), 0, base64DifferentKey.length());
+
+    // Revoke a different key
+    HostKey revokedHostKey =
+        new HostKey("@revoked", "server.example.com", HostKey.SSHRSA, differentKeyBytes, null);
+    knownHosts.add(revokedHostKey, null);
+
+    assertFalse(OpenSshCertificateUtil.isCertificateKeyRevoked(knownHosts, keyBytes),
+        "Should return false when certificate public key is not revoked");
+  }
+
+  /**
+   * Test that isCertificateKeyRevoked returns true for null key bytes (fail-closed).
+   */
+  @Test
+  public void testIsCertificateKeyRevoked_nullKey() throws Exception {
+    JSch jsch = new JSch();
+    KnownHosts knownHosts = new KnownHosts(jsch);
+
+    assertTrue(OpenSshCertificateUtil.isCertificateKeyRevoked(knownHosts, null),
+        "Should return true for null key (fail-closed)");
+  }
+
+  /**
+   * Test that isCertificateKeyRevoked returns false when the repository has no revoked entries.
+   */
+  @Test
+  public void testIsCertificateKeyRevoked_emptyRepository() throws Exception {
+    JSch jsch = new JSch();
+    KnownHosts knownHosts = new KnownHosts(jsch);
+    String base64Key = "AAAAB3NzaC1yc2EAAAADAQABAAABAQ==";
+    byte[] keyBytes = Util.fromBase64(Util.str2byte(base64Key), 0, base64Key.length());
+
+    assertFalse(OpenSshCertificateUtil.isCertificateKeyRevoked(knownHosts, keyBytes),
+        "Should return false when no revoked entries exist");
+  }
+
+  /**
+   * Test that a revoked host certificate key is detected even when the CA is trusted. This matches
+   * OpenSSH's check_key_not_revoked() which checks both the host key and the CA signing key
+   * independently.
+   */
+  @Test
+  public void testIsCertificateKeyRevoked_revokedKeyWithTrustedCA() throws Exception {
+    JSch jsch = new JSch();
+    KnownHosts knownHosts = new KnownHosts(jsch);
+    String base64CaKey = "AAAAB3NzaC1yc2EAAAADAQABAAABAQ==";
+    String base64HostKey = "AAAAB3NzaC1yc2EAAAADAQABAAAAQw==";
+    byte[] caKeyBytes = Util.fromBase64(Util.str2byte(base64CaKey), 0, base64CaKey.length());
+    byte[] hostKeyBytes = Util.fromBase64(Util.str2byte(base64HostKey), 0, base64HostKey.length());
+
+    // CA is trusted
+    HostKey caHostKey =
+        new HostKey("@cert-authority", "*.example.com", HostKey.SSHRSA, caKeyBytes, null);
+    // But the host's own key is revoked
+    HostKey revokedHostKey =
+        new HostKey("@revoked", "server.example.com", HostKey.SSHRSA, hostKeyBytes, null);
+
+    knownHosts.add(caHostKey, null);
+    knownHosts.add(revokedHostKey, null);
+
+    // CA should still be trusted
+    assertTrue(OpenSshCertificateUtil.isCertificateSignedByTrustedCA(knownHosts,
+        "server.example.com", caKeyBytes), "CA should still be trusted");
+
+    // But the host certificate key itself should be detected as revoked
+    assertTrue(OpenSshCertificateUtil.isCertificateKeyRevoked(knownHosts, hostKeyBytes),
+        "Host certificate public key should be detected as revoked");
   }
 
   // ==================== Tests for filterUnavailableCertTypes ====================

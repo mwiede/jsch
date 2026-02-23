@@ -149,14 +149,19 @@ class SessionTest {
   }
 
   /**
-   * Tests that checkCASignatureAlgorithm allows all algorithms when config is empty.
+   * Tests that checkCASignatureAlgorithm rejects all algorithms when config is empty, matching
+   * OpenSSH behavior where an empty CASignatureAlgorithms is treated as a configuration error
+   * (readconf.c "Missing argument").
    */
   @Test
-  void testCheckCASignatureAlgorithm_emptyConfig() throws JSchException {
+  void testCheckCASignatureAlgorithm_emptyConfigRejectsAll() throws JSchException {
     Session session = new Session(jsch, null, null, 0);
     session.setConfig("ca_signature_algorithms", "");
-    // With empty config, no restriction on which algorithms are allowed
-    assertDoesNotThrow(() -> session.checkCASignatureAlgorithm("ecdsa-sha2-nistp256"),
-        "Algorithm should be allowed when config is empty");
+    // With empty config, all algorithms should be rejected
+    JSchException exception = assertThrows(JSchException.class,
+        () -> session.checkCASignatureAlgorithm("ecdsa-sha2-nistp256"),
+        "Algorithm should be rejected when config is empty");
+    assertTrue(exception.getMessage().contains("not in the allowed ca_signature_algorithms"),
+        "Exception message should indicate algorithm not allowed");
   }
 }

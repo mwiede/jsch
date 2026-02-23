@@ -39,18 +39,41 @@ class OpenSshCertificateHostKeyVerifier {
 
     byte[] caPublicKeyByteArray = certificate.getSignatureKey();
 
-    String host = session.host;
+    String host = session.getHost();
     if (host == null) {
       throw new JSchException("Cannot verify host certificate: session host is null");
     }
+
+    // Use hostKeyAlias for known_hosts CA lookup, matching the behavior
+    // of regular host key verification in Session.checkHost/doCheckHostKey
+    String lookupHost = host;
+    String hostKeyAlias = session.getHostKeyAlias();
+    if (hostKeyAlias != null) {
+      lookupHost = hostKeyAlias;
+    } else if (session.getPort() != 22) {
+      lookupHost = "[" + lookupHost + "]:" + session.getPort();
+    }
+
     HostKeyRepository repository = session.getHostKeyRepository();
 
-    boolean caFound = OpenSshCertificateUtil.isCertificateSignedByTrustedCA(repository, host,
+    // Check revocation before CA trust, matching OpenSSH's check_key_not_revoked() order
+    // which checks the host key first, then the CA signing key.
+
+    // 1. Check if the certificate's own public key has been revoked
+    byte[] certPublicKey = certificate.getCertificatePublicKey();
+    if (certPublicKey != null
+        && OpenSshCertificateUtil.isCertificateKeyRevoked(repository, certPublicKey)) {
+      throw new JSchRevokedHostKeyException("Rejected certificate '" + certificate.getId()
+          + "': host certificate public key is marked as revoked for " + lookupHost);
+    }
+
+    // 2. Check if the CA is trusted (also throws JSchRevokedHostKeyException if CA is revoked)
+    boolean caFound = OpenSshCertificateUtil.isCertificateSignedByTrustedCA(repository, lookupHost,
         caPublicKeyByteArray);
 
     if (!caFound) {
       throw new JSchUnknownCAKeyException("Rejected certificate '" + certificate.getId() + "': "
-          + "Certification Authority not in the known hosts or revoked for " + host);
+          + "Certification Authority not in the known hosts or revoked for " + lookupHost);
     }
 
     Buffer caPublicKeyBuffer = new Buffer(caPublicKeyByteArray);
@@ -72,16 +95,20 @@ class OpenSshCertificateHostKeyVerifier {
     checkSignature(certificate, caPublicKeyAlgorithm, session);
 
     Collection<String> principals = certificate.getPrincipals();
+    // For principal matching, use hostKeyAlias if set, otherwise raw hostname (no port).
+    // This matches OpenSSH behavior in check_host_key() where sshkey_cert_check_host()
+    // receives: options.host_key_alias == NULL ? hostname : options.host_key_alias
+    String principalName = hostKeyAlias != null ? hostKeyAlias : host;
     if (principals == null || principals.isEmpty()) {
-      throw new JSchException("rejected HostKey: invalid principal '" + host
+      throw new JSchException("rejected HostKey: invalid principal '" + principalName
           + "', allowed principals list is null or empty.");
     }
 
-    // Convert host to lowercase for principal matching (same as OpenSSH ssh_login())
-    String principalHost = host.toLowerCase(Locale.ROOT);
+    // Convert to lowercase for principal matching (same as OpenSSH ssh_login())
+    principalName = principalName.toLowerCase(Locale.ROOT);
 
-    if (!principals.contains(principalHost)) {
-      throw new JSchException("rejected HostKey: invalid principal '" + principalHost
+    if (!principals.contains(principalName)) {
+      throw new JSchException("rejected HostKey: invalid principal '" + principalName
           + "', allowed principals: " + principals);
     }
 

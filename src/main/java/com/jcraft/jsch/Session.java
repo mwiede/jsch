@@ -26,6 +26,7 @@
 
 package com.jcraft.jsch;
 
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InterruptedIOException;
@@ -813,7 +814,7 @@ public class Session {
       server_host_key =
           OpenSshCertificateUtil.filterUnavailableCertTypes(server_host_key, not_available_shks);
       if (server_host_key == null) {
-        throw new JSchException("There are not any available sig algorithm.");
+        throw new JSchException("There are not any available signature algorithms.");
       }
 
       if (getLogger().isEnabled(Logger.DEBUG)) {
@@ -846,11 +847,24 @@ public class Session {
         while (it.hasNext()) {
           String algo = it.next();
           String type = algo;
+
+          // Normalize certificate types to base types for matching against known_hosts
+          // This aligns with OpenSSH behavior where certificate algorithms are matched
+          // against their base key types (e.g., ssh-rsa-cert-v01@openssh.com -> ssh-rsa)
+          // See:
+          // https://github.com/openssh/openssh-portable/blob/5f98660c51e673f521e0216c7ed20205c4af10ed/sshconnect2.c#L186-L189
+          String baseType = OpenSshCertificateKeyTypes.getBaseKeyType(type);
+          if (baseType != null && !baseType.equals(type)) {
+            type = baseType;
+          }
+
+          // Normalize RSA signature variants to base type
           if (type.equals("rsa-sha2-256") || type.equals("rsa-sha2-512")
               || type.equals("ssh-rsa-sha224@ssh.com") || type.equals("ssh-rsa-sha256@ssh.com")
               || type.equals("ssh-rsa-sha384@ssh.com") || type.equals("ssh-rsa-sha512@ssh.com")) {
             type = "ssh-rsa";
           }
+
           for (HostKey hk : hks) {
             if (hk.getType().equals(type)) {
               pref_shks.add(algo);
@@ -944,20 +958,45 @@ public class Session {
   }
 
   private void checkHost(String chost, int port, KeyExchange kex) throws JSchException {
+    if (hostKeyAlias != null) {
+      chost = hostKeyAlias;
+    } else if (port != 22) {
+      chost = "[" + chost + "]:" + port;
+    }
+
     OpenSshCertificate certificate = kex.getHostKeyCertificate();
     if (certificate != null) {
       try {
         OpenSshCertificateHostKeyVerifier.checkHostCertificate(this, certificate);
+        if (getLogger().isEnabled(Logger.INFO)) {
+          getLogger().log(Logger.INFO, "Host '" + chost + "' is known and matches the "
+              + kex.getKeyType() + " host certificate");
+        }
         return;
+      } catch (JSchRevokedHostKeyException e) {
+        // Revoked key is a hard failure — never fall back to plain key checking
+        // This matches OpenSSH behavior where @revoked is a terminal rejection
+        if (userinfo != null) {
+          userinfo.showMessage("WARNING: REVOKED HOST KEY DETECTED!\n"
+              + "A key associated with the host certificate for " + chost
+              + " is marked as revoked.\n"
+              + "This could mean that a stolen key is being used to impersonate this host.");
+        }
+        if (getLogger().isEnabled(Logger.INFO)) {
+          getLogger().log(Logger.INFO,
+              "Host '" + chost + "' has provided a certificate with a revoked key.");
+        }
+        throw e;
       } catch (JSchException e) {
         if (getConfig("host_certificate_to_key_fallback").equals("no")) {
           throw e;
         }
         // Fallback to public key verification - log warning as this bypasses CA validation
-        if (getLogger().isEnabled(Logger.WARN)) {
-          getLogger().log(Logger.WARN,
+        if (getLogger().isEnabled(Logger.INFO)) {
+          getLogger().log(Logger.INFO,
               "Host certificate validation failed, falling back to public key verification. "
-                  + "This bypasses CA trust validation. Reason: " + e.getMessage());
+                  + "This bypasses CA trust validation. Reason: " + e.getMessage(),
+              e);
         }
         byte[] K_S = certificate.getCertificatePublicKey();
         if (K_S == null) {
@@ -968,15 +1007,10 @@ public class Session {
         String key_footprint = kex.getFingerPrint();
         String keyAlgorithmName = kex.getKeyAlgorithName();
         doCheckHostKey(chost, key_type, key_footprint, keyAlgorithmName, K_S);
+        return;
       }
     }
-    checkHostKey(chost, port, kex);
-  }
 
-  private void checkHostKey(String chost, int port, KeyExchange kex) throws JSchException {
-    if (hostKeyAlias != null) {
-      chost = hostKeyAlias;
-    }
     byte[] K_S = kex.getHostKey();
     String key_type = kex.getKeyType();
     String key_fprint = kex.getFingerPrint();
@@ -987,10 +1021,6 @@ public class Session {
 
   private void doCheckHostKey(String chost, String key_type, String key_fprint,
       String keyAlgorithmName, byte[] K_S) throws JSchException {
-
-    if (hostKeyAlias == null && port != 22) {
-      chost = ("[" + chost + "]:" + port);
-    }
 
     String shkc = getConfig("StrictHostKeyChecking");
     // System.err.println("shkc: "+shkc);
@@ -3356,22 +3386,24 @@ public class Session {
    */
   void checkCASignatureAlgorithm(String algorithm) throws JSchException {
     String caSignatureAlgorithms = getConfig("ca_signature_algorithms");
-
-    if (caSignatureAlgorithms != null && !caSignatureAlgorithms.isEmpty()) {
+    String[] allowedAlgorithms;
+    if (caSignatureAlgorithms == null || caSignatureAlgorithms.isEmpty()) {
+      allowedAlgorithms = new String[0];
+    } else {
       // Check if algorithm is in the allowed list
-      String[] allowedAlgorithms = Util.split(caSignatureAlgorithms, ",");
-      boolean isAllowed = false;
-      for (String allowed : allowedAlgorithms) {
-        if (allowed.equals(algorithm)) {
-          isAllowed = true;
-          break;
-        }
+      allowedAlgorithms = Util.split(caSignatureAlgorithms, ",");
+    }
+    boolean isAllowed = false;
+    for (String allowed : allowedAlgorithms) {
+      if (allowed.equals(algorithm)) {
+        isAllowed = true;
+        break;
       }
+    }
 
-      if (!isAllowed) {
-        throw new JSchException("CA signature algorithm '" + algorithm
-            + "' is not in the allowed ca_signature_algorithms list: " + caSignatureAlgorithms);
-      }
+    if (!isAllowed) {
+      throw new JSchException("CA signature algorithm '" + algorithm
+          + "' is not in the allowed ca_signature_algorithms list: " + caSignatureAlgorithms);
     }
 
     // Check if the algorithm is in the cached unavailable signatures list.
