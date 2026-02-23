@@ -1,10 +1,13 @@
 package com.jcraft.jsch;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
+import java.util.Locale;
 
 import org.junit.jupiter.api.Test;
 
@@ -317,5 +320,73 @@ public class OpenSshCertificateAwareIdentityFileTest {
       assertTrue(OpenSshCertificateAwareIdentityFile.isOpenSshCertificateFile(input),
           "Should recognize valid certificate type: " + certType);
     }
+  }
+
+  @Test
+  public void testNewInstance_throwsExceptionOnKeyTypeMismatch() throws IOException {
+    // Read a valid RSA certificate file
+    byte[] validRsaCertificate =
+        Util.fromFile("src/test/resources/certificates/rsa/root_rsa_key-cert.pub");
+
+    // Convert to string to manipulate
+    String certContent = new String(validRsaCertificate, StandardCharsets.UTF_8);
+
+    // Replace the declared key type at the beginning with a different type
+    // Original: "ssh-rsa-cert-v01@openssh.com ..."
+    // Modified: "ssh-dss-cert-v01@openssh.com ..." (same length for easy replacement)
+    String mismatchedCertContent =
+        certContent.replaceFirst("ssh-rsa-cert-v01@openssh.com", "ssh-dss-cert-v01@openssh.com");
+
+    byte[] mismatchedCertBytes = mismatchedCertContent.getBytes(StandardCharsets.UTF_8);
+
+    // Create a minimal private key (not used in this validation, but required by the method)
+    byte[] dummyPrivateKey = new byte[0];
+
+    // Create a JSch instance to get its logger
+    JSch jsch = new JSch();
+
+    // Attempt to create an identity with mismatched key types
+    // This should throw JSchException with a message about key type mismatch
+    JSchException exception = assertThrows(JSchException.class, () -> {
+      OpenSshCertificateAwareIdentityFile.newInstance("test-identity", dummyPrivateKey,
+          mismatchedCertBytes, jsch.instLogger);
+    });
+
+    // Verify the exception message contains relevant information
+    String exceptionMessage = exception.getMessage();
+    assertTrue(
+        exceptionMessage.contains("key type mismatch")
+            || exceptionMessage.contains("does not match"),
+        "Exception message should indicate key type mismatch: " + exceptionMessage);
+  }
+
+  @Test
+  public void testNewInstance_throwsExceptionOnKeyTypeMismatch_Ed25519() throws IOException {
+    // Test with Ed25519 certificate to ensure validation works for all key types
+    byte[] validEd25519Certificate =
+        Util.fromFile("src/test/resources/certificates/ed25519/root_ed25519_key-cert.pub");
+
+    String certContent = new String(validEd25519Certificate, StandardCharsets.UTF_8);
+
+    // Replace Ed25519 certificate type with ECDSA (different length, so need to handle spaces)
+    String mismatchedCertContent = certContent.replaceFirst("ssh-ed25519-cert-v01@openssh.com",
+        "ecdsa-sha2-nistp256-cert-v01@openssh.com");
+
+    byte[] mismatchedCertBytes = mismatchedCertContent.getBytes(StandardCharsets.UTF_8);
+    byte[] dummyPrivateKey = new byte[0];
+    JSch jsch = new JSch();
+
+    // Should throw JSchException due to key type mismatch
+    JSchException exception = assertThrows(JSchException.class, () -> {
+      OpenSshCertificateAwareIdentityFile.newInstance("test-ed25519-mismatch", dummyPrivateKey,
+          mismatchedCertBytes, jsch.instLogger);
+    });
+
+    // Verify exception mentions the mismatch
+    String exceptionMessage = exception.getMessage();
+    assertTrue(
+        exceptionMessage.toLowerCase(Locale.ROOT).contains("mismatch")
+            || exceptionMessage.contains("does not match"),
+        "Exception message should indicate key type mismatch: " + exceptionMessage);
   }
 }

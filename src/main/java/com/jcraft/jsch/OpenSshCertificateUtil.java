@@ -11,32 +11,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
-import java.util.function.Predicate;
+
 import java.util.stream.Collectors;
 
 class OpenSshCertificateUtil {
-
-  /**
-   * Predicate that identifies Certificate Authority (CA) public key entries in a known_hosts file.
-   * <p>
-   * This predicate tests whether a {@link HostKey} represents a trusted CA entry, identified by the
-   * {@code @cert-authority} marker in the known_hosts file. CA entries are used to validate OpenSSH
-   * certificates presented by hosts during authentication.
-   * </p>
-   */
-  static final Predicate<HostKey> isKnownHostCaPublicKeyEntry =
-      hostKey -> Objects.nonNull(hostKey) && "@cert-authority".equals(hostKey.getMarker());
-
-  /**
-   * Predicate that identifies revoked key entries in a known_hosts file.
-   * <p>
-   * This predicate tests whether a {@link HostKey} is marked as revoked (using the {@code @revoked}
-   * marker) or is {@code null}. It implements fail-closed security semantics by treating
-   * {@code null} entries as revoked.
-   * </p>
-   */
-  static final Predicate<HostKey> isMarkedRevoked =
-      hostKey -> hostKey == null || "@revoked".equals(hostKey.getMarker());
 
   /**
    * EC point format indicator for uncompressed points (SEC 1, section 2.3.3).
@@ -103,6 +81,33 @@ class OpenSshCertificateUtil {
    *      Integration in the Secure Shell Transport Layer</a>
    */
   static final int ECDSA_P521_POINT_LENGTH = 133;
+
+  /**
+   * Checks whether a {@link HostKey} represents a Certificate Authority (CA) entry in the
+   * known_hosts file. A CA entry is identified by the {@code @cert-authority} marker. Such entries
+   * designate trusted CAs used to validate OpenSSH certificates presented by hosts during
+   * authentication.
+   *
+   * @param hostKey the {@link HostKey} to test, may be {@code null}
+   * @return {@code true} if {@code hostKey} is non-null and carries the {@code @cert-authority}
+   *         marker; {@code false} otherwise
+   */
+  static boolean isKnownHostCaPublicKeyEntry(HostKey hostKey) {
+    return Objects.nonNull(hostKey) && "@cert-authority".equals(hostKey.getMarker());
+  }
+
+  /**
+   * Checks whether a {@link HostKey} is marked as revoked in the known_hosts file, or is
+   * {@code null}. It implements fail-closed security semantics by treating {@code null} entries as
+   * revoked.
+   *
+   * @param hostKey the {@link HostKey} to test, may be {@code null}
+   * @return {@code true} if {@code hostKey} is {@code null} or carries the {@code @revoked} marker;
+   *         {@code false} otherwise
+   */
+  static boolean isMarkedRevoked(HostKey hostKey) {
+    return hostKey == null || "@revoked".equals(hostKey.getMarker());
+  }
 
   /**
    * Trims leading and trailing whitespace from the input string. Returns an empty string if the
@@ -473,7 +478,8 @@ class OpenSshCertificateUtil {
   static Set<HostKey> getTrustedCAs(HostKeyRepository knownHosts) {
     HostKey[] hostKeys = knownHosts.getHostKey();
     return hostKeys == null ? new HashSet<>()
-        : Arrays.stream(hostKeys).filter(isKnownHostCaPublicKeyEntry).collect(Collectors.toSet());
+        : Arrays.stream(hostKeys).filter(OpenSshCertificateUtil::isKnownHostCaPublicKeyEntry)
+            .collect(Collectors.toSet());
   }
 
   /**
@@ -504,7 +510,8 @@ class OpenSshCertificateUtil {
   static Set<HostKey> getRevokedKeys(HostKeyRepository knownHosts) {
     HostKey[] hostKeys = knownHosts.getHostKey();
     return hostKeys == null ? new HashSet<>()
-        : Arrays.stream(hostKeys).filter(isMarkedRevoked).collect(Collectors.toSet());
+        : Arrays.stream(hostKeys).filter(OpenSshCertificateUtil::isMarkedRevoked)
+            .collect(Collectors.toSet());
   }
 
   /**
