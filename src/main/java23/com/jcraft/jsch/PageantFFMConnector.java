@@ -199,10 +199,15 @@ public class PageantFFMConnector implements AgentConnector {
               "SendMessage() returned 0 with cds.dwData: " + Long.toHexString(foo));
         }
       } finally {
-        if (!sharedMemory.equals(MemorySegment.NULL))
-          UnmapViewOfFile(errorState, sharedMemory);
-        if (!sharedFile.equals(MemorySegment.NULL))
-          CloseHandle(errorState, sharedFile);
+        try {
+          if (!sharedMemory.equals(MemorySegment.NULL)) {
+            UnmapViewOfFile(errorState, sharedMemory);
+          }
+        } finally {
+          if (!sharedFile.equals(MemorySegment.NULL)) {
+            CloseHandle(errorState, sharedFile);
+          }
+        }
       }
     }
   }
@@ -267,11 +272,14 @@ public class PageantFFMConnector implements AgentConnector {
 
       return usersid;
     } finally {
-      if (!tok.equals(MemorySegment.NULL)) {
-        CloseHandle(errorState, tok);
-      }
-      if (!proc.equals(MemorySegment.NULL)) {
-        CloseHandle(errorState, proc);
+      try {
+        if (!tok.equals(MemorySegment.NULL)) {
+          CloseHandle(errorState, tok);
+        }
+      } finally {
+        if (!proc.equals(MemorySegment.NULL)) {
+          CloseHandle(errorState, proc);
+        }
       }
     }
   }
