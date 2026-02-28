@@ -809,6 +809,19 @@ public class Session {
         getLogger().log(Logger.DEBUG,
             "server_host_key proposal after removing unavailable algos is: " + server_host_key);
       }
+
+      // Also filter out certificate types for unavailable base algorithms
+      server_host_key =
+          OpenSshCertificateUtil.filterUnavailableCertTypes(server_host_key, not_available_shks);
+      if (server_host_key == null) {
+        throw new JSchException("There are not any available signature algorithms.");
+      }
+
+      if (getLogger().isEnabled(Logger.DEBUG)) {
+        getLogger().log(Logger.DEBUG,
+            "server_host_key proposal after removing unavailable cert algos is: "
+                + server_host_key);
+      }
     }
 
     String prefer_hkr = getConfig("prefer_known_host_key_types");
@@ -834,11 +847,24 @@ public class Session {
         while (it.hasNext()) {
           String algo = it.next();
           String type = algo;
+
+          // Normalize certificate types to base types for matching against known_hosts
+          // This aligns with OpenSSH behavior where certificate algorithms are matched
+          // against their base key types (e.g., ssh-rsa-cert-v01@openssh.com -> ssh-rsa)
+          // See:
+          // https://github.com/openssh/openssh-portable/blob/5f98660c51e673f521e0216c7ed20205c4af10ed/sshconnect2.c#L186-L189
+          String baseType = OpenSshCertificateKeyTypes.getBaseKeyType(type);
+          if (baseType != null && !baseType.equals(type)) {
+            type = baseType;
+          }
+
+          // Normalize RSA signature variants to base type
           if (type.equals("rsa-sha2-256") || type.equals("rsa-sha2-512")
               || type.equals("ssh-rsa-sha224@ssh.com") || type.equals("ssh-rsa-sha256@ssh.com")
               || type.equals("ssh-rsa-sha384@ssh.com") || type.equals("ssh-rsa-sha512@ssh.com")) {
             type = "ssh-rsa";
           }
+
           for (HostKey hk : hks) {
             if (hk.getType().equals(type)) {
               pref_shks.add(algo);
@@ -932,21 +958,57 @@ public class Session {
   }
 
   private void checkHost(String chost, int port, KeyExchange kex) throws JSchException {
-    String shkc = getConfig("StrictHostKeyChecking");
+    OpenSshCertificate certificate = kex.getHostKeyCertificate();
+    if (certificate != null) {
+      try {
+        OpenSshCertificateHostKeyVerifier.checkHostCertificate(this, certificate);
+        return;
+      } catch (JSchException e) {
+        if (getConfig("host_certificate_to_key_fallback").equals("no")) {
+          throw e;
+        }
+        // Fallback to public key verification - log warning as this bypasses CA validation
+        if (getLogger().isEnabled(Logger.WARN)) {
+          getLogger().log(Logger.WARN,
+              "Host certificate validation failed, falling back to public key verification. "
+                  + "This bypasses CA trust validation. Reason: " + e.getMessage());
+        }
+        byte[] K_S = certificate.getCertificatePublicKey();
+        if (K_S == null) {
+          throw new JSchException(
+              "Invalid certificate '" + certificate.getId() + "': missing public key");
+        }
+        String key_type = kex.getKeyType();
+        String key_footprint = kex.getFingerPrint();
+        String keyAlgorithmName = kex.getKeyAlgorithName();
+        doCheckHostKey(chost, key_type, key_footprint, keyAlgorithmName, K_S);
+        return;
+      }
+    }
+    checkHostKey(chost, port, kex);
+  }
 
+  private void checkHostKey(String chost, int port, KeyExchange kex) throws JSchException {
     if (hostKeyAlias != null) {
       chost = hostKeyAlias;
     }
-
-    // System.err.println("shkc: "+shkc);
-
     byte[] K_S = kex.getHostKey();
     String key_type = kex.getKeyType();
     String key_fprint = kex.getFingerPrint();
+    String keyAlgorithmName = kex.getKeyAlgorithName();
+
+    doCheckHostKey(chost, key_type, key_fprint, keyAlgorithmName, K_S);
+  }
+
+  private void doCheckHostKey(String chost, String key_type, String key_fprint,
+      String keyAlgorithmName, byte[] K_S) throws JSchException {
 
     if (hostKeyAlias == null && port != 22) {
       chost = ("[" + chost + "]:" + port);
     }
+
+    String shkc = getConfig("StrictHostKeyChecking");
+    // System.err.println("shkc: "+shkc);
 
     HostKeyRepository hkr = getHostKeyRepository();
 
@@ -996,7 +1058,7 @@ public class Session {
       }
 
       synchronized (hkr) {
-        hkr.remove(chost, kex.getKeyAlgorithName(), null);
+        hkr.remove(chost, keyAlgorithmName, null);
         insert = true;
       }
     }
@@ -1028,7 +1090,7 @@ public class Session {
     }
 
     if (i == HostKeyRepository.OK) {
-      HostKey[] keys = hkr.getHostKey(chost, kex.getKeyAlgorithName());
+      HostKey[] keys = hkr.getHostKey(chost, keyAlgorithmName);
       String _key = Util.byte2str(Util.toBase64(K_S, 0, K_S.length, true));
       for (int j = 0; j < keys.length; j++) {
         if (keys[j].getKey().equals(_key) && keys[j].getMarker().equals("@revoked")) {
@@ -1170,11 +1232,15 @@ public class Session {
   }
 
   Buffer read(Buffer buf) throws Exception {
+    // determine which encryption and authentication mode is currently active
+    // for the server-to-client (s2c) connection
     int j = 0;
     boolean isChaCha20 = (s2ccipher != null && s2ccipher.isChaCha20());
     boolean isAEAD = (s2ccipher != null && s2ccipher.isAEAD());
     boolean isEtM =
         (!isChaCha20 && !isAEAD && s2ccipher != null && s2cmac != null && s2cmac.isEtM());
+
+    // Decrypting
     while (true) {
       buf.reset();
       if (isChaCha20) {
@@ -1268,17 +1334,23 @@ public class Session {
           s2ccipher.update(buf.buffer, 4, j, buf.buffer, 4);
         }
       } else {
+        // fall back to the older Encrypt-and-MAC mode.
         io.getByte(buf.buffer, buf.index, s2ccipher_size);
         buf.index += s2ccipher_size;
         if (s2ccipher != null) {
           s2ccipher.update(buf.buffer, 0, s2ccipher_size, buf.buffer, 0);
         }
+
+        // calculating length of the incoming packet
         j = ((buf.buffer[0] << 24) & 0xff000000) | ((buf.buffer[1] << 16) & 0x00ff0000)
             | ((buf.buffer[2] << 8) & 0x0000ff00) | ((buf.buffer[3]) & 0x000000ff);
         // RFC 4253 6.1. Maximum Packet Length
         if (j < 5 || j > PACKET_MAX_SIZE) {
           start_discard(buf, s2ccipher, s2cmac, 0, PACKET_MAX_SIZE);
         }
+
+        // calculates how many more bytes need to be read from the buffer to get the rest of the
+        // encrypted SSH packet
         int need = j + 4 - s2ccipher_size;
         // if(need<0){
         // throw new IOException("invalid data");
@@ -2253,7 +2325,6 @@ public class Session {
   public void setThreadFactory(ThreadFactory threadFactory) {
     this.threadFactory = Objects.requireNonNull(threadFactory);
   }
-
 
   /**
    * Returns the thread factory used by this instance.
@@ -3259,8 +3330,11 @@ public class Session {
     String[] _sigs = Util.split(sigs, ",");
     for (int i = 0; i < _sigs.length; i++) {
       try {
+        // Map certificate algorithm names to their base signature algorithm.
+        // Certificate algorithms use the same Signature implementations as their base algorithms.
+        String sigToCheck = OpenSshCertificateKeyTypes.getBaseKeyType(_sigs[i]);
         Class<? extends Signature> c =
-            Class.forName(JSch.getConfig(_sigs[i])).asSubclass(Signature.class);
+            Class.forName(JSch.getConfig(sigToCheck)).asSubclass(Signature.class);
         final Signature sig = c.getDeclaredConstructor().newInstance();
         sig.init();
       } catch (Exception | LinkageError e) {
@@ -3277,6 +3351,57 @@ public class Session {
       }
     }
     return foo;
+  }
+
+  /**
+   * Checks if a CA signature algorithm is allowed and available at runtime.
+   * <p>
+   * This method validates that the given algorithm is:
+   * <ol>
+   * <li>Listed in the configured {@code ca_signature_algorithms}</li>
+   * <li>Not in the list of unavailable signature algorithms (as determined by
+   * {@code CheckSignatures})</li>
+   * </ol>
+   * </p>
+   *
+   * @param algorithm the CA signature algorithm to check
+   * @throws JSchException if the algorithm is not allowed or not available at runtime
+   */
+  void checkCASignatureAlgorithm(String algorithm) throws JSchException {
+    String caSignatureAlgorithms = getConfig("ca_signature_algorithms");
+
+    if (caSignatureAlgorithms != null && !caSignatureAlgorithms.isEmpty()) {
+      // Check if algorithm is in the allowed list
+      String[] allowedAlgorithms = Util.split(caSignatureAlgorithms, ",");
+      boolean isAllowed = false;
+      for (String allowed : allowedAlgorithms) {
+        if (allowed.equals(algorithm)) {
+          isAllowed = true;
+          break;
+        }
+      }
+
+      if (!isAllowed) {
+        throw new JSchException("CA signature algorithm '" + algorithm
+            + "' is not in the allowed ca_signature_algorithms list: " + caSignatureAlgorithms);
+      }
+    }
+
+    // Check if the algorithm is in the cached unavailable signatures list.
+    // Copy volatile field to local variable to avoid race condition.
+    String[] unavailableSigs = not_available_shks;
+    if (unavailableSigs != null) {
+      for (String unavailable : unavailableSigs) {
+        if (unavailable.equals(algorithm)) {
+          throw new JSchException(
+              "CA signature algorithm '" + algorithm + "' is not available at runtime. "
+                  + "This may be due to missing cryptographic provider support "
+                  + "(e.g., Ed25519 on Java 8 without Bouncy Castle).");
+        }
+      }
+    }
+    // If unavailableSigs is null, either all probed algorithms are available,
+    // or the user chose not to probe via CheckSignatures - respect that choice.
   }
 
   /**

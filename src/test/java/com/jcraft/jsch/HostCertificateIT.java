@@ -1,0 +1,309 @@
+package com.jcraft.jsch;
+
+import static com.jcraft.jsch.ResourceUtil.getResourceFile;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.condition.JRE.JAVA_15;
+
+import java.util.Arrays;
+import java.util.List;
+
+import com.github.valfirst.slf4jtest.LoggingEvent;
+import com.github.valfirst.slf4jtest.TestLogger;
+import com.github.valfirst.slf4jtest.TestLoggerFactory;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.EnabledForJreRange;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
+import org.slf4j.LoggerFactory;
+import org.testcontainers.containers.GenericContainer;
+import org.testcontainers.containers.wait.strategy.Wait;
+import org.testcontainers.images.builder.ImageFromDockerfile;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
+
+/**
+ * Integration tests for SSH host certificate validation.
+ * <p>
+ * These tests leverage Testcontainers to spin up a dedicated SSH server in a Docker container,
+ * configured with specific host keys and certificates. The primary goal is to verify JSch's ability
+ * to validate server host keys signed by a Certificate Authority (CA) against a {@code known_hosts}
+ * file.
+ */
+@Testcontainers
+public class HostCertificateIT {
+
+  /** Connection timeout in milliseconds. */
+  private static final int TIMEOUT = 5000;
+  /** Base resource folder for certificates and keys used in the tests. */
+  private static final String CERTIFICATES_BASE_FOLDER = "certificates/host";
+  /** Test logger for capturing JSch internal logs for debugging purposes. */
+  private static final TestLogger jschLogger = TestLoggerFactory.getTestLogger(JSch.class);
+  /** Test logger for capturing SSH server logs (via a placeholder class). */
+  private static final TestLogger sshdLogger =
+      TestLoggerFactory.getTestLogger(HostCertificateIT.class);
+  private static org.slf4j.Logger LOGGER = LoggerFactory.getLogger(HostCertificateIT.class);
+
+  /*
+   * @BeforeAll static void beforeAll() { JSch.setLogger(LOGGER); }
+   *
+   * @AfterAll static void afterAll() { JSch.setLogger(null); }
+   */
+
+  /**
+   * Defines and configures the SSH server Docker container using Testcontainers. The container is
+   * built from a custom Dockerfile that:
+   * <ul>
+   * <li>Starts from a lightweight Alpine Linux image.</li>
+   * <li>Installs an OpenSSH server.</li>
+   * <li>Creates a test user ('luigi').</li>
+   * <li>Copies all necessary configuration, keys, and certificates from the test resources.</li>
+   * <li>Starts the SSH server via a custom entrypoint script.</li>
+   * </ul>
+   */
+  @Container
+  private GenericContainer<?> sshdContainer = new GenericContainer<>(new ImageFromDockerfile()
+      .withFileFromClasspath("sshd_config", CERTIFICATES_BASE_FOLDER + "/sshd_config")
+      .withFileFromClasspath("authorized_keys",
+          CERTIFICATES_BASE_FOLDER + "/user_keys/id_ecdsa_nistp521.pub")
+      .withFileFromClasspath("entrypoint.sh", CERTIFICATES_BASE_FOLDER + "/entrypoint.sh")
+      .withFileFromClasspath("ssh_host_rsa_key", CERTIFICATES_BASE_FOLDER + "/ssh_host_rsa_key")
+      .withFileFromClasspath("ssh_host_rsa_key-cert.pub",
+          CERTIFICATES_BASE_FOLDER + "/ssh_host_rsa_key-cert.pub")
+      .withFileFromClasspath("ssh_host_ecdsa_key", CERTIFICATES_BASE_FOLDER + "/ssh_host_ecdsa_key")
+      .withFileFromClasspath("ssh_host_ecdsa_key-cert.pub",
+          CERTIFICATES_BASE_FOLDER + "/ssh_host_ecdsa_key-cert.pub")
+      .withFileFromClasspath("ssh_host_ed25519_key",
+          CERTIFICATES_BASE_FOLDER + "/ssh_host_ed25519_key")
+      .withFileFromClasspath("ssh_host_ed25519_key-cert.pub",
+          CERTIFICATES_BASE_FOLDER + "/ssh_host_ed25519_key-cert.pub")
+      .withFileFromClasspath("Dockerfile", CERTIFICATES_BASE_FOLDER + "/Dockerfile"))
+      .withExposedPorts(22).waitingFor(Wait.forLogMessage(".*Server listening on :: port 22.*", 1));
+
+  /**
+   * Provides a stream of server host key algorithms to be used in parameterized tests. Each string
+   * corresponds to the {@code server_host_key} configuration option in JSch.
+   *
+   * @return An iterable of host key algorithm strings for test parameterization.
+   */
+  public static List<String> privateKeyParams() {
+    return Arrays.asList(
+        "ecdsa-sha2-nistp256-cert-v01@openssh.com,ecdsa-sha2-nistp384-cert-v01@openssh.com,ecdsa-sha2-nistp521-cert-v01@openssh.com",
+        "ssh-rsa-cert-v01@openssh.com,rsa-sha2-512-cert-v01@openssh.com,rsa-sha2-256-cert-v01@openssh.com");
+  }
+
+  /**
+   * Tests the successful connection scenario where the server's host certificate is signed by a CA
+   * that is trusted in the client's {@code known_hosts} file. This test is parameterized to run
+   * against different host key algorithms.
+   *
+   * @param algorithm The server host key algorithm to test, provided by
+   *        {@link #privateKeyParams()}.
+   * @throws Exception if any error occurs during the test.
+   */
+  @MethodSource("privateKeyParams")
+  @ParameterizedTest(name = "hostkey algorithm: {0}")
+  public void hostKeyTestHappyPath(String algorithm) throws Exception {
+    JSch ssh = new JSch();
+    ssh.addIdentity(
+        getResourceFile(this.getClass(), CERTIFICATES_BASE_FOLDER + "/user_keys/id_ecdsa_nistp521"),
+        getResourceFile(this.getClass(),
+            CERTIFICATES_BASE_FOLDER + "/user_keys/id_ecdsa_nistp521.pub"),
+        null);
+
+    ssh.setKnownHosts(getResourceFile(this.getClass(), "certificates/known_hosts"));
+    Session session =
+        ssh.getSession("root", sshdContainer.getHost(), sshdContainer.getFirstMappedPort());
+    session.setConfig("enable_auth_none", "no");
+    session.setConfig("StrictHostKeyChecking", "yes");
+    session.setConfig("PreferredAuthentications", "publickey");
+    session.setConfig("server_host_key", algorithm);
+    assertDoesNotThrow(() -> {
+      connectSftp(session);
+    });
+  }
+
+  /**
+   * Tests the failure scenario where the server's host certificate cannot be trusted. This test
+   * verifies that a {@link JSchHostKeyException} is thrown, as expected when
+   * {@code StrictHostKeyChecking} is enabled and the host key/certificate does not match any entry
+   * in the {@code known_hosts} file.
+   *
+   * @param algorithm The server host key algorithm to test, provided by
+   *        {@link #privateKeyParams()}.
+   * @throws Exception if any error occurs during the test setup.
+   */
+  @MethodSource("privateKeyParams")
+  @ParameterizedTest(name = "hostkey algorithm: {0}")
+  public void hostKeyTestNotTrustedCA(String algorithm) throws Exception {
+    JSch ssh = new JSch();
+    ssh.addIdentity(
+        getResourceFile(this.getClass(), CERTIFICATES_BASE_FOLDER + "/user_keys/id_ecdsa_nistp521"),
+        getResourceFile(this.getClass(),
+            CERTIFICATES_BASE_FOLDER + "/user_keys/id_ecdsa_nistp521.pub"),
+        null);
+
+    Session session = setup(ssh, algorithm);
+    assertThrows(JSchHostKeyException.class, () -> {
+      connectSftp(session);
+    });
+  }
+
+  /**
+   * Tests the happy-path scenario for {@code ssh-ed25519-cert-v01@openssh.com} host certificates
+   * using the default Ed25519 verification implementation.
+   *
+   * @throws Exception if any error occurs during the test.
+   */
+  @Test
+  public void hostKeyTestHappyPathEd25519CertTest() throws Exception {
+    Session session = createEd25519HostCertSession(true);
+    assertDoesNotThrow(() -> connectSftp(session));
+  }
+
+  /**
+   * Tests the happy-path scenario for {@code ssh-ed25519-cert-v01@openssh.com} host certificates
+   * using the BouncyCastle Ed25519 verification implementation.
+   *
+   * @throws Exception if any error occurs during the test.
+   */
+  @Test
+  public void hostKeyTestHappyPathEd25519CertBCTest() throws Exception {
+    Session session = createEd25519HostCertSession(true);
+    session.setConfig("keypairgen.eddsa", "com.jcraft.jsch.bc.KeyPairGenEdDSA");
+    session.setConfig("ssh-ed25519", "com.jcraft.jsch.bc.SignatureEd25519");
+    assertDoesNotThrow(() -> connectSftp(session));
+  }
+
+  /**
+   * Tests the happy-path scenario for {@code ssh-ed25519-cert-v01@openssh.com} host certificates
+   * using the native Java 15+ JCE Ed25519 verification implementation.
+   *
+   * @throws Exception if any error occurs during the test.
+   */
+  @Test
+  @EnabledForJreRange(min = JAVA_15)
+  public void hostKeyTestHappyPathEd25519CertJava15Test() throws Exception {
+    Session session = createEd25519HostCertSession(true);
+    session.setConfig("keypairgen.eddsa", "com.jcraft.jsch.jce.KeyPairGenEdDSA");
+    session.setConfig("ssh-ed25519", "com.jcraft.jsch.jce.SignatureEd25519");
+    assertDoesNotThrow(() -> connectSftp(session));
+  }
+
+  /**
+   * Tests the failure scenario for {@code ssh-ed25519-cert-v01@openssh.com} host certificates
+   * (untrusted CA) using the default Ed25519 verification implementation.
+   *
+   * @throws Exception if any error occurs during the test.
+   */
+  @Test
+  public void hostKeyTestNotTrustedCAEd25519CertTest() throws Exception {
+    Session session = createEd25519HostCertSession(false);
+    assertThrows(JSchHostKeyException.class, () -> connectSftp(session));
+  }
+
+  /**
+   * Tests the failure scenario for {@code ssh-ed25519-cert-v01@openssh.com} host certificates
+   * (untrusted CA) using the BouncyCastle Ed25519 verification implementation.
+   *
+   * @throws Exception if any error occurs during the test.
+   */
+  @Test
+  public void hostKeyTestNotTrustedCAEd25519CertBCTest() throws Exception {
+    Session session = createEd25519HostCertSession(false);
+    session.setConfig("keypairgen.eddsa", "com.jcraft.jsch.bc.KeyPairGenEdDSA");
+    session.setConfig("ssh-ed25519", "com.jcraft.jsch.bc.SignatureEd25519");
+    assertThrows(JSchHostKeyException.class, () -> connectSftp(session));
+  }
+
+  /**
+   * Tests the failure scenario for {@code ssh-ed25519-cert-v01@openssh.com} host certificates
+   * (untrusted CA) using the native Java 15+ JCE Ed25519 verification implementation.
+   *
+   * @throws Exception if any error occurs during the test.
+   */
+  @Test
+  @EnabledForJreRange(min = JAVA_15)
+  public void hostKeyTestNotTrustedCAEd25519CertJava15Test() throws Exception {
+    Session session = createEd25519HostCertSession(false);
+    session.setConfig("keypairgen.eddsa", "com.jcraft.jsch.jce.KeyPairGenEdDSA");
+    session.setConfig("ssh-ed25519", "com.jcraft.jsch.jce.SignatureEd25519");
+    assertThrows(JSchHostKeyException.class, () -> connectSftp(session));
+  }
+
+  /**
+   * Creates a session configured for {@code ssh-ed25519-cert-v01@openssh.com} host certificate
+   * validation, optionally with the trusted CA in the client's {@code known_hosts} file.
+   *
+   * @param trustedCA {@code true} to load the trusted-CA {@code known_hosts} file; {@code false} to
+   *        leave the CA untrusted (simulating a host key rejection scenario).
+   * @return A configured {@link Session} ready for connection.
+   * @throws Exception if any error occurs during setup.
+   */
+  private Session createEd25519HostCertSession(boolean trustedCA) throws Exception {
+    JSch ssh = new JSch();
+    ssh.addIdentity(
+        getResourceFile(this.getClass(), CERTIFICATES_BASE_FOLDER + "/user_keys/id_ecdsa_nistp521"),
+        getResourceFile(this.getClass(),
+            CERTIFICATES_BASE_FOLDER + "/user_keys/id_ecdsa_nistp521.pub"),
+        null);
+    if (trustedCA) {
+      ssh.setKnownHosts(getResourceFile(this.getClass(), "certificates/known_hosts"));
+    }
+    return setup(ssh, "ssh-ed25519-cert-v01@openssh.com");
+  }
+
+  /**
+   * Helper method to create and configure a JSch {@link Session} with common settings for the
+   * tests.
+   *
+   * @param ssh The JSch instance.
+   * @param algorithm The server host key algorithm to prefer.
+   * @return A configured {@link Session} object.
+   * @throws JSchException if there is an error creating the session.
+   */
+  private Session setup(JSch ssh, String algorithm) throws JSchException {
+    Session session =
+        ssh.getSession("root", sshdContainer.getHost(), sshdContainer.getFirstMappedPort());
+    session.setConfig("enable_auth_none", "no");
+    session.setConfig("StrictHostKeyChecking", "yes");
+    session.setConfig("PreferredAuthentications", "publickey");
+    session.setConfig("server_host_key", algorithm);
+    return session;
+  }
+
+  /**
+   * Establishes a session connection, opens an SFTP channel to verify connectivity, and then
+   * cleanly disconnects. If any exception occurs, it prints diagnostic information before
+   * re-throwing the exception.
+   *
+   * @param session The session to connect with.
+   * @throws JSchException if a JSch-specific error occurs.
+   */
+  private void connectSftp(Session session) throws JSchException {
+    try {
+      session.setTimeout(TIMEOUT);
+      session.connect();
+      ChannelSftp sftp = (ChannelSftp) session.openChannel("sftp");
+      sftp.connect(TIMEOUT);
+      assertTrue(sftp.isConnected());
+      sftp.disconnect();
+      session.disconnect();
+    } catch (Exception e) {
+      printInfo();
+      throw e;
+    }
+  }
+
+  /**
+   * A utility method for debugging. Prints all captured log events from both the JSch client and
+   * the mock SSH server to the console.
+   */
+  private void printInfo() {
+    jschLogger.getAllLoggingEvents().stream().map(LoggingEvent::getFormattedMessage)
+        .forEach(System.out::println);
+    sshdLogger.getAllLoggingEvents().stream().map(LoggingEvent::getFormattedMessage)
+        .forEach(System.out::println);
+  }
+}
