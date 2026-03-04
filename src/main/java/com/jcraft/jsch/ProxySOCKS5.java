@@ -91,6 +91,10 @@ public class ProxySOCKS5 implements Proxy {
 
       byte[] buf = new byte[1024];
       int index = 0;
+      int numMethods = 1;
+      if (user != null && passwd != null) {
+        numMethods++;
+      }
 
       /*
        * +----+----------+----------+ |VER | NMETHODS | METHODS | +----+----------+----------+ | 1 |
@@ -108,9 +112,11 @@ public class ProxySOCKS5 implements Proxy {
 
       buf[index++] = 5;
 
-      buf[index++] = 2;
+      buf[index++] = (byte) numMethods;
       buf[index++] = 0; // NO AUTHENTICATION REQUIRED
-      buf[index++] = 2; // USERNAME/PASSWORD
+      if (user != null && passwd != null) {
+        buf[index++] = 2; // USERNAME/PASSWORD
+      }
 
       out.write(buf, 0, index);
 
