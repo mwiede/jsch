@@ -35,6 +35,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
+import java.util.Locale;
 
 public class ProxySOCKS5 implements Proxy {
   private static int DEFAULTPORT = 1080;
@@ -130,13 +131,18 @@ public class ProxySOCKS5 implements Proxy {
       fill(in, buf, 2);
 
       boolean check = false;
-      switch ((buf[1]) & 0xff) {
+      int authMethod = buf[1] & 0xff;
+      String failureMsg = null;
+      switch (authMethod) {
         case 0: // NO AUTHENTICATION REQUIRED
           check = true;
           break;
         case 2: // USERNAME/PASSWORD
-          if (user == null || passwd == null)
+          if (user == null || passwd == null) {
+            failureMsg =
+                "SOCKS5 username/password authentication requested by server with no username/password configured";
             break;
+          }
 
           /*
            * Once the SOCKS V5 server has started, and the client has selected the Username/Password
@@ -174,10 +180,18 @@ public class ProxySOCKS5 implements Proxy {
            */
           // in.read(buf, 0, 2);
           fill(in, buf, 2);
-          if (buf[1] == 0)
+          int status = buf[1] & 0xff;
+          if (status == 0) {
             check = true;
+          } else {
+            failureMsg = String.format(Locale.ROOT,
+                "SOCKS5 username/password authentication failed: server status = %02X", status);
+          }
           break;
         default:
+          failureMsg = String.format(Locale.ROOT,
+              "Unsupported SOCKS5 authentication method requested by server: %02X", authMethod);
+          break;
       }
 
       if (!check) {
@@ -185,7 +199,10 @@ public class ProxySOCKS5 implements Proxy {
           socket.close();
         } catch (Exception eee) {
         }
-        throw new JSchProxyException("fail in SOCKS5 proxy");
+        if (failureMsg == null) {
+          failureMsg = "fail in SOCKS5 proxy";
+        }
+        throw new JSchProxyException(failureMsg);
       }
 
       /*
