@@ -36,6 +36,7 @@ import com.sun.jna.platform.win32.WinBase.SECURITY_ATTRIBUTES;
 import com.sun.jna.platform.win32.WinDef.HWND;
 import com.sun.jna.platform.win32.WinDef.LPARAM;
 import com.sun.jna.platform.win32.WinDef.LRESULT;
+import com.sun.jna.platform.win32.WinError;
 import com.sun.jna.platform.win32.WinNT;
 import com.sun.jna.platform.win32.WinNT.HANDLE;
 import com.sun.jna.platform.win32.WinUser;
@@ -85,8 +86,10 @@ public class PageantConnector implements AgentConnector {
       throw new AgentProxyException("Pageant is not runnning.");
     }
 
-    String mapname =
-        String.format(Locale.ROOT, "PageantRequest%08x", kernel32.GetCurrentThreadId());
+    String threadId = JavaVersion.getVersion() >= 19
+        ? String.format(Locale.ROOT, "%08x%08x", kernel32.GetCurrentProcessId(), JavaThreadId.get())
+        : String.format(Locale.ROOT, "%08x", kernel32.GetCurrentThreadId());
+    String mapname = "JSchPageantRequest" + threadId;
 
     HANDLE sharedFile = null;
     Pointer sharedMemory = null;
@@ -96,13 +99,19 @@ public class PageantConnector implements AgentConnector {
 
       sharedFile = kernel32.CreateFileMapping(WinBase.INVALID_HANDLE_VALUE, psa,
           WinNT.PAGE_READWRITE, 0, AGENT_MAX_MSGLEN, mapname);
-      if (sharedFile == null || sharedFile == WinBase.INVALID_HANDLE_VALUE) {
-        throw new AgentProxyException("Unable to create shared file mapping.");
+      int lastError = kernel32.GetLastError();
+      if (sharedFile == null) {
+        throw new AgentProxyException(
+            "Unable to CreateFileMapping(): GetLastError() = " + lastError);
+      }
+      if (lastError == WinError.ERROR_ALREADY_EXISTS) {
+        throw new AgentProxyException("Shared file mapping already exists");
       }
 
-      sharedMemory = kernel32.MapViewOfFile(sharedFile, WinNT.SECTION_MAP_WRITE, 0, 0, 0);
+      sharedMemory = kernel32.MapViewOfFile(sharedFile, WinBase.FILE_MAP_WRITE, 0, 0, 0);
       if (sharedMemory == null) {
-        throw new AgentProxyException("Unable to create shared file mapping.");
+        throw new AgentProxyException(
+            "Unable to MapViewOfFile(): GetLastError() = " + kernel32.GetLastError());
       }
 
       sharedMemory.write(0, buffer.buffer, 0, buffer.getLength());
@@ -124,13 +133,18 @@ public class PageantConnector implements AgentConnector {
         sharedMemory.read(4, buffer.buffer, 0, i);
       } else {
         throw new AgentProxyException(
-            "User32.SendMessage() returned 0 with cds.dwData: " + Long.toHexString(foo));
+            "SendMessage() returned 0 with cds.dwData: " + Long.toHexString(foo));
       }
     } finally {
-      if (sharedMemory != null)
-        kernel32.UnmapViewOfFile(sharedMemory);
-      if (sharedFile != null)
-        kernel32.CloseHandle(sharedFile);
+      try {
+        if (sharedMemory != null) {
+          kernel32.UnmapViewOfFile(sharedMemory);
+        }
+      } finally {
+        if (sharedFile != null) {
+          kernel32.CloseHandle(sharedFile);
+        }
+      }
     }
   }
 
