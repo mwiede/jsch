@@ -3212,11 +3212,16 @@ public class Session {
       getLogger().log(Logger.INFO, "CheckKexes: " + kexes);
     }
 
+    String kex = getConfig("kex");
+
     List<String> result = new ArrayList<>();
     String[] _kexes = Util.split(kexes, ",");
     for (int i = 0; i < _kexes.length; i++) {
-      if (!checkKex(this, getConfig(_kexes[i]))) {
-        result.add(_kexes[i]);
+      String k = _kexes[i];
+      if (kex.indexOf(k) == -1)
+        continue;
+      if (!checkKex(this, getConfig(k))) {
+        result.add(k);
       }
     }
     if (result.size() == 0)
