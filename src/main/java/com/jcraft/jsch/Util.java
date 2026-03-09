@@ -35,7 +35,8 @@ import java.net.Socket;
 import java.net.SocketTimeoutException;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
-import java.util.Vector;
+import java.util.ArrayList;
+import java.util.List;
 
 class Util {
 
@@ -128,24 +129,20 @@ class Util {
     if (foo == null)
       return null;
     byte[] buf = Util.str2byte(foo);
-    Vector<String> bar = new Vector<>();
+    List<String> bar = new ArrayList<>();
     int start = 0;
     int index;
     while (true) {
       index = foo.indexOf(split, start);
       if (index >= 0) {
-        bar.addElement(Util.byte2str(buf, start, index - start));
+        bar.add(Util.byte2str(buf, start, index - start));
         start = index + 1;
         continue;
       }
-      bar.addElement(Util.byte2str(buf, start, buf.length - start));
+      bar.add(Util.byte2str(buf, start, buf.length - start));
       break;
     }
-    String[] result = new String[bar.size()];
-    for (int i = 0; i < result.length; i++) {
-      result[i] = bar.elementAt(i);
-    }
-    return result;
+    return bar.toArray(new String[0]);
   }
 
   static boolean glob(byte[] pattern, byte[] name) {
