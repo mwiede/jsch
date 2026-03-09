@@ -1423,8 +1423,7 @@ public class ChannelSftp extends ChannelSession {
               close();
               return -1;
             }
-            // throwStatusError(buf, i);
-            throw new IOException("error");
+            throw new IOException("SFTP status error: " + i);
           }
 
           buf.rewind();
