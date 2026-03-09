@@ -2823,16 +2823,26 @@ public class ChannelSftp extends ChannelSession {
 
   private static String sshExceptionDescription(int code) {
     switch (code) {
-      case SSH_FX_OK: return "SSH_FX_OK";
-      case SSH_FX_EOF: return "SSH_FX_EOF";
-      case SSH_FX_NO_SUCH_FILE: return "SSH_FX_NO_SUCH_FILE";
-      case SSH_FX_PERMISSION_DENIED: return "SSH_FX_PERMISSION_DENIED";
-      case SSH_FX_FAILURE: return "SSH_FX_FAILURE";
-      case SSH_FX_BAD_MESSAGE: return "SSH_FX_BAD_MESSAGE";
-      case SSH_FX_NO_CONNECTION: return "SSH_FX_NO_CONNECTION";
-      case SSH_FX_CONNECTION_LOST: return "SSH_FX_CONNECTION_LOST";
-      case SSH_FX_OP_UNSUPPORTED: return "SSH_FX_OP_UNSUPPORTED";
-      default: return "Unknown code: (" + code + ")";
+      case SSH_FX_OK:
+        return "SSH_FX_OK";
+      case SSH_FX_EOF:
+        return "SSH_FX_EOF";
+      case SSH_FX_NO_SUCH_FILE:
+        return "SSH_FX_NO_SUCH_FILE";
+      case SSH_FX_PERMISSION_DENIED:
+        return "SSH_FX_PERMISSION_DENIED";
+      case SSH_FX_FAILURE:
+        return "SSH_FX_FAILURE";
+      case SSH_FX_BAD_MESSAGE:
+        return "SSH_FX_BAD_MESSAGE";
+      case SSH_FX_NO_CONNECTION:
+        return "SSH_FX_NO_CONNECTION";
+      case SSH_FX_CONNECTION_LOST:
+        return "SSH_FX_CONNECTION_LOST";
+      case SSH_FX_OP_UNSUPPORTED:
+        return "SSH_FX_OP_UNSUPPORTED";
+      default:
+        return "Unknown code: (" + code + ")";
     }
   }
 
