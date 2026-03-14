@@ -1414,18 +1414,22 @@ public class Session {
       }
 
       if (inflater != null) {
-        // inflater.uncompress(buf);
-        int pad = buf.buffer[4];
-        uncompress_len[0] = buf.index - 5 - pad;
-        byte[] foo = inflater.uncompress(buf.buffer, 5, uncompress_len);
-        if (foo != null) {
-          buf.buffer = foo;
-          buf.index = 5 + uncompress_len[0];
-        } else {
-          if (getLogger().isEnabled(Logger.ERROR)) {
-            getLogger().log(Logger.ERROR, "fail in inflater");
+        try {
+          // inflater.uncompress(buf);
+          int pad = buf.buffer[4];
+          uncompress_len[0] = buf.index - 5 - pad;
+          byte[] foo = inflater.uncompress(buf.buffer, 5, uncompress_len);
+          if (foo != null) {
+            buf.buffer = foo;
+            buf.index = 5 + uncompress_len[0];
+          } else {
+            if (getLogger().isEnabled(Logger.ERROR)) {
+              getLogger().log(Logger.ERROR, "fail in inflater");
+            }
+            break;
           }
-          break;
+        } catch (Compression.InflaterException e) {
+          throw new JSchException(e.getMessage(), e);
         }
       }
 
@@ -2205,7 +2209,7 @@ public class Session {
       in_kex = false;
       if (getLogger().isEnabled(Logger.INFO)) {
         getLogger().log(Logger.INFO,
-            "Caught an exception, leaving main loop due to " + e.getMessage());
+            "Caught an exception, leaving main loop due to " + e.getMessage(), e);
       }
       // System.err.println("# Session.run");
       // e.printStackTrace();
