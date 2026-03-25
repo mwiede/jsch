@@ -23,7 +23,7 @@ Not much. Check the example code in the [examples](https://github.com/mwiede/jsc
 
 Up until `0.2.26` the versioning followed the original jsch scheme, from `2.27.0` on, we switched to [semantic versioning](https://semver.org), expressing that the library api is stable and used in production.
 
-## How to you use this library as a replacement for `com.jcraft:jsch`
+## How do you use this library as a replacement for `com.jcraft:jsch`
 
 Make sure, that you only have one jsch dependency on your classpath. For example you can check the output of `mvn dependency:tree`.
 
