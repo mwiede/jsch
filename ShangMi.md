@@ -80,9 +80,10 @@ Z = SM3(entlen ‖ ID ‖ a ‖ b ‖ Gx ‖ Gy ‖ xA ‖ yA)
 The KAP identity value is `{0x01, 0x02, …, 0x08, 0x01, …, 0x08}` (16 raw bytes), **not** the
 ASCII string `"1234567812345678"` used for host-key signatures.
 
-> **Note:** BouncyCastle's `SM2KeyExchange` class implements the full GM/T 0003.3 standard but
-> produces a different result from OpenEuler's degenerate implementation. JSch therefore uses a
-> manual KAP implementation (`ECDHSM2`) that matches the C reference code exactly.
+> **Note:** BouncyCastle's `SM2KeyExchange` class implements GM/T 0003.3 correctly and produces
+> the same shared secret as the manual implementation — provided `calculateKey()` is called with
+> `kLen` in **bits** (pass `256`, not `32`). JSch uses the manual implementation (`ECDHSM2`) for
+> transparency; `ECDHSM2BC` in the test sources demonstrates BC equivalence.
 
 ## Using ShangMi Algorithms in JSch
 
