@@ -50,6 +50,7 @@ public abstract class KeyPair {
   public static final int UNKNOWN = 4;
   public static final int ED25519 = 5;
   public static final int ED448 = 6;
+  public static final int SM2 = 7;
 
   static final int VENDOR_OPENSSH = 0;
   static final int VENDOR_FSECURE = 1;
@@ -1405,6 +1406,38 @@ public abstract class KeyPair {
                   publicKeyComment = Util.byte2str(buf, start, i - start);
                 }
               }
+            } else if (buf[0] == 's' && buf[1] == 'm' && buf[2] == '2') {
+              // Always override: "BEGIN EC PRIVATE KEY" sets ECDSA, but SM2 also uses EC keys
+              type = SM2;
+              i = 0;
+              while (i < len) {
+                if (buf[i] == ' ')
+                  break;
+                i++;
+              }
+              i++;
+              if (i < len) {
+                int start = i;
+                while (i < len) {
+                  if (buf[i] == ' ')
+                    break;
+                  i++;
+                }
+                publickeyblob = Util.fromBase64(buf, start, i - start);
+              }
+              if (i++ < len) {
+                int start = i;
+                while (i < len) {
+                  if (buf[i] == '\n')
+                    break;
+                  i++;
+                }
+                if (i > 0 && buf[i - 1] == '\r')
+                  i--;
+                if (start < i) {
+                  publicKeyComment = Util.byte2str(buf, start, i - start);
+                }
+              }
             }
           }
         } catch (Exception ee) {
@@ -1425,6 +1458,8 @@ public abstract class KeyPair {
         kpair = new KeyPairEd25519(instLogger, pubkey, null);
       } else if (type == ED448) {
         kpair = new KeyPairEd448(instLogger, pubkey, null);
+      } else if (type == SM2) {
+        kpair = new KeyPairSM2(instLogger, publickeyblob);
       } else if (vendor == VENDOR_PKCS8) {
         kpair = new KeyPairPKCS8(instLogger);
       }
@@ -1784,6 +1819,9 @@ public abstract class KeyPair {
       } else {
         return new KeyPairEd448(instLogger, pub_array, null);
       }
+    } else if (typ.equals("sm2")) {
+      // Re-parse from the full blob: [string "sm2"][string "sm2"][string ecPoint]
+      return new KeyPairSM2(instLogger, pubkeyblob);
     } else {
       throw new JSchException("key type " + typ + " is not supported");
     }
