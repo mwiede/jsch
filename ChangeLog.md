@@ -1,3 +1,20 @@
+* [2.28.0](https://github.com/mwiede/jsch/releases/tag/jsch-2.28.0)
+  * Restrict length of decompressed packets (security fix).
+  * Add support for OpenSSH certificates, resolve [#31](https://github.com/mwiede/jsch/issues/31) ([#901](https://github.com/mwiede/jsch/pull/901))
+* [2.27.9](https://github.com/mwiede/jsch/releases/tag/jsch-2.27.9)
+  * [#765](https://github.com/mwiede/jsch/issues/765): Only check KEX algorithms that are configured, similar to what is done for Cipher & MAC algorithms, to improve performance.
+  * Switch from using Vector to ArrayList.
+  * Improve error message when receiving non-EOF status code during read ([#1014](https://github.com/mwiede/jsch/pull/1014))
+  * [#1006](https://github.com/mwiede/jsch/issues/1006): Improve exception message in ProxySOCKS5 when authentication fails.
+  * [#1006](https://github.com/mwiede/jsch/issues/1006): Don't request username/password authentication in ProxySOCKS5 if no username/password has been set.
+* [2.27.8](https://github.com/mwiede/jsch/releases/tag/jsch-2.27.8)
+  * Add support for OpenSSH-Agent on Windows ([#964](https://github.com/mwiede/jsch/pull/964))
+  * Fix multi-release jar to avoid API differences between versions.
+  * Infinite loop fix.
+* [2.27.7](https://github.com/mwiede/jsch/releases/tag/jsch-2.27.7)
+  * SftpATTRS constructor should be public ([#950](https://github.com/mwiede/jsch/pull/950))
+* [2.27.6](https://github.com/mwiede/jsch/releases/tag/jsch-2.27.6)
+  * Fix logging a 'port is null' error when parsing openssh config file ([#934](https://github.com/mwiede/jsch/pull/934))
 * [2.27.5](https://github.com/mwiede/jsch/releases/tag/jsch-2.27.5)
   * Throw JSchException if an incorrect passphrase is provided to `JSch.addIdentity()`
 * [2.27.4](https://github.com/mwiede/jsch/releases/tag/jsch-2.27.4)
