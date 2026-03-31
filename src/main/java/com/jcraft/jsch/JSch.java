@@ -26,6 +26,8 @@
 
 package com.jcraft.jsch;
 
+import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.Collections;
 import java.util.Enumeration;
@@ -38,12 +40,18 @@ public class JSch {
   /** The version number. */
   public static final String VERSION = Version.getVersion();
 
+  private static final String CERTIFICATE_FILENAME_SUFFIX = "-cert.pub";
+
   static Hashtable<String, String> config = new Hashtable<>();
 
   static {
     config.put("kex", Util.getSystemProperty("jsch.kex",
         "mlkem768x25519-sha256,curve25519-sha256,curve25519-sha256@libssh.org,ecdh-sha2-nistp256,ecdh-sha2-nistp384,ecdh-sha2-nistp521,diffie-hellman-group-exchange-sha256,diffie-hellman-group16-sha512,diffie-hellman-group18-sha512,diffie-hellman-group14-sha256"));
     config.put("server_host_key", Util.getSystemProperty("jsch.server_host_key",
+        "ssh-ed25519-cert-v01@openssh.com,ecdsa-sha2-nistp256-cert-v01@openssh.com,ecdsa-sha2-nistp384-cert-v01@openssh.com,ecdsa-sha2-nistp521-cert-v01@openssh.com,rsa-sha2-512-cert-v01@openssh.com,rsa-sha2-256-cert-v01@openssh.com,ssh-ed25519,ecdsa-sha2-nistp256,ecdsa-sha2-nistp384,ecdsa-sha2-nistp521,rsa-sha2-512,rsa-sha2-256"));
+    // CASignatureAlgorithms: specifies which algorithms are allowed for signing of certificates
+    // by certificate authorities (CAs). Default matches OpenSSH 8.2+ (excludes ssh-rsa/SHA-1).
+    config.put("ca_signature_algorithms", Util.getSystemProperty("jsch.ca_signature_algorithms",
         "ssh-ed25519,ecdsa-sha2-nistp256,ecdsa-sha2-nistp384,ecdsa-sha2-nistp521,rsa-sha2-512,rsa-sha2-256"));
     config.put("prefer_known_host_key_types",
         Util.getSystemProperty("jsch.prefer_known_host_key_types", "yes"));
@@ -239,7 +247,7 @@ public class JSch {
     config.put("PreferredAuthentications", Util.getSystemProperty("jsch.preferred_authentications",
         "gssapi-with-mic,publickey,keyboard-interactive,password"));
     config.put("PubkeyAcceptedAlgorithms", Util.getSystemProperty("jsch.client_pubkey",
-        "ssh-ed25519,ecdsa-sha2-nistp256,ecdsa-sha2-nistp384,ecdsa-sha2-nistp521,rsa-sha2-512,rsa-sha2-256"));
+        "ssh-ed25519-cert-v01@openssh.com,ecdsa-sha2-nistp256-cert-v01@openssh.com,ecdsa-sha2-nistp384-cert-v01@openssh.com,ecdsa-sha2-nistp521-cert-v01@openssh.com,rsa-sha2-512-cert-v01@openssh.com,rsa-sha2-256-cert-v01@openssh.com,ssh-ed25519,ecdsa-sha2-nistp256,ecdsa-sha2-nistp384,ecdsa-sha2-nistp521,rsa-sha2-512,rsa-sha2-256"));
     config.put("enable_pubkey_auth_query",
         Util.getSystemProperty("jsch.enable_pubkey_auth_query", "yes"));
     config.put("try_additional_pubkey_algorithms",
@@ -259,6 +267,15 @@ public class JSch {
 
     config.put("MaxAuthTries", Util.getSystemProperty("jsch.max_auth_tries", "6"));
     config.put("ClearAllForwardings", "no");
+    /*
+     * host_certificate_to_key_fallback: Controls behavior when host certificate validation fails. -
+     * "yes" (default): Fall back to standard public key verification using the certificate's
+     * embedded public key. This matches OpenSSH behavior, which always performs this fallback. -
+     * "no": Reject connection if certificate validation fails (more secure, but may break existing
+     * setups when upgrading to a JSch version with certificate support).
+     */
+    config.put("host_certificate_to_key_fallback",
+        Util.getSystemProperty("jsch.host_certificate_to_key_fallback", "yes"));
   }
 
   final InstanceLogger instLogger = new InstanceLogger();
@@ -320,11 +337,11 @@ public class JSch {
    * "user.name" will be referred.
    *
    * @param host hostname
-   * @throws JSchException if <code>username</code> or <code>host</code> are invalid.
    * @return the instance of <code>Session</code> class.
+   * @throws JSchException if <code>username</code> or <code>host</code> are invalid.
    * @see #getSession(String username, String host, int port)
-   * @see com.jcraft.jsch.Session
-   * @see com.jcraft.jsch.ConfigRepository
+   * @see Session
+   * @see ConfigRepository
    */
   public Session getSession(String host) throws JSchException {
     return getSession(null, host, 22);
@@ -337,10 +354,10 @@ public class JSch {
    *
    * @param username user name
    * @param host hostname
-   * @throws JSchException if <code>username</code> or <code>host</code> are invalid.
    * @return the instance of <code>Session</code> class.
+   * @throws JSchException if <code>username</code> or <code>host</code> are invalid.
    * @see #getSession(String username, String host, int port)
-   * @see com.jcraft.jsch.Session
+   * @see Session
    */
   public Session getSession(String username, String host) throws JSchException {
     return getSession(username, host, 22);
@@ -354,10 +371,10 @@ public class JSch {
    * @param username user name
    * @param host hostname
    * @param port port number
-   * @throws JSchException if <code>username</code> or <code>host</code> are invalid.
    * @return the instance of <code>Session</code> class.
+   * @throws JSchException if <code>username</code> or <code>host</code> are invalid.
    * @see #getSession(String username, String host, int port)
-   * @see com.jcraft.jsch.Session
+   * @see Session
    */
   public Session getSession(String username, String host, int port) throws JSchException {
     if (host == null) {
@@ -383,8 +400,8 @@ public class JSch {
    * Sets the hostkey repository.
    *
    * @param hkrepo
-   * @see com.jcraft.jsch.HostKeyRepository
-   * @see com.jcraft.jsch.KnownHosts
+   * @see HostKeyRepository
+   * @see KnownHosts
    */
   public void setHostKeyRepository(HostKeyRepository hkrepo) {
     known_hosts = hkrepo;
@@ -395,7 +412,7 @@ public class JSch {
    *
    * @param filename filename of known_hosts file.
    * @throws JSchException if the given filename is invalid.
-   * @see com.jcraft.jsch.KnownHosts
+   * @see KnownHosts
    */
   public void setKnownHosts(String filename) throws JSchException {
     if (known_hosts == null)
@@ -412,7 +429,7 @@ public class JSch {
    *
    * @param stream the instance of InputStream from known_hosts file.
    * @throws JSchException if an I/O error occurs.
-   * @see com.jcraft.jsch.KnownHosts
+   * @see KnownHosts
    */
   public void setKnownHosts(InputStream stream) throws JSchException {
     if (known_hosts == null)
@@ -429,8 +446,8 @@ public class JSch {
    * <code>KnownHosts</code>.
    *
    * @return current hostkey repository.
-   * @see com.jcraft.jsch.HostKeyRepository
-   * @see com.jcraft.jsch.KnownHosts
+   * @see HostKeyRepository
+   * @see KnownHosts
    */
   public HostKeyRepository getHostKeyRepository() {
     if (known_hosts == null)
@@ -492,7 +509,39 @@ public class JSch {
    * @throws JSchException if <code>passphrase</code> is not right.
    */
   public void addIdentity(String prvkey, String pubkey, byte[] passphrase) throws JSchException {
-    Identity identity = IdentityFile.newInstance(prvkey, pubkey, instLogger);
+    byte[] pubkeyFileContent = null;
+    String pubkeyFile = pubkey;
+    Identity identity;
+
+    // If pubkey is null, try to auto-discover certificate file (prvkey + "-cert.pub")
+    // This mimics KeyPair.load() behavior which tries prvkey + ".pub"
+    if (pubkeyFile == null) {
+      String certFile = prvkey + CERTIFICATE_FILENAME_SUFFIX;
+      if (new File(certFile).exists()) {
+        pubkeyFile = certFile;
+      }
+    }
+
+    if (pubkeyFile != null) {
+      try {
+        pubkeyFileContent = Util.fromFile(pubkeyFile);
+      } catch (IOException e) {
+        // Only throw if pubkey was explicitly provided (not auto-discovered)
+        // This matches KeyPair.load() behavior
+        if (pubkey != null) {
+          throw new JSchException(e.toString(), e);
+        }
+        // Otherwise, silently ignore and fall through to IdentityFile
+      }
+    }
+
+    if (pubkeyFileContent != null
+        && OpenSshCertificateAwareIdentityFile.isOpenSshCertificateFile(pubkeyFileContent)) {
+      identity = OpenSshCertificateAwareIdentityFile.newInstance(prvkey, pubkeyFile, instLogger);
+    } else {
+      identity = IdentityFile.newInstance(prvkey, pubkey, instLogger);
+    }
+
     addIdentity(identity, passphrase);
   }
 
@@ -507,7 +556,12 @@ public class JSch {
    */
   public void addIdentity(String name, byte[] prvkey, byte[] pubkey, byte[] passphrase)
       throws JSchException {
-    Identity identity = IdentityFile.newInstance(name, prvkey, pubkey, instLogger);
+    Identity identity;
+    if (OpenSshCertificateAwareIdentityFile.isOpenSshCertificateFile(pubkey)) {
+      identity = OpenSshCertificateAwareIdentityFile.newInstance(name, prvkey, pubkey, instLogger);
+    } else {
+      identity = IdentityFile.newInstance(name, prvkey, pubkey, instLogger);
+    }
     addIdentity(identity, passphrase);
   }
 
@@ -665,7 +719,7 @@ public class JSch {
    * Sets the logger
    *
    * @param logger logger or <code>null</code> if no logging should take place
-   * @see com.jcraft.jsch.Logger
+   * @see Logger
    */
   public static void setLogger(Logger logger) {
     if (logger == null)
