@@ -101,6 +101,9 @@ public class JSch {
     config.put("ecdh-sha2-nistp521", "com.jcraft.jsch.DHEC521");
 
     config.put("ecdh-sha2-nistp", "com.jcraft.jsch.jce.ECDHN");
+    config.put("ecdh-sm2p256v1", "com.jcraft.jsch.bc.ECDHSM2");
+
+    config.put("sm2-sm3", "com.jcraft.jsch.DHSM2SM3");
 
     config.put("curve25519-sha256", "com.jcraft.jsch.DH25519");
     config.put("curve25519-sha256@libssh.org", "com.jcraft.jsch.DH25519");
@@ -257,7 +260,7 @@ public class JSch {
         "chacha20-poly1305@openssh.com,sm4-cbc,sm4-ctr"));
     config.put("CheckMacs", Util.getSystemProperty("jsch.check_macs", "hmac-sm3"));
     config.put("CheckKexes", Util.getSystemProperty("jsch.check_kexes",
-        "mlkem768x25519-sha256,mlkem768nistp256-sha256,mlkem1024nistp384-sha384,sntrup761x25519-sha512,sntrup761x25519-sha512@openssh.com,curve25519-sha256,curve25519-sha256@libssh.org,curve448-sha512"));
+        "mlkem768x25519-sha256,mlkem768nistp256-sha256,mlkem1024nistp384-sha384,sntrup761x25519-sha512,sntrup761x25519-sha512@openssh.com,curve25519-sha256,curve25519-sha256@libssh.org,curve448-sha512,sm2-sm3"));
     config.put("CheckSignatures",
         Util.getSystemProperty("jsch.check_signatures", "ssh-ed25519,ssh-ed448,sm2"));
     config.put("FingerprintHash", Util.getSystemProperty("jsch.fingerprint_hash", "sha256"));

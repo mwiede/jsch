@@ -101,6 +101,17 @@ public class AlgorithmsShangMiIT {
   }
 
   @ParameterizedTest
+  @ValueSource(strings = {"sm2-sm3"})
+  public void testSM2SM3Kex(String kex) throws Exception {
+    JSch ssh = createsm2Identity();
+    Session session = createSession(ssh);
+    session.setConfig("kex", kex);
+    doSftp(session, true);
+
+    checkLogs(String.format(Locale.ROOT, "kex: algorithm: %s.*", kex));
+  }
+
+  @ParameterizedTest
   @ValueSource(strings = {"sm4-ctr"})
   public void testSM4Ciphers(String cipher) throws Exception {
 
