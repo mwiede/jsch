@@ -82,8 +82,8 @@ ASCII string `"1234567812345678"` used for host-key signatures.
 
 > **Note:** BouncyCastle's `SM2KeyExchange` class implements GM/T 0003.3 correctly and produces
 > the same shared secret as the manual implementation — provided `calculateKey()` is called with
-> `kLen` in **bits** (pass `256`, not `32`). JSch uses the manual implementation (`ECDHSM2`) for
-> transparency; `ECDHSM2BC` in the test sources demonstrates BC equivalence.
+> `kLen` in **bits** (pass `256`, not `32`). JSch uses the BC-based implementation (`ECDHSM2BC`) for
+> transparency; `ECDHSM2` (manual) remains in the codebase as reference.
 
 ## Using ShangMi Algorithms in JSch
 
@@ -134,7 +134,7 @@ ssh-keygen -t sm2 -f id_sm2
 | JSch config key            | Default value                      |
 |----------------------------|------------------------------------|
 | `sm2-sm3`                  | `com.jcraft.jsch.DHSM2SM3`         |
-| `ecdh-sm2p256v1`           | `com.jcraft.jsch.bc.ECDHSM2`       |
+| `ecdh-sm2p256v1`           | `com.jcraft.jsch.bc.ECDHSM2BC`      |
 | `sm2`                      | `com.jcraft.jsch.bc.SignatureSM2`  |
 | `sm3`                      | `com.jcraft.jsch.bc.SM3`           |
 | `hmac-sm3`                 | `com.jcraft.jsch.bc.HMACSM3`       |

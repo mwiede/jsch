@@ -101,7 +101,7 @@ public class JSch {
     config.put("ecdh-sha2-nistp521", "com.jcraft.jsch.DHEC521");
 
     config.put("ecdh-sha2-nistp", "com.jcraft.jsch.jce.ECDHN");
-    config.put("ecdh-sm2p256v1", "com.jcraft.jsch.bc.ECDHSM2");
+    config.put("ecdh-sm2p256v1", "com.jcraft.jsch.bc.ECDHSM2BC");
 
     config.put("sm2-sm3", "com.jcraft.jsch.DHSM2SM3");
 
