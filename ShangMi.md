@@ -87,9 +87,10 @@ ASCII string `"1234567812345678"` used for host-key signatures.
 
 ## Using ShangMi Algorithms in JSch
 
-SM algorithm support requires **BouncyCastle** (`bcprov-jdk18on`) on the classpath. JSch checks
+SM algorithm support requires **BouncyCastle** (`bcprov-jdk18on`) on the classpath. Usually JSch checks
 availability at startup via `CheckCiphers`, `CheckMacs`, and `CheckSignatures` and silently removes
-unavailable algorithms from all proposals. No configuration change is needed when BC is absent.
+unavailable algorithms from all proposals, but this behaviour is only active for officially standardized algorithms.
+If needed, the algorithms can be added to overwrite the defaults.
 
 ### Connecting to an SM-only SSH server
 

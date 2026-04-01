@@ -265,12 +265,12 @@ public class JSch {
         Util.getSystemProperty("jsch.use_sftp_write_flush_workaround", "yes"));
 
     config.put("CheckCiphers", Util.getSystemProperty("jsch.check_ciphers",
-        "chacha20-poly1305@openssh.com,sm4-cbc,sm4-ctr"));
-    config.put("CheckMacs", Util.getSystemProperty("jsch.check_macs", "hmac-sm3"));
+        "chacha20-poly1305@openssh.com"));
+    config.put("CheckMacs", Util.getSystemProperty("jsch.check_macs", ""));
     config.put("CheckKexes", Util.getSystemProperty("jsch.check_kexes",
-        "mlkem768x25519-sha256,mlkem768nistp256-sha256,mlkem1024nistp384-sha384,sntrup761x25519-sha512,sntrup761x25519-sha512@openssh.com,curve25519-sha256,curve25519-sha256@libssh.org,curve448-sha512,sm2-sm3"));
+        "mlkem768x25519-sha256,mlkem768nistp256-sha256,mlkem1024nistp384-sha384,sntrup761x25519-sha512,sntrup761x25519-sha512@openssh.com,curve25519-sha256,curve25519-sha256@libssh.org,curve448-sha512"));
     config.put("CheckSignatures",
-        Util.getSystemProperty("jsch.check_signatures", "ssh-ed25519,ssh-ed448,sm2"));
+        Util.getSystemProperty("jsch.check_signatures", "ssh-ed25519,ssh-ed448"));
     config.put("FingerprintHash", Util.getSystemProperty("jsch.fingerprint_hash", "sha256"));
 
     config.put("MaxAuthTries", Util.getSystemProperty("jsch.max_auth_tries", "6"));
