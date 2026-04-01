@@ -51,6 +51,18 @@ jobs:
     steps:
     - name: Checkout repository
       uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f # v3.12.0
+    - name: Build OpenEuler ShangMi base image
+      uses: docker/build-push-action@10e90e3645eae34f1e60eeb005ba3a3d33f178e8 # v6.19.2
+      with:
+        context: src/test/resources/docker
+        file: src/test/resources/docker/Dockerfile.openeuler.shangmi.base
+        tags: jsch-openeuler-sshd-base:latest
+        load: true
+        push: false
+        cache-from: type=gha,scope=openeuler-base
+        cache-to: type=gha,mode=max,scope=openeuler-base
     - name: Cache local Maven repository
       uses: actions/cache@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5.0.4
       with:
@@ -81,18 +93,6 @@ jobs:
         name: build_target
     - name: Extract target directory archive
       run: tar -xmf target.tar
-    - name: Set up Docker Buildx
-      uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f # v3.12.0
-    - name: Build OpenEuler ShangMi base image
-      uses: docker/build-push-action@10e90e3645eae34f1e60eeb005ba3a3d33f178e8 # v6.19.2
-      with:
-        context: src/test/resources/docker
-        file: src/test/resources/docker/Dockerfile.openeuler.shangmi.base
-        tags: jsch-openeuler-sshd-base:latest
-        load: true
-        push: false
-        cache-from: type=gha,scope=openeuler-base
-        cache-to: type=gha,mode=max,scope=openeuler-base
     - name: Test with Maven
       run: |
         LOWER_JDK="${{ matrix.java }}"
