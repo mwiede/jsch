@@ -5,8 +5,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import com.jcraft.jsch.bc.ECDHSM2;
-import com.jcraft.jsch.bc.ECDHSM2BC;
 import com.jcraft.jsch.bc.HMACSM3;
 import com.jcraft.jsch.bc.SM3;
 import com.jcraft.jsch.bc.SM4CBC;
@@ -277,69 +275,6 @@ public class ShangMiTest {
     verifier.setPubKey(pubBytes);
     verifier.update(message);
     assertTrue(verifier.verify(sshSig), "SM2 verify with SSH envelope failed");
-  }
-
-  /**
-   * Verifies that BC's SM2KeyExchange with kLen=256 (bits) produces the same shared secret as the
-   * manual ECDHSM2 implementation. This confirms that the original failure was caused solely by
-   * passing kLen=32 (bits = 4 bytes) instead of kLen=256 (bits = 32 bytes).
-   */
-  @Test
-  public void testECDHSM2ManualMatchesBC() throws Exception {
-    // Generate a fixed client key pair
-    org.bouncycastle.asn1.x9.X9ECParameters x9 =
-        org.bouncycastle.asn1.gm.GMNamedCurves.getByName("sm2p256v1");
-    org.bouncycastle.crypto.params.ECDomainParameters domain =
-        new org.bouncycastle.crypto.params.ECDomainParameters(x9.getCurve(), x9.getG(), x9.getN(),
-            x9.getH(), x9.getSeed());
-
-    org.bouncycastle.crypto.generators.ECKeyPairGenerator gen =
-        new org.bouncycastle.crypto.generators.ECKeyPairGenerator();
-
-    // Client key pair (used by both ECDHSM2 and ECDHSM2BC)
-    gen.init(
-        new org.bouncycastle.crypto.params.ECKeyGenerationParameters(domain, new SecureRandom()));
-    org.bouncycastle.crypto.AsymmetricCipherKeyPair clientKP = gen.generateKeyPair();
-    org.bouncycastle.crypto.params.ECPrivateKeyParameters clientPriv =
-        (org.bouncycastle.crypto.params.ECPrivateKeyParameters) clientKP.getPrivate();
-
-    // Server key pair (peer public key)
-    org.bouncycastle.crypto.AsymmetricCipherKeyPair serverKP = gen.generateKeyPair();
-    org.bouncycastle.crypto.params.ECPublicKeyParameters serverPub =
-        (org.bouncycastle.crypto.params.ECPublicKeyParameters) serverKP.getPublic();
-
-    // Encode server's public key as uncompressed point and split into (x, y)
-    byte[] serverQ = serverPub.getQ().getEncoded(false); // 04 || x || y
-    byte[] peerX = new byte[32];
-    byte[] peerY = new byte[32];
-    System.arraycopy(serverQ, 1, peerX, 0, 32);
-    System.arraycopy(serverQ, 33, peerY, 0, 32);
-
-    // Manual implementation
-    ECDHSM2 manual = new ECDHSM2();
-    injectPrivateKey(manual, clientPriv, serverQ);
-    byte[] manualSecret = manual.getSecret(peerX, peerY);
-
-    // BC-based implementation
-    ECDHSM2BC bc = new ECDHSM2BC();
-    injectPrivateKey(bc, clientPriv, serverQ);
-    byte[] bcSecret = bc.getSecret(peerX, peerY);
-
-    assertArrayEquals(manualSecret, bcSecret,
-        "Manual ECDHSM2 and BC-based ECDHSM2BC must produce identical shared secrets");
-  }
-
-  /** Injects a pre-generated private key into an ECDHSM2 or ECDHSM2BC instance via reflection. */
-  private static void injectPrivateKey(Object ecdh,
-      org.bouncycastle.crypto.params.ECPrivateKeyParameters priv, byte[] publicPoint)
-      throws Exception {
-    java.lang.reflect.Field privField = ecdh.getClass().getDeclaredField("privateKey");
-    privField.setAccessible(true);
-    privField.set(ecdh, priv);
-
-    java.lang.reflect.Field qField = ecdh.getClass().getDeclaredField("Q_array");
-    qField.setAccessible(true);
-    qField.set(ecdh, publicPoint);
   }
 
   private static byte[] hexToBytes(String hex) {

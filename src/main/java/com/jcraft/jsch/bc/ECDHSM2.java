@@ -78,6 +78,12 @@ public class ECDHSM2 implements ECDH {
     Q_array = pubKey.getQ().getEncoded(false); // uncompressed: 0x04 || x || y
   }
 
+  /** For testing only: inject a pre-generated key pair instead of generating one randomly. */
+  void initForTest(ECPrivateKeyParameters priv, byte[] publicPoint) {
+    privateKey = priv;
+    Q_array = publicPoint;
+  }
+
   @Override
   public byte[] getQ() throws Exception {
     return Q_array;
