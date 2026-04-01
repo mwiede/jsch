@@ -1,4 +1,6 @@
-/** This program will demonstrate how to enable logging mechanism and get logging messages. */
+/**
+ * This program will demonstrate how to enable logging mechanism and get logging messages.
+ */
 import com.jcraft.jsch.Channel;
 import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.Session;

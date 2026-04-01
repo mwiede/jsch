@@ -1,4 +1,6 @@
-/** This program will demonstrate how to use "aes128-cbc". */
+/**
+ * This program will demonstrate how to use "aes128-cbc".
+ */
 import com.jcraft.jsch.Channel;
 import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.Session;
