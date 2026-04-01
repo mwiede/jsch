@@ -3,7 +3,6 @@
 See original [README](README)
 
 [![GitHub release](https://img.shields.io/github/v/tag/mwiede/jsch.svg)](https://github.com/mwiede/jsch/releases/latest)
-[![Maven Central](https://maven-badges.sml.io/maven-central/com.github.mwiede/jsch/badge.svg)](https://maven-badges.sml.io/maven-central/com.github.mwiede/jsch)
 [![Maven Central](https://maven-badges.sml.io/sonatype-central/com.github.mwiede/jsch/badge.svg)](https://maven-badges.sml.io/sonatype-central/com.github.mwiede/jsch)
 ![Java CI with Maven](https://github.com/mwiede/jsch/workflows/Java%20CI%20with%20Maven/badge.svg)
 
@@ -42,7 +41,7 @@ with
 <dependency>
   <groupId>com.github.mwiede</groupId>
   <artifactId>jsch</artifactId>
-  <version>2.27.5</version>
+  <version>2.28.0</version>
 </dependency>
 ```
 
@@ -52,7 +51,7 @@ When you have an artifact `foo:bar`, which contains `com.jcraft:jsch` as a trans
 <dependency>
   <groupId>com.github.mwiede</groupId>
   <artifactId>jsch</artifactId>
-  <version>2.27.5</version>
+  <version>2.28.0</version>
 </dependency>
 <dependency>
   <groupId>foo</groupId>

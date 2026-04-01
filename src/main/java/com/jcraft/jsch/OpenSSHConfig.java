@@ -71,6 +71,7 @@ import java.util.stream.Stream;
  * <li>LocalForward</li>
  * <li>RemoteForward</li>
  * <li>ClearAllForwardings</li>
+ * <li>CASignatureAlgorithms</li>
  * </ul>
  *
  * @see ConfigRepository
@@ -79,7 +80,7 @@ public class OpenSSHConfig implements ConfigRepository {
 
   private static final Set<String> keysWithListAdoption = Stream
       .of("KexAlgorithms", "Ciphers", "HostKeyAlgorithms", "MACs", "PubkeyAcceptedAlgorithms",
-          "PubkeyAcceptedKeyTypes")
+          "PubkeyAcceptedKeyTypes", "CASignatureAlgorithms")
       .map(string -> string.toUpperCase(Locale.ROOT)).collect(Collectors.toSet());
 
   /**
@@ -173,6 +174,7 @@ public class OpenSSHConfig implements ConfigRepository {
     keymap.put("compression.c2s", "Compression");
     keymap.put("compression_level", "CompressionLevel");
     keymap.put("MaxAuthTries", "NumberOfPasswordPrompts");
+    keymap.put("ca_signature_algorithms", "CASignatureAlgorithms");
   }
 
   class MyConfig implements Config {

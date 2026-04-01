@@ -41,4 +41,20 @@ public interface Compression {
   byte[] compress(byte[] buf, int start, int[] len);
 
   byte[] uncompress(byte[] buf, int start, int[] len);
+
+  public static class InflaterException extends RuntimeException {
+    private static final long serialVersionUID = -1L;
+
+    public InflaterException() {
+      super();
+    }
+
+    public InflaterException(String s) {
+      super(s);
+    }
+
+    public InflaterException(String s, Throwable e) {
+      super(s, e);
+    }
+  }
 }
