@@ -42,15 +42,6 @@ jobs:
       with:
         name: build_target
         path: target.tar
-  test:
-    needs: build
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        java: ['8', '11', '17', '21', '25']
-    steps:
-    - name: Checkout repository
-      uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f # v3.12.0
     - name: Build OpenEuler ShangMi base image
@@ -63,6 +54,15 @@ jobs:
         push: false
         cache-from: type=gha,scope=openeuler-base
         cache-to: type=gha,mode=max,scope=openeuler-base
+  test:
+    needs: build
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        java: ['8', '11', '17', '21', '25']
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
     - name: Cache local Maven repository
       uses: actions/cache@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5.0.4
       with:
