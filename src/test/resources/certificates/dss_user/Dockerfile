@@ -1,4 +1,4 @@
-FROM alpine:3.5
+FROM alpine:3.7
 RUN apk update && \
     apk upgrade && \
     apk add openssh bash && \
@@ -10,4 +10,5 @@ COPY entrypoint.sh /entrypoint.sh
 COPY ca_jsch_key.pub /etc/ssh/ca_jsch_key.pub
 RUN chmod 644 /etc/ssh/ca_jsch_key.pub && \
     chmod +x /entrypoint.sh
+RUN passwd -u root
 ENTRYPOINT ["/entrypoint.sh"]

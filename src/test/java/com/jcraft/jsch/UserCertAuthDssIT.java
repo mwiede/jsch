@@ -20,7 +20,7 @@ import org.testcontainers.junit.jupiter.Testcontainers;
  *
  * These tests verify that JSch can authenticate to a server using an OpenSSH user certificate whose
  * underlying key algorithm is DSA ({@code ssh-dss-cert-v01@openssh.com}). The server runs Alpine
- * 3.5 with OpenSSH 7.4 because DSA support was removed from OpenSSH 9.8+.
+ * 3.7 with OpenSSH 7.5 because DSA support was removed from OpenSSH 9.8+.
  *
  *
  * The DSA user certificate is signed by an Ed25519 CA; the server is configured with
@@ -41,7 +41,7 @@ public class UserCertAuthDssIT {
       TestLoggerFactory.getTestLogger(UserCertAuthDssIT.class);
 
   /**
-   * OpenSSH 7.4 (Alpine 3.5) container configured to accept DSA user certificate authentication.
+   * OpenSSH 7.5 (Alpine 3.7) container configured to accept DSA user certificate authentication.
    *
    * <p>
    * The server uses {@code TrustedUserCAKeys} with the Ed25519 CA that signed the DSA user
