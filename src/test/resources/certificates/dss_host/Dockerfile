@@ -1,4 +1,4 @@
-FROM alpine:3.5
+FROM alpine:3.7
 RUN apk update && \
     apk upgrade && \
     apk add openssh bash && \
@@ -12,4 +12,5 @@ COPY ssh_host_dsa_key-cert.pub /etc/ssh/ssh_host_dsa_key-cert.pub
 COPY id_ecdsa_nistp521.pub /root/.ssh/authorized_keys
 RUN chmod 600 /etc/ssh/ssh_host_dsa_key /root/.ssh/authorized_keys && \
     chmod +x /entrypoint.sh
+RUN passwd -u root
 ENTRYPOINT ["/entrypoint.sh"]

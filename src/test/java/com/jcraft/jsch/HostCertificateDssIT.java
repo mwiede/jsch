@@ -24,8 +24,8 @@ import org.testcontainers.junit.jupiter.Testcontainers;
  * Integration tests for {@code ssh-dss-cert-v01@openssh.com} host certificate validation.
  *
  * These tests verify that JSch correctly validates a host certificate whose underlying key
- * algorithm is DSA ({@code ssh-dss-cert-v01@openssh.com}). The server runs Alpine 3.5 with OpenSSH
- * 7.4, which is required because modern OpenSSH (9.8+) removed DSA support.
+ * algorithm is DSA ({@code ssh-dss-cert-v01@openssh.com}). The server runs Alpine 3.7 with OpenSSH
+ * 7.5, which is required because modern OpenSSH (9.8+) removed DSA support.
  *
  *
  * The DSA certificate is signed by an Ed25519 CA, so the client-side CA signature verification does
@@ -45,7 +45,7 @@ public class HostCertificateDssIT {
       TestLoggerFactory.getTestLogger(HostCertificateDssIT.class);
 
   /**
-   * OpenSSH 7.4 (Alpine 3.5) container configured to serve a DSA host certificate
+   * OpenSSH 7.5 (Alpine 3.7) container configured to serve a DSA host certificate
    * ({@code ssh-dss-cert-v01@openssh.com}). The certificate is signed by an Ed25519 CA whose public
    * key is in the client's {@code known_hosts} file with the {@code @cert-authority} marker.
    * <p>
