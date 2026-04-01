@@ -1,7 +1,6 @@
 package com.jcraft.jsch;
 
 import com.jcraft.jsch.JSch.InstanceLogger;
-
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Collection;
