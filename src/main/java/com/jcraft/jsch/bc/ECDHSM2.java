@@ -46,8 +46,7 @@ public class ECDHSM2 implements ECDH {
    * Identity bytes used by the OpenEuler sm2-sm3 KEX implementation. These are raw byte values
    * {1,2,...,8,1,2,...,8}, matching the C initializer in SM2KAP_compute_key() in kexsm2.c.
    */
-  private static final byte[] SM2_KAP_ID =
-      {1, 2, 3, 4, 5, 6, 7, 8, 1, 2, 3, 4, 5, 6, 7, 8};
+  private static final byte[] SM2_KAP_ID = {1, 2, 3, 4, 5, 6, 7, 8, 1, 2, 3, 4, 5, 6, 7, 8};
 
   private static final ECDomainParameters DOMAIN_PARAMS;
   private static final byte[] CURVE_A_BYTES;
@@ -98,17 +97,13 @@ public class ECDHSM2 implements ECDH {
      *
      * Degenerate configuration: static key == ephemeral key for both parties.
      *
-     * Client (initiator, server=0):
-     *   w = 127  (for 256-bit curve: (256+1)/2 - 1)
-     *   Xs_bar = 2^w + (x(Q_self) mod 2^w)
-     *   Xp_bar = 2^w + (x(Q_peer) mod 2^w)
-     *   t      = (d * Xs_bar + d) mod n = d * (1 + Xs_bar) mod n
-     *   U      = t * (Xp_bar * Q_peer + Q_peer)
-     *   K      = KDF(xU || yU || ZA || ZB, 32)
+     * Client (initiator, server=0): w = 127 (for 256-bit curve: (256+1)/2 - 1) Xs_bar = 2^w +
+     * (x(Q_self) mod 2^w) Xp_bar = 2^w + (x(Q_peer) mod 2^w) t = (d * Xs_bar + d) mod n = d * (1 +
+     * Xs_bar) mod n U = t * (Xp_bar * Q_peer + Q_peer) K = KDF(xU || yU || ZA || ZB, 32)
      *
-     * where ZA = SM3(entlen || id || a || b || Gx || Gy || x(Q_self) || y(Q_self))
-     *       ZB = SM3(entlen || id || a || b || Gx || Gy || x(Q_peer) || y(Q_peer))
-     *       KDF(Z, 32) = SM3(Z || 0x00000001)[0:32]
+     * where ZA = SM3(entlen || id || a || b || Gx || Gy || x(Q_self) || y(Q_self)) ZB = SM3(entlen
+     * || id || a || b || Gx || Gy || x(Q_peer) || y(Q_peer)) KDF(Z, 32) = SM3(Z ||
+     * 0x00000001)[0:32]
      */
     BigInteger d = privateKey.getD();
     BigInteger n = DOMAIN_PARAMS.getN();
@@ -126,7 +121,7 @@ public class ECDHSM2 implements ECDH {
     // Xp_bar = 2^127 + (x_peer mod 2^127)
     BigInteger Xp_bar = two_power_w.add(x_peer.and(mask));
 
-    // t = (Xs_bar * d + d) mod n  [degenerate: static_priv = eph_priv = d]
+    // t = (Xs_bar * d + d) mod n [degenerate: static_priv = eph_priv = d]
     // cofactor h = 1 for sm2p256v1, so no h multiplication needed
     BigInteger t = Xs_bar.multiply(d).add(d).mod(n);
 
@@ -146,9 +141,12 @@ public class ECDHSM2 implements ECDH {
     // KDF input = xU || yU || ZA || ZB
     byte[] kdfInput = new byte[xU.length + yU.length + ZA.length + ZB.length];
     int off = 0;
-    System.arraycopy(xU, 0, kdfInput, off, xU.length); off += xU.length;
-    System.arraycopy(yU, 0, kdfInput, off, yU.length); off += yU.length;
-    System.arraycopy(ZA, 0, kdfInput, off, ZA.length); off += ZA.length;
+    System.arraycopy(xU, 0, kdfInput, off, xU.length);
+    off += xU.length;
+    System.arraycopy(yU, 0, kdfInput, off, yU.length);
+    off += yU.length;
+    System.arraycopy(ZA, 0, kdfInput, off, ZA.length);
+    off += ZA.length;
     System.arraycopy(ZB, 0, kdfInput, off, ZB.length);
 
     return kdf(kdfInput, 32);
@@ -213,7 +211,9 @@ public class ECDHSM2 implements ECDH {
     return result;
   }
 
-  /** Encode a BigInteger as exactly 32 bytes (big-endian, zero-padded or truncated from sign byte) */
+  /**
+   * Encode a BigInteger as exactly 32 bytes (big-endian, zero-padded or truncated from sign byte)
+   */
   private static byte[] toBytes32(BigInteger val) {
     byte[] bytes = val.toByteArray();
     byte[] result = new byte[32];

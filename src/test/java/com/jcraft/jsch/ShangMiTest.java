@@ -290,15 +290,15 @@ public class ShangMiTest {
     org.bouncycastle.asn1.x9.X9ECParameters x9 =
         org.bouncycastle.asn1.gm.GMNamedCurves.getByName("sm2p256v1");
     org.bouncycastle.crypto.params.ECDomainParameters domain =
-        new org.bouncycastle.crypto.params.ECDomainParameters(
-            x9.getCurve(), x9.getG(), x9.getN(), x9.getH(), x9.getSeed());
+        new org.bouncycastle.crypto.params.ECDomainParameters(x9.getCurve(), x9.getG(), x9.getN(),
+            x9.getH(), x9.getSeed());
 
     org.bouncycastle.crypto.generators.ECKeyPairGenerator gen =
         new org.bouncycastle.crypto.generators.ECKeyPairGenerator();
 
     // Client key pair (used by both ECDHSM2 and ECDHSM2BC)
-    gen.init(new org.bouncycastle.crypto.params.ECKeyGenerationParameters(
-        domain, new SecureRandom()));
+    gen.init(
+        new org.bouncycastle.crypto.params.ECKeyGenerationParameters(domain, new SecureRandom()));
     org.bouncycastle.crypto.AsymmetricCipherKeyPair clientKP = gen.generateKeyPair();
     org.bouncycastle.crypto.params.ECPrivateKeyParameters clientPriv =
         (org.bouncycastle.crypto.params.ECPrivateKeyParameters) clientKP.getPrivate();
@@ -331,8 +331,8 @@ public class ShangMiTest {
 
   /** Injects a pre-generated private key into an ECDHSM2 or ECDHSM2BC instance via reflection. */
   private static void injectPrivateKey(Object ecdh,
-      org.bouncycastle.crypto.params.ECPrivateKeyParameters priv,
-      byte[] publicPoint) throws Exception {
+      org.bouncycastle.crypto.params.ECPrivateKeyParameters priv, byte[] publicPoint)
+      throws Exception {
     java.lang.reflect.Field privField = ecdh.getClass().getDeclaredField("privateKey");
     privField.setAccessible(true);
     privField.set(ecdh, priv);

@@ -45,18 +45,19 @@ import org.bouncycastle.math.ec.ECPoint;
 /**
  * SM2 KAP implementation using BouncyCastle's SM2KeyExchange — for verification only.
  *
- * <p>This class is NOT registered in JSch.java and not used in production. It exists solely to
- * verify the hypothesis that BC's SM2KeyExchange produces the same shared secret as the manual
+ * <p>
+ * This class is NOT registered in JSch.java and not used in production. It exists solely to verify
+ * the hypothesis that BC's SM2KeyExchange produces the same shared secret as the manual
  * implementation in ECDHSM2, provided calculateKey() is called with kLen in <em>bits</em> (256)
  * rather than bytes (32).
  *
- * <p>The kLen parameter of SM2KeyExchange.calculateKey(int kLen, ...) is in bits. Passing 32
- * returns only 4 bytes; passing 256 returns the correct 32 bytes.
+ * <p>
+ * The kLen parameter of SM2KeyExchange.calculateKey(int kLen, ...) is in bits. Passing 32 returns
+ * only 4 bytes; passing 256 returns the correct 32 bytes.
  */
 public class ECDHSM2BC implements ECDH {
 
-  private static final byte[] SM2_KAP_ID =
-      {1, 2, 3, 4, 5, 6, 7, 8, 1, 2, 3, 4, 5, 6, 7, 8};
+  private static final byte[] SM2_KAP_ID = {1, 2, 3, 4, 5, 6, 7, 8, 1, 2, 3, 4, 5, 6, 7, 8};
 
   private static final ECDomainParameters DOMAIN_PARAMS;
 
@@ -93,10 +94,10 @@ public class ECDHSM2BC implements ECDH {
     ECPoint remoteQ = DOMAIN_PARAMS.getCurve().decodePoint(point);
     ECPublicKeyParameters peerKey = new ECPublicKeyParameters(remoteQ, DOMAIN_PARAMS);
 
-    SM2KeyExchangePrivateParameters selfParams = new SM2KeyExchangePrivateParameters(
-        true, privateKey, privateKey);
-    SM2KeyExchangePublicParameters peerParams = new SM2KeyExchangePublicParameters(
-        peerKey, peerKey);
+    SM2KeyExchangePrivateParameters selfParams =
+        new SM2KeyExchangePrivateParameters(true, privateKey, privateKey);
+    SM2KeyExchangePublicParameters peerParams =
+        new SM2KeyExchangePublicParameters(peerKey, peerKey);
 
     SM2KeyExchange exchange = new SM2KeyExchange();
     exchange.init(new ParametersWithID(selfParams, SM2_KAP_ID));
