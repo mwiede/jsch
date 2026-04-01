@@ -38,7 +38,7 @@ import org.testcontainers.junit.jupiter.Testcontainers;
  * supports SM4 ciphers and HMAC-SM3 MACs natively.
  */
 @Testcontainers
-public class AlgorithmsShangMiIT {
+class AlgorithmsShangMiIT {
 
   private static final int timeout = 10000;
   private static final DigestUtils sha256sum = new DigestUtils(DigestUtils.getSha256Digest());
@@ -63,14 +63,14 @@ public class AlgorithmsShangMiIT {
       .withExposedPorts(22);
 
   @BeforeAll
-  public static void beforeAll() {
+  static void beforeAll() {
     jschLogger.setEnabledLevelsForAllThreads(Level.DEBUG, Level.INFO, Level.WARN, Level.ERROR);
     sshdLogger.setEnabledLevelsForAllThreads(Level.DEBUG, Level.INFO, Level.WARN, Level.ERROR);
     JSch.setLogger(new Slf4jLogger());
   }
 
   @BeforeEach
-  public void beforeEach() throws IOException {
+  void beforeEach() throws IOException {
     if (sshdLogConsumer == null) {
       sshdLogConsumer = new Slf4jLogConsumer(sshdLogger);
       sshd.followOutput(sshdLogConsumer);
@@ -94,7 +94,7 @@ public class AlgorithmsShangMiIT {
   }
 
   @AfterAll
-  public static void afterAll() {
+  static void afterAll() {
     JSch.setLogger(null);
     jschLogger.clearAll();
     sshdLogger.clearAll();
@@ -102,7 +102,7 @@ public class AlgorithmsShangMiIT {
 
   @ParameterizedTest
   @ValueSource(strings = {"sm2-sm3"})
-  public void testSM2SM3Kex(String kex) throws Exception {
+  void testSM2SM3Kex(String kex) throws Exception {
     JSch ssh = createsm2Identity();
     Session session = createSession(ssh);
     session.setConfig("kex", kex);
@@ -113,7 +113,7 @@ public class AlgorithmsShangMiIT {
 
   @ParameterizedTest
   @ValueSource(strings = {"sm4-ctr"})
-  public void testSM4Ciphers(String cipher) throws Exception {
+  void testSM4Ciphers(String cipher) throws Exception {
 
     JSch ssh = createsm2Identity();
     Session session = createSession(ssh);
@@ -131,7 +131,7 @@ public class AlgorithmsShangMiIT {
 
   @ParameterizedTest
   @ValueSource(strings = {"hmac-sm3"})
-  public void testSM3MACs(String mac) throws Exception {
+  void testSM3MACs(String mac) throws Exception {
     JSch ssh = createsm2Identity();
     Session session = createSession(ssh);
     session.setConfig("cipher.s2c", "aes128-ctr");
@@ -148,7 +148,7 @@ public class AlgorithmsShangMiIT {
 
   @ParameterizedTest
   @CsvSource(value = {"sm4-ctr,hmac-sm3"})
-  public void testSM4CipherWithSM3MAC(String cipher, String mac) throws Exception {
+  void testSM4CipherWithSM3MAC(String cipher, String mac) throws Exception {
     JSch ssh = createsm2Identity();
     Session session = createSession(ssh);
     session.setConfig("cipher.s2c", cipher);
