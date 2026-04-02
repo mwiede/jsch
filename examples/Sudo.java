@@ -1,4 +1,6 @@
-/** This program will demonstrate how to exec 'sudo' on the remote. */
+/**
+ * This program will demonstrate how to exec 'sudo' on the remote.
+ */
 import com.jcraft.jsch.Channel;
 import com.jcraft.jsch.ChannelExec;
 import com.jcraft.jsch.JSch;

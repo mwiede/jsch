@@ -8,9 +8,26 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.nio.charset.StandardCharsets;
+import java.time.ZoneOffset;
+import java.util.TimeZone;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 public class OpenSshCertificateUtilTest {
+
+  private static TimeZone timezone;
+
+  @BeforeAll
+  public static void beforeAll() {
+    timezone = TimeZone.getDefault();
+    TimeZone.setDefault(TimeZone.getTimeZone(ZoneOffset.UTC));
+  }
+
+  @AfterAll
+  public static void afterAll() {
+    TimeZone.setDefault(timezone);
+  }
 
   @Test
   public void testExtractSpaceDelimitedString_nullInput() {
