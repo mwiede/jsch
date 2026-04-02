@@ -90,6 +90,7 @@ public abstract class KeyExchange {
   protected final int DSS = 1;
   protected final int ECDSA = 2;
   protected final int EDDSA = 3;
+  protected final int SM2 = 4;
   private int type = 0;
   private String key_alg_name = "";
 
@@ -100,6 +101,8 @@ public abstract class KeyExchange {
       return "RSA";
     if (type == EDDSA)
       return "EDDSA";
+    if (type == SM2)
+      return "SM2";
     return "ECDSA";
   }
 
@@ -575,6 +578,43 @@ public abstract class KeyExchange {
 
       if (session.getLogger().isEnabled(Logger.INFO)) {
         session.getLogger().log(Logger.INFO, "ssh_eddsa_verify: " + alg + " signature " + result);
+      }
+    } else if (alg.equals("sm2")) {
+      byte[] tmp;
+
+      type = SM2;
+      key_alg_name = alg;
+
+      // skip curve name string ("sm2")
+      j = ((K_S[i++] << 24) & 0xff000000) | ((K_S[i++] << 16) & 0x00ff0000)
+          | ((K_S[i++] << 8) & 0x0000ff00) | ((K_S[i++]) & 0x000000ff);
+      i += j;
+
+      // uncompressed EC point: 04 || x || y
+      j = ((K_S[i++] << 24) & 0xff000000) | ((K_S[i++] << 16) & 0x00ff0000)
+          | ((K_S[i++] << 8) & 0x0000ff00) | ((K_S[i++]) & 0x000000ff);
+      tmp = new byte[j];
+      System.arraycopy(K_S, i, tmp, 0, j);
+      i += j;
+
+      SignatureSM2 sig = null;
+      try {
+        Class<? extends SignatureSM2> c =
+            Class.forName(session.getConfig(alg)).asSubclass(SignatureSM2.class);
+        sig = c.getDeclaredConstructor().newInstance();
+        sig.init();
+      } catch (Exception e) {
+        throw new JSchException(e.toString(), e);
+      }
+
+      sig.setPubKey(tmp);
+
+      sig.update(H);
+
+      result = sig.verify(sig_of_H);
+
+      if (session.getLogger().isEnabled(Logger.INFO)) {
+        session.getLogger().log(Logger.INFO, "ssh_sm2_verify: " + alg + " signature " + result);
       }
     } else {
       if (session.getLogger().isEnabled(Logger.ERROR)) {
