@@ -260,7 +260,7 @@
                                     <version>25</version>
                                 </requireJavaVersion>
                                 <requireMavenVersion>
-                                    <version>3.9.14</version>
+                                    <version>3.9.15</version>
                                 </requireMavenVersion>
                                 <dependencyConvergence />
                                 <banDuplicatePomDependencyVersions />
