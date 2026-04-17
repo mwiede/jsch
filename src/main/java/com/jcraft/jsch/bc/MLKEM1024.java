@@ -26,7 +26,7 @@
 
 package com.jcraft.jsch.bc;
 
-import org.bouncycastle.pqc.crypto.mlkem.MLKEMParameters;
+import org.bouncycastle.crypto.params.MLKEMParameters;
 
 public class MLKEM1024 extends MLKEM {
   public MLKEM1024() {
