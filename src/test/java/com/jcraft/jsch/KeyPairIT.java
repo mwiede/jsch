@@ -90,7 +90,7 @@ public class KeyPairIT {
 
   @ParameterizedTest
   @MethodSource("com.jcraft.jsch.KeyPairTest#keyArgs")
-  void connectWithPublicKey(String path, String password, String keyType) throws Exception {
+  void connectWithPublicKey(String path, byte[] password, String keyType) throws Exception {
 
     final JSch jSch = createIdentity(path, password);
 
@@ -109,7 +109,7 @@ public class KeyPairIT {
 
   @ParameterizedTest
   @MethodSource("com.jcraft.jsch.KeyPairTest#keyArgs")
-  void connectWithPublicKeyAndUserInfo(String path, String password, String keyType)
+  void connectWithPublicKeyAndUserInfo(String path, byte[] password, String keyType)
       throws Exception {
 
     final JSch jSch = new JSch();
@@ -121,7 +121,7 @@ public class KeyPairIT {
     session.setUserInfo(new UserInfo() {
       @Override
       public String getPassphrase() {
-        return password;
+        return Util.byte2str(password);
       }
 
       @Override
@@ -223,7 +223,7 @@ public class KeyPairIT {
     }
   }
 
-  private JSch createIdentity(String path, String password)
+  private JSch createIdentity(String path, byte[] password)
       throws JSchException, URISyntaxException {
     JSch ssh = new JSch();
     if (password != null) {

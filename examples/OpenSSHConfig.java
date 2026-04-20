@@ -44,7 +44,7 @@ public class OpenSSHConfig {
       // "foo" is from "Host foo" in the above config.
       Session session = jsch.getSession("foo");
 
-      String passwd = JOptionPane.showInputDialog("Enter password");
+      byte[] passwd = JOptionPane.showInputDialog("Enter password").getBytes();
       session.setPassword(passwd);
 
       UserInfo ui = new MyUserInfo() {

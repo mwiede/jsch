@@ -35,7 +35,7 @@ public class AES {
       host = host.substring(host.indexOf('@') + 1);
 
       Session session = jsch.getSession(user, host, 22);
-      // session.setPassword("your password");
+      // session.setPassword("your password".getBytes());
 
       // username and password will be given via UserInfo interface.
       UserInfo ui = new MyUserInfo();

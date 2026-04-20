@@ -6,6 +6,7 @@
  */
 import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.KeyPair;
+import java.util.Arrays;
 import javax.swing.JOptionPane;
 import javax.swing.JPasswordField;
 import javax.swing.JTextField;
@@ -27,7 +28,7 @@ public class ChangePassphrase {
       System.out
           .println(pkey + " has " + (kpair.isEncrypted() ? "been " : "not been ") + "encrypted");
 
-      String passphrase = "";
+      byte[] passphrase = null;
       while (kpair.isEncrypted()) {
         JTextField passphraseField = new JPasswordField(20);
         Object[] ob = {passphraseField};
@@ -36,7 +37,10 @@ public class ChangePassphrase {
         if (result != JOptionPane.OK_OPTION) {
           System.exit(-1);
         }
-        passphrase = passphraseField.getText();
+        passphrase = passphraseField.getText().getBytes();
+        if (passphrase.length == 0) {
+          passphrase = null;
+        }
         if (!kpair.decrypt(passphrase)) {
           System.out.println("failed to decrypt " + pkey);
         } else {
@@ -44,7 +48,10 @@ public class ChangePassphrase {
         }
       }
 
-      passphrase = "";
+      if (passphrase != null) {
+        Arrays.fill(passphrase, (byte) 0);
+      }
+      passphrase = null;
 
       JTextField passphraseField = new JPasswordField(20);
       Object[] ob = {passphraseField};
@@ -54,10 +61,16 @@ public class ChangePassphrase {
       if (result != JOptionPane.OK_OPTION) {
         System.exit(-1);
       }
-      passphrase = passphraseField.getText();
+      passphrase = passphraseField.getText().getBytes();
+      if (passphrase.length == 0) {
+        passphrase = null;
+      }
 
-      kpair.writePrivateKey(pkey, passphrase.getBytes());
+      kpair.writePrivateKey(pkey, passphrase);
       kpair.dispose();
+      if (passphrase != null) {
+        Arrays.fill(passphrase, (byte) 0);
+      }
     } catch (Exception e) {
       System.out.println(e);
     }

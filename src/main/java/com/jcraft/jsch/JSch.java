@@ -460,7 +460,7 @@ public class JSch {
    *
    * @param prvkey filename of the private key.
    * @throws JSchException if <code>prvkey</code> is invalid.
-   * @see #addIdentity(String prvkey, String passphrase)
+   * @see #addIdentity(String prvkey, byte[] passphrase)
    */
   public void addIdentity(String prvkey) throws JSchException {
     addIdentity(prvkey, (byte[]) null);
@@ -474,7 +474,9 @@ public class JSch {
    * @param passphrase passphrase for <code>prvkey</code>.
    * @throws JSchException if <code>passphrase</code> is not right.
    * @see #addIdentity(String prvkey, byte[] passphrase)
+   * @deprecated use #addIdentity(String prvkey, byte[] passphrase)
    */
+  @Deprecated
   public void addIdentity(String prvkey, String passphrase) throws JSchException {
     byte[] _passphrase = null;
     if (passphrase != null) {

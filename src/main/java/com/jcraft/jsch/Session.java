@@ -2997,6 +2997,10 @@ public class Session {
     ChannelX11.setCookie(cookie);
   }
 
+  /**
+   * @deprecated use #setPassword(byte[] password)
+   */
+  @Deprecated
   public void setPassword(String password) {
     if (password != null)
       this.password = Util.str2byte(password);

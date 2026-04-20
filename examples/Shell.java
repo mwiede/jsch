@@ -30,7 +30,7 @@ public class Shell {
 
       Session session = jsch.getSession(user, host, 22);
 
-      String passwd = JOptionPane.showInputDialog("Enter password");
+      byte[] passwd = JOptionPane.showInputDialog("Enter password").getBytes();
       session.setPassword(passwd);
 
       UserInfo ui = new MyUserInfo() {

@@ -919,6 +919,10 @@ public abstract class KeyPair {
     return encrypted;
   }
 
+  /**
+   * @deprecated use #decrypt(byte[] _passphrase)
+   */
+  @Deprecated
   public boolean decrypt(String _passphrase) {
     if (_passphrase == null || _passphrase.length() == 0) {
       return !encrypted;

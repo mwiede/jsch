@@ -1,5 +1,6 @@
 package com.jcraft.jsch;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -23,22 +24,22 @@ class KeyPair2Test {
     return Stream.of(
         // PuTTY v2 keys
         Arguments.of("ppkv2_ed448_unix.ppk", null, "ssh-ed448"),
-        Arguments.of("ppkv2_ed448_unix_encrypted.ppk", "secret123", "ssh-ed448"),
+        Arguments.of("ppkv2_ed448_unix_encrypted.ppk", "secret123".getBytes(UTF_8), "ssh-ed448"),
         Arguments.of("ppkv2_ed448_windows.ppk", null, "ssh-ed448"),
-        Arguments.of("ppkv2_ed448_windows_encrypted.ppk", "secret123", "ssh-ed448"),
+        Arguments.of("ppkv2_ed448_windows_encrypted.ppk", "secret123".getBytes(UTF_8), "ssh-ed448"),
         // PuTTY v3 keys
         Arguments.of("ppkv3_ed448_unix.ppk", null, "ssh-ed448"),
-        Arguments.of("ppkv3_ed448_unix_encrypted.ppk", "secret123", "ssh-ed448"),
+        Arguments.of("ppkv3_ed448_unix_encrypted.ppk", "secret123".getBytes(UTF_8), "ssh-ed448"),
         Arguments.of("ppkv3_ed448_windows.ppk", null, "ssh-ed448"),
-        Arguments.of("ppkv3_ed448_windows_encrypted.ppk", "secret123", "ssh-ed448"),
+        Arguments.of("ppkv3_ed448_windows_encrypted.ppk", "secret123".getBytes(UTF_8), "ssh-ed448"),
         // PKCS8 keys
         Arguments.of("pkcs8_ed448", null, "ssh-ed448"),
-        Arguments.of("pkcs8_ed448_encrypted_scrypt", "secret123", "ssh-ed448"));
+        Arguments.of("pkcs8_ed448_encrypted_scrypt", "secret123".getBytes(UTF_8), "ssh-ed448"));
   }
 
   @ParameterizedTest
   @MethodSource("keyArgs")
-  void loadKey(String path, String password, String keyType)
+  void loadKey(String path, byte[] password, String keyType)
       throws URISyntaxException, JSchException {
     final JSch jSch = new JSch();
     final String prvkey =
