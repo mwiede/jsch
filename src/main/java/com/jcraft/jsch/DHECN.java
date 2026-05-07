@@ -48,6 +48,7 @@ abstract class DHECN extends KeyExchange {
 
   protected String sha_name;
   protected int key_size;
+  protected String ecdhConfigName = "ecdh-sha2-nistp";
 
   @Override
   public void init(Session session, byte[] V_S, byte[] V_C, byte[] I_S, byte[] I_C)
@@ -73,7 +74,7 @@ abstract class DHECN extends KeyExchange {
 
     try {
       Class<? extends ECDH> c =
-          Class.forName(session.getConfig("ecdh-sha2-nistp")).asSubclass(ECDH.class);
+          Class.forName(session.getConfig(ecdhConfigName)).asSubclass(ECDH.class);
       ecdh = c.getDeclaredConstructor().newInstance();
       ecdh.init(key_size);
 
