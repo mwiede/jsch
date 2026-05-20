@@ -33,7 +33,7 @@ import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
 import java.util.concurrent.atomic.AtomicInteger;
 
-public abstract class Channel {
+public abstract class Channel implements AutoCloseable {
 
   static final int SSH_MSG_CHANNEL_OPEN_CONFIRMATION = 91;
   static final int SSH_MSG_CHANNEL_OPEN_FAILURE = 92;
@@ -515,7 +515,7 @@ public abstract class Channel {
    * destination, if possible.
    */
 
-  void close() {
+  public void close() {
     if (close)
       return;
     close = true;

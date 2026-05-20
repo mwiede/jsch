@@ -46,7 +46,7 @@ import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import javax.crypto.AEADBadTagException;
 
-public class Session {
+public class Session implements AutoCloseable {
 
   // http://ietf.org/internet-drafts/draft-ietf-secsh-assignednumbers-01.txt
   static final int SSH_MSG_DISCONNECT = 1;
@@ -204,6 +204,9 @@ public class Session {
     }
   }
 
+  public void close() {
+    this.disconnect();
+  }
   public void connect() throws JSchException {
     connect(timeout);
   }
