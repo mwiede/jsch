@@ -71,7 +71,7 @@
         <skipITs>true</skipITs>
         <releaseParallelPut>false</releaseParallelPut>
         <junixsocket.version>2.10.1</junixsocket.version>
-        <jna.version>5.18.1</jna.version>
+        <jna.version>5.19.0</jna.version>
         <log4j.version>2.26.0</log4j.version>
         <errorprone.version>2.49.0</errorprone.version>
         <surefire.version>3.5.6</surefire.version>
