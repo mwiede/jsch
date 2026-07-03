@@ -617,7 +617,7 @@ public class ChannelSftp extends ChannelSession {
               }
             }
           }
-           foo -= sendWRITE(handle, offset, data, 0, foo);
+          foo -= sendWRITE(handle, offset, data, 0, foo);
         }
         offset += count;
         if (monitor != null && !monitor.count(count)) {
