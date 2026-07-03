@@ -561,14 +561,9 @@ public class ChannelSftp extends ChannelSession {
         throwStatusError(buf, i);
       }
       byte[] handle = buf.getString(); // handle
-      byte[] data = null;
-
-      boolean dontcopy = true;
+      byte[] data = obuf.buffer;
 
       int buffer_margin = session.getBufferMargin();
-      if (!dontcopy) { // This case will not work anymore.
-        data = new byte[obuf.buffer.length - (5 + 13 + 21 + handle.length + buffer_margin)];
-      }
 
       long offset = 0;
       if (mode == RESUME || mode == APPEND) {
@@ -577,16 +572,8 @@ public class ChannelSftp extends ChannelSession {
 
       int startid = seq;
       int ackcount = 0;
-      int _s = 0;
-      int _datalen = 0;
-
-      if (!dontcopy) { // This case will not work anymore.
-        _datalen = data.length;
-      } else {
-        data = obuf.buffer;
-        _s = 5 + 13 + 21 + handle.length;
-        _datalen = obuf.buffer.length - _s - buffer_margin;
-      }
+      int _s = 5 + 13 + 21 + handle.length;
+      int _datalen = obuf.buffer.length - _s - buffer_margin;
 
       int bulk_requests = rq.size();
 
@@ -630,15 +617,7 @@ public class ChannelSftp extends ChannelSession {
               }
             }
           }
-          if (dontcopy) {
-            foo -= sendWRITE(handle, offset, data, 0, foo);
-            if (data != obuf.buffer) {
-              data = obuf.buffer;
-              _datalen = obuf.buffer.length - _s - buffer_margin;
-            }
-          } else {
-            foo -= sendWRITE(handle, offset, data, _s, foo);
-          }
+           foo -= sendWRITE(handle, offset, data, 0, foo);
         }
         offset += count;
         if (monitor != null && !monitor.count(count)) {
