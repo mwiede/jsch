@@ -1,0 +1,6 @@
+FROM openeuler/openeuler:24.03-lts-sp3
+RUN yum install -y openssh-server && \
+    yum clean all
+RUN mkdir -p /root/.ssh && \
+    chmod 700 /root/.ssh && \
+    mkdir -p /run/sshd
