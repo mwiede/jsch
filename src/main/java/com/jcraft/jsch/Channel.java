@@ -67,6 +67,7 @@ public abstract class Channel {
   volatile boolean open_confirmation = false;
 
   volatile int exitstatus = -1;
+  volatile String exitsignal = null;
 
   volatile int reply = 0;
   volatile int connectTimeout = 0;
@@ -657,6 +658,14 @@ public abstract class Channel {
 
   public int getExitStatus() {
     return exitstatus;
+  }
+
+  void setExitSignal(String signal) {
+    exitsignal = signal;
+  }
+
+  public String getExitSignal() {
+    return exitsignal;
   }
 
   void setSession(Session session) {
