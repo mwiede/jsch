@@ -2098,9 +2098,14 @@ public class Session {
             channel = getChannelById(i);
             if (channel != null) {
               byte reply_type = (byte) SSH_MSG_CHANNEL_FAILURE;
-              if ((Util.byte2str(foo)).equals("exit-status")) {
+              String reqType = Util.byte2str(foo);
+              if (reqType.equals("exit-status")) {
                 i = buf.getInt(); // exit-status
                 channel.setExitStatus(i);
+                reply_type = (byte) SSH_MSG_CHANNEL_SUCCESS;
+              } else if (reqType.equals("exit-signal")) {
+                byte[] signal = buf.getString(); // exit-signal
+                channel.setExitSignal(Util.byte2str(signal));
                 reply_type = (byte) SSH_MSG_CHANNEL_SUCCESS;
               }
               if (reply) {
@@ -2109,7 +2114,6 @@ public class Session {
                 buf.putInt(channel.getRecipient());
                 write(packet);
               }
-            } else {
             }
             break;
           case SSH_MSG_CHANNEL_OPEN:
