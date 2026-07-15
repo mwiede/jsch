@@ -1,6 +1,8 @@
 package com.jcraft.jsch;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.Arrays;
@@ -129,7 +131,71 @@ public class OpenSshCertificateHostKeyVerifierTest {
     assertTrue(cert.getPrincipals().contains("10.0.0.1"), "Should contain IP");
   }
 
+  // ==================== Tests for RSA CA signature algorithm (issue #1085) ====================
+
+  /**
+   * A host certificate signed by an {@code ssh-rsa} CA must not be rejected merely because the CA
+   * key algorithm ({@code ssh-rsa}) differs from the certificate's signature algorithm. Per RFC
+   * 8332, an {@code ssh-rsa} key signs with {@code rsa-sha2-256}/{@code rsa-sha2-512} while its key
+   * type string stays {@code ssh-rsa}, and OpenSSH signs with {@code rsa-sha2-512} by default since
+   * 8.2.
+   * <p>
+   * Before the fix, {@code getSignatureWrapper} compared the two names for equality and threw
+   * {@link JSchInvalidHostCertificateException} before the (valid) signature was ever verified, so
+   * every RSA host CA was rejected. This test parses a real OpenSSH host certificate signed by an
+   * RSA CA and asserts the signature verifies.
+   */
+  @Test
+  public void testCheckSignature_rsaCaSigningWithRsaSha2_isAccepted() throws Exception {
+    OpenSshCertificate cert =
+        parseCertificate("src/test/resources/certificates/rsa_host_ca/ssh_host_ecdsa_key-cert.pub");
+
+    // Derive the CA key algorithm and signature algorithm exactly as checkHostCertificate does.
+    String caPublicKeyAlgorithm = Util.byte2str(new Buffer(cert.getSignatureKey()).getString());
+    String signatureAlgorithm = Util.byte2str(new Buffer(cert.getSignature()).getString());
+
+    // Precondition: this fixture exercises the RSA CA case where the two names legitimately differ.
+    assertEquals("ssh-rsa", caPublicKeyAlgorithm, "fixture CA key must be ssh-rsa");
+    assertEquals("rsa-sha2-512", signatureAlgorithm, "fixture must be signed with rsa-sha2-512");
+
+    Session session = new JSch().getSession("user", "host.example.com");
+
+    assertDoesNotThrow(
+        () -> OpenSshCertificateHostKeyVerifier.checkSignature(cert, caPublicKeyAlgorithm, session),
+        "RSA-CA-signed host certificate must not be rejected on the key-alg vs signature-alg name difference");
+  }
+
+  /**
+   * An {@code ssh-rsa} CA key accepts the SHA-1 and SHA-2 RSA signature algorithm names; every
+   * other key type still requires the signature algorithm name to match the key algorithm name.
+   */
+  @Test
+  public void testIsSignatureAlgorithmCompatible() {
+    assertTrue(OpenSshCertificateHostKeyVerifier.isSignatureAlgorithmCompatible("ssh-rsa",
+        "rsa-sha2-512"));
+    assertTrue(OpenSshCertificateHostKeyVerifier.isSignatureAlgorithmCompatible("ssh-rsa",
+        "rsa-sha2-256"));
+    assertTrue(
+        OpenSshCertificateHostKeyVerifier.isSignatureAlgorithmCompatible("ssh-rsa", "ssh-rsa"));
+    // Non-RSA CA keys must still match exactly.
+    assertTrue(OpenSshCertificateHostKeyVerifier.isSignatureAlgorithmCompatible("ssh-ed25519",
+        "ssh-ed25519"));
+    assertFalse(OpenSshCertificateHostKeyVerifier
+        .isSignatureAlgorithmCompatible("ecdsa-sha2-nistp256", "rsa-sha2-512"));
+  }
+
   // ==================== Helper methods ====================
+
+  /**
+   * Parses an OpenSSH {@code *-cert.pub} file into an {@link OpenSshCertificate}, mirroring
+   * {@link OpenSshCertificateAwareIdentityFile#newInstance}.
+   */
+  private OpenSshCertificate parseCertificate(String path) throws Exception {
+    byte[] fileBytes = Util.fromFile(path);
+    byte[] base64 = OpenSshCertificateUtil.extractKeyData(fileBytes);
+    byte[] keyData = Util.fromBase64(base64, 0, base64.length);
+    return OpenSshCertificateParser.parse(new JSch().instLogger, keyData);
+  }
 
   // Dummy byte arrays for required fields in tests
   private static final byte[] DUMMY_NONCE = new byte[] {1, 2, 3, 4, 5, 6, 7, 8};
