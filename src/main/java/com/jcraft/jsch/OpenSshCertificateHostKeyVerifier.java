@@ -175,7 +175,7 @@ class OpenSshCertificateHostKeyVerifier {
     Buffer signatureBuffer = new Buffer(certificateSignature);
     String signatureAlgorithm = Util.byte2str(signatureBuffer.getString());
 
-    if (!caPublicKeyAlgorithm.equals(signatureAlgorithm)) {
+    if (!isSignatureAlgorithmCompatible(caPublicKeyAlgorithm, signatureAlgorithm)) {
       throw new JSchInvalidHostCertificateException(
           "rejected HostKey: signature verification failed, " + "signature algorithm: '"
               + signatureAlgorithm + "' - CA public Key algorithm: '" + caPublicKeyAlgorithm + "'");
@@ -185,6 +185,31 @@ class OpenSshCertificateHostKeyVerifier {
     session.checkCASignatureAlgorithm(signatureAlgorithm);
 
     return new SignatureWrapper(signatureAlgorithm, session);
+  }
+
+  /**
+   * Checks whether a certificate's signature algorithm is a valid one for the CA key's type.
+   * <p>
+   * The CA's public key type and the signature algorithm it uses are not always the same name. Per
+   * <a href="https://datatracker.ietf.org/doc/html/rfc8332#section-3">RFC 8332 §3</a>, an
+   * {@code ssh-rsa} public key may sign with {@code ssh-rsa} (SHA-1), {@code rsa-sha2-256} or
+   * {@code rsa-sha2-512} — the key type string stays {@code ssh-rsa} while only the signature
+   * algorithm name differs. OpenSSH signs host certificates with {@code rsa-sha2-512} by default
+   * for an RSA CA since 8.2. For every other key type the key algorithm and signature algorithm
+   * names coincide. The {@code ca_signature_algorithms} allow-list (checked separately) is what
+   * constrains which algorithms are actually permitted.
+   * </p>
+   *
+   * @param caKeyAlgorithm the CA public key's algorithm name (e.g. {@code ssh-rsa}).
+   * @param signatureAlgorithm the algorithm name from the certificate's signature.
+   * @return {@code true} if the signature algorithm can be produced by the CA key type.
+   */
+  static boolean isSignatureAlgorithmCompatible(String caKeyAlgorithm, String signatureAlgorithm) {
+    if ("ssh-rsa".equals(caKeyAlgorithm)) {
+      return "ssh-rsa".equals(signatureAlgorithm) || "rsa-sha2-256".equals(signatureAlgorithm)
+          || "rsa-sha2-512".equals(signatureAlgorithm);
+    }
+    return caKeyAlgorithm.equals(signatureAlgorithm);
   }
 
 }
