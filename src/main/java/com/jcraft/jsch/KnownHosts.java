@@ -169,7 +169,6 @@ class KnownHosts implements HostKeyRepository {
         }
 
         sb.setLength(0);
-        type = -1;
         while (j < bufl) {
           i = buf[j++];
           if (i == 0x20 || i == '\t') {
@@ -177,10 +176,11 @@ class KnownHosts implements HostKeyRepository {
           }
           sb.append((char) i);
         }
-        String tmp = sb.toString();
-        if (HostKey.name2type(tmp) != HostKey.UNKNOWN) {
-          type = HostKey.name2type(tmp);
-        } else {
+        String keyType = sb.toString();
+        boolean revokedCertificate =
+            "@revoked".equals(marker) && OpenSshCertificateKeyTypes.isCertificateKeyType(keyType);
+        type = HostKey.name2type(keyType);
+        if (type == HostKey.UNKNOWN && !revokedCertificate) {
           j = bufl;
         }
         if (j >= bufl) {
@@ -252,10 +252,25 @@ class KnownHosts implements HostKeyRepository {
         // System.err.println(host);
         // System.err.println("|"+key+"|");
 
-        HostKey hk = null;
-        hk = new HashedHostKey(marker, host, type,
-            Util.fromBase64(Util.str2byte(key), 0, key.length()), comment);
-        pool.addElement(hk);
+        byte[] keyData;
+        if (revokedCertificate) {
+          try {
+            OpenSshCertificate certificate = OpenSshCertificateParser.parse(jsch.instLogger,
+                Util.fromBase64(Util.str2byte(key), 0, key.length()));
+            keyData = certificate.getCertificatePublicKey();
+            type = HostKey.name2type(Util.byte2str(new Buffer(keyData).getString()));
+            if (type == HostKey.UNKNOWN || type != getCertificateBaseType(keyType)) {
+              throw new JSchException("Certificate key type does not match known_hosts key type");
+            }
+          } catch (JSchException | RuntimeException e) {
+            addInvalidLine(Util.byte2str(buf, 0, bufl));
+            continue loop;
+          }
+        } else {
+          keyData = Util.fromBase64(Util.str2byte(key), 0, key.length());
+        }
+
+        pool.addElement(new HashedHostKey(marker, host, type, keyData, comment));
       }
       if (error) {
         throw new JSchException("KnownHosts: invalid format");
@@ -270,6 +285,14 @@ class KnownHosts implements HostKeyRepository {
   private void addInvalidLine(String line) throws JSchException {
     HostKey hk = new HostKey(line, HostKey.UNKNOWN, null);
     pool.addElement(hk);
+  }
+
+  private static int getCertificateBaseType(String keyType) {
+    String baseType = OpenSshCertificateKeyTypes.getBaseKeyType(keyType);
+    if ("rsa-sha2-256".equals(baseType) || "rsa-sha2-512".equals(baseType)) {
+      return HostKey.SSHRSA;
+    }
+    return HostKey.name2type(baseType);
   }
 
   String getKnownHostsFile() {
