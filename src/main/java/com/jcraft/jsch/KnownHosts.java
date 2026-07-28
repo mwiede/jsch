@@ -252,24 +252,13 @@ class KnownHosts implements HostKeyRepository {
         // System.err.println(host);
         // System.err.println("|"+key+"|");
 
-        byte[] keyData;
         if (revokedCertificate) {
-          try {
-            OpenSshCertificate certificate = OpenSshCertificateParser.parse(jsch.instLogger,
-                Util.fromBase64(Util.str2byte(key), 0, key.length()));
-            keyData = certificate.getCertificatePublicKey();
-            type = HostKey.name2type(Util.byte2str(new Buffer(keyData).getString()));
-            if (type == HostKey.UNKNOWN || type != getCertificateBaseType(keyType)) {
-              throw new JSchException("Certificate key type does not match known_hosts key type");
-            }
-          } catch (JSchException | RuntimeException e) {
-            addInvalidLine(Util.byte2str(buf, 0, bufl));
-            continue loop;
-          }
-        } else {
-          keyData = Util.fromBase64(Util.str2byte(key), 0, key.length());
+          addRevokedCertificateHostKey(Util.byte2str(buf, 0, bufl), marker, host, keyType, key,
+              comment);
+          continue loop;
         }
 
+        byte[] keyData = Util.fromBase64(Util.str2byte(key), 0, key.length());
         pool.addElement(new HashedHostKey(marker, host, type, keyData, comment));
       }
       if (error) {
@@ -285,6 +274,28 @@ class KnownHosts implements HostKeyRepository {
   private void addInvalidLine(String line) throws JSchException {
     HostKey hk = new HostKey(line, HostKey.UNKNOWN, null);
     pool.addElement(hk);
+  }
+
+  // Unnamed catch variables require Java 22, but this source set targets Java 8.
+  @SuppressWarnings("java:S7467")
+  private void addRevokedCertificateHostKey(String line, String marker, String host, String keyType,
+      String key, String comment) throws JSchException {
+    byte[] keyData;
+    int type;
+    try {
+      OpenSshCertificate certificate = OpenSshCertificateParser.parse(jsch.instLogger,
+          Util.fromBase64(Util.str2byte(key), 0, key.length()));
+      keyData = certificate.getCertificatePublicKey();
+      type = HostKey.name2type(Util.byte2str(new Buffer(keyData).getString()));
+      if (type == HostKey.UNKNOWN || type != getCertificateBaseType(keyType)) {
+        throw new JSchException("Certificate key type does not match known_hosts key type");
+      }
+    } catch (JSchException | RuntimeException ignored) {
+      addInvalidLine(line);
+      return;
+    }
+
+    pool.addElement(new HashedHostKey(marker, host, type, keyData, comment));
   }
 
   private static int getCertificateBaseType(String keyType) {
