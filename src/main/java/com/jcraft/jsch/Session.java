@@ -115,11 +115,12 @@ public class Session {
   private Compression deflater;
   private Compression inflater;
 
-  private IO io;
+  IO io;
   private Socket socket;
   private int timeout = 0;
 
-  private volatile boolean isConnected = false;
+  volatile boolean isConnected = false;
+  volatile Throwable disconnectCause = null;
 
   private volatile boolean doExtInfo = false;
   private boolean enable_server_sig_algs = true;
@@ -213,6 +214,7 @@ public class Session {
     if (isConnected) {
       throw new JSchException("session is already connected");
     }
+    disconnectCause = null;
     initialKex = true;
 
     io = new IO();
@@ -2212,6 +2214,10 @@ public class Session {
       }
     } catch (Exception e) {
       in_kex = false;
+      // disconnect() clears isConnected before closing the streams.
+      if (isConnected) {
+        disconnectCause = e;
+      }
       if (getLogger().isEnabled(Logger.INFO)) {
         getLogger().log(Logger.INFO,
             "Caught an exception, leaving main loop due to " + e.getMessage(), e);
@@ -3076,6 +3082,18 @@ public class Session {
 
   public boolean isConnected() {
     return isConnected;
+  }
+
+  /**
+   * Returns the exception that ended the last connected session. Cleared by {@link #connect}.
+   *
+   * @return the exception, or {@code null} if still connected or disconnected locally
+   */
+  public Throwable getDisconnectCause() {
+    if (isConnected) {
+      return null;
+    }
+    return disconnectCause;
   }
 
   public int getTimeout() {
