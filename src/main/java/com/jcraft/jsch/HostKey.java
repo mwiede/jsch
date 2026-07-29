@@ -65,7 +65,7 @@ public class HostKey {
 
   public HostKey(String marker, String host, int type, byte[] key, String comment)
       throws JSchException {
-    this.marker = marker;
+    this.marker = marker == null ? "" : marker;
     this.host = host;
     if (type == GUESS) {
       if (key[8] == 'd') {

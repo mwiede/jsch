@@ -833,6 +833,60 @@ class KnownHostsTest {
   }
 
   @Test
+  void testCheckIgnoresCertAuthorityEntries() throws Exception {
+    KnownHosts kh = new KnownHosts(jsch);
+    kh.add(new HostKey("@cert-authority", "host.example.com", HostKey.SSHRSA, rsaKeyBytes, null),
+        null);
+
+    assertEquals(KnownHosts.NOT_INCLUDED,
+        kh.check("host.example.com", "    ssh-rsa1234".getBytes(ISO_8859_1)),
+        "cert-authority entry should not make a different plain key look changed");
+    assertEquals(KnownHosts.NOT_INCLUDED, kh.check("host.example.com", rsaKeyBytes),
+        "cert-authority key should not be accepted as a plain host key");
+
+    kh.add(new HostKey("", "host.example.com", HostKey.SSHRSA,
+        "    ssh-rsa1234".getBytes(ISO_8859_1), null), null);
+    assertEquals(KnownHosts.CHANGED, kh.check("host.example.com", rsaKeyBytes),
+        "cert-authority entry should not mask a changed ordinary key");
+  }
+
+  @Test
+  void testCheckOnlyMatchesExactRevokedKey() throws Exception {
+    KnownHosts kh = new KnownHosts(jsch);
+    kh.add(new HostKey("@revoked", "host.example.com", HostKey.SSHRSA, rsaKeyBytes, null), null);
+
+    assertEquals(KnownHosts.OK, kh.check("host.example.com", rsaKeyBytes),
+        "matching revoked key must reach Session's marker-specific revocation check");
+    assertEquals(KnownHosts.NOT_INCLUDED,
+        kh.check("host.example.com", "    ssh-rsa1234".getBytes(ISO_8859_1)),
+        "different key should not look changed because an old key was revoked");
+  }
+
+  @Test
+  void testReplacementPreservesMarkedEntries() throws Exception {
+    KnownHosts kh = new KnownHosts(jsch);
+    HostKey certAuthority =
+        new HostKey("@cert-authority", "host.example.com", HostKey.SSHRSA, rsaKeyBytes, null);
+    HostKey revoked =
+        new HostKey("@revoked", "host.example.com", HostKey.SSHRSA, rsaKeyBytes, null);
+    kh.add(certAuthority, null);
+    kh.add(revoked, null);
+    kh.add(new HostKey("", "host.example.com", HostKey.SSHRSA,
+        "    ssh-rsa1234".getBytes(ISO_8859_1), null), null);
+
+    kh.remove("host.example.com", "ssh-rsa", null);
+
+    HostKey[] hosts = kh.getHostKey("host.example.com", "ssh-rsa");
+    assertEquals(2, hosts.length, "only marked entries should remain");
+    assertSame(certAuthority, hosts[0], "cert-authority entry should be preserved");
+    assertSame(revoked, hosts[1], "revoked entry should be preserved");
+
+    kh.remove("host.example.com", "ssh-rsa", rsaKeyBytes);
+    assertEquals(0, kh.getHostKey("host.example.com", "ssh-rsa").length,
+        "explicit key removal should still remove marked entries");
+  }
+
+  @Test
   public void testAddGetRemoveHostKeys() throws Exception {
     boolean[] throwException = new boolean[1];
     Session.random = new NotSoRandomRandom();
