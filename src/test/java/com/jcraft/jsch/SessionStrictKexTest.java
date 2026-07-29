@@ -64,4 +64,10 @@ class SessionStrictKexTest {
     s.I_S = buildIS(",,,"); // name-list of empty elements
     assertFalse(s.checkServerStrictKex());
   }
+
+  @Test
+  @DisplayName("isStrictKex returns false before the initial key exchange has started")
+  void isStrictKexNotNegotiatedYet() throws Exception {
+    assertFalse(newSession().isStrictKex());
+  }
 }

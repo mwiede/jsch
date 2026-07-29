@@ -3237,6 +3237,24 @@ public class Session {
     return getNegotiatedAlgorithm(KeyExchange.PROPOSAL_COMP_ALGS_STOC);
   }
 
+  /**
+   * Returns whether strict key exchange was negotiated with the server.
+   *
+   * <p>
+   * Strict key exchange is only negotiated during the initial key exchange, so unlike the
+   * negotiated algorithms this value does not change when the session is rekeyed. It returns
+   * {@code false} again once the session is disconnected.
+   *
+   * @return {@code true} if strict key exchange, the countermeasure against
+   *         <a href="https://nvd.nist.gov/vuln/detail/CVE-2023-48795">CVE-2023-48795</a>, was
+   *         negotiated, or {@code false} if the initial key exchange has not started yet, if the
+   *         server did not support it, or if it was turned off with the {@code enable_strict_kex}
+   *         configuration
+   */
+  public boolean isStrictKex() {
+    return doStrictKex;
+  }
+
   public void sendIgnore() throws Exception {
     Buffer buf = new Buffer();
     Packet packet = new Packet(buf);
