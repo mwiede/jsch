@@ -300,11 +300,15 @@ class KnownHosts implements HostKeyRepository {
     synchronized (pool) {
       for (int i = 0; i < pool.size(); i++) {
         HostKey _hk = pool.elementAt(i);
-        if (_hk.isMatched(host) && _hk.type == hk.type) {
+        String marker = _hk.getMarker();
+        if (_hk.isMatched(host) && _hk.type == hk.type
+            && ("".equals(marker) || "@revoked".equals(marker))) {
           if (Util.array_equals(_hk.key, key)) {
             return OK;
           }
-          result = CHANGED;
+          if ("".equals(marker)) {
+            result = CHANGED;
+          }
         }
       }
     }
@@ -428,8 +432,10 @@ class KnownHosts implements HostKeyRepository {
     synchronized (pool) {
       for (int i = 0; i < pool.size(); i++) {
         HostKey hk = pool.elementAt(i);
-        if (host == null || (hk.isMatched(host) && (type == null
-            || (hk.getType().equals(type) && (key == null || Util.array_equals(key, hk.key)))))) {
+        boolean preserveMarkedEntry =
+            host != null && type != null && key == null && !"".equals(hk.getMarker());
+        if (!preserveMarkedEntry && (host == null || (hk.isMatched(host) && (type == null
+            || (hk.getType().equals(type) && (key == null || Util.array_equals(key, hk.key))))))) {
           String hosts = hk.getHost();
           if (host == null || hosts.equals(host)
               || ((hk instanceof HashedHostKey) && ((HashedHostKey) hk).isHashed())) {

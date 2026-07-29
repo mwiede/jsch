@@ -51,15 +51,25 @@ public interface HostKeyRepository {
   void add(HostKey hostkey, UserInfo ui);
 
   /**
-   * Removes a host key if there exists mached key with <code>host</code>, <code>type</code>.
+   * Removes host keys matching <code>host</code> and <code>type</code>.
+   *
+   * <p>
+   * When both arguments are non-null, entries with a non-empty marker are preserved. A null
+   * <code>host</code> clears the repository, while a null <code>type</code> removes all keys
+   * matching <code>host</code>, including marked entries.
    *
    * @see #remove(String host, String type, byte[] key)
    */
   void remove(String host, String type);
 
   /**
-   * Removes a host key if there exists a matched key with <code>host</code>, <code>type</code> and
-   * <code>key</code>.
+   * Removes host keys matching <code>host</code>, <code>type</code> and <code>key</code>.
+   *
+   * <p>
+   * When <code>host</code> and <code>type</code> are non-null and <code>key</code> is null, entries
+   * with a non-empty marker are preserved. A non-null matching <code>key</code> also removes marked
+   * entries. A null <code>host</code> clears the repository, while a null <code>type</code> removes
+   * all keys matching <code>host</code>, including marked entries.
    */
   void remove(String host, String type, byte[] key);
 

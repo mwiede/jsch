@@ -1,5 +1,6 @@
 package com.jcraft.jsch;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -13,6 +14,12 @@ public class HostKeyTest {
     String dummyKey = "AAAAB3NzaC1yc2EAAAADAQABAAABAQ==";
     byte[] keyBytes = Util.fromBase64(Util.str2byte(dummyKey), 0, dummyKey.length());
     return new HostKey(hostPattern, HostKey.SSHRSA, keyBytes);
+  }
+
+  @Test
+  public void testNullMarkerDefaultsToEmpty() throws Exception {
+    HostKey hostKey = new HostKey(null, "example.com", HostKey.SSHRSA, new byte[0], null);
+    assertEquals("", hostKey.getMarker(), "Null marker should represent an unmarked host key");
   }
 
   // ==================== Basic wildcard tests ====================
