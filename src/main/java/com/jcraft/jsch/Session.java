@@ -103,6 +103,7 @@ public class Session {
   private int seqo = 0;
 
   String[] guess = null;
+  volatile String[] negotiatedAlgorithms = null;
   private Cipher s2ccipher;
   private Cipher c2scipher;
   private MAC s2cmac;
@@ -1594,6 +1595,7 @@ public class Session {
     } finally {
       kex.clearK();
     }
+    negotiatedAlgorithms = guess;
     in_kex = false;
     if (doStrictKex) {
       seqi = 0;
@@ -3106,6 +3108,133 @@ public class Session {
 
   public void setClientVersion(String cv) {
     V_C = Util.str2byte(cv);
+  }
+
+  private String getNegotiatedAlgorithm(int proposal) {
+    String[] g = negotiatedAlgorithms;
+    return g == null ? null : g[proposal];
+  }
+
+  /**
+   * Returns the key exchange algorithm that was negotiated with the server.
+   *
+   * <p>
+   * The value reflects the most recently completed key exchange: it is updated when the newly
+   * negotiated algorithms are put into use, so while a rekey is in progress it still reports the
+   * algorithms currently in effect.
+   *
+   * @return the negotiated key exchange algorithm, or {@code null} if no key exchange has completed
+   *         yet
+   */
+  public String getKexAlgorithm() {
+    return getNegotiatedAlgorithm(KeyExchange.PROPOSAL_KEX_ALGS);
+  }
+
+  /**
+   * Returns the server host key algorithm that was negotiated with the server.
+   *
+   * <p>
+   * The value reflects the most recently completed key exchange: it is updated when the newly
+   * negotiated algorithms are put into use, so while a rekey is in progress it still reports the
+   * algorithms currently in effect.
+   *
+   * @return the negotiated server host key algorithm, or {@code null} if no key exchange has
+   *         completed yet
+   */
+  public String getServerHostKeyAlgorithm() {
+    return getNegotiatedAlgorithm(KeyExchange.PROPOSAL_SERVER_HOST_KEY_ALGS);
+  }
+
+  /**
+   * Returns the client to server cipher algorithm that was negotiated with the server.
+   *
+   * <p>
+   * The value reflects the most recently completed key exchange: it is updated when the newly
+   * negotiated algorithms are put into use, so while a rekey is in progress it still reports the
+   * algorithms currently in effect.
+   *
+   * @return the negotiated client to server cipher algorithm, or {@code null} if no key exchange
+   *         has completed yet
+   */
+  public String getCipherAlgorithmC2S() {
+    return getNegotiatedAlgorithm(KeyExchange.PROPOSAL_ENC_ALGS_CTOS);
+  }
+
+  /**
+   * Returns the server to client cipher algorithm that was negotiated with the server.
+   *
+   * <p>
+   * The value reflects the most recently completed key exchange: it is updated when the newly
+   * negotiated algorithms are put into use, so while a rekey is in progress it still reports the
+   * algorithms currently in effect.
+   *
+   * @return the negotiated server to client cipher algorithm, or {@code null} if no key exchange
+   *         has completed yet
+   */
+  public String getCipherAlgorithmS2C() {
+    return getNegotiatedAlgorithm(KeyExchange.PROPOSAL_ENC_ALGS_STOC);
+  }
+
+  /**
+   * Returns the client to server MAC algorithm that was negotiated with the server.
+   *
+   * <p>
+   * The value reflects the most recently completed key exchange: it is updated when the newly
+   * negotiated algorithms are put into use, so while a rekey is in progress it still reports the
+   * algorithms currently in effect.
+   *
+   * @return the negotiated client to server MAC algorithm, or {@code null} if no key exchange has
+   *         completed yet or if the negotiated client to server cipher is an AEAD cipher, in which
+   *         case no separate MAC algorithm is negotiated
+   */
+  public String getMacAlgorithmC2S() {
+    return getNegotiatedAlgorithm(KeyExchange.PROPOSAL_MAC_ALGS_CTOS);
+  }
+
+  /**
+   * Returns the server to client MAC algorithm that was negotiated with the server.
+   *
+   * <p>
+   * The value reflects the most recently completed key exchange: it is updated when the newly
+   * negotiated algorithms are put into use, so while a rekey is in progress it still reports the
+   * algorithms currently in effect.
+   *
+   * @return the negotiated server to client MAC algorithm, or {@code null} if no key exchange has
+   *         completed yet or if the negotiated server to client cipher is an AEAD cipher, in which
+   *         case no separate MAC algorithm is negotiated
+   */
+  public String getMacAlgorithmS2C() {
+    return getNegotiatedAlgorithm(KeyExchange.PROPOSAL_MAC_ALGS_STOC);
+  }
+
+  /**
+   * Returns the client to server compression algorithm that was negotiated with the server.
+   *
+   * <p>
+   * The value reflects the most recently completed key exchange: it is updated when the newly
+   * negotiated algorithms are put into use, so while a rekey is in progress it still reports the
+   * algorithms currently in effect.
+   *
+   * @return the negotiated client to server compression algorithm, or {@code null} if no key
+   *         exchange has completed yet
+   */
+  public String getCompressionAlgorithmC2S() {
+    return getNegotiatedAlgorithm(KeyExchange.PROPOSAL_COMP_ALGS_CTOS);
+  }
+
+  /**
+   * Returns the server to client compression algorithm that was negotiated with the server.
+   *
+   * <p>
+   * The value reflects the most recently completed key exchange: it is updated when the newly
+   * negotiated algorithms are put into use, so while a rekey is in progress it still reports the
+   * algorithms currently in effect.
+   *
+   * @return the negotiated server to client compression algorithm, or {@code null} if no key
+   *         exchange has completed yet
+   */
+  public String getCompressionAlgorithmS2C() {
+    return getNegotiatedAlgorithm(KeyExchange.PROPOSAL_COMP_ALGS_STOC);
   }
 
   public void sendIgnore() throws Exception {
