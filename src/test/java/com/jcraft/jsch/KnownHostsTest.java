@@ -289,6 +289,30 @@ class KnownHostsTest {
   }
 
   @Test
+  void testSetKnownHostsPreservesInvalidRevokedCertificates() throws Exception {
+    String certificateLine = new String(
+        Util.fromFile("src/test/resources/certificates/host/ssh_host_ed25519_key-cert.pub"), UTF_8)
+        .trim();
+    String mismatchedLine = "@revoked localhost ecdsa-sha2-nistp256-cert-v01@openssh.com"
+        + certificateLine.substring(certificateLine.indexOf(' '));
+    String malformedLine = "@revoked localhost ssh-ed25519-cert-v01@openssh.com AAAA";
+    String validLine = "localhost ssh-rsa " + rsaKey;
+
+    KnownHosts kh = new KnownHosts(jsch);
+    kh.setKnownHosts(new ByteArrayInputStream(
+        (mismatchedLine + "\n" + malformedLine + "\n" + validLine).getBytes(UTF_8)));
+
+    HostKey[] keys = kh.getHostKey();
+    assertEquals(1, keys.length);
+    assertEquals("ssh-rsa", keys[0].getType());
+
+    ByteArrayOutputStream dump = new ByteArrayOutputStream();
+    kh.dump(dump);
+    assertEquals(mismatchedLine + "\n" + malformedLine + "\n" + validLine + "\n",
+        dump.toString("UTF8"));
+  }
+
+  @Test
   void testkSyncDump() throws Exception {
     KnownHosts kh = new KnownHosts(jsch) {
       @Override

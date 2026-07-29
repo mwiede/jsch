@@ -3,13 +3,18 @@ package com.jcraft.jsch;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.io.ByteArrayInputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 
 /**
  * Unit tests for OpenSshCertificateHostKeyVerifier focusing on certificate validation edge cases.
@@ -182,6 +187,32 @@ public class OpenSshCertificateHostKeyVerifierTest {
         "ssh-ed25519"));
     assertFalse(OpenSshCertificateHostKeyVerifier
         .isSignatureAlgorithmCompatible("ecdsa-sha2-nistp256", "rsa-sha2-512"));
+  }
+
+  @ParameterizedTest
+  @CsvSource({"ssh_host_ed25519_key-cert.pub, ssh-ed25519-cert-v01@openssh.com",
+      "ssh_host_ecdsa_key-cert.pub, ecdsa-sha2-nistp256-cert-v01@openssh.com",
+      "ssh_host_rsa_key-cert.pub, rsa-sha2-256-cert-v01@openssh.com",
+      "ssh_host_rsa_key-cert.pub, rsa-sha2-512-cert-v01@openssh.com"})
+  public void testCheckHostCertificate_withCertificateTypeRevocation_shouldReject(
+      String certificateFile, String knownHostsKeyType) throws Exception {
+    String certificatePath = "src/test/resources/certificates/host/" + certificateFile;
+    String certificateLine =
+        new String(Util.fromFile(certificatePath), StandardCharsets.UTF_8).trim();
+    certificateLine = knownHostsKeyType + certificateLine.substring(certificateLine.indexOf(' '));
+    String knownHosts = new String(Util.fromFile("src/test/resources/certificates/known_hosts"),
+        StandardCharsets.UTF_8) + "\n@revoked localhost " + certificateLine;
+
+    JSch jsch = new JSch();
+    jsch.setKnownHosts(new ByteArrayInputStream(knownHosts.getBytes(StandardCharsets.UTF_8)));
+
+    OpenSshCertificate certificate = parseCertificate(certificatePath);
+    assertEquals(HostKeyRepository.OK,
+        jsch.getHostKeyRepository().check("localhost", certificate.getCertificatePublicKey()));
+
+    Session session = jsch.getSession("user", "localhost");
+    assertThrows(JSchRevokedHostKeyException.class,
+        () -> OpenSshCertificateHostKeyVerifier.checkHostCertificate(session, certificate));
   }
 
   // ==================== Helper methods ====================
