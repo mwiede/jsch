@@ -63,6 +63,9 @@ public class DH implements com.jcraft.jsch.DH {
       e = ((DHPublicKey) (myKpair.getPublic())).getY();
       e_array = e.toByteArray();
     }
+    // Per RFC 8268 4. Checking the Peer's DH Public Key:
+    // 1 < e < p-1
+    checkRange(e);
     return e_array;
   }
 
@@ -102,19 +105,15 @@ public class DH implements com.jcraft.jsch.DH {
     this.f = f;
   }
 
-  // e, f must be in [1, p-1].
+  // Per RFC 8268 4. Checking the Peer's DH Public Key:
+  // 1 < f < p-1
   @Override
   public void checkRange() throws Exception {
-    /*
-     * checkRange(e); checkRange(f);
-     */
+    checkRange(f);
   }
 
   private void checkRange(BigInteger tmp) throws Exception {
-    BigInteger one = BigInteger.ONE;
-    BigInteger p_1 = p.subtract(one);
-    // !(1<tmp && tmp<p-1) We expect tmp is in the range [2, p-2].
-    if (!(one.compareTo(tmp) < 0 && tmp.compareTo(p_1) < 0)) {
+    if (tmp.compareTo(BigInteger.ONE) <= 0 || tmp.compareTo(p.subtract(BigInteger.ONE)) >= 0) {
       throw new JSchException("invalid DH value");
     }
   }
