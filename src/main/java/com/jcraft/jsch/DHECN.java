@@ -172,6 +172,7 @@ abstract class DHECN extends KeyExchange {
         j = 0;
         j = ((K_S[i++] << 24) & 0xff000000) | ((K_S[i++] << 16) & 0x00ff0000)
             | ((K_S[i++] << 8) & 0x0000ff00) | ((K_S[i++]) & 0x000000ff);
+        validateAgainstKSLength(j, i);
         String alg = Util.byte2str(K_S, i, j);
         i += j;
 
