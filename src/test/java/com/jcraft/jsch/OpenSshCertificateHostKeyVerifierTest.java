@@ -136,6 +136,12 @@ public class OpenSshCertificateHostKeyVerifierTest {
     assertTrue(cert.getPrincipals().contains("10.0.0.1"), "Should contain IP");
   }
 
+  @Test
+  public void testPrincipalPatternMatching() {
+    assertTrue(HostKey.matchesWildcardPattern("*.example.com", "host.example.com"));
+    assertFalse(HostKey.matchesWildcardPattern("*.example.com", "example.com"));
+  }
+
   // ==================== Tests for RSA CA signature algorithm (issue #1085) ====================
 
   /**
