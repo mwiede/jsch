@@ -650,7 +650,7 @@
             <plugin>
                 <groupId>org.cyclonedx</groupId>
                 <artifactId>cyclonedx-maven-plugin</artifactId>
-                <version>2.9.2</version>
+                <version>2.9.3</version>
                 <configuration>
                     <includeProvidedScope>false</includeProvidedScope>
                     <includeSystemScope>false</includeSystemScope>
