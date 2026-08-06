@@ -107,7 +107,15 @@ class OpenSshCertificateHostKeyVerifier {
     // Convert to lowercase for principal matching (same as OpenSSH ssh_login())
     principalName = principalName.toLowerCase(Locale.ROOT);
 
-    if (!principals.contains(principalName)) {
+    boolean principalMatched = false;
+    for (String principal : principals) {
+      if (HostKey.matchesWildcardPattern(principal, principalName)) {
+        principalMatched = true;
+        break;
+      }
+    }
+
+    if (!principalMatched) {
       throw new JSchException("rejected HostKey: invalid principal '" + principalName
           + "', allowed principals: " + principals);
     }
