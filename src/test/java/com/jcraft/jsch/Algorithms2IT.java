@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.condition.JRE.JAVA_11;
 import static org.junit.jupiter.api.condition.JRE.JAVA_15;
+import static org.junit.jupiter.api.condition.JRE.JAVA_17;
 import static org.junit.jupiter.api.condition.JRE.JAVA_24;
 
 import com.github.valfirst.slf4jtest.LoggingEvent;
@@ -124,8 +125,8 @@ public class Algorithms2IT {
 
   @ParameterizedTest
   @ValueSource(strings = {"mlkem768nistp256-sha256", "mlkem1024nistp384-sha384"})
-  @EnabledForJreRange(min = JAVA_24)
-  public void testJava24KEXs(String kex) throws Exception {
+  @EnabledForJreRange(min = JAVA_17)
+  public void testJava17KEXs(String kex) throws Exception {
     JSch ssh = createRSAIdentity();
     Session session = createSession(ssh);
     session.setConfig("mlkem768", "com.jcraft.jsch.jce.MLKEM768");

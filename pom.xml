@@ -465,6 +465,19 @@
                         </configuration>
                     </execution>
                     <execution>
+                        <id>default-compile-17</id>
+                        <goals>
+                            <goal>compile</goal>
+                        </goals>
+                        <configuration>
+                            <compileSourceRoots>
+                                <compileSourceRoot>${project.basedir}/src/main/java17</compileSourceRoot>
+                            </compileSourceRoots>
+                            <multiReleaseOutput>true</multiReleaseOutput>
+                            <release>17</release>
+                        </configuration>
+                    </execution>
+                    <execution>
                         <id>default-compile-19</id>
                         <goals>
                             <goal>compile</goal>
@@ -492,19 +505,6 @@
                             <compilerArgs>
                                 <arg>-Xlint:all,-processing,-classfile,-options,-restricted</arg>
                             </compilerArgs>
-                        </configuration>
-                    </execution>
-                    <execution>
-                        <id>default-compile-24</id>
-                        <goals>
-                            <goal>compile</goal>
-                        </goals>
-                        <configuration>
-                            <compileSourceRoots>
-                                <compileSourceRoot>${project.basedir}/src/main/java24</compileSourceRoot>
-                            </compileSourceRoots>
-                            <multiReleaseOutput>true</multiReleaseOutput>
-                            <release>24</release>
                         </configuration>
                     </execution>
                 </executions>
@@ -636,7 +636,7 @@
                     <doclint>none</doclint>
                     <subpackages>com.jcraft.jsch</subpackages>
                     <excludePackageNames>com.jcraft.jsch.*,com.jcraft.jsch.windowsapi.windows.win32.*,com.jcraft.jsch.windowsapi.windows.win32.system.*,com.jcraft.jsch.windowsapi.windows.win32.ui.*</excludePackageNames>
-                    <sourcepath>${project.build.sourceDirectory}:${project.build.directory}/generated-sources/java-templates:${project.basedir}/src/main/java9:${project.basedir}/src/main/java10:${project.basedir}/src/main/java11:${project.basedir}/src/main/java15:${project.basedir}/src/main/java16:${project.basedir}/src/main/java19:${project.basedir}/src/main/java23:${project.build.directory}/generated-sources/windows-api:${project.basedir}/src/main/java24</sourcepath>
+                    <sourcepath>${project.build.sourceDirectory}:${project.build.directory}/generated-sources/java-templates:${project.basedir}/src/main/java9:${project.basedir}/src/main/java10:${project.basedir}/src/main/java11:${project.basedir}/src/main/java15:${project.basedir}/src/main/java16:${project.build.directory}/generated-sources/windows-api:${project.basedir}/src/main/java17:${project.basedir}/src/main/java19:${project.basedir}/src/main/java23</sourcepath>
                 </configuration>
                 <executions>
                     <execution>
@@ -734,9 +734,9 @@
                         <sourceDirectory>${project.basedir}/src/main/java11</sourceDirectory>
                         <sourceDirectory>${project.basedir}/src/main/java15</sourceDirectory>
                         <sourceDirectory>${project.basedir}/src/main/java16</sourceDirectory>
+                        <sourceDirectory>${project.basedir}/src/main/java17</sourceDirectory>
                         <sourceDirectory>${project.basedir}/src/main/java19</sourceDirectory>
                         <sourceDirectory>${project.basedir}/src/main/java23</sourceDirectory>
-                        <sourceDirectory>${project.basedir}/src/main/java24</sourceDirectory>
                         <sourceDirectory>${project.basedir}/src/main/java-templates</sourceDirectory>
                     </sourceDirectories>
                 </configuration>
@@ -757,9 +757,9 @@
                         <directory>${project.basedir}/src/main/java11</directory>
                         <directory>${project.basedir}/src/main/java15</directory>
                         <directory>${project.basedir}/src/main/java16</directory>
+                        <directory>${project.basedir}/src/main/java17</directory>
                         <directory>${project.basedir}/src/main/java19</directory>
                         <directory>${project.basedir}/src/main/java23</directory>
-                        <directory>${project.basedir}/src/main/java24</directory>
                         <directory>${project.basedir}/src/main/java-templates</directory>
                     </directories>
                 </configuration>
@@ -779,9 +779,9 @@
                         <directory>${project.basedir}/src/main/java11</directory>
                         <directory>${project.basedir}/src/main/java15</directory>
                         <directory>${project.basedir}/src/main/java16</directory>
+                        <directory>${project.basedir}/src/main/java17</directory>
                         <directory>${project.basedir}/src/main/java19</directory>
                         <directory>${project.basedir}/src/main/java23</directory>
-                        <directory>${project.basedir}/src/main/java24</directory>
                         <directory>${project.basedir}/src/main/java-templates</directory>
                     </directories>
                 </configuration>

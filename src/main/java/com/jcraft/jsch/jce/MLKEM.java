@@ -29,21 +29,21 @@ package com.jcraft.jsch.jce;
 abstract class MLKEM implements com.jcraft.jsch.KEM {
 
   MLKEM() {
-    throw new UnsupportedOperationException("MLKEM requires Java24+.");
+    throw new UnsupportedOperationException("MLKEM requires Java17+.");
   }
 
   @Override
   public void init() throws Exception {
-    throw new UnsupportedOperationException("MLKEM requires Java24+.");
+    throw new UnsupportedOperationException("MLKEM requires Java17+.");
   }
 
   @Override
   public byte[] getPublicKey() throws Exception {
-    throw new UnsupportedOperationException("MLKEM requires Java24+.");
+    throw new UnsupportedOperationException("MLKEM requires Java17+.");
   }
 
   @Override
   public byte[] decapsulate(byte[] encapsulation) throws Exception {
-    throw new UnsupportedOperationException("MLKEM requires Java24+.");
+    throw new UnsupportedOperationException("MLKEM requires Java17+.");
   }
 }
