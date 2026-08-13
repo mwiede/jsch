@@ -389,16 +389,31 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>3.15.0</version>
-                <configuration>
-                    <release>8</release>
-                    <showDeprecation>true</showDeprecation>
-                    <showWarnings>true</showWarnings>
-                    <failOnWarning>true</failOnWarning>
-                    <compilerArgs>
-                        <arg>-Xlint:all,-processing,-classfile,-options</arg>
-                    </compilerArgs>
-                </configuration>
                 <executions>
+                    <execution>
+                        <id>default-compile</id>
+                        <configuration>
+                            <release>8</release>
+                            <showDeprecation>true</showDeprecation>
+                            <showWarnings>true</showWarnings>
+                            <failOnWarning>true</failOnWarning>
+                            <compilerArgs>
+                                <arg>-Xlint:all,-processing,-classfile,-options</arg>
+                            </compilerArgs>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>default-testCompile</id>
+                        <configuration>
+                            <release>8</release>
+                            <showDeprecation>true</showDeprecation>
+                            <showWarnings>true</showWarnings>
+                            <failOnWarning>true</failOnWarning>
+                            <compilerArgs>
+                                <arg>-Xlint:all,-processing,-classfile,-options</arg>
+                            </compilerArgs>
+                        </configuration>
+                    </execution>
                     <execution>
                         <id>default-compile-9</id>
                         <goals>
@@ -473,8 +488,16 @@
                             <compileSourceRoots>
                                 <compileSourceRoot>${project.basedir}/src/main/java17</compileSourceRoot>
                             </compileSourceRoots>
-                            <multiReleaseOutput>true</multiReleaseOutput>
-                            <release>17</release>
+                            <!-- not via <release> because of backported KEM API in SE 17 MR 1 -->
+                            <outputDirectory>${project.build.outputDirectory}/META-INF/versions/17</outputDirectory>
+                            <source>17</source>
+                            <target>17</target>
+                            <showWarnings>false</showWarnings>
+                            <failOnWarning>false</failOnWarning>
+                            <compilerArgs>
+                                <arg>-XDignore.symbol.file</arg>
+                            </compilerArgs>
+                            <!-- ################# -->
                         </configuration>
                     </execution>
                     <execution>
