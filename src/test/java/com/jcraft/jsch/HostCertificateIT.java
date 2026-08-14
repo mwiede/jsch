@@ -1,7 +1,11 @@
 package com.jcraft.jsch;
 
 import static com.jcraft.jsch.ResourceUtil.getResourceFile;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.condition.JRE.JAVA_15;
@@ -118,9 +122,38 @@ public class HostCertificateIT {
     session.setConfig("StrictHostKeyChecking", "yes");
     session.setConfig("PreferredAuthentications", "publickey");
     session.setConfig("server_host_key", algorithm);
+    assertNull(session.getHostKeyCertificate());
     assertDoesNotThrow(() -> {
       connectSftp(session);
     });
+
+    HostKey hostKey = session.getHostKey();
+    assertNotNull(hostKey);
+
+    OpenSshCertificate certificate = session.getHostKeyCertificate();
+    assertNotNull(certificate);
+    assertTrue(certificate.isHostCertificate());
+    assertTrue(certificate.isValidNow());
+    assertFalse(certificate.getPrincipals().isEmpty());
+    assertNotNull(certificate.getSignatureKey());
+    assertArrayEquals(certificate.getCertificatePublicKey(), hostKey.key);
+  }
+
+  @Test
+  public void noCertificateIsReportedForAPlainHostKey() throws Exception {
+    JSch ssh = new JSch();
+    ssh.addIdentity(
+        getResourceFile(this.getClass(), CERTIFICATES_BASE_FOLDER + "/user_keys/id_ecdsa_nistp521"),
+        getResourceFile(this.getClass(),
+            CERTIFICATES_BASE_FOLDER + "/user_keys/id_ecdsa_nistp521.pub"),
+        null);
+    Session session = setup(ssh, "ssh-ed25519");
+    session.setConfig("StrictHostKeyChecking", "no");
+
+    connectSftp(session);
+
+    assertNotNull(session.getHostKey());
+    assertNull(session.getHostKeyCertificate());
   }
 
   /**

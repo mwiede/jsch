@@ -214,6 +214,9 @@ public class Session {
       throw new JSchException("session is already connected");
     }
     initialKex = true;
+    // Retain these values after disconnect, but not across connection attempts.
+    hostkey = null;
+    hostCertificate = null;
 
     io = new IO();
     if (random == null) {
@@ -972,6 +975,9 @@ public class Session {
           getLogger().log(Logger.INFO, "Host '" + chost + "' is known and matches the "
               + kex.getKeyType() + " host certificate");
         }
+        // This path does not reach doCheckHostKey, which normally records the host key.
+        hostkey = new HostKey(chost, certificate.getCertificatePublicKey());
+        hostCertificate = certificate;
         return;
       } catch (JSchRevokedHostKeyException e) {
         // Revoked key is a hard failure — never fall back to plain key checking
@@ -3289,8 +3295,26 @@ public class Session {
 
   private HostKey hostkey = null;
 
+  private OpenSshCertificate hostCertificate = null;
+
   public HostKey getHostKey() {
     return hostkey;
+  }
+
+  /**
+   * Returns the verified OpenSSH host certificate used by this session.
+   *
+   * <p>
+   * This is {@code null} when the server used a plain host key or when certificate verification
+   * failed and {@code host_certificate_to_key_fallback} accepted its plain key instead. The value
+   * is retained after disconnect and cleared when a new connection attempt begins.
+   * </p>
+   *
+   * @return the verified host certificate, or {@code null} if none was used
+   * @see #getHostKey()
+   */
+  public OpenSshCertificate getHostKeyCertificate() {
+    return hostCertificate;
   }
 
   public String getHost() {

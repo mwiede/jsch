@@ -22,7 +22,7 @@ import java.util.Map;
  * @see <a href="https://datatracker.ietf.org/doc/html/draft-miller-ssh-cert-03">OpenSSH Certificate
  *      Protocol</a>
  */
-class OpenSshCertificate {
+public final class OpenSshCertificate {
 
   /**
    * Certificate type constant for user certificates
@@ -140,19 +140,19 @@ class OpenSshCertificate {
     this.message = builder.message;
   }
 
-  String getKeyType() {
+  public String getKeyType() {
     return keyType;
   }
 
-  byte[] getNonce() {
+  public byte[] getNonce() {
     return nonce == null ? null : nonce.clone();
   }
 
-  byte[] getCertificatePublicKey() {
+  public byte[] getCertificatePublicKey() {
     return certificatePublicKey == null ? null : certificatePublicKey.clone();
   }
 
-  long getSerial() {
+  public long getSerial() {
     return serial;
   }
 
@@ -160,55 +160,55 @@ class OpenSshCertificate {
     return type;
   }
 
-  String getId() {
+  public String getId() {
     return id;
   }
 
-  Collection<String> getPrincipals() {
+  public Collection<String> getPrincipals() {
     return principals == null ? null : Collections.unmodifiableCollection(principals);
   }
 
-  long getValidAfter() {
+  public long getValidAfter() {
     return validAfter;
   }
 
-  long getValidBefore() {
+  public long getValidBefore() {
     return validBefore;
   }
 
-  Map<String, String> getCriticalOptions() {
+  public Map<String, String> getCriticalOptions() {
     return criticalOptions == null ? null : Collections.unmodifiableMap(criticalOptions);
   }
 
-  Map<String, String> getExtensions() {
+  public Map<String, String> getExtensions() {
     return extensions == null ? null : Collections.unmodifiableMap(extensions);
   }
 
-  String getReserved() {
+  public String getReserved() {
     return reserved;
   }
 
-  byte[] getSignatureKey() {
+  public byte[] getSignatureKey() {
     return signatureKey == null ? null : signatureKey.clone();
   }
 
-  byte[] getSignature() {
+  public byte[] getSignature() {
     return signature == null ? null : signature.clone();
   }
 
-  boolean isUserCertificate() {
+  public boolean isUserCertificate() {
     return SSH2_CERT_TYPE_USER == type;
   }
 
-  boolean isHostCertificate() {
+  public boolean isHostCertificate() {
     return SSH2_CERT_TYPE_HOST == type;
   }
 
-  boolean isValidNow() {
+  public boolean isValidNow() {
     return OpenSshCertificateUtil.isValidNow(this);
   }
 
-  byte[] getMessage() {
+  public byte[] getMessage() {
     return message == null ? null : message.clone();
   }
 
