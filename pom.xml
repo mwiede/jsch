@@ -490,13 +490,11 @@
                             </compileSourceRoots>
                             <!-- not via <release> because of backported KEM API in SE 17 MR 1 -->
                             <outputDirectory>${project.build.outputDirectory}/META-INF/versions/17</outputDirectory>
+                            <release></release>
                             <source>17</source>
                             <target>17</target>
                             <showWarnings>false</showWarnings>
                             <failOnWarning>false</failOnWarning>
-                            <compilerArgs>
-                                <arg>-XDignore.symbol.file</arg>
-                            </compilerArgs>
                             <!-- ################# -->
                         </configuration>
                     </execution>
