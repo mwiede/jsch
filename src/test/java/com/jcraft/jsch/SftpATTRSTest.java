@@ -1,6 +1,11 @@
 package com.jcraft.jsch;
 
+import static com.jcraft.jsch.SftpATTRS.MAX_EXTENDED_COUNT;
+import static com.jcraft.jsch.SftpATTRS.SSH_FILEXFER_ATTR_EXTENDED;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.time.ZoneOffset;
 import java.util.Date;
@@ -50,5 +55,54 @@ public class SftpATTRSTest {
       String actual = SftpATTRS.toDateString(l);
       assertEquals(expected, actual);
     }
+  }
+
+  @Test
+  public void testGetATTRNegativeExtendedCount() {
+    Buffer buf = new Buffer(8);
+    buf.putInt(SSH_FILEXFER_ATTR_EXTENDED);
+    buf.putInt(-1);
+    assertThrows(SftpException.class, () -> SftpATTRS.getATTR(buf));
+  }
+
+  @Test
+  public void testGetATTRMaxExtendedCount() {
+    Buffer buf = new Buffer(8);
+    buf.putInt(SSH_FILEXFER_ATTR_EXTENDED);
+    buf.putInt(MAX_EXTENDED_COUNT + 1);
+    assertThrows(SftpException.class, () -> SftpATTRS.getATTR(buf));
+  }
+
+  @Test
+  public void testGetATTRInvalidExtendedCount() {
+    Buffer buf = new Buffer(8);
+    buf.putInt(SSH_FILEXFER_ATTR_EXTENDED);
+    buf.putInt(1);
+    assertThrows(SftpException.class, () -> SftpATTRS.getATTR(buf));
+  }
+
+  @Test
+  public void testGetATTREmptyExtendedCount() throws Exception {
+    Buffer buf = new Buffer(8);
+    buf.putInt(SSH_FILEXFER_ATTR_EXTENDED);
+    buf.putInt(0);
+    SftpATTRS attrs = SftpATTRS.getATTR(buf);
+    String[] extended = attrs.getExtended();
+    assertNull(extended);
+  }
+
+  @Test
+  public void testGetATTRValidExtendedCount() throws Exception {
+    Buffer buf = new Buffer(16);
+    buf.putInt(SSH_FILEXFER_ATTR_EXTENDED);
+    buf.putInt(1);
+    buf.putString(Util.str2byte(""));
+    buf.putString(Util.str2byte(""));
+    SftpATTRS attrs = SftpATTRS.getATTR(buf);
+    String[] extended = attrs.getExtended();
+    assertNotNull(extended);
+    assertEquals(2, extended.length);
+    assertEquals("", extended[0]);
+    assertEquals("", extended[1]);
   }
 }

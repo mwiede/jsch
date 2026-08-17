@@ -62,6 +62,8 @@ public class SftpATTRS {
   static final int S_IWOTH = 00002; // write by others
   static final int S_IXOTH = 00001; // execute/search by others
 
+  static final int MAX_EXTENDED_COUNT = 0x100000;
+
   private static final int pmask = 0xFFF;
 
   public String getPermissionsString() {
@@ -168,7 +170,7 @@ public class SftpATTRS {
 
   public SftpATTRS() {}
 
-  static SftpATTRS getATTR(Buffer buf) {
+  static SftpATTRS getATTR(Buffer buf) throws SftpException {
     SftpATTRS attr = new SftpATTRS();
     attr.flags = buf.getInt();
     if ((attr.flags & SSH_FILEXFER_ATTR_SIZE) != 0) {
@@ -189,6 +191,11 @@ public class SftpATTRS {
     }
     if ((attr.flags & SSH_FILEXFER_ATTR_EXTENDED) != 0) {
       int count = buf.getInt();
+      // OpenSSH restricts count to a max of 0x100000.
+      // Min length of two strings is 8 bytes.
+      if (count < 0 || count > MAX_EXTENDED_COUNT || count * 8 > buf.getLength()) {
+        throw new SftpException(ChannelSftp.SSH_FX_BAD_MESSAGE, "invalid extended attr count");
+      }
       if (count > 0) {
         attr.extended = new String[count * 2];
         for (int i = 0; i < count; i++) {
