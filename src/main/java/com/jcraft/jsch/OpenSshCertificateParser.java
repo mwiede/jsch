@@ -79,8 +79,7 @@ class OpenSshCertificateParser {
     Collection<String> principals = principalsBuffer.getStrings();
     openSshCertificateBuilder.principals(principals).validAfter(buffer.getLong())
         .validBefore(buffer.getLong()).criticalOptions(buffer.getCriticalOptions())
-        .extensions(buffer.getExtensions())
-        .reserved(Util.byte2str(buffer.getString(), StandardCharsets.UTF_8))
+        .extensions(buffer.getExtensions()).reserved(buffer.getString())
         .signatureKey(buffer.getString());
 
     int messageEndIndex = buffer.s;
