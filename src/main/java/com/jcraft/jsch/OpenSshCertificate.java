@@ -102,7 +102,7 @@ class OpenSshCertificate {
   /**
    * Reserved field for future use
    */
-  private final String reserved;
+  private final byte[] reserved;
 
   /**
    * The CA's key that signed this certificate
@@ -184,8 +184,8 @@ class OpenSshCertificate {
     return extensions == null ? null : Collections.unmodifiableMap(extensions);
   }
 
-  String getReserved() {
-    return reserved;
+  byte[] getReserved() {
+    return reserved == null ? null : reserved.clone();
   }
 
   byte[] getSignatureKey() {
@@ -227,7 +227,7 @@ class OpenSshCertificate {
     private long validBefore = MAX_VALIDITY;
     private Map<String, String> criticalOptions;
     private Map<String, String> extensions;
-    private String reserved;
+    private byte[] reserved;
     private byte[] signatureKey;
     private byte[] signature;
     private byte[] message;
@@ -289,7 +289,7 @@ class OpenSshCertificate {
       return this;
     }
 
-    Builder reserved(String reserved) {
+    Builder reserved(byte[] reserved) {
       this.reserved = reserved;
       return this;
     }
