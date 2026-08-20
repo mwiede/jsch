@@ -4,7 +4,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.condition.JRE.JAVA_11;
-import static org.junit.jupiter.api.condition.JRE.JAVA_24;
+import static org.junit.jupiter.api.condition.JRE.JAVA_17;
 
 import com.github.valfirst.slf4jtest.LoggingEvent;
 import com.github.valfirst.slf4jtest.TestLogger;
@@ -118,8 +118,8 @@ public class Algorithms4IT {
 
   @ParameterizedTest
   @ValueSource(strings = {"mlkem768x25519-sha256"})
-  @EnabledForJreRange(min = JAVA_24)
-  public void testJava24KEXs(String kex) throws Exception {
+  @EnabledForJreRange(min = JAVA_17)
+  public void testJava17KEXs(String kex) throws Exception {
     JSch ssh = createRSAIdentity();
     Session session = createSession(ssh);
     session.setConfig("mlkem768", "com.jcraft.jsch.jce.MLKEM768");
@@ -148,8 +148,8 @@ public class Algorithms4IT {
 
   @ParameterizedTest
   @ValueSource(strings = {"mlkem768x25519-sha256"})
-  @EnabledForJreRange(min = JAVA_24)
-  public void testJava24BCKEXs(String kex) throws Exception {
+  @EnabledForJreRange(min = JAVA_17)
+  public void testJava17BCKEXs(String kex) throws Exception {
     JSch ssh = createRSAIdentity();
     Session session = createSession(ssh);
     session.setConfig("mlkem768", "com.jcraft.jsch.jce.MLKEM768");
