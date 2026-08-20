@@ -44,4 +44,21 @@ public interface IdentityRepository {
   public boolean remove(byte[] blob);
 
   public void removeAll();
+
+  /**
+   * Removes all identities and reports whether that succeeded.
+   *
+   * <p>
+   * This is {@link #removeAll()} with an outcome, which a forwarded agent needs in order to answer
+   * an {@code SSH2_AGENTC_REMOVE_ALL_IDENTITIES} request truthfully. Implementations backed by
+   * something that can refuse the removal, such as a locked or unreachable ssh-agent, should
+   * override this and return the real outcome; the default implementation delegates to
+   * {@link #removeAll()} and reports success.
+   *
+   * @return {@code true} if all identities were removed
+   */
+  public default boolean removeAllIdentities() {
+    removeAll();
+    return true;
+  }
 }
