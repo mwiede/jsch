@@ -33,6 +33,7 @@ import java.net.Socket;
 
 public class ProxyHTTP implements Proxy {
   private static int DEFAULTPORT = 80;
+  static int MAX_STATUS_LEN = 1024;
   private String proxy_host;
   private int proxy_port;
   private InputStream in;
@@ -99,24 +100,7 @@ public class ProxyHTTP implements Proxy {
 
       int foo = 0;
 
-      StringBuilder sb = new StringBuilder();
-      while (foo >= 0) {
-        foo = in.read();
-        if (foo != 13) {
-          sb.append((char) foo);
-          continue;
-        }
-        foo = in.read();
-        if (foo != 10) {
-          continue;
-        }
-        break;
-      }
-      if (foo < 0) {
-        throw new IOException();
-      }
-
-      String response = sb.toString();
+      String response = readStatus(in);
       String reason = "Unknow reason";
       int code = -1;
       try {
@@ -202,5 +186,30 @@ public class ProxyHTTP implements Proxy {
 
   public static int getDefaultPort() {
     return DEFAULTPORT;
+  }
+
+  static String readStatus(InputStream in) throws IOException {
+    int foo = 0;
+    int i = 0;
+    StringBuilder sb = new StringBuilder();
+    while (foo >= 0 && i < MAX_STATUS_LEN) {
+      foo = in.read();
+      i++;
+      if (foo != 13) {
+        sb.append((char) foo);
+        continue;
+      }
+      foo = in.read();
+      i++;
+      if (foo != 10) {
+        continue;
+      }
+      break;
+    }
+    if (foo < 0) {
+      throw new IOException();
+    }
+
+    return sb.toString();
   }
 }
