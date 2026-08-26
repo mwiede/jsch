@@ -1016,6 +1016,7 @@ public class ChannelSftp extends ChannelSession {
         request_len = 1024;
       }
 
+      SftpException invalid_len = null;
       loop: while (true) {
 
         while (rq.count() < request_max) {
@@ -1054,6 +1055,10 @@ public class ChannelSftp extends ChannelSession {
         fill(buf.buffer, 0, 4);
         length -= 4;
         int length_of_data = buf.getInt(); // length of data
+        if (length_of_data < 0 || length_of_data > rr.length) {
+          invalid_len = new SftpException(SSH_FX_BAD_MESSAGE, "invalid length");
+          break loop;
+        }
 
         /*
          * Since sftp protocol version 6, "end-of-file" has been defined, byte SSH_FXP_DATA uint32
@@ -1104,14 +1109,26 @@ public class ChannelSftp extends ChannelSession {
           request_max++;
         }
       }
-      dst.flush();
+      try {
+        dst.flush();
 
-      if (monitor != null)
-        monitor.end();
+        if (monitor != null)
+          monitor.end();
 
-      rq.cancel(header, buf);
+        rq.cancel(header, buf);
 
-      _sendCLOSE(handle, header);
+        _sendCLOSE(handle, header);
+      } catch (Exception e) {
+        if (invalid_len != null) {
+          invalid_len.addSuppressed(e);
+          throw invalid_len;
+        } else {
+          throw e;
+        }
+      }
+      if (invalid_len != null) {
+        throw invalid_len;
+      }
     } catch (Exception e) {
       if (e instanceof SftpException)
         throw (SftpException) e;
@@ -1409,6 +1426,9 @@ public class ChannelSftp extends ChannelSession {
           fill(buf.buffer, 0, 4);
           int length_of_data = buf.getInt();
           rest_length -= 4;
+          if (length_of_data < 0 || length_of_data > rr.length) {
+            throw new IOException("invalid length");
+          }
 
           /*
            * Since sftp protocol version 6, "end-of-file" has been defined, byte SSH_FXP_DATA uint32
