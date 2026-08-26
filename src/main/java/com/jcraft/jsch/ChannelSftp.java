@@ -1609,7 +1609,8 @@ public class ChannelSftp extends ChannelSession {
       int cancel = LsEntrySelector.CONTINUE;
       byte[] handle = buf.getString(); // handle
 
-      while (cancel == LsEntrySelector.CONTINUE) {
+      SftpException invalid_attrs = null;
+      loop: while (cancel == LsEntrySelector.CONTINUE) {
 
         sendREADDIR(handle);
 
@@ -1650,7 +1651,13 @@ public class ChannelSftp extends ChannelSession {
           if (server_version <= 3) {
             longname = buf.getString();
           }
-          SftpATTRS attrs = SftpATTRS.getATTR(buf);
+          SftpATTRS attrs;
+          try {
+            attrs = SftpATTRS.getATTR(buf);
+          } catch (SftpException e) {
+            invalid_attrs = e;
+            break loop;
+          }
 
           if (cancel == LsEntrySelector.BREAK) {
             count--;
@@ -1691,7 +1698,19 @@ public class ChannelSftp extends ChannelSession {
           count--;
         }
       }
-      _sendCLOSE(handle, header);
+      try {
+        _sendCLOSE(handle, header);
+      } catch (Exception e) {
+        if (invalid_attrs != null) {
+          invalid_attrs.addSuppressed(e);
+          throw invalid_attrs;
+        } else {
+          throw e;
+        }
+      }
+      if (invalid_attrs != null) {
+        throw invalid_attrs;
+      }
 
       /*
        * if(v.size()==1 && pattern_has_wildcard){ LsEntry le=(LsEntry)v.elementAt(0);
@@ -2670,7 +2689,8 @@ public class ChannelSftp extends ChannelSession {
     byte[] handle = buf.getString(); // filename
     String pdir = null; // parent directory
 
-    while (true) {
+    SftpException invalid_attrs = null;
+    loop: while (true) {
       sendREADDIR(handle);
       header = header(buf, header);
       length = header.length;
@@ -2710,7 +2730,13 @@ public class ChannelSftp extends ChannelSession {
         if (server_version <= 3) {
           str = buf.getString(); // longname
         }
-        SftpATTRS attrs = SftpATTRS.getATTR(buf);
+        SftpATTRS attrs;
+        try {
+          attrs = SftpATTRS.getATTR(buf);
+        } catch (SftpException e) {
+          invalid_attrs = e;
+          break loop;
+        }
 
         byte[] _filename = filename;
         String f = null;
@@ -2737,9 +2763,23 @@ public class ChannelSftp extends ChannelSession {
         count--;
       }
     }
-    if (_sendCLOSE(handle, header))
-      return v;
-    return null;
+    try {
+      if (_sendCLOSE(handle, header) && invalid_attrs == null) {
+        return v;
+      }
+    } catch (Exception e) {
+      if (invalid_attrs != null) {
+        invalid_attrs.addSuppressed(e);
+        throw invalid_attrs;
+      } else {
+        throw e;
+      }
+    }
+    if (invalid_attrs != null) {
+      throw invalid_attrs;
+    } else {
+      return null;
+    }
   }
 
   private boolean isPattern(byte[] path) {
