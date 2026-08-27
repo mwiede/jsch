@@ -191,9 +191,14 @@ public class SftpATTRS {
     }
     if ((attr.flags & SSH_FILEXFER_ATTR_EXTENDED) != 0) {
       int count = buf.getInt();
-      // OpenSSH restricts count to a max of 0x100000.
-      // Min length of two strings is 8 bytes.
-      if (count < 0 || count > MAX_EXTENDED_COUNT || count * 8 > buf.getLength()) {
+      try {
+        // OpenSSH restricts count to a max of 0x100000.
+        // Min length of two strings is 8 bytes.
+        if (count < 0 || count > MAX_EXTENDED_COUNT
+            || Math.multiplyExact(count, 8) > buf.getLength()) {
+          throw new SftpException(ChannelSftp.SSH_FX_BAD_MESSAGE, "invalid extended attr count");
+        }
+      } catch (ArithmeticException e) {
         throw new SftpException(ChannelSftp.SSH_FX_BAD_MESSAGE, "invalid extended attr count");
       }
       if (count > 0) {
