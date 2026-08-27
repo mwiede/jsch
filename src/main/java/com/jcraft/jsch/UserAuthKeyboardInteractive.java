@@ -121,6 +121,10 @@ class UserAuthKeyboardInteractive extends UserAuth {
           String instruction = Util.byte2str(buf.getString());
           String languate_tag = Util.byte2str(buf.getString());
           int num = buf.getInt();
+          // Min length of one string plus one byte is 5 bytes.
+          if (num < 0 || num * 5 > buf.getLength()) {
+            throw new JSchException("invalid prompt count");
+          }
           String[] prompt = new String[num];
           boolean[] echo = new boolean[num];
           for (int i = 0; i < num; i++) {
