@@ -33,7 +33,7 @@ public class HostKey {
   private static final byte[][] names =
       {Util.str2byte("ssh-dss"), Util.str2byte("ssh-rsa"), Util.str2byte("ecdsa-sha2-nistp256"),
           Util.str2byte("ecdsa-sha2-nistp384"), Util.str2byte("ecdsa-sha2-nistp521"),
-          Util.str2byte("ssh-ed25519"), Util.str2byte("ssh-ed448")};
+          Util.str2byte("ssh-ed25519"), Util.str2byte("ssh-ed448"), Util.str2byte("sm2")};
 
   public static final int UNKNOWN = -1;
   public static final int GUESS = 0;
@@ -44,6 +44,7 @@ public class HostKey {
   public static final int ECDSA521 = 5;
   public static final int ED25519 = 6;
   public static final int ED448 = 7;
+  public static final int SM2 = 8;
 
   protected String marker;
   protected String host;
@@ -82,6 +83,8 @@ public class HostKey {
         this.type = ECDSA384;
       } else if (key[8] == 'a' && key[20] == '5') {
         this.type = ECDSA521;
+      } else if (key[4] == 's' && key[5] == 'm') {
+        this.type = SM2;
       } else {
         throw new JSchException("invalid key type");
       }
@@ -98,7 +101,7 @@ public class HostKey {
 
   public String getType() {
     if (type == SSHDSS || type == SSHRSA || type == ED25519 || type == ED448 || type == ECDSA256
-        || type == ECDSA384 || type == ECDSA521) {
+        || type == ECDSA384 || type == ECDSA521 || type == SM2) {
       return Util.byte2str(names[type - 1]);
     }
     return "UNKNOWN";

@@ -109,6 +109,9 @@ public class JSch {
     config.put("ecdh-sha2-nistp521", "com.jcraft.jsch.DHEC521");
 
     config.put("ecdh-sha2-nistp", "com.jcraft.jsch.jce.ECDHN");
+    config.put("ecdh-sm2p256v1", "com.jcraft.jsch.bc.ECDHSM2BC");
+
+    config.put("sm2-sm3", "com.jcraft.jsch.DHSM2SM3");
 
     config.put("curve25519-sha256", "com.jcraft.jsch.DH25519");
     config.put("curve25519-sha256@libssh.org", "com.jcraft.jsch.DH25519");
@@ -175,6 +178,8 @@ public class JSch {
     config.put("hmac-ripemd160", "com.jcraft.jsch.bc.HMACRIPEMD160");
     config.put("hmac-ripemd160@openssh.com", "com.jcraft.jsch.bc.HMACRIPEMD160OpenSSH");
     config.put("hmac-ripemd160-etm@openssh.com", "com.jcraft.jsch.bc.HMACRIPEMD160ETM");
+    config.put("sm3", "com.jcraft.jsch.bc.SM3");
+    config.put("hmac-sm3", "com.jcraft.jsch.bc.HMACSM3");
 
     config.put("none", "com.jcraft.jsch.CipherNone");
 
@@ -197,6 +202,8 @@ public class JSch {
     config.put("twofish192-ctr", "com.jcraft.jsch.bc.Twofish192CTR");
     config.put("twofish256-ctr", "com.jcraft.jsch.bc.Twofish256CTR");
     config.put("seed-cbc@ssh.com", "com.jcraft.jsch.bc.SEEDCBC");
+    config.put("sm4-cbc", "com.jcraft.jsch.bc.SM4CBC");
+    config.put("sm4-ctr", "com.jcraft.jsch.bc.SM4CTR");
 
     config.put("aes128-ctr", "com.jcraft.jsch.jce.AES128CTR");
     config.put("aes192-ctr", "com.jcraft.jsch.jce.AES192CTR");
@@ -240,6 +247,7 @@ public class JSch {
       config.put("ssh-ed448", "com.jcraft.jsch.bc.SignatureEd448");
     }
     config.put("keypairgen_fromprivate.eddsa", "com.jcraft.jsch.bc.KeyPairGenEdDSA");
+    config.put("sm2", "com.jcraft.jsch.bc.SignatureSM2");
 
     config.put("StrictHostKeyChecking", "ask");
     config.put("HashKnownHosts", "no");
@@ -247,7 +255,7 @@ public class JSch {
     config.put("PreferredAuthentications", Util.getSystemProperty("jsch.preferred_authentications",
         "gssapi-with-mic,publickey,keyboard-interactive,password"));
     config.put("PubkeyAcceptedAlgorithms", Util.getSystemProperty("jsch.client_pubkey",
-        "ssh-ed25519-cert-v01@openssh.com,ecdsa-sha2-nistp256-cert-v01@openssh.com,ecdsa-sha2-nistp384-cert-v01@openssh.com,ecdsa-sha2-nistp521-cert-v01@openssh.com,rsa-sha2-512-cert-v01@openssh.com,rsa-sha2-256-cert-v01@openssh.com,ssh-ed25519,ecdsa-sha2-nistp256,ecdsa-sha2-nistp384,ecdsa-sha2-nistp521,rsa-sha2-512,rsa-sha2-256"));
+        "ssh-ed25519-cert-v01@openssh.com,ecdsa-sha2-nistp256-cert-v01@openssh.com,ecdsa-sha2-nistp384-cert-v01@openssh.com,ecdsa-sha2-nistp521-cert-v01@openssh.com,rsa-sha2-512-cert-v01@openssh.com,rsa-sha2-256-cert-v01@openssh.com,ssh-ed25519,ecdsa-sha2-nistp256,ecdsa-sha2-nistp384,ecdsa-sha2-nistp521,rsa-sha2-512,rsa-sha2-256,sm2"));
     config.put("enable_pubkey_auth_query",
         Util.getSystemProperty("jsch.enable_pubkey_auth_query", "yes"));
     config.put("try_additional_pubkey_algorithms",
