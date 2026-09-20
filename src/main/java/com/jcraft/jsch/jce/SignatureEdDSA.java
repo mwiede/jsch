@@ -16,49 +16,126 @@
  *
  * THIS SOFTWARE IS PROVIDED ``AS IS'' AND ANY EXPRESSED OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
  * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL JCRAFT, INC. OR ANY CONTRIBUTORS TO THIS SOFTWARE BE LIABLE FOR ANY
- * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
- * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR
- * BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+ * DISCLAIMED. IN NO EVENT SHALL JCRAFT, INC. OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
+ * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+ * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
  * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
 package com.jcraft.jsch.jce;
 
+import com.jcraft.jsch.Buffer;
+import java.nio.charset.StandardCharsets;
+import java.security.KeyFactory;
+import java.security.NoSuchAlgorithmException;
+import java.security.PrivateKey;
+import java.security.PublicKey;
+import java.security.Signature;
+import java.security.spec.PKCS8EncodedKeySpec;
+import java.security.spec.X509EncodedKeySpec;
+import java.util.Arrays;
+
+/**
+ * JCA-based EdDSA implementation for platforms whose JCA exposes the "Ed25519"/"Ed448" algorithm
+ * names directly (Android 9+, JDK 15+).
+ *
+ * <p>
+ * On platforms without JCA EdDSA support, {@link #init()} throws {@link NoSuchAlgorithmException}
+ * and callers fall back to the BouncyCastle implementation.
+ */
 abstract class SignatureEdDSA implements com.jcraft.jsch.SignatureEdDSA {
 
-  SignatureEdDSA() {
-    throw new UnsupportedOperationException("SignatureEdDSA requires Java15+.");
-  }
+  private Signature signature;
+  private KeyFactory keyFactory;
+
+  abstract String getName();
+
+  abstract String getAlgo();
+
+  abstract int getKeylen();
 
   @Override
   public void init() throws Exception {
-    throw new UnsupportedOperationException("SignatureEdDSA requires Java15+.");
+    if (!getAlgo().equals("Ed25519") && !getAlgo().equals("Ed448")) {
+      throw new NoSuchAlgorithmException("invalid curve " + getAlgo());
+    }
+    signature = Signature.getInstance(getAlgo());
+    keyFactory = KeyFactory.getInstance(getAlgo());
   }
 
   @Override
   public void setPubKey(byte[] y_arr) throws Exception {
-    throw new UnsupportedOperationException("SignatureEdDSA requires Java15+.");
+    y_arr = Arrays.copyOf(y_arr, getKeylen());
+    byte[] spki = concat(spkiPrefix(getAlgo()), y_arr);
+    PublicKey pubKey = keyFactory.generatePublic(new X509EncodedKeySpec(spki));
+    signature.initVerify(pubKey);
   }
 
   @Override
   public void setPrvKey(byte[] bytes) throws Exception {
-    throw new UnsupportedOperationException("SignatureEdDSA requires Java15+.");
+    byte[] pkcs8 = concat(pkcs8Prefix(getAlgo()), bytes);
+    PrivateKey prvKey = keyFactory.generatePrivate(new PKCS8EncodedKeySpec(pkcs8));
+    signature.initSign(prvKey);
   }
 
   @Override
   public byte[] sign() throws Exception {
-    throw new UnsupportedOperationException("SignatureEdDSA requires Java15+.");
+    return signature.sign();
   }
 
   @Override
   public void update(byte[] foo) throws Exception {
-    throw new UnsupportedOperationException("SignatureEdDSA requires Java15+.");
+    signature.update(foo);
   }
 
   @Override
   public boolean verify(byte[] sig) throws Exception {
-    throw new UnsupportedOperationException("SignatureEdDSA requires Java15+.");
+    int i = 0;
+    int j = 0;
+    byte[] tmp;
+    Buffer buf = new Buffer(sig);
+
+    String foo = new String(buf.getString(), StandardCharsets.UTF_8);
+    if (foo.equals(getName())) {
+      j = buf.getInt();
+      i = buf.getOffSet();
+      tmp = new byte[j];
+      System.arraycopy(sig, i, tmp, 0, j);
+      sig = tmp;
+    }
+
+    return signature.verify(sig);
+  }
+
+  // RFC 8410 DER wrappers: SPKI for raw public keys, PKCS#8 for raw private seeds.
+  private static byte[] spkiPrefix(String algo) {
+    if (algo.equals("Ed25519")) {
+      return fromHex("302a300506032b6570032100");
+    }
+    return fromHex("3039300506032b6571032f00");
+  }
+
+  private static byte[] pkcs8Prefix(String algo) {
+    if (algo.equals("Ed25519")) {
+      return fromHex("302e020100300506032b657004220420");
+    }
+    return fromHex("304c020100300506032b65710440303e020100043b");
+  }
+
+  private static byte[] fromHex(String hex) {
+    byte[] out = new byte[hex.length() / 2];
+    for (int i = 0; i < out.length; i++) {
+      out[i] = (byte) Integer.parseInt(hex.substring(i * 2, i * 2 + 2), 16);
+    }
+    return out;
+  }
+
+  private static byte[] concat(byte[] a, byte[] b) {
+    byte[] out = new byte[a.length + b.length];
+    System.arraycopy(a, 0, out, 0, a.length);
+    System.arraycopy(b, 0, out, a.length, b.length);
+    return out;
   }
 }

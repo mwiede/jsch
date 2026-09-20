@@ -230,14 +230,18 @@ public class JSch {
       config.put("xdh", "com.jcraft.jsch.bc.XDH");
     }
 
+    // Prefer the JCA-based EdDSA implementation when the platform JCA provides the
+    // "Ed25519"/"Ed448" algorithm names (JDK 15+, Android 9+). JavaVersion alone is
+    // not a reliable indicator, as Android reports Java 8 while providing Ed25519 in
+    // its JCA. Fall back to the BouncyCastle implementation otherwise.
+    putIfAvailable("ssh-ed25519", "com.jcraft.jsch.jce.SignatureEd25519",
+        "com.jcraft.jsch.bc.SignatureEd25519");
+    putIfAvailable("ssh-ed448", "com.jcraft.jsch.jce.SignatureEd448",
+        "com.jcraft.jsch.bc.SignatureEd448");
     if (JavaVersion.getVersion() >= 15) {
       config.put("keypairgen.eddsa", "com.jcraft.jsch.jce.KeyPairGenEdDSA");
-      config.put("ssh-ed25519", "com.jcraft.jsch.jce.SignatureEd25519");
-      config.put("ssh-ed448", "com.jcraft.jsch.jce.SignatureEd448");
     } else {
       config.put("keypairgen.eddsa", "com.jcraft.jsch.bc.KeyPairGenEdDSA");
-      config.put("ssh-ed25519", "com.jcraft.jsch.bc.SignatureEd25519");
-      config.put("ssh-ed448", "com.jcraft.jsch.bc.SignatureEd448");
     }
     config.put("keypairgen_fromprivate.eddsa", "com.jcraft.jsch.bc.KeyPairGenEdDSA");
 
@@ -667,6 +671,29 @@ public class JSch {
         key = "PubkeyAcceptedAlgorithms";
       }
       return config.get(key);
+    }
+  }
+
+  /**
+   * Puts {@code preferred} for {@code key} if that class can be instantiated and initialized,
+   * otherwise puts {@code fallback}.
+   */
+  private static void putIfAvailable(String key, String preferred, String fallback) {
+    if (canInstantiate(preferred)) {
+      config.put(key, preferred);
+    } else {
+      config.put(key, fallback);
+    }
+  }
+
+  private static boolean canInstantiate(String className) {
+    try {
+      Class<? extends Signature> c = Class.forName(className).asSubclass(Signature.class);
+      Signature sig = c.getDeclaredConstructor().newInstance();
+      sig.init();
+      return true;
+    } catch (Throwable t) {
+      return false;
     }
   }
 
