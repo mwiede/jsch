@@ -1,6 +1,5 @@
 package com.jcraft.jsch;
 
-import java.util.Arrays;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 
@@ -170,7 +169,7 @@ class OpenSshCertificateAwareIdentityFile implements Identity {
         throw new JSchException("Invalid certificate: missing public key");
       }
       kpair = KeyPair.load(instLogger, prvkey, certPublicKey);
-      if (prvkey != null && !Arrays.equals(kpair.getPublicKeyBlob(), certPublicKey))
+      if (prvkey != null && !Util.arraysequals(kpair.getPublicKeyBlob(), certPublicKey))
         throw new JSchException("Certificate does not match private key");
 
     } catch (IllegalArgumentException e) {
