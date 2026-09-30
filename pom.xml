@@ -274,7 +274,7 @@
             <plugin>
                 <groupId>net.codecrete.windows-api</groupId>
                 <artifactId>windowsapi-maven-plugin</artifactId>
-                <version>0.8.6</version>
+                <version>0.8.7</version>
                 <configuration>
                     <sourceDirectory>.</sourceDirectory>
                     <basePackage>com.jcraft.jsch.windowsapi</basePackage>
