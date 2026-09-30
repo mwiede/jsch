@@ -43,10 +43,12 @@ class IdentityFile implements Identity {
     // if both keys are provided, make sure they match
     if (prvkey != null && pubkey != null) {
       KeyPair kpairVal = KeyPair.load(instLogger, null, pubkey);
-      if (kpairVal == null)
+      if (kpairVal == null) {
         throw new JSchException("invalid publickey");
-      if (!Util.arraysequals(kpair.getPublicKeyBlob(), kpairVal.getPublicKeyBlob()))
+      }
+      if (!Util.arraysequals(kpair.getPublicKeyBlob(), kpairVal.getPublicKeyBlob())) {
         throw new JSchException("Public key does not match private key");
+      }
     }
     return new IdentityFile(name, kpair);
   }
