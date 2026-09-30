@@ -170,9 +170,8 @@ class OpenSshCertificateAwareIdentityFile implements Identity {
         throw new JSchException("Invalid certificate: missing public key");
       }
       kpair = KeyPair.load(instLogger, prvkey, certPublicKey);
-      if(prvkey != null &&
-	 !Arrays.equals(kpair.getPublicKeyBlob(), certPublicKey))
-	throw new JSchException("Certificate does not match private key");
+      if (prvkey != null && !Arrays.equals(kpair.getPublicKeyBlob(), certPublicKey))
+        throw new JSchException("Certificate does not match private key");
 
     } catch (IllegalArgumentException e) {
       throw new JSchException("Invalid certificate format: " + e.getMessage(), e);
