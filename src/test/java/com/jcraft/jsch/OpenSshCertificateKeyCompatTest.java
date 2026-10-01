@@ -55,11 +55,11 @@ public class OpenSshCertificateKeyCompatTest {
             getResourceFile("certificates/ed25519/root_ed25519_key.pub"), null));
   }
 
-  @Test
   /**
    * Test that adding an identity of a private key with something that is neither a public key nor a
    * certificate fails
    */
+  @Test
   public void testCheckPrivKeyWithNonPubKey() throws Exception {
     JSch jsch = new JSch();
     assertThrows(JSchException.class,
