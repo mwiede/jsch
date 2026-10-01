@@ -26,6 +26,8 @@
 
 package com.jcraft.jsch;
 
+import java.io.IOException;
+
 class IdentityFile implements Identity {
   private KeyPair kpair;
   private String identity;
@@ -33,6 +35,22 @@ class IdentityFile implements Identity {
   static IdentityFile newInstance(String prvfile, String pubfile, JSch.InstanceLogger instLogger)
       throws JSchException {
     KeyPair kpair = KeyPair.load(instLogger, prvfile, pubfile);
+    // if both keys are provided, make sure they match
+    if (prvfile != null && pubfile != null) {
+      byte[] pubkey;
+      try {
+        pubkey = Util.fromFile(pubfile);
+      } catch (IOException e) {
+        throw new JSchException("Error opening publickey", e);
+      }
+      KeyPair kpairVal = KeyPair.load(instLogger, null, pubkey);
+      if (kpairVal == null) {
+        throw new JSchException("invalid publickey");
+      }
+      if (!Util.arraysequals(kpair.getPublicKeyBlob(), kpairVal.getPublicKeyBlob())) {
+        throw new JSchException("Public key does not match private key");
+      }
+    }
     return new IdentityFile(prvfile, kpair);
   }
 
