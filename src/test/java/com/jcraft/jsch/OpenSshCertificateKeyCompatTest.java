@@ -11,20 +11,20 @@ import org.junit.jupiter.api.Test;
  */
 public class OpenSshCertificateKeyCompatTest {
 
-  @Test
   /**
    * Test that adding an identity of a private key with matching user certificate succeeds
    */
+  @Test
   public void testCheckPrivKeyWithMatchingUserCert() throws Exception {
     JSch jsch = new JSch();
     jsch.addIdentity(getResourceFile("certificates/ed25519/root_ed25519_key"),
         getResourceFile("certificates/ed25519/root_ed25519_key-cert.pub"), null);
   }
 
-  @Test
   /**
    * Test that adding an identity of a private key with unmatching user certificate fails
    */
+  @Test
   public void testCheckPrivKeyWithNonMatchingUserCert() throws Exception {
     JSch jsch = new JSch();
     assertThrows(JSchException.class,
@@ -33,20 +33,20 @@ public class OpenSshCertificateKeyCompatTest {
             getResourceFile("certificates/ed25519/root_ed25519_key-cert.pub"), null));
   }
 
-  @Test
   /**
    * Test that adding an identity of a private key with matching public key succeeds
    */
+  @Test
   public void testCheckPrivKeyWithMatchingPubKey() throws Exception {
     JSch jsch = new JSch();
     jsch.addIdentity(getResourceFile("docker/id_ed25519"), getResourceFile("docker/id_ed25519.pub"),
         null);
   }
 
-  @Test
   /**
    * Test that adding an identity of a private key with non-matching public key fails
    */
+  @Test
   public void testCheckPrivKeyWithNonMatchingPubKey() throws Exception {
     JSch jsch = new JSch();
     assertThrows(JSchException.class,
