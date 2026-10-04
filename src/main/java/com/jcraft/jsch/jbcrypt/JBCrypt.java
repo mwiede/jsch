@@ -30,6 +30,9 @@ import com.jcraft.jsch.Buffer;
 import com.jcraft.jsch.KDF;
 
 public class JBCrypt implements KDF {
+  // Match OpenSSH behavior:
+  // https://github.com/openssh/openssh-portable/commit/f938c78d490cb7556aa8ca1625e9b9bd1f963ed3
+  private static final int OPENSSH_V1_MAX_ROUNDS = 1 << 20;
   private BCrypt bcrypt;
   private byte[] salt;
   private int iteration;
@@ -39,6 +42,12 @@ public class JBCrypt implements KDF {
     Buffer kdfOpts = new Buffer(kdfOptions);
     salt = kdfOpts.getString();
     iteration = kdfOpts.getInt();
+    // Match OpenSSH behavior:
+    // https://github.com/openssh/openssh-portable/commit/f938c78d490cb7556aa8ca1625e9b9bd1f963ed3
+    if (iteration > OPENSSH_V1_MAX_ROUNDS || iteration < 0) {
+      throw new IllegalArgumentException(
+          "invalid number of rounds specified: " + Integer.toUnsignedString(iteration));
+    }
     bcrypt = new BCrypt();
   }
 
