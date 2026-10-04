@@ -40,6 +40,8 @@ final class JZlib {
   static final int MAX_WBITS = 15; // 32K LZ77 window
   static final int DEF_WBITS = MAX_WBITS;
 
+  static final int DEF_MEM_LEVEL = 8;
+
   enum WrapperType {
     NONE, ZLIB, GZIP, ANY
   }

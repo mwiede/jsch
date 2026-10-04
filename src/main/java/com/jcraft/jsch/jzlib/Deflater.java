@@ -92,6 +92,13 @@ final class Deflater extends ZStream {
       throw new GZIPException(ret + ": " + msg);
   }
 
+  Deflater(int level, int bits, int memlevel, int strategy) throws GZIPException {
+    super();
+    int ret = init(level, bits, memlevel, strategy);
+    if (ret != Z_OK)
+      throw new GZIPException(ret + ": " + msg);
+  }
+
   int init(int level) {
     return init(level, MAX_WBITS);
   }
@@ -123,6 +130,12 @@ final class Deflater extends ZStream {
     finished = false;
     dstate = new Deflate(this);
     return dstate.deflateInit(level, bits, memlevel);
+  }
+
+  int init(int level, int bits, int memlevel, int strategy) {
+    finished = false;
+    dstate = new Deflate(this);
+    return dstate.deflateInit(level, bits, memlevel, strategy);
   }
 
   int init(int level, int bits, boolean nowrap) {

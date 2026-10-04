@@ -1330,6 +1330,10 @@ final class Deflate implements Cloneable {
     return lookahead;
   }
 
+  int deflateInit(int level, int bits, int memlevel, int strategy) {
+    return deflateInit(level, Z_DEFLATED, bits, memlevel, strategy);
+  }
+
   int deflateInit(int level, int bits, int memlevel) {
     return deflateInit(level, Z_DEFLATED, bits, memlevel, Z_DEFAULT_STRATEGY);
   }
