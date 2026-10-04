@@ -15,7 +15,7 @@ public class OpenSshCertificateKeyCompatTest {
    * Test that adding an identity of a private key with matching user certificate succeeds
    */
   @Test
-  public void testCheckPrivKeyWithMatchingUserCert() throws Exception {
+  void testCheckPrivKeyWithMatchingUserCert() throws Exception {
     JSch jsch = new JSch();
     jsch.addIdentity(getResourceFile("certificates/ed25519/root_ed25519_key"),
         getResourceFile("certificates/ed25519/root_ed25519_key-cert.pub"), null);
@@ -25,7 +25,7 @@ public class OpenSshCertificateKeyCompatTest {
    * Test that adding an identity of a private key with matching user certificate succeeds
    */
   @Test
-  public void testCheckPrivKeyWithMatchingUserCertB() throws Exception {
+  void testCheckPrivKeyWithMatchingUserCertB() throws Exception {
     JSch jsch = new JSch();
     jsch.addIdentity("test", getResourceBytes("certificates/ed25519/root_ed25519_key"),
         getResourceBytes("certificates/ed25519/root_ed25519_key-cert.pub"), null);
@@ -35,7 +35,7 @@ public class OpenSshCertificateKeyCompatTest {
    * Test that adding an identity of a private key with unmatching user certificate fails
    */
   @Test
-  public void testCheckPrivKeyWithNonMatchingUserCert() throws Exception {
+  void testCheckPrivKeyWithNonMatchingUserCert() throws Exception {
     JSch jsch = new JSch();
     assertThrows(JSchException.class,
 
@@ -47,7 +47,7 @@ public class OpenSshCertificateKeyCompatTest {
    * Test that adding an identity of a private key with unmatching user certificate fails
    */
   @Test
-  public void testCheckPrivKeyWithNonMatchingUserCertB() throws Exception {
+  void testCheckPrivKeyWithNonMatchingUserCertB() throws Exception {
     JSch jsch = new JSch();
     assertThrows(JSchException.class,
         () -> jsch.addIdentity("test", getResourceBytes("docker/id_ed25519"),
@@ -58,7 +58,7 @@ public class OpenSshCertificateKeyCompatTest {
    * Test that adding an identity of a private key with matching public key succeeds
    */
   @Test
-  public void testCheckPrivKeyWithMatchingPubKey() throws Exception {
+  void testCheckPrivKeyWithMatchingPubKey() throws Exception {
     JSch jsch = new JSch();
     jsch.addIdentity(getResourceFile("docker/id_ed25519"), getResourceFile("docker/id_ed25519.pub"),
         null);
@@ -68,7 +68,7 @@ public class OpenSshCertificateKeyCompatTest {
    * Test that adding an identity of a private key with matching public key succeeds
    */
   @Test
-  public void testCheckPrivKeyWithMatchingPubKeyB() throws Exception {
+  void testCheckPrivKeyWithMatchingPubKeyB() throws Exception {
     JSch jsch = new JSch();
     jsch.addIdentity("test", getResourceBytes("docker/id_ed25519"),
         getResourceBytes("docker/id_ed25519.pub"), null);
@@ -78,7 +78,7 @@ public class OpenSshCertificateKeyCompatTest {
    * Test that adding an identity of a private key with non-matching public key fails
    */
   @Test
-  public void testCheckPrivKeyWithNonMatchingPubKey() throws Exception {
+  void testCheckPrivKeyWithNonMatchingPubKey() throws Exception {
     JSch jsch = new JSch();
     assertThrows(JSchException.class,
 
@@ -90,7 +90,7 @@ public class OpenSshCertificateKeyCompatTest {
    * Test that adding an identity of a private key with non-matching public key fails
    */
   @Test
-  public void testCheckPrivKeyWithNonMatchingPubKeyB() throws Exception {
+  void testCheckPrivKeyWithNonMatchingPubKeyB() throws Exception {
     JSch jsch = new JSch();
     assertThrows(JSchException.class,
         () -> jsch.addIdentity("test", getResourceBytes("docker/id_ed25519"),
@@ -102,7 +102,7 @@ public class OpenSshCertificateKeyCompatTest {
    * certificate fails
    */
   @Test
-  public void testCheckPrivKeyWithNonPubKey() throws Exception {
+  void testCheckPrivKeyWithNonPubKey() throws Exception {
     JSch jsch = new JSch();
     assertThrows(JSchException.class,
 
@@ -115,7 +115,7 @@ public class OpenSshCertificateKeyCompatTest {
    * certificate fails
    */
   @Test
-  public void testCheckPrivKeyWithNonPubKeyB() throws Exception {
+  void testCheckPrivKeyWithNonPubKeyB() throws Exception {
     JSch jsch = new JSch();
     assertThrows(JSchException.class,
         () -> jsch.addIdentity("test", getResourceBytes("docker/id_ed25519"),
