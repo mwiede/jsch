@@ -79,7 +79,9 @@ public class JSch {
     config.put("dhgex_max", Util.getSystemProperty("jsch.dhgex_max", "8192"));
     config.put("dhgex_preferred", Util.getSystemProperty("jsch.dhgex_preferred", "3072"));
 
-    config.put("compression_level", Util.getSystemProperty("jsch.compression_level", "6"));
+    // Match OpenSSH behavior:
+    // https://github.com/openssh/openssh-portable/commit/1d5340fce24526719e32aebc4c721fc228182ace
+    config.put("compression_level", Util.getSystemProperty("jsch.compression_level", "1"));
 
     config.put("diffie-hellman-group-exchange-sha1", "com.jcraft.jsch.DHGEX1");
     config.put("diffie-hellman-group1-sha1", "com.jcraft.jsch.DHG1");
