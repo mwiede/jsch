@@ -22,6 +22,16 @@ public class OpenSshCertificateKeyCompatTest {
   }
 
   /**
+   * Test that adding an identity of a private key with matching user certificate succeeds
+   */
+  @Test
+  public void testCheckPrivKeyWithMatchingUserCertB() throws Exception {
+    JSch jsch = new JSch();
+    jsch.addIdentity("test", getResourceBytes("certificates/ed25519/root_ed25519_key"),
+        getResourceBytes("certificates/ed25519/root_ed25519_key-cert.pub"), null);
+  }
+
+  /**
    * Test that adding an identity of a private key with unmatching user certificate fails
    */
   @Test
@@ -34,6 +44,17 @@ public class OpenSshCertificateKeyCompatTest {
   }
 
   /**
+   * Test that adding an identity of a private key with unmatching user certificate fails
+   */
+  @Test
+  public void testCheckPrivKeyWithNonMatchingUserCertB() throws Exception {
+    JSch jsch = new JSch();
+    assertThrows(JSchException.class,
+        () -> jsch.addIdentity("test", getResourceBytes("docker/id_ed25519"),
+            getResourceBytes("certificates/ed25519/root_ed25519_key-cert.pub"), null));
+  }
+
+  /**
    * Test that adding an identity of a private key with matching public key succeeds
    */
   @Test
@@ -41,6 +62,16 @@ public class OpenSshCertificateKeyCompatTest {
     JSch jsch = new JSch();
     jsch.addIdentity(getResourceFile("docker/id_ed25519"), getResourceFile("docker/id_ed25519.pub"),
         null);
+  }
+
+  /**
+   * Test that adding an identity of a private key with matching public key succeeds
+   */
+  @Test
+  public void testCheckPrivKeyWithMatchingPubKeyB() throws Exception {
+    JSch jsch = new JSch();
+    jsch.addIdentity("test", getResourceBytes("docker/id_ed25519"),
+        getResourceBytes("docker/id_ed25519.pub"), null);
   }
 
   /**
@@ -56,6 +87,17 @@ public class OpenSshCertificateKeyCompatTest {
   }
 
   /**
+   * Test that adding an identity of a private key with non-matching public key fails
+   */
+  @Test
+  public void testCheckPrivKeyWithNonMatchingPubKeyB() throws Exception {
+    JSch jsch = new JSch();
+    assertThrows(JSchException.class,
+        () -> jsch.addIdentity("test", getResourceBytes("docker/id_ed25519"),
+            getResourceBytes("certificates/ed25519/root_ed25519_key.pub"), null));
+  }
+
+  /**
    * Test that adding an identity of a private key with something that is neither a public key nor a
    * certificate fails
    */
@@ -68,8 +110,23 @@ public class OpenSshCertificateKeyCompatTest {
             getResourceFile("certificates/host/sshd_config"), null));
   }
 
+  /**
+   * Test that adding an identity of a private key with something that is neither a public key nor a
+   * certificate fails
+   */
+  @Test
+  public void testCheckPrivKeyWithNonPubKeyB() throws Exception {
+    JSch jsch = new JSch();
+    assertThrows(JSchException.class,
+        () -> jsch.addIdentity("test", getResourceBytes("docker/id_ed25519"),
+            getResourceBytes("certificates/host/sshd_config"), null));
+  }
 
   private String getResourceFile(String fileName) {
     return ResourceUtil.getResourceFile(getClass(), fileName);
+  }
+
+  private byte[] getResourceBytes(String fileName) throws java.io.IOException {
+    return Util.fromFile(ResourceUtil.getResourceFile(getClass(), fileName));
   }
 }
