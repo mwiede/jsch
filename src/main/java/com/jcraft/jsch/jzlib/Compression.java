@@ -75,7 +75,9 @@ public class Compression implements com.jcraft.jsch.Compression {
   public void init(int type, int level) throws UncheckedIOException {
     if (type == DEFLATER) {
       try {
-        deflater = new Deflater(level);
+        // Match OpenSSH behavior:
+        // https://github.com/openssh/openssh-portable/commit/1d5340fce24526719e32aebc4c721fc228182ace
+        deflater = new Deflater(level, JZlib.DEF_WBITS, JZlib.DEF_MEM_LEVEL, JZlib.Z_HUFFMAN_ONLY);
       } catch (GZIPException e) {
         throw new UncheckedIOException(e);
       }

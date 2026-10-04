@@ -67,6 +67,9 @@ public class Compression implements com.jcraft.jsch.Compression {
   public void init(int type, int level) {
     if (type == DEFLATER) {
       deflater = new Deflater(level);
+      // Match OpenSSH behavior:
+      // https://github.com/openssh/openssh-portable/commit/1d5340fce24526719e32aebc4c721fc228182ace
+      deflater.setStrategy(Deflater.HUFFMAN_ONLY);
     } else if (type == INFLATER) {
       inflater = new Inflater();
       inflated_buf = new byte[BUF_SIZE];
