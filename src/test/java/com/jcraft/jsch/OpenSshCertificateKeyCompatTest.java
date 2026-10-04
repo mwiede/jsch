@@ -4,6 +4,8 @@ import static com.jcraft.jsch.ResourceUtil.getResourceFile;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 
 /**
  * Unit tests for openssh certificate key compatibility: does public key signed by certificate match
@@ -12,114 +14,61 @@ import org.junit.jupiter.api.Test;
 public class OpenSshCertificateKeyCompatTest {
 
   /**
-   * Test that adding an identity of a private key with matching user certificate succeeds
+   * Test that adding an identity of a private key with matching user certificate or public key
+   * succeeds, file name version
    */
-  @Test
-  void testCheckPrivKeyWithMatchingUserCert() throws Exception {
+  @ParameterizedTest(name = "File private key {0} is compatible with {1} certificate or public key")
+  @CsvSource({
+      "'certificates/ed25519/root_ed25519_key','certificates/ed25519/root_ed25519_key-cert.pub'",
+      "'docker/id_ed25519','docker/id_ed25519.pub'"})
+  void testCheckPrivKeyWithMatchingUserCert(String privateK, String publicK) throws Exception {
     JSch jsch = new JSch();
-    jsch.addIdentity(getResourceFile("certificates/ed25519/root_ed25519_key"),
-        getResourceFile("certificates/ed25519/root_ed25519_key-cert.pub"), null);
+    jsch.addIdentity(getResourceFile(privateK), getResourceFile(publicK), null);
   }
 
   /**
-   * Test that adding an identity of a private key with matching user certificate succeeds
+   * Test that adding an identity of a private key with matching user certificate or public key
+   * succeeds, byte array version
    */
-  @Test
-  void testCheckPrivKeyWithMatchingUserCertB() throws Exception {
+  @ParameterizedTest(
+      name = "Byte[] private key {0} is compatible with {1} certificate or public key")
+  @CsvSource({
+      "'certificates/ed25519/root_ed25519_key','certificates/ed25519/root_ed25519_key-cert.pub'",
+      "'docker/id_ed25519','docker/id_ed25519.pub'"})
+  void testCheckPrivKeyWithMatchingUserCertB(String privateK, String publicK) throws Exception {
     JSch jsch = new JSch();
-    jsch.addIdentity("test", getResourceBytes("certificates/ed25519/root_ed25519_key"),
-        getResourceBytes("certificates/ed25519/root_ed25519_key-cert.pub"), null);
+    jsch.addIdentity("test", getResourceBytes(privateK), getResourceBytes(publicK), null);
   }
 
   /**
-   * Test that adding an identity of a private key with unmatching user certificate fails
+   * Test that adding an identity of a private key with unmatching user certificate or public key
+   * fails
    */
-  @Test
-  void testCheckPrivKeyWithNonMatchingUserCert() throws Exception {
+  @ParameterizedTest(
+      name = "File private key {0} is incompatible with {1} certificate or public key")
+  @CsvSource({"'docker/id_ed25519','certificates/ed25519/root_ed25519_key-cert.pub'",
+      "'docker/id_ed25519','certificates/ed25519/root_ed25519_key.pub'",
+      "'docker/id_ed25519','certificates/host/sshd_config'"})
+  void testCheckPrivKeyWithNonMatchingUserCert(String privateK, String publicK) throws Exception {
     JSch jsch = new JSch();
     assertThrows(JSchException.class,
 
-        () -> jsch.addIdentity(getResourceFile("docker/id_ed25519"),
-            getResourceFile("certificates/ed25519/root_ed25519_key-cert.pub"), null));
+        () -> jsch.addIdentity(getResourceFile(privateK), getResourceFile(publicK), null));
   }
 
   /**
-   * Test that adding an identity of a private key with unmatching user certificate fails
+   * Test that adding an identity of a private key with unmatching public key or user certificate
+   * fails
    */
-  @Test
-  void testCheckPrivKeyWithNonMatchingUserCertB() throws Exception {
+  @ParameterizedTest(
+      name = "Byte[] private key {0} is incompatible with {1} certificate or public key")
+  @CsvSource({"'docker/id_ed25519','certificates/ed25519/root_ed25519_key-cert.pub'",
+      "'docker/id_ed25519','certificates/ed25519/root_ed25519_key.pub'",
+      "'docker/id_ed25519','certificates/host/sshd_config'"})
+  void testCheckPrivKeyWithNonMatchingUserCertB(String privateK, String publicK) throws Exception {
     JSch jsch = new JSch();
-    assertThrows(JSchException.class,
-        () -> jsch.addIdentity("test", getResourceBytes("docker/id_ed25519"),
-            getResourceBytes("certificates/ed25519/root_ed25519_key-cert.pub"), null));
-  }
-
-  /**
-   * Test that adding an identity of a private key with matching public key succeeds
-   */
-  @Test
-  void testCheckPrivKeyWithMatchingPubKey() throws Exception {
-    JSch jsch = new JSch();
-    jsch.addIdentity(getResourceFile("docker/id_ed25519"), getResourceFile("docker/id_ed25519.pub"),
-        null);
-  }
-
-  /**
-   * Test that adding an identity of a private key with matching public key succeeds
-   */
-  @Test
-  void testCheckPrivKeyWithMatchingPubKeyB() throws Exception {
-    JSch jsch = new JSch();
-    jsch.addIdentity("test", getResourceBytes("docker/id_ed25519"),
-        getResourceBytes("docker/id_ed25519.pub"), null);
-  }
-
-  /**
-   * Test that adding an identity of a private key with non-matching public key fails
-   */
-  @Test
-  void testCheckPrivKeyWithNonMatchingPubKey() throws Exception {
-    JSch jsch = new JSch();
-    assertThrows(JSchException.class,
-
-        () -> jsch.addIdentity(getResourceFile("docker/id_ed25519"),
-            getResourceFile("certificates/ed25519/root_ed25519_key.pub"), null));
-  }
-
-  /**
-   * Test that adding an identity of a private key with non-matching public key fails
-   */
-  @Test
-  void testCheckPrivKeyWithNonMatchingPubKeyB() throws Exception {
-    JSch jsch = new JSch();
-    assertThrows(JSchException.class,
-        () -> jsch.addIdentity("test", getResourceBytes("docker/id_ed25519"),
-            getResourceBytes("certificates/ed25519/root_ed25519_key.pub"), null));
-  }
-
-  /**
-   * Test that adding an identity of a private key with something that is neither a public key nor a
-   * certificate fails
-   */
-  @Test
-  void testCheckPrivKeyWithNonPubKey() throws Exception {
-    JSch jsch = new JSch();
-    assertThrows(JSchException.class,
-
-        () -> jsch.addIdentity(getResourceFile("docker/id_ed25519"),
-            getResourceFile("certificates/host/sshd_config"), null));
-  }
-
-  /**
-   * Test that adding an identity of a private key with something that is neither a public key nor a
-   * certificate fails
-   */
-  @Test
-  void testCheckPrivKeyWithNonPubKeyB() throws Exception {
-    JSch jsch = new JSch();
-    assertThrows(JSchException.class,
-        () -> jsch.addIdentity("test", getResourceBytes("docker/id_ed25519"),
-            getResourceBytes("certificates/host/sshd_config"), null));
+    assertThrows(JSchException.class, () -> jsch.addIdentity("test", getResourceBytes(privateK),
+        getResourceBytes(publicK), null));
   }
 
   private String getResourceFile(String fileName) {
