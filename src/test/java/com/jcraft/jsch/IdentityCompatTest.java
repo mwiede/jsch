@@ -8,48 +8,48 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
 /**
- * Unit tests for openssh certificate key compatibility: does public key signed by certificate match
- * private key
+ * Unit tests for compatibility between the private and public (key or certificate) part of an
+ * identity
  */
-public class OpenSshCertificateKeyCompatTest {
+public class IdentityCompatTest {
 
   /**
-   * Test that adding an identity of a private key with matching user certificate or public key
-   * succeeds, file name version
+   * Test that adding an identity of a private key with matching public part (certificate or public
+   * key) succeeds, file name version
    */
   @ParameterizedTest(name = "File private key {0} is compatible with {1} certificate or public key")
   @CsvSource({
       "'certificates/ed25519/root_ed25519_key','certificates/ed25519/root_ed25519_key-cert.pub'",
       "'docker/id_ed25519','docker/id_ed25519.pub'"})
-  void testCheckPrivKeyWithMatchingUserCert(String privateK, String publicK) throws Exception {
+  void testCheckPrivKeyWithMatchingPublicPart(String privateK, String publicK) throws Exception {
     JSch jsch = new JSch();
     jsch.addIdentity(getResourceFile(privateK), getResourceFile(publicK), null);
   }
 
   /**
-   * Test that adding an identity of a private key with matching user certificate or public key
-   * succeeds, byte array version
+   * Test that adding an identity of a private key with matching public part (certificate or public
+   * key) succeeds, byte array version
    */
   @ParameterizedTest(
       name = "Byte[] private key {0} is compatible with {1} certificate or public key")
   @CsvSource({
       "'certificates/ed25519/root_ed25519_key','certificates/ed25519/root_ed25519_key-cert.pub'",
       "'docker/id_ed25519','docker/id_ed25519.pub'"})
-  void testCheckPrivKeyWithMatchingUserCertB(String privateK, String publicK) throws Exception {
+  void testCheckPrivKeyWithMatchingPublicPartB(String privateK, String publicK) throws Exception {
     JSch jsch = new JSch();
     jsch.addIdentity("test", getResourceBytes(privateK), getResourceBytes(publicK), null);
   }
 
   /**
-   * Test that adding an identity of a private key with unmatching user certificate or public key
-   * fails
+   * Test that adding an identity of a private key with non-matching public part (certificate or
+   * public key) fails, file name version
    */
   @ParameterizedTest(
       name = "File private key {0} is incompatible with {1} certificate or public key")
   @CsvSource({"'docker/id_ed25519','certificates/ed25519/root_ed25519_key-cert.pub'",
       "'docker/id_ed25519','certificates/ed25519/root_ed25519_key.pub'",
       "'docker/id_ed25519','certificates/host/sshd_config'"})
-  void testCheckPrivKeyWithNonMatchingUserCert(String privateK, String publicK) throws Exception {
+  void testCheckPrivKeyWithNonMatchingPublicPart(String privateK, String publicK) throws Exception {
     JSch jsch = new JSch();
     assertThrows(JSchException.class,
 
@@ -57,8 +57,8 @@ public class OpenSshCertificateKeyCompatTest {
   }
 
   /**
-   * Test that adding an identity of a private key with unmatching public key or user certificate
-   * fails
+   * Test that adding an identity of a private key with non-matching public part (certificate or
+   * public key) fails, byte array version version
    */
   @ParameterizedTest(
       name = "Byte[] private key {0} is incompatible with {1} certificate or public key")
