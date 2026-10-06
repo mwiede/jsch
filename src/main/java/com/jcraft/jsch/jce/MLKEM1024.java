@@ -29,6 +29,6 @@ package com.jcraft.jsch.jce;
 public class MLKEM1024 extends MLKEM {
 
   public MLKEM1024() {
-    throw new UnsupportedOperationException("MLKEM1024 requires Java24+.");
+    throw new UnsupportedOperationException("MLKEM1024 requires Java17+.");
   }
 }

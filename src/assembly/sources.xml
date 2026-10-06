@@ -63,6 +63,13 @@
       </includes>
     </fileSet>
     <fileSet>
+      <directory>${project.basedir}/src/main/java17</directory>
+      <outputDirectory>META-INF/versions/17</outputDirectory>
+      <includes>
+        <include>**/*.java</include>
+      </includes>
+    </fileSet>
+    <fileSet>
       <directory>${project.basedir}/src/main/java19</directory>
       <outputDirectory>META-INF/versions/19</outputDirectory>
       <includes>
@@ -79,13 +86,6 @@
     <fileSet>
       <directory>${project.build.directory}/generated-sources/windows-api</directory>
       <outputDirectory>META-INF/versions/23</outputDirectory>
-      <includes>
-        <include>**/*.java</include>
-      </includes>
-    </fileSet>
-    <fileSet>
-      <directory>${project.basedir}/src/main/java24</directory>
-      <outputDirectory>META-INF/versions/24</outputDirectory>
       <includes>
         <include>**/*.java</include>
       </includes>

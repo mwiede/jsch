@@ -119,7 +119,7 @@ public class JSch {
     config.put("sntrup761x25519-sha512", "com.jcraft.jsch.DH25519SNTRUP761");
     config.put("sntrup761x25519-sha512@openssh.com", "com.jcraft.jsch.DH25519SNTRUP761");
 
-    if (JavaVersion.getVersion() >= 24) {
+    if (JavaVersion.getVersion() >= 17) {
       config.put("mlkem768", "com.jcraft.jsch.jce.MLKEM768");
       config.put("mlkem1024", "com.jcraft.jsch.jce.MLKEM1024");
     } else {

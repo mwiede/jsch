@@ -33,7 +33,7 @@ public class MLKEM768 extends MLKEM {
       (byte) 0x65, (byte) 0x03, (byte) 0x04, (byte) 0x04, (byte) 0x02};
 
   public MLKEM768() {
-    params = NamedParameterSpec.ML_KEM_768;
+    params = new NamedParameterSpec("ML-KEM-768");
     algorithmIdentifier = pkMlKem768;
     publicKeyLen = 1184;
   }

@@ -33,7 +33,7 @@ public class MLKEM1024 extends MLKEM {
       (byte) 0x65, (byte) 0x03, (byte) 0x04, (byte) 0x04, (byte) 0x03};
 
   public MLKEM1024() {
-    params = NamedParameterSpec.ML_KEM_1024;
+    params = new NamedParameterSpec("ML-KEM-1024");
     algorithmIdentifier = pkMlKem1024;
     publicKeyLen = 1568;
   }
