@@ -2990,9 +2990,9 @@ public class Session {
 
   /**
    * Sets the {@link UserInfo} that answers prompts from {@link ProxyJump} hops of this session,
-   * such as a bastion's password or an unknown host key. Every prompt names the hop it is for. The
-   * session's own {@link #setUserInfo UserInfo} and {@link #setPassword password} are never offered
-   * to a hop; without a ProxyJump UserInfo, hops must authenticate without prompting.
+   * such as a bastion's password or an unknown host key. The session's own {@link #setUserInfo
+   * UserInfo} and {@link #setPassword password} are never offered to a hop; without a ProxyJump
+   * UserInfo, hops must authenticate without prompting.
    */
   public void setProxyJumpUserInfo(UserInfo userinfo) {
     this.proxyJumpUserInfo = userinfo;

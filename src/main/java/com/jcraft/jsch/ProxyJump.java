@@ -19,19 +19,26 @@ import java.util.concurrent.TimeUnit;
  * {@code ProxyJump} ({@code ssh -J}).
  *
  * <p>
- * Each hop is a separate {@link Session} created by {@link JSch#getSession(String, String, int)}, so
- * it uses its own {@code Host} configuration and the {@link JSch} instance's settings, such as its
- * host-key repository. As with {@code ssh -J}, settings made on the target session itself, for
- * example {@code StrictHostKeyChecking} or a host-key repository, do not apply to the hops; to pin a
- * hop differently, connect it yourself and use {@link #through(Session)}. Hops never see the
- * target's {@link UserInfo} or password. Prompts from hops, for a password, a passphrase or a host-key
- * decision, go to the {@link Session#setProxyJumpUserInfo ProxyJump UserInfo} if one is set, each
- * prompt naming the hop it is for, as {@code ssh -J} asks for every hop in turn. Without one, hops
- * must authenticate without prompting, for example with keys from the identity repository.
+ * Each hop is a separate {@link Session} created by {@link JSch#getSession(String, String, int)},
+ * so it uses its own {@code Host} configuration and the {@link JSch} instance's settings, such as
+ * its host-key repository. As with {@code ssh -J}, settings made on the target session itself, for
+ * example {@code StrictHostKeyChecking} or a host-key repository, do not apply to the hops; to pin
+ * a hop differently, connect it yourself and use {@link #through(Session)}. Hops never see the
+ * target's {@link UserInfo} or password. Prompts from hops, for a password, a passphrase or a
+ * host-key decision, go to the {@link Session#setProxyJumpUserInfo ProxyJump UserInfo} if one is
+ * set. Without one, hops must authenticate without prompting, for example with keys from the
+ * identity repository.
  *
  * <p>
- * The whole chain shares one connect deadline: the largest {@code ConnectTimeout} of the target and
- * of every hop. Hops do not each get the full timeout.
+ * A hop connects like any other session, so port forwardings its {@code Host} configuration
+ * declares, for example in a broad {@code Host *} block, are set up on the hop as well, as they are
+ * for the jump host of {@code ssh -J}.
+ *
+ * <p>
+ * The connect timeout is the largest {@code ConnectTimeout} of the target and of every hop. Each
+ * hop and the tunnel get what is left of it rather than a full timeout each, so a silent hop cannot
+ * stretch the connect to the sum of all timeouts. As for a direct connection, the timeout bounds
+ * each wait, not the total time of a handshake that keeps making progress.
  *
  * <p>
  * {@link #through(Session)} tunnels a session through a hop the application connects and
@@ -43,7 +50,8 @@ import java.util.concurrent.TimeUnit;
 public final class ProxyJump implements ReadTimeoutProxy {
   private static final int DEFAULT_PORT = 22;
   private static final String URI_PREFIX = "ssh://";
-  // A tunnelled SSH session needs a wider window than port forwarding; OpenSSH uses 2 MiB.
+  // Match OpenSSH's stdio-forward channel defaults (channels.h CHAN_TCP_*_DEFAULT):
+  // a 2 MiB receive window and 32 KiB packets. JSch's direct-tcpip defaults are 128/16 KiB.
   private static final int CHANNEL_WINDOW_SIZE = 0x200000;
   private static final int CHANNEL_PACKET_SIZE = 0x8000;
   private static final int INITIAL_BUFFER_SIZE = 0x8000;
