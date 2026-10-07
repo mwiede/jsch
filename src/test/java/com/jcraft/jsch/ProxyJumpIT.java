@@ -2,7 +2,6 @@ package com.jcraft.jsch;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.github.valfirst.slf4jtest.LoggingEvent;
@@ -12,7 +11,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
 import java.util.Locale;
@@ -108,48 +106,6 @@ class ProxyJumpIT {
       } finally {
         session.disconnect();
       }
-    }
-  }
-
-  @Test
-  void testSharedHopOpensWithFirstSessionAndClosesWithLast() throws Exception {
-    JSch ssh = createRSAIdentity();
-    List<Session> hops = new ArrayList<>();
-    ProxyJump.SharedHop shared = ProxyJump.share(() -> {
-      Session hop = ssh.getSession("root", sshd.getHost(), sshd.getFirstMappedPort());
-      hop.setConfig("StrictHostKeyChecking", "yes");
-      hop.setConfig("PreferredAuthentications", "publickey");
-      hops.add(hop);
-      return hop;
-    });
-    try {
-      Session first = createTargetSession(ssh, shared.proxy());
-      Session second = createTargetSession(ssh, shared.proxy());
-      first.connect(TIMEOUT);
-      second.connect(TIMEOUT);
-      assertEquals(1, hops.size(), "both sessions share one hop");
-      assertTrue(shared.isOpen());
-      assertEquals("root", exec(first, "whoami"));
-      assertEquals("root", exec(second, "whoami"));
-
-      first.disconnect();
-      assertTrue(shared.isOpen(), "the hop stays while a session uses it");
-      assertTrue(second.isConnected());
-      second.disconnect();
-      assertFalse(shared.isOpen(), "the last session closed the hop");
-      assertFalse(hops.get(0).isConnected());
-
-      Session third = createTargetSession(ssh, shared.proxy());
-      third.connect(TIMEOUT);
-      assertEquals(2, hops.size(), "a later session opened a fresh hop");
-      assertTrue(shared.isOpen());
-      third.disconnect();
-      assertFalse(shared.isOpen());
-    } catch (Exception e) {
-      printInfo();
-      throw e;
-    } finally {
-      shared.close();
     }
   }
 

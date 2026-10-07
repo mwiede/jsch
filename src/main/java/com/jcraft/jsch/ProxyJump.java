@@ -34,10 +34,8 @@ import java.util.concurrent.TimeUnit;
  * of every hop. Hops do not each get the full timeout.
  *
  * <p>
- * Several sessions can share one hop like OpenSSH's {@code ControlMaster}:
- * {@link #share(HopFactory)} opens the hop when the first session needs it and closes it when the
- * last one disconnects, and {@link #through(Session)} tunnels through a hop the application
- * connects and disconnects itself.
+ * {@link #through(Session)} tunnels a session through a hop the application connects and
+ * disconnects itself; several sessions may use one such hop.
  *
  * <p>
  * A proxy instance serves one session, which serializes {@link #connect} and {@link #close} on it.
@@ -66,172 +64,7 @@ public final class ProxyJump implements ReadTimeoutProxy {
    * its own proxy instance.
    */
   public static Proxy through(Session hop) {
-    return new ChannelProxy(new FixedHop(Objects.requireNonNull(hop, "hop")));
-  }
-
-  /**
-   * Returns a shared hop whose sessions {@code factory} creates on demand. Give each session that
-   * should use it a proxy from {@link SharedHop#proxy()}.
-   */
-  public static SharedHop share(HopFactory factory) {
-    return new SharedHop(Objects.requireNonNull(factory, "factory"));
-  }
-
-  /** Creates the sessions of a {@link SharedHop}; every call must return a new, unconnected one. */
-  public interface HopFactory {
-    Session create() throws JSchException;
-  }
-
-  /** Where a tunnel gets its hop session from, and where it gives it back. */
-  interface HopSource {
-    Session acquire(int timeout) throws JSchException;
-
-    void release(Session hop);
-  }
-
-  /** A hop the application manages itself. */
-  private static final class FixedHop implements HopSource {
-    private final Session hop;
-
-    FixedHop(Session hop) {
-      this.hop = hop;
-    }
-
-    @Override
-    public Session acquire(int timeout) throws JSchException {
-      if (!hop.isConnected()) {
-        throw new JSchException("ProxyJump hop " + hop.getHost() + " is not connected");
-      }
-      return hop;
-    }
-
-    @Override
-    public void release(Session hop) {
-      // the application disconnects it
-    }
-  }
-
-  /**
-   * A hop that stays open exactly as long as sessions are tunnelled through it, like OpenSSH's
-   * {@code ControlMaster} without {@code ControlPersist}. The first session to connect opens it,
-   * bounded like a {@code ProxyJump} hop by the larger of the session's connect timeout and the
-   * hop's own {@code ConnectTimeout}; the last session to disconnect closes it; a later session
-   * opens a fresh one. A hop that died is replaced on the next connect. Safe to use from several
-   * threads.
-   */
-  public static final class SharedHop {
-    private final HopFactory factory;
-    private final HopSource source = new HopSource() {
-      @Override
-      public Session acquire(int timeout) throws JSchException {
-        return SharedHop.this.acquire(timeout);
-      }
-
-      @Override
-      public void release(Session hop) {
-        SharedHop.this.release(hop);
-      }
-    };
-    private Session hop;
-    private int users;
-    private Session connecting; // a hop one thread is opening while others wait for it
-
-    SharedHop(HopFactory factory) {
-      this.factory = factory;
-    }
-
-    /** A proxy for one session; every session needs its own. */
-    public Proxy proxy() {
-      return new ChannelProxy(source);
-    }
-
-    public synchronized boolean isOpen() {
-      return hop != null && hop.isConnected();
-    }
-
-    /**
-     * Disconnects the hop now; sessions tunnelled through it lose their connection, and a thread
-     * still opening it gets an error instead of the hop.
-     */
-    public void close() {
-      Session open;
-      Session opening;
-      synchronized (this) {
-        open = hop;
-        opening = connecting;
-        hop = null;
-        connecting = null;
-        users = 0;
-        notifyAll();
-      }
-      if (open != null) {
-        open.disconnect();
-      }
-      if (opening != null) {
-        opening.disconnect();
-      }
-    }
-
-    Session acquire(int timeout) throws JSchException {
-      Session created;
-      synchronized (this) {
-        while (true) {
-          if (hop != null && hop.isConnected()) {
-            users++;
-            return hop;
-          }
-          if (connecting == null) {
-            created = factory.create();
-            if (created == null) {
-              throw new JSchException("ProxyJump hop factory returned no session");
-            }
-            connecting = created;
-            break;
-          }
-          try {
-            wait(); // another thread is opening the hop
-          } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            throw new JSchException("ProxyJump hop connect interrupted", e);
-          }
-        }
-      }
-      // Not under the monitor: close() and release() must not wait for a slow hop or a prompt.
-      try {
-        created.connect(connectBudget(timeout, Collections.singletonList(created)));
-      } catch (JSchException | RuntimeException e) {
-        abandon(created);
-        throw e;
-      }
-      synchronized (this) {
-        if (connecting != created) {
-          created.disconnect(); // close() ran meanwhile
-          throw new JSchException("ProxyJump hop closed while connecting");
-        }
-        connecting = null;
-        hop = created;
-        users = 1;
-        notifyAll();
-        return hop;
-      }
-    }
-
-    private synchronized void abandon(Session created) {
-      if (connecting == created) {
-        connecting = null;
-      }
-      notifyAll(); // the next waiter tries for itself
-    }
-
-    synchronized void release(Session used) {
-      if (used != hop) {
-        return; // a hop this one replaced
-      }
-      if (--users == 0) {
-        hop.disconnect();
-        hop = null;
-      }
-    }
+    return new ChannelProxy(Objects.requireNonNull(hop, "hop"));
   }
 
   @Override
@@ -249,7 +82,7 @@ public final class ProxyJump implements ReadTimeoutProxy {
       for (Session session : sessions) {
         session.connect(remaining(deadline));
       }
-      ChannelProxy tunnel = new ChannelProxy(new FixedHop(previous));
+      ChannelProxy tunnel = new ChannelProxy(previous);
       destination = tunnel;
       tunnel.connect(socketFactory, host, port, remaining(deadline));
       // Bound each read of the target handshake; Session replaces this once it is authenticated.
@@ -297,7 +130,7 @@ public final class ProxyJump implements ReadTimeoutProxy {
     }
     if (previous != null) {
       // Like ssh -J, only the first hop keeps a ProxyJump of its own Host config.
-      next.setProxy(new ChannelProxy(new FixedHop(previous)));
+      next.setProxy(new ChannelProxy(previous));
     } else if (socketFactory != null) {
       next.setSocketFactory(socketFactory);
     }
@@ -523,22 +356,23 @@ public final class ProxyJump implements ReadTimeoutProxy {
     }
   }
 
-  /** Tunnels one session through a direct-tcpip channel of a hop. */
+  /** Tunnels one session through a direct-tcpip channel of a hop, which it never disconnects. */
   private static final class ChannelProxy implements ReadTimeoutProxy {
-    private final HopSource source;
-    private Session hop;
+    private final Session hop;
     private ChannelDirectTCPIP channel;
     private volatile TunnelBuffer in;
     private OutputStream out;
 
-    ChannelProxy(HopSource source) {
-      this.source = source;
+    ChannelProxy(Session hop) {
+      this.hop = hop;
     }
 
     @Override
     public void connect(SocketFactory socketFactory, String host, int port, int timeout)
         throws JSchException {
-      hop = source.acquire(timeout);
+      if (!hop.isConnected()) {
+        throw new JSchException("ProxyJump hop " + hop.getHost() + " is not connected");
+      }
       try {
         ChannelDirectTCPIP opened = (ChannelDirectTCPIP) hop.openChannel("direct-tcpip");
         if (opened == null) {
@@ -606,10 +440,6 @@ public final class ProxyJump implements ReadTimeoutProxy {
         in = null;
       }
       out = null;
-      if (hop != null) {
-        source.release(hop);
-        hop = null;
-      }
     }
   }
 
