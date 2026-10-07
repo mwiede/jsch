@@ -220,6 +220,60 @@ class ProxyJumpTest {
   }
 
   @Test
+  void hopSetsUpNoForwardingsUnlessItsConfigAsksForThem() throws Exception {
+    JSch jsch = new JSch();
+    jsch.setConfigRepository(OpenSSHConfig
+        .parse(String.join("\n", "Host forwarding", "  ClearAllForwardings no", "Host clearing",
+            "  ClearAllForwardings yes", "Host *", "  LocalForward 8080 localhost:80", "")));
+    Session target = jsch.getSession("user", "target");
+    ProxyJump proxy = new ProxyJump(target, "plain,forwarding");
+    // Like ssh -W behind ssh -J, which clears forwardings unless the jump host's config says no.
+    assertEquals("yes", proxy.createHop(new ProxyJump.Hop(null, "plain", 0), null, null)
+        .getConfig("ClearAllForwardings"));
+    assertEquals("no", proxy.createHop(new ProxyJump.Hop(null, "forwarding", 0), null, null)
+        .getConfig("ClearAllForwardings"));
+    assertEquals("yes", proxy.createHop(new ProxyJump.Hop(null, "clearing", 0), null, null)
+        .getConfig("ClearAllForwardings"));
+    assertEquals("no", target.getConfig("ClearAllForwardings"));
+  }
+
+  @Test
+  void sessionTimeoutReachesTunnel() throws Exception {
+    List<Integer> timeouts = new ArrayList<>();
+    Session session = new JSch().getSession("u", "target");
+    session.setProxy(new ReadTimeoutProxy() {
+      @Override
+      public void setReadTimeout(int timeout) {
+        timeouts.add(timeout);
+      }
+
+      @Override
+      public void connect(SocketFactory socketFactory, String host, int port, int timeout) {}
+
+      @Override
+      public java.io.InputStream getInputStream() {
+        return null;
+      }
+
+      @Override
+      public java.io.OutputStream getOutputStream() {
+        return null;
+      }
+
+      @Override
+      public Socket getSocket() {
+        return null;
+      }
+
+      @Override
+      public void close() {}
+    });
+    session.setTimeout(1234);
+    session.setTimeout(0);
+    assertEquals(Arrays.asList(1234, 0), timeouts);
+  }
+
+  @Test
   void hopPromptsThroughProxyJumpUserInfoOnlyAndInheritsThreadSettings() throws Exception {
     JSch jsch = new JSch();
     Session target = jsch.getSession("user", "target");

@@ -30,15 +30,19 @@ import java.util.concurrent.TimeUnit;
  * identity repository.
  *
  * <p>
- * A hop connects like any other session, so port forwardings its {@code Host} configuration
- * declares, for example in a broad {@code Host *} block, are set up on the hop as well, as they are
- * for the jump host of {@code ssh -J}.
+ * Like the jump host of {@code ssh -J}, a hop sets up no {@code LocalForward} or
+ * {@code RemoteForward} from its configuration unless that configuration says
+ * {@code ClearAllForwardings no}, so forwardings in a broad {@code Host *} block apply to the
+ * target only.
  *
  * <p>
- * The connect timeout is the largest {@code ConnectTimeout} of the target and of every hop. Each
- * hop and the tunnel get what is left of it rather than a full timeout each, so a silent hop cannot
- * stretch the connect to the sum of all timeouts. As for a direct connection, the timeout bounds
- * each wait, not the total time of a handshake that keeps making progress.
+ * The hops and the tunnel share one budget: the largest of the target's connect timeout and the
+ * {@code ConnectTimeout} of each hop in the {@code ProxyJump} value. Each gets what is left of it
+ * rather than a full timeout, so a silent hop cannot stretch the connect to the sum of all
+ * timeouts. A first hop with a {@code ProxyJump} of its own starts a budget of its own for that
+ * chain. Once the tunnel is open, each read of the target's handshake is bounded by the full budget
+ * until the target is authenticated and its own timeout applies. As for a direct connection, these
+ * timeouts bound each wait, not the total time of a handshake that keeps making progress.
  *
  * <p>
  * {@link #through(Session)} tunnels a session through a hop the application connects and
@@ -135,6 +139,13 @@ public final class ProxyJump implements ReadTimeoutProxy {
     }
     if (hop.port != 0) {
       next.setPort(hop.port);
+    }
+    // The jump of ssh -J runs ssh -W, which sets up no forwardings unless the jump host's config
+    // says ClearAllForwardings no. An option the config does not set must read as null.
+    ConfigRepository repository = target.jsch.getConfigRepository();
+    ConfigRepository.Config config = repository == null ? null : repository.getConfig(hop.host);
+    if (config == null || config.getValue("ClearAllForwardings") == null) {
+      next.setConfig("ClearAllForwardings", "yes");
     }
     if (previous != null) {
       // Like ssh -J, only the first hop keeps a ProxyJump of its own Host config.
