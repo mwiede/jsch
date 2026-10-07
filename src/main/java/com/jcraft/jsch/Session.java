@@ -150,10 +150,6 @@ public class Session {
   SocketFactory socket_factory = null;
 
   private Hashtable<String, String> config = null;
-  private boolean constructionComplete;
-  private String explicitStrictHostKeyChecking;
-  private String explicitHostKeyAlgorithms;
-  private HostKeyRepository explicitHostKeyRepository;
 
   private Proxy proxy = null;
   private UserInfo userinfo;
@@ -209,7 +205,6 @@ public class Session {
     if (this.username == null) {
       throw new JSchException("username is not given.");
     }
-    constructionComplete = true;
   }
 
   public void connect() throws JSchException {
@@ -3058,7 +3053,6 @@ public class Session {
             (newkey.equals("PubkeyAcceptedKeyTypes") ? "PubkeyAcceptedAlgorithms" : newkey);
         String value = newconf.get(newkey);
         config.put(key, value);
-        trackExplicitHostKeyConfig(key, value);
       }
     }
   }
@@ -3073,18 +3067,6 @@ public class Session {
       } else {
         config.put(key, value);
       }
-      trackExplicitHostKeyConfig(key, value);
-    }
-  }
-
-  private void trackExplicitHostKeyConfig(String key, String value) {
-    if (!constructionComplete) {
-      return;
-    }
-    if (key.equals("StrictHostKeyChecking")) {
-      explicitStrictHostKeyChecking = value;
-    } else if (key.equals("server_host_key")) {
-      explicitHostKeyAlgorithms = value;
     }
   }
 
@@ -3095,30 +3077,6 @@ public class Session {
       ((ReadTimeoutProxy) proxy).setReadTimeout(readTimeout);
     }
   }
-
-  void applyExplicitHostKeyPolicyTo(Session hop) {
-    // Keep the hop's Host config, but carry explicit application-level host-key constraints.
-    // StrictHostKeyChecking is only carried when it is stricter, so it never weakens the hop.
-    if (explicitHostKeyRepository != null) {
-      hop.setHostKeyRepository(explicitHostKeyRepository);
-    }
-    if (explicitStrictHostKeyChecking != null
-        && hostKeyCheckingStrictness(explicitStrictHostKeyChecking) > hostKeyCheckingStrictness(
-            hop.getConfig("StrictHostKeyChecking"))) {
-      hop.setConfig("StrictHostKeyChecking", explicitStrictHostKeyChecking);
-    }
-    if (explicitHostKeyAlgorithms != null) {
-      hop.setConfig("server_host_key", explicitHostKeyAlgorithms);
-    }
-  }
-
-  private static int hostKeyCheckingStrictness(String value) {
-    if ("yes".equals(value)) {
-      return 2;
-    }
-    return "ask".equals(value) ? 1 : 0;
-  }
-
 
   public String getConfig(String key) {
     if (key.equals("PubkeyAcceptedKeyTypes")) {
@@ -3681,9 +3639,6 @@ public class Session {
    */
   public void setHostKeyRepository(HostKeyRepository hostkeyRepository) {
     this.hostkeyRepository = hostkeyRepository;
-    if (constructionComplete) {
-      explicitHostKeyRepository = hostkeyRepository;
-    }
   }
 
   /**

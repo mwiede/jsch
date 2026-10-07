@@ -19,11 +19,12 @@ import java.util.concurrent.TimeUnit;
  * {@code ProxyJump} ({@code ssh -J}).
  *
  * <p>
- * Each hop is a separate {@link Session} that uses its own {@code Host} configuration. Explicit
- * host-key constraints set on the target session by the application (a host-key repository, a
- * stricter {@code StrictHostKeyChecking}, or {@code server_host_key}) are also applied to the hops,
- * but a hop's own {@code StrictHostKeyChecking} is never weakened. Hops never see the target's
- * {@link UserInfo} or password. Prompts from hops, for a password, a passphrase or a host-key
+ * Each hop is a separate {@link Session} created by {@link JSch#getSession(String, String, int)}, so
+ * it uses its own {@code Host} configuration and the {@link JSch} instance's settings, such as its
+ * host-key repository. As with {@code ssh -J}, settings made on the target session itself, for
+ * example {@code StrictHostKeyChecking} or a host-key repository, do not apply to the hops; to pin a
+ * hop differently, connect it yourself and use {@link #through(Session)}. Hops never see the
+ * target's {@link UserInfo} or password. Prompts from hops, for a password, a passphrase or a host-key
  * decision, go to the {@link Session#setProxyJumpUserInfo ProxyJump UserInfo} if one is set, each
  * prompt naming the hop it is for, as {@code ssh -J} asks for every hop in turn. Without one, hops
  * must authenticate without prompting, for example with keys from the identity repository.
@@ -284,7 +285,6 @@ public final class ProxyJump implements ReadTimeoutProxy {
   Session createHop(Hop hop, Session previous, SocketFactory socketFactory) throws JSchException {
     Session next =
         target.jsch.getSession(hop.user, hop.host, hop.port == 0 ? DEFAULT_PORT : hop.port);
-    target.applyExplicitHostKeyPolicyTo(next);
     next.setUserInfo(target.getProxyJumpUserInfo());
     next.setProxyJumpUserInfo(target.getProxyJumpUserInfo());
     next.setDaemonThread(target.daemon_thread);

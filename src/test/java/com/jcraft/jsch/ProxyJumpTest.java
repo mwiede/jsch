@@ -418,7 +418,7 @@ class ProxyJumpTest {
   }
 
   @Test
-  void hopKeepsOwnConfigUnlessTargetHasExplicitHostKeyPolicy() throws Exception {
+  void hopUsesOwnHostKeyConfigAndIgnoresTargetSessionSettings() throws Exception {
     Path targetKnownHosts = Files.createFile(tempDir.resolve("target_known_hosts"));
     Path jumpKnownHosts = Files.createFile(tempDir.resolve("jump_known_hosts"));
     JSch jsch = new JSch();
@@ -427,43 +427,16 @@ class ProxyJumpTest {
             "  StrictHostKeyChecking yes", "  UserKnownHostsFile " + targetKnownHosts, "Host jump",
             "  StrictHostKeyChecking no", "  UserKnownHostsFile " + jumpKnownHosts, "")));
     Session target = jsch.getSession("target");
+    // Like options given to ssh -J's destination, settings made on the target stay on the target.
+    target.setHostKeyRepository(new KnownHosts(jsch));
+    target.setConfig("StrictHostKeyChecking", "yes");
+    target.setConfig("server_host_key", "ssh-ed25519");
     ProxyJump proxy = new ProxyJump(target, "jump");
 
     Session hop = proxy.createHop(new ProxyJump.Hop(null, "jump", 0), null, null);
     assertEquals("no", hop.getConfig("StrictHostKeyChecking"));
     assertEquals(jumpKnownHosts.toString(), hop.getHostKeyRepository().getKnownHostsRepositoryID());
-
-    HostKeyRepository pinned = new KnownHosts(jsch);
-    target.setHostKeyRepository(pinned);
-    target.setConfig("StrictHostKeyChecking", "yes");
-    target.setConfig("server_host_key", "ssh-ed25519");
-    Session pinnedHop = proxy.createHop(new ProxyJump.Hop(null, "jump", 0), null, null);
-    assertSame(pinned, pinnedHop.getHostKeyRepository());
-    assertEquals("yes", pinnedHop.getConfig("StrictHostKeyChecking"));
-    assertEquals("ssh-ed25519", pinnedHop.getConfig("server_host_key"));
-  }
-
-  @Test
-  void explicitHostKeyCheckingNeverWeakensHop() throws Exception {
-    JSch jsch = new JSch();
-    jsch.setConfigRepository(OpenSSHConfig.parse(String.join("\n", "Host strict",
-        "  StrictHostKeyChecking yes", "Host asking", "  StrictHostKeyChecking ask", "")));
-    Session target = jsch.getSession("user", "target");
-    ProxyJump proxy = new ProxyJump(target, "strict");
-
-    target.setConfig("StrictHostKeyChecking", "no");
-    assertEquals("yes", proxy.createHop(new ProxyJump.Hop(null, "strict", 0), null, null)
-        .getConfig("StrictHostKeyChecking"));
-    assertEquals("ask", proxy.createHop(new ProxyJump.Hop(null, "asking", 0), null, null)
-        .getConfig("StrictHostKeyChecking"));
-
-    target.setConfig("StrictHostKeyChecking", "ask");
-    assertEquals("yes", proxy.createHop(new ProxyJump.Hop(null, "strict", 0), null, null)
-        .getConfig("StrictHostKeyChecking"));
-
-    target.setConfig("StrictHostKeyChecking", "yes");
-    assertEquals("yes", proxy.createHop(new ProxyJump.Hop(null, "asking", 0), null, null)
-        .getConfig("StrictHostKeyChecking"));
+    assertEquals(JSch.getConfig("server_host_key"), hop.getConfig("server_host_key"));
   }
 
   @Test
