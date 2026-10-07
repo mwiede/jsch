@@ -559,6 +559,8 @@ public final class ProxyJump implements ReadTimeoutProxy {
         if (!opened.isConnected()) {
           throw new JSchException("Unable to connect ProxyJump channel to " + host);
         }
+        // Bound each read of the handshake like a socket's connect timeout would.
+        buffer.setTimeout(timeout);
       } catch (IOException e) {
         close();
         throw new JSchException(e.toString(), e);

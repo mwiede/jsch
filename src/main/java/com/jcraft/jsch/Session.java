@@ -31,7 +31,6 @@ import java.io.InputStream;
 import java.io.InterruptedIOException;
 import java.io.OutputStream;
 import java.net.Socket;
-import java.net.SocketException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Enumeration;
@@ -260,8 +259,8 @@ public class Session {
         }
       }
 
-      if (connectTimeout > 0) {
-        setReadTimeout(connectTimeout);
+      if (connectTimeout > 0 && socket != null) {
+        socket.setSoTimeout(connectTimeout);
       }
 
       isConnected = true;
@@ -533,9 +532,12 @@ public class Session {
             (auth_cancel ? "Auth cancel" : "Auth fail") + " for methods '" + smethods + "'");
       }
 
-      // A ReadTimeoutProxy may have bounded the handshake itself, so always reset it.
-      if (connectTimeout > 0 || timeout > 0 || proxy instanceof ReadTimeoutProxy) {
-        setReadTimeout(timeout);
+      if (socket != null && (connectTimeout > 0 || timeout > 0)) {
+        socket.setSoTimeout(timeout);
+      }
+      // A ProxyJump tunnel bounds the handshake reads itself; hand over to the session timeout.
+      if (proxy instanceof ReadTimeoutProxy) {
+        ((ReadTimeoutProxy) proxy).setReadTimeout(timeout);
       }
 
       isAuthed = true;
@@ -3068,14 +3070,6 @@ public class Session {
       } else {
         config.put(key, value);
       }
-    }
-  }
-
-  private void setReadTimeout(int readTimeout) throws SocketException, JSchException {
-    if (socket != null) {
-      socket.setSoTimeout(readTimeout);
-    } else if (proxy instanceof ReadTimeoutProxy) {
-      ((ReadTimeoutProxy) proxy).setReadTimeout(readTimeout);
     }
   }
 
