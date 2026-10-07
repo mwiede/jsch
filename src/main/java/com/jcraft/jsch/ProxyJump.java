@@ -558,6 +558,9 @@ public final class ProxyJump implements ReadTimeoutProxy {
 
       @Override
       public void write(byte[] bytes, int offset, int length) throws IOException {
+        if (offset < 0 || length < 0 || offset > bytes.length - length) {
+          throw new IndexOutOfBoundsException();
+        }
         synchronized (TunnelBuffer.this) {
           while (length > 0) {
             while (!closed && count == ring.length && !grow()) {

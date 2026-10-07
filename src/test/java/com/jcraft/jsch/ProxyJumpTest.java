@@ -369,6 +369,17 @@ class ProxyJumpTest {
   }
 
   @Test
+  void tunnelRejectsInvalidRanges() {
+    ProxyJump.TunnelBuffer tunnel = new ProxyJump.TunnelBuffer(16, 16);
+    byte[] bytes = new byte[4];
+    assertThrows(IndexOutOfBoundsException.class, () -> tunnel.sink().write(bytes, 0, -1));
+    assertThrows(IndexOutOfBoundsException.class, () -> tunnel.sink().write(bytes, -1, 1));
+    assertThrows(IndexOutOfBoundsException.class, () -> tunnel.sink().write(bytes, 2, 3));
+    assertThrows(IndexOutOfBoundsException.class, () -> tunnel.read(bytes, 2, 3));
+    assertEquals(0, tunnel.available());
+  }
+
+  @Test
   void tunnelWrapsGrowsAndNeverStallsWriter() {
     byte[] data = new byte[256 * 1024];
     new java.util.Random(1).nextBytes(data);
