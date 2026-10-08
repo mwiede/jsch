@@ -100,7 +100,7 @@ public class ProxyJump implements Proxy {
       try {
         tunnel.connect(host, port, timeout);
       } catch (JSchException | RuntimeException e) {
-        close();
+        release();
         throw e;
       }
       return;
@@ -123,7 +123,7 @@ public class ProxyJump implements Proxy {
       // Bound each read of the target handshake; Session replaces this once it is authenticated.
       tunnel.setReadTimeout(budget);
     } catch (JSchException | RuntimeException e) {
-      close();
+      release();
       throw e;
     }
   }
@@ -225,8 +225,13 @@ public class ProxyJump implements Proxy {
     }
   }
 
+  /** Closes the tunnel and disconnects the hops this proxy opened; overrides must call it. */
   @Override
   public void close() {
+    release();
+  }
+
+  private void release() {
     Tunnel tunnel = destination;
     if (tunnel != null) {
       tunnel.close();
