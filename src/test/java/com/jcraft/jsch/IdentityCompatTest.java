@@ -4,9 +4,11 @@ import static com.jcraft.jsch.ResourceUtil.getResourceFile;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import java.util.stream.Stream;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
 /**
  * Unit tests for compatibility between the private and public (key or certificate) part of an
@@ -14,17 +16,25 @@ import org.junit.jupiter.params.provider.CsvSource;
  */
 public class IdentityCompatTest {
 
+  static Stream<Arguments> keyArgs() {
+    return Stream.of(
+	Arguments.of("certificates/ed25519/root_ed25519_key","certificates/ed25519/root_ed25519_key-cert.pub", null),
+	Arguments.of("docker/id_ed25519", "docker/id_ed25519.pub", null),
+
+	// PKCS8
+	Arguments.of("pkcs8_rsa_encrypted_hmacsha256", "pkcs8_rsa_encrypted_hmacsha256.pub", "secret123".getBytes(UTF_8)),
+	Arguments.of("pkcs8_rsa_encrypted_hmacsha256", "pkcs8_rsa_encrypted_hmacsha256-cert.pub", "secret123".getBytes(UTF_8)));
+  }
+
   /**
    * Test that adding an identity of a private key with matching public part (certificate or public
    * key) succeeds, file name version
    */
   @ParameterizedTest(name = "File private key {0} is compatible with {1} certificate or public key")
-  @CsvSource({
-      "'certificates/ed25519/root_ed25519_key','certificates/ed25519/root_ed25519_key-cert.pub'",
-      "'docker/id_ed25519','docker/id_ed25519.pub'"})
-  void testCheckPrivKeyWithMatchingPublicPart(String privateK, String publicK) throws Exception {
+  @MethodSource("keyArgs")
+  void testCheckPrivKeyWithMatchingPublicPart(String privateK, String publicK, byte[] secret) throws Exception {
     JSch jsch = new JSch();
-    jsch.addIdentity(getResourceFile(privateK), getResourceFile(publicK), null);
+    jsch.addIdentity(getResourceFile(privateK), getResourceFile(publicK), secret);
   }
 
   /**
@@ -33,58 +43,34 @@ public class IdentityCompatTest {
    */
   @ParameterizedTest(
       name = "Byte[] private key {0} is compatible with {1} certificate or public key")
-  @CsvSource({
-      "'certificates/ed25519/root_ed25519_key','certificates/ed25519/root_ed25519_key-cert.pub'",
-      "'docker/id_ed25519','docker/id_ed25519.pub'"})
-  void testCheckPrivKeyWithMatchingPublicPartB(String privateK, String publicK) throws Exception {
+  @MethodSource("keyArgs")
+  void testCheckPrivKeyWithMatchingPublicPartB(String privateK, String publicK, byte[] secret) throws Exception {
     JSch jsch = new JSch();
-    jsch.addIdentity("test", getResourceBytes(privateK), getResourceBytes(publicK), null);
+    jsch.addIdentity("test", getResourceBytes(privateK), getResourceBytes(publicK), secret);
   }
 
-  /**
-   * Test that adding an identity of a private key with matching public part (certificate or public
-   * key) succeeds, file name version, PKCS8
-   */
-  @ParameterizedTest(name = "File private key {0} is compatible with {1} certificate or public key")
-  @CsvSource({
-      "'pkcs8_rsa_encrypted_hmacsha256','pkcs8_rsa_encrypted_hmacsha256.pub'",
-      "'pkcs8_rsa_encrypted_hmacsha256','pkcs8_rsa_encrypted_hmacsha256-cert.pub'"})
-  void testCheckPKCS8PrivKeyWithMatchingPublicPart(String privateK, String publicK) throws Exception {
-    JSch jsch = new JSch();
-    jsch.addIdentity(getResourceFile(privateK), getResourceFile(publicK),
-		     "secret123".getBytes(UTF_8));
-  }
+  static Stream<Arguments> keyArgsNonMatching() {
+    return Stream.of(
+	Arguments.of("docker/id_ed25519", "certificates/ed25519/root_ed25519_key-cert.pub", null),
+	Arguments.of("docker/id_ed25519", "certificates/ed25519/root_ed25519_key.pub", null),
+	Arguments.of("docker/id_ed25519", "certificates/host/sshd_config", null),
 
+	Arguments.of("pkcs8_rsa_encrypted_hmacsha256", "certificates/ed25519/root_ed25519_key-cert.pub", "secret123".getBytes(UTF_8)),
+	Arguments.of("pkcs8_rsa_encrypted_hmacsha256", "certificates/ed25519/root_ed25519_key.pub", "secret123".getBytes(UTF_8)),
+	Arguments.of("pkcs8_rsa_encrypted_hmacsha256", "certificates/host/sshd_config", "secret123".getBytes(UTF_8)));
+  }
   /**
    * Test that adding an identity of a private key with non-matching public part (certificate or
    * public key) fails, file name version
    */
   @ParameterizedTest(
       name = "File private key {0} is incompatible with {1} certificate or public key")
-  @CsvSource({"'docker/id_ed25519','certificates/ed25519/root_ed25519_key-cert.pub'",
-      "'docker/id_ed25519','certificates/ed25519/root_ed25519_key.pub'",
-      "'docker/id_ed25519','certificates/host/sshd_config'"})
-  void testCheckPrivKeyWithNonMatchingPublicPart(String privateK, String publicK) throws Exception {
+  @MethodSource("keyArgsNonMatching")
+  void testCheckPrivKeyWithNonMatchingPublicPart(String privateK, String publicK, byte[] secret) throws Exception {
     JSch jsch = new JSch();
     assertThrows(JSchException.class,
 
-        () -> jsch.addIdentity(getResourceFile(privateK), getResourceFile(publicK), null));
-  }
-
-  /**
-   * Test that adding an identity of a private key with non-matching public part (certificate or
-   * public key) fails, file name version, PKCS8
-   */
-  @ParameterizedTest(
-      name = "File private key {0} is incompatible with {1} certificate or public key")
-  @CsvSource({"'pkcs8_rsa_encrypted_hmacsha256','certificates/ed25519/root_ed25519_key-cert.pub'",
-      "'pkcs8_rsa_encrypted_hmacsha256','certificates/ed25519/root_ed25519_key.pub'",
-      "'pkcs8_rsa_encrypted_hmacsha256','certificates/host/sshd_config'"})
-  void testCheckPKCS8PrivKeyWithNonMatchingPublicPart(String privateK, String publicK) throws Exception {
-    JSch jsch = new JSch();
-    assertThrows(JSchException.class,
-
-        () -> jsch.addIdentity(getResourceFile(privateK), getResourceFile(publicK), "secret123".getBytes(UTF_8)));
+        () -> jsch.addIdentity(getResourceFile(privateK), getResourceFile(publicK), secret));
   }
 
   /**
@@ -93,13 +79,11 @@ public class IdentityCompatTest {
    */
   @ParameterizedTest(
       name = "Byte[] private key {0} is incompatible with {1} certificate or public key")
-  @CsvSource({"'docker/id_ed25519','certificates/ed25519/root_ed25519_key-cert.pub'",
-      "'docker/id_ed25519','certificates/ed25519/root_ed25519_key.pub'",
-      "'docker/id_ed25519','certificates/host/sshd_config'"})
-  void testCheckPrivKeyWithNonMatchingUserCertB(String privateK, String publicK) throws Exception {
+  @MethodSource("keyArgsNonMatching")
+  void testCheckPrivKeyWithNonMatchingUserCertB(String privateK, String publicK, byte[] secret) throws Exception {
     JSch jsch = new JSch();
     assertThrows(JSchException.class, () -> jsch.addIdentity("test", getResourceBytes(privateK),
-        getResourceBytes(publicK), null));
+        getResourceBytes(publicK), secret));
   }
 
   private String getResourceFile(String fileName) {
