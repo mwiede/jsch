@@ -460,7 +460,7 @@ public abstract class KeyPair {
    * Checks whether public key and private key are compatible (if both are supplied), and throws an
    * exception if they aren't
    */
-  final void validateKeyCompat() throws JSchException {
+  void validateKeyCompat() throws JSchException {
     byte[] pub = getPublicKeyBlob();
     byte[] prv = getPublicKeyBlobFromPriv();
     if (pub != null && prv != null && pub != prv && !Util.arraysequals(pub, prv)) {
