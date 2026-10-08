@@ -85,7 +85,7 @@ class IdentityFile implements Identity {
   @Override
   public boolean setPassphrase(byte[] passphrase) throws JSchException {
     boolean ret = kpair.decrypt(passphrase);
-    if(ret)
+    if (ret)
       kpair.validateKeyCompat();
     return ret;
   }

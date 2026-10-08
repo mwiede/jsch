@@ -445,7 +445,7 @@ public abstract class KeyPair {
     // TODO JSchException should be thrown
     // if(publickeyblob == null)
     // throw new JSchException("public-key blob is not available");
-    if(publickeyblob != null)
+    if (publickeyblob != null)
       return publickeyblob;
     return getPublicKeyBlobFromPriv();
   }
@@ -457,14 +457,13 @@ public abstract class KeyPair {
   }
 
   /**
-   * Checks whether public key and private key are compatible (if both
-   * are supplied), and throws an exception if they aren't
+   * Checks whether public key and private key are compatible (if both are supplied), and throws an
+   * exception if they aren't
    */
   public final void validateKeyCompat() throws JSchException {
     byte[] pub = getPublicKeyBlob();
     byte[] prv = getPublicKeyBlobFromPriv();
-    if (pub != null && prv != null && pub != prv &&
-	!Util.arraysequals(pub, prv)) {
+    if (pub != null && prv != null && pub != prv && !Util.arraysequals(pub, prv)) {
       throw new JSchException("Public key does not match private key");
     }
   }

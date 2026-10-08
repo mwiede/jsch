@@ -175,7 +175,7 @@ class OpenSshCertificateAwareIdentityFile implements Identity {
       // we set it separately
 
       if (prvkey != null) {
-	kpair.validateKeyCompat();
+        kpair.validateKeyCompat();
       }
 
     } catch (IllegalArgumentException e) {
