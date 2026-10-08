@@ -452,7 +452,7 @@ public abstract class KeyPair {
 
   protected abstract byte[] getPublicKeyBlobFromPriv();
 
-  final void setPublicKeyBlob(byte[] publicKeyBlob) {
+  void setPublicKeyBlob(byte[] publicKeyBlob) {
     this.publickeyblob = publicKeyBlob;
   }
 
