@@ -465,6 +465,13 @@ class KeyPairPKCS8 extends KeyPair {
       return super.getPublicKeyBlob();
     }
   }
+  
+  public byte[] getPublicKeyBlobFromPriv() {
+    if (kpair != null)
+      return kpair.getPublicKeyBlobFromPriv();
+    else
+      return null;
+  }
 
   @Override
   byte[] getKeyTypeName() {

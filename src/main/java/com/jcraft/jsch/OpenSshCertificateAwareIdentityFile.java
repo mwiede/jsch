@@ -168,9 +168,14 @@ class OpenSshCertificateAwareIdentityFile implements Identity {
       if (certPublicKey == null) {
         throw new JSchException("Invalid certificate: missing public key");
       }
-      kpair = KeyPair.load(instLogger, prvkey, certPublicKey);
-      if (prvkey != null && !Util.arraysequals(kpair.getPublicKeyBlob(), certPublicKey)) {
-        throw new JSchException("Certificate does not match private key");
+      kpair = KeyPair.load(instLogger, prvkey, null);
+      kpair.setPublicKeyBlob(certPublicKey);
+      // the pubkey parameter in KeyPair.load expects a base64
+      // encapsulated pubkey, not a binary blob as we have here => so
+      // we set it separately
+
+      if (prvkey != null) {
+	kpair.validateKeyCompat();
       }
 
     } catch (IllegalArgumentException e) {
@@ -205,8 +210,12 @@ class OpenSshCertificateAwareIdentityFile implements Identity {
   }
 
   @Override
-  public boolean setPassphrase(byte[] passphrase) {
-    return kpair.decrypt(passphrase);
+  public boolean setPassphrase(byte[] passphrase) throws JSchException {
+    byte[] pub = kpair.getPublicKeyBlob();
+    boolean ret = kpair.decrypt(passphrase);
+    if (ret)
+      kpair.validateKeyCompat();
+    return ret;
   }
 
   @Override

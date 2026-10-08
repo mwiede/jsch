@@ -310,11 +310,7 @@ class KeyPairDSA extends KeyPair {
   }
 
   @Override
-  public byte[] getPublicKeyBlob() {
-    byte[] foo = super.getPublicKeyBlob();
-    if (foo != null)
-      return foo;
-
+  protected byte[] getPublicKeyBlobFromPriv() {
     if (P_array == null)
       return null;
     byte[][] tmp = new byte[5][];
