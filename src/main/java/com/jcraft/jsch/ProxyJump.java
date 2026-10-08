@@ -55,7 +55,7 @@ import java.util.concurrent.TimeUnit;
  * <p>
  * A proxy instance serves one session, which serializes {@link #connect} and {@link #close} on it.
  */
-public final class ProxyJump implements ReadTimeoutProxy {
+public class ProxyJump implements ReadTimeoutProxy {
   private static final int DEFAULT_PORT = 22;
   private static final String URI_PREFIX = "ssh://";
   // Match OpenSSH's stdio-forward channel defaults (channels.h CHAN_TCP_*_DEFAULT):
