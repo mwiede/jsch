@@ -23,11 +23,15 @@ import java.util.concurrent.TimeUnit;
  * so it uses its own {@code Host} configuration and the {@link JSch} instance's settings, such as
  * its host-key repository. As with {@code ssh -J}, settings made on the target session itself, for
  * example {@code StrictHostKeyChecking} or a host-key repository, do not apply to the hops; to pin
- * a hop differently, connect it yourself and use {@link #through(Session)}. Hops never see the
- * target's {@link UserInfo} or password. Prompts from hops, for a password, a passphrase or a
- * host-key decision, go to the {@link Session#setProxyJumpUserInfo ProxyJump UserInfo} if one is
- * set. Without one, hops must authenticate without prompting, for example with keys from the
- * identity repository.
+ * a hop differently, connect it yourself and use {@link #through(Session)}.
+ *
+ * <p>
+ * Hops never see the target's {@link UserInfo} or password, which a {@code UserInfo} that answers
+ * every prompt with a stored password would otherwise offer to the bastion. Hops have no
+ * {@code UserInfo} at all, so they must authenticate without prompting, for example with keys from
+ * the identity repository, and an unknown hop key is rejected unless the hop's configuration says
+ * {@code StrictHostKeyChecking no}. To answer prompts for a hop, connect it yourself with its own
+ * {@code UserInfo} and use {@link #through(Session)}.
  *
  * <p>
  * Like the jump host of {@code ssh -J}, a hop sets up no {@code LocalForward} or
@@ -130,8 +134,6 @@ public final class ProxyJump implements ReadTimeoutProxy {
   Session createHop(Hop hop, Session previous, SocketFactory socketFactory) throws JSchException {
     Session next =
         target.jsch.getSession(hop.user, hop.host, hop.port == 0 ? DEFAULT_PORT : hop.port);
-    next.setUserInfo(target.getProxyJumpUserInfo());
-    next.setProxyJumpUserInfo(target.getProxyJumpUserInfo());
     next.setDaemonThread(target.daemon_thread);
     next.setThreadFactory(target.getThreadFactory());
     if (target.getLogger() != target.jsch.getInstanceLogger()) {

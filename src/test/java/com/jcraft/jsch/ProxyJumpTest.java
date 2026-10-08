@@ -274,42 +274,11 @@ class ProxyJumpTest {
   }
 
   @Test
-  void hopPromptsThroughProxyJumpUserInfoOnlyAndInheritsThreadSettings() throws Exception {
+  void hopGetsNoCredentialsButInheritsThreadSettings() throws Exception {
     JSch jsch = new JSch();
     Session target = jsch.getSession("user", "target");
     ThreadFactory factory = Thread::new;
     Logger logger = new JulLogger();
-    UserInfo prompts = new UserInfo() {
-      @Override
-      public String getPassphrase() {
-        return null;
-      }
-
-      @Override
-      public String getPassword() {
-        return null;
-      }
-
-      @Override
-      public boolean promptPassword(String message) {
-        return false;
-      }
-
-      @Override
-      public boolean promptPassphrase(String message) {
-        return false;
-      }
-
-      @Override
-      public boolean promptYesNo(String message) {
-        return false;
-      }
-
-      @Override
-      public void showMessage(String message) {
-        // nothing to show
-      }
-    };
     UserInfo targetOnly = new UserInfo() {
       @Override
       public String getPassphrase() {
@@ -343,18 +312,12 @@ class ProxyJumpTest {
     };
     target.setUserInfo(targetOnly);
     target.setPassword("target-only".getBytes(java.nio.charset.StandardCharsets.UTF_8));
-    Session silentHop =
-        new ProxyJump(target, "jump").createHop(new ProxyJump.Hop("u", "jump", 0), null, null);
-    assertNull(silentHop.getUserInfo(), "the target's UserInfo is never offered to a hop");
-    assertNull(silentHop.password, "a password set for the target is not offered to hops");
-    target.setProxyJumpUserInfo(prompts);
     target.setDaemonThread(true);
     target.setThreadFactory(factory);
     target.setLogger(logger);
     Session hop =
         new ProxyJump(target, "jump").createHop(new ProxyJump.Hop("u", "jump", 0), null, null);
-    assertSame(prompts, hop.getUserInfo(), "hops prompt through the ProxyJump UserInfo");
-    assertSame(prompts, hop.getProxyJumpUserInfo(), "and pass it on to hops of their own");
+    assertNull(hop.getUserInfo(), "the target's UserInfo is never offered to a hop");
     assertNull(hop.password, "a password set for the target is not offered to hops");
     assertTrue(hop.daemon_thread);
     assertSame(factory, hop.getThreadFactory());

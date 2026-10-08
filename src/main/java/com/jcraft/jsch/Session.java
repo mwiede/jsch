@@ -152,7 +152,6 @@ public class Session {
 
   private Proxy proxy = null;
   private UserInfo userinfo;
-  private UserInfo proxyJumpUserInfo;
 
   private String hostKeyAlias = null;
   private int serverAliveInterval = 0;
@@ -2986,20 +2985,6 @@ public class Session {
 
   public UserInfo getUserInfo() {
     return userinfo;
-  }
-
-  /**
-   * Sets the {@link UserInfo} that answers prompts from {@link ProxyJump} hops of this session,
-   * such as a bastion's password or an unknown host key. The session's own {@link #setUserInfo
-   * UserInfo} and {@link #setPassword password} are never offered to a hop; without a ProxyJump
-   * UserInfo, hops must authenticate without prompting.
-   */
-  public void setProxyJumpUserInfo(UserInfo userinfo) {
-    this.proxyJumpUserInfo = userinfo;
-  }
-
-  public UserInfo getProxyJumpUserInfo() {
-    return proxyJumpUserInfo;
   }
 
   public void setInputStream(InputStream in) {
