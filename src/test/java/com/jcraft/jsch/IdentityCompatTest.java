@@ -1,7 +1,7 @@
 package com.jcraft.jsch;
 
-import static com.jcraft.jsch.ResourceUtil.getResourceFile;
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.util.stream.Stream;
