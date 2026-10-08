@@ -460,7 +460,7 @@ public abstract class KeyPair {
    * Checks whether public key and private key are compatible (if both are supplied), and throws an
    * exception if they aren't
    */
-  public final void validateKeyCompat() throws JSchException {
+  final void validateKeyCompat() throws JSchException {
     byte[] pub = getPublicKeyBlob();
     byte[] prv = getPublicKeyBlobFromPriv();
     if (pub != null && prv != null && pub != prv && !Util.arraysequals(pub, prv)) {
@@ -517,7 +517,7 @@ public abstract class KeyPair {
     if (pubblob == null) {
       // needed to shut up SonarQube warning...
       if (instLogger.getLogger().isEnabled(Logger.ERROR)) {
-        instLogger.getLogger().log(Logger.ERROR, "no public key supplied", e);
+        instLogger.getLogger().log(Logger.ERROR, "no public key supplied");
       }
       return;
     }
