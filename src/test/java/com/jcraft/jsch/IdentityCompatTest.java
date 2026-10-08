@@ -5,7 +5,6 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.util.stream.Stream;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -172,7 +171,8 @@ public class IdentityCompatTest {
   void testCheckPrivKeyWithMatchingPublicPart(String privateK, String publicK, byte[] secret)
       throws Exception {
     JSch jsch = new JSch();
-    jsch.addIdentity(getResourceFile(privateK), getResourceFile(publicK), secret);
+    assertDoesNotThrow(
+        () -> jsch.addIdentity(getResourceFile(privateK), getResourceFile(publicK), secret));
   }
 
   /**
@@ -185,7 +185,8 @@ public class IdentityCompatTest {
   void testCheckPrivKeyWithMatchingPublicPartB(String privateK, String publicK, byte[] secret)
       throws Exception {
     JSch jsch = new JSch();
-    jsch.addIdentity("test", getResourceBytes(privateK), getResourceBytes(publicK), secret);
+    assertDoesNotThrow(() -> jsch.addIdentity("test", getResourceBytes(privateK),
+        getResourceBytes(publicK), secret));
   }
 
   static Stream<Arguments> keyArgsNonMatching() {
