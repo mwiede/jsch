@@ -535,8 +535,8 @@ public class Session {
         socket.setSoTimeout(timeout);
       }
       // A ProxyJump tunnel bounds the handshake reads itself; hand over to the session timeout.
-      if (proxy instanceof ReadTimeoutProxy) {
-        ((ReadTimeoutProxy) proxy).setReadTimeout(timeout);
+      if (proxy instanceof ProxyJump) {
+        ((ProxyJump) proxy).setReadTimeout(timeout);
       }
 
       isAuthed = true;
@@ -3091,8 +3091,8 @@ public class Session {
       if (timeout < 0) {
         throw new JSchException("invalid timeout value");
       }
-      if (proxy instanceof ReadTimeoutProxy) {
-        ((ReadTimeoutProxy) proxy).setReadTimeout(timeout);
+      if (proxy instanceof ProxyJump) {
+        ((ProxyJump) proxy).setReadTimeout(timeout);
       }
       this.timeout = timeout;
       return;

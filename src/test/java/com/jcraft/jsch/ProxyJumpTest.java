@@ -241,32 +241,11 @@ class ProxyJumpTest {
   void sessionTimeoutReachesTunnel() throws Exception {
     List<Integer> timeouts = new ArrayList<>();
     Session session = new JSch().getSession("u", "target");
-    session.setProxy(new ReadTimeoutProxy() {
+    session.setProxy(new ProxyJump(session, "hop") {
       @Override
-      public void setReadTimeout(int timeout) {
+      void setReadTimeout(int timeout) {
         timeouts.add(timeout);
       }
-
-      @Override
-      public void connect(SocketFactory socketFactory, String host, int port, int timeout) {}
-
-      @Override
-      public java.io.InputStream getInputStream() {
-        return null;
-      }
-
-      @Override
-      public java.io.OutputStream getOutputStream() {
-        return null;
-      }
-
-      @Override
-      public Socket getSocket() {
-        return null;
-      }
-
-      @Override
-      public void close() {}
     });
     session.setTimeout(1234);
     session.setTimeout(0);

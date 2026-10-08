@@ -55,7 +55,7 @@ import java.util.concurrent.TimeUnit;
  * <p>
  * A proxy instance serves one session, which serializes {@link #connect} and {@link #close} on it.
  */
-public class ProxyJump implements ReadTimeoutProxy {
+public class ProxyJump implements Proxy {
   private static final int DEFAULT_PORT = 22;
   private static final String URI_PREFIX = "ssh://";
   // Match OpenSSH's stdio-forward channel defaults (channels.h CHAN_TCP_*_DEFAULT):
@@ -66,12 +66,20 @@ public class ProxyJump implements ReadTimeoutProxy {
 
   private final Session target;
   private final List<Hop> hops;
+  private final Session fixedHop; // a hop the caller owns, or null to create the hops
   private final List<Session> sessions = new ArrayList<>();
-  private volatile ChannelProxy destination;
+  private volatile Tunnel destination;
 
   public ProxyJump(Session target, String specification) throws JSchException {
     this.target = target;
     this.hops = parse(specification);
+    this.fixedHop = null;
+  }
+
+  private ProxyJump(Session hop) {
+    this.target = null;
+    this.hops = Collections.emptyList();
+    this.fixedHop = hop;
   }
 
   /**
@@ -80,12 +88,23 @@ public class ProxyJump implements ReadTimeoutProxy {
    * its own proxy instance.
    */
   public static Proxy through(Session hop) {
-    return new ChannelProxy(Objects.requireNonNull(hop, "hop"));
+    return new ProxyJump(Objects.requireNonNull(hop, "hop"));
   }
 
   @Override
   public void connect(SocketFactory socketFactory, String host, int port, int timeout)
       throws JSchException {
+    if (fixedHop != null) {
+      Tunnel tunnel = new Tunnel(fixedHop);
+      destination = tunnel;
+      try {
+        tunnel.connect(host, port, timeout);
+      } catch (JSchException | RuntimeException e) {
+        close();
+        throw e;
+      }
+      return;
+    }
     checkForCycle();
     try {
       Session previous = null;
@@ -98,9 +117,9 @@ public class ProxyJump implements ReadTimeoutProxy {
       for (Session session : sessions) {
         session.connect(remaining(deadline));
       }
-      ChannelProxy tunnel = new ChannelProxy(previous);
+      Tunnel tunnel = new Tunnel(previous);
       destination = tunnel;
-      tunnel.connect(socketFactory, host, port, remaining(deadline));
+      tunnel.connect(host, port, remaining(deadline));
       // Bound each read of the target handshake; Session replaces this once it is authenticated.
       tunnel.setReadTimeout(budget);
     } catch (JSchException | RuntimeException e) {
@@ -151,7 +170,7 @@ public class ProxyJump implements ReadTimeoutProxy {
     }
     if (previous != null) {
       // Like ssh -J, only the first hop keeps a ProxyJump of its own Host config.
-      next.setProxy(new ChannelProxy(previous));
+      next.setProxy(through(previous));
     } else if (socketFactory != null) {
       next.setSocketFactory(socketFactory);
     }
@@ -180,13 +199,13 @@ public class ProxyJump implements ReadTimeoutProxy {
 
   @Override
   public InputStream getInputStream() {
-    ChannelProxy tunnel = destination;
+    Tunnel tunnel = destination;
     return tunnel == null ? null : tunnel.getInputStream();
   }
 
   @Override
   public OutputStream getOutputStream() {
-    ChannelProxy tunnel = destination;
+    Tunnel tunnel = destination;
     return tunnel == null ? null : tunnel.getOutputStream();
   }
 
@@ -195,12 +214,12 @@ public class ProxyJump implements ReadTimeoutProxy {
     return null;
   }
 
-  @Override
-  public void setReadTimeout(int timeout) throws JSchException {
+  /** Bounds each read from the tunnel; Session calls this when its read timeout changes. */
+  void setReadTimeout(int timeout) throws JSchException {
     if (timeout < 0) {
       throw new JSchException("invalid timeout value");
     }
-    ChannelProxy tunnel = destination;
+    Tunnel tunnel = destination;
     if (tunnel != null) {
       tunnel.setReadTimeout(timeout);
     }
@@ -208,7 +227,7 @@ public class ProxyJump implements ReadTimeoutProxy {
 
   @Override
   public void close() {
-    ChannelProxy tunnel = destination;
+    Tunnel tunnel = destination;
     if (tunnel != null) {
       tunnel.close();
       destination = null;
@@ -377,20 +396,18 @@ public class ProxyJump implements ReadTimeoutProxy {
     }
   }
 
-  /** Tunnels one session through a direct-tcpip channel of a hop, which it never disconnects. */
-  private static final class ChannelProxy implements ReadTimeoutProxy {
+  /** Carries one session through a direct-tcpip channel of a hop, which it never disconnects. */
+  private static final class Tunnel {
     private final Session hop;
     private ChannelDirectTCPIP channel;
     private volatile TunnelBuffer in;
     private OutputStream out;
 
-    ChannelProxy(Session hop) {
+    Tunnel(Session hop) {
       this.hop = hop;
     }
 
-    @Override
-    public void connect(SocketFactory socketFactory, String host, int port, int timeout)
-        throws JSchException {
+    void connect(String host, int port, int timeout) throws JSchException {
       if (!hop.isConnected()) {
         throw new JSchException("ProxyJump hop " + hop.getHost() + " is not connected");
       }
@@ -425,33 +442,22 @@ public class ProxyJump implements ReadTimeoutProxy {
       }
     }
 
-    @Override
-    public InputStream getInputStream() {
+    InputStream getInputStream() {
       return in;
     }
 
-    @Override
-    public OutputStream getOutputStream() {
+    OutputStream getOutputStream() {
       return out;
     }
 
-    @Override
-    public Socket getSocket() {
-      return null;
-    }
-
-    @Override
-    public void setReadTimeout(int timeout) throws JSchException {
-      if (timeout < 0) {
-        throw new JSchException("invalid timeout value");
-      }
-      if (in != null) {
-        in.setTimeout(timeout);
+    void setReadTimeout(int timeout) {
+      TunnelBuffer buffer = in;
+      if (buffer != null) {
+        buffer.setTimeout(timeout);
       }
     }
 
-    @Override
-    public void close() {
+    void close() {
       if (channel != null) {
         channel.disconnect();
         channel = null;
