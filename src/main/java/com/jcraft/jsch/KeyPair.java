@@ -514,6 +514,13 @@ public abstract class KeyPair {
    */
   public void writeSECSHPublicKey(OutputStream out, String comment) {
     byte[] pubblob = getPublicKeyBlob();
+    if (pubblob == null) {
+      // needed to shut up SonarQube warning...
+      if (instLogger.getLogger().isEnabled(Logger.ERROR)) {
+        instLogger.getLogger().log(Logger.ERROR, "no public key supplied", e);
+      }
+      return;
+    }
     byte[] pub = Util.toBase64(pubblob, 0, pubblob.length, true);
     try {
       out.write(Util.str2byte("---- BEGIN SSH2 PUBLIC KEY ----"));

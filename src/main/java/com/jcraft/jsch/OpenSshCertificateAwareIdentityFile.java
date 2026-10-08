@@ -211,7 +211,6 @@ class OpenSshCertificateAwareIdentityFile implements Identity {
 
   @Override
   public boolean setPassphrase(byte[] passphrase) throws JSchException {
-    byte[] pub = kpair.getPublicKeyBlob();
     boolean ret = kpair.decrypt(passphrase);
     if (ret)
       kpair.validateKeyCompat();
