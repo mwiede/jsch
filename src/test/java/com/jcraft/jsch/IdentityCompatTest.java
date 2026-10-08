@@ -168,8 +168,7 @@ public class IdentityCompatTest {
    */
   @ParameterizedTest(name = "File private key {0} is compatible with {1} certificate or public key")
   @MethodSource("keyArgs")
-  void testCheckPrivKeyWithMatchingPublicPart(String privateK, String publicK, byte[] secret)
-      throws Exception {
+  void testCheckPrivKeyWithMatchingPublicPart(String privateK, String publicK, byte[] secret) {
     JSch jsch = new JSch();
     assertDoesNotThrow(
         () -> jsch.addIdentity(getResourceFile(privateK), getResourceFile(publicK), secret));
@@ -182,8 +181,7 @@ public class IdentityCompatTest {
   @ParameterizedTest(
       name = "Byte[] private key {0} is compatible with {1} certificate or public key")
   @MethodSource("keyArgs")
-  void testCheckPrivKeyWithMatchingPublicPartB(String privateK, String publicK, byte[] secret)
-      throws Exception {
+  void testCheckPrivKeyWithMatchingPublicPartB(String privateK, String publicK, byte[] secret) {
     JSch jsch = new JSch();
     assertDoesNotThrow(() -> jsch.addIdentity("test", getResourceBytes(privateK),
         getResourceBytes(publicK), secret));
