@@ -149,6 +149,9 @@ public class Session {
   SocketFactory socket_factory = null;
 
   private Hashtable<String, String> config = null;
+  private ConfigRepository.Config resolvedConfig;
+  private List<Identity> configIdentities;
+  private List<Identity> trailingConfigIdentities;
 
   private Proxy proxy = null;
   private UserInfo userinfo;
@@ -3599,9 +3602,22 @@ public class Session {
    * @see JSch#getIdentityRepository()
    */
   IdentityRepository getIdentityRepository() {
-    if (identityRepository == null)
+    if (identityRepository != null) {
+      return identityRepository;
+    }
+    if (configIdentities == null) {
       return jsch.getIdentityRepository();
-    return identityRepository;
+    }
+    // Bind late, so the session follows a repository set on JSch after getSession().
+    IdentityRepositoryWrapper wrapper =
+        new IdentityRepositoryWrapper(jsch.getIdentityRepository(), true);
+    for (Identity identity : configIdentities) {
+      wrapper.add(identity);
+    }
+    for (Identity identity : trailingConfigIdentities) {
+      wrapper.addTrailing(identity);
+    }
+    return wrapper;
   }
 
   /**
@@ -3647,94 +3663,91 @@ public class Session {
       return;
     }
 
-    ConfigRepository.Config config = configRepository.getConfig(org_host);
+    ConfigRepository.Config hostConfig = configRepository.getConfig(org_host, username);
+    resolvedConfig = hostConfig;
 
     String value = null;
 
     if (username == null) {
-      value = config.getUser();
+      value = hostConfig.getUser();
       if (value != null)
         username = value;
     }
 
-    value = config.getHostname();
-    if (value != null)
+    value = hostConfig.getHostname();
+    if (value != null) {
       host = value;
+      if (expandsTokens(hostConfig)) {
+        host = ConfigTokenExpander.expandTokens(value, token -> token == 'h' ? org_host : null);
+      }
+    }
 
-    int port = config.getPort();
+    int port = hostConfig.getPort();
     if (port != -1)
       this.port = port;
 
-    checkConfig(config, "kex");
-    checkConfig(config, "server_host_key");
-    checkConfig(config, "prefer_known_host_key_types");
-    checkConfig(config, "enable_server_sig_algs");
-    checkConfig(config, "enable_ext_info_in_auth");
-    checkConfig(config, "enable_strict_kex");
-    checkConfig(config, "require_strict_kex");
-    checkConfig(config, "enable_pubkey_auth_query");
-    checkConfig(config, "try_additional_pubkey_algorithms");
-    checkConfig(config, "enable_auth_none");
-    checkConfig(config, "use_sftp_write_flush_workaround");
+    checkConfig(hostConfig, "kex");
+    checkConfig(hostConfig, "server_host_key");
+    checkConfig(hostConfig, "prefer_known_host_key_types");
+    checkConfig(hostConfig, "enable_server_sig_algs");
+    checkConfig(hostConfig, "enable_ext_info_in_auth");
+    checkConfig(hostConfig, "enable_strict_kex");
+    checkConfig(hostConfig, "require_strict_kex");
+    checkConfig(hostConfig, "enable_pubkey_auth_query");
+    checkConfig(hostConfig, "try_additional_pubkey_algorithms");
+    checkConfig(hostConfig, "enable_auth_none");
+    checkConfig(hostConfig, "use_sftp_write_flush_workaround");
 
-    checkConfig(config, "cipher.c2s");
-    checkConfig(config, "cipher.s2c");
-    checkConfig(config, "mac.c2s");
-    checkConfig(config, "mac.s2c");
-    checkConfig(config, "compression.c2s");
-    checkConfig(config, "compression.s2c");
-    checkConfig(config, "compression_level");
+    checkConfig(hostConfig, "cipher.c2s");
+    checkConfig(hostConfig, "cipher.s2c");
+    checkConfig(hostConfig, "mac.c2s");
+    checkConfig(hostConfig, "mac.s2c");
+    checkConfig(hostConfig, "compression.c2s");
+    checkConfig(hostConfig, "compression.s2c");
+    checkConfig(hostConfig, "compression_level");
 
-    checkConfig(config, "StrictHostKeyChecking");
-    checkConfig(config, "HashKnownHosts");
-    checkConfig(config, "PreferredAuthentications");
-    checkConfig(config, "PubkeyAcceptedAlgorithms");
-    checkConfig(config, "FingerprintHash");
-    checkConfig(config, "MaxAuthTries");
-    checkConfig(config, "ClearAllForwardings");
+    checkConfig(hostConfig, "StrictHostKeyChecking");
+    checkConfig(hostConfig, "HashKnownHosts");
+    checkConfig(hostConfig, "PreferredAuthentications");
+    checkConfig(hostConfig, "PubkeyAcceptedAlgorithms");
+    checkConfig(hostConfig, "FingerprintHash");
+    checkConfig(hostConfig, "MaxAuthTries");
+    checkConfig(hostConfig, "ClearAllForwardings");
 
-    value = config.getValue("HostKeyAlias");
+    value = hostConfig.getValue("HostKeyAlias");
     if (value != null)
       this.setHostKeyAlias(value);
 
-    value = config.getValue("UserKnownHostsFile");
+    value = hostConfig.getValue("UserKnownHostsFile");
     if (value != null) {
+      String path = expandConfigPath(hostConfig, value);
       KnownHosts kh = new KnownHosts(jsch);
-      kh.setKnownHosts(value);
+      kh.setKnownHosts(path);
       this.setHostKeyRepository(kh);
     }
 
-    String[] values = config.getValues("IdentityFile");
-    if (values != null) {
-      String[] global = configRepository.getConfig("").getValues("IdentityFile");
-      if (global != null) {
-        for (int i = 0; i < global.length; i++) {
-          jsch.addIdentity(global[i]);
+    String[] values = hostConfig.getValues("IdentityFile");
+    if (values != null && values.length > 0) {
+      // Identities from sections every host matches (like Host *) come after the ones set
+      // programmatically, as before; host-specific ones come first.
+      List<String> global = Arrays.asList(configRepository.getConfig("").getValues("IdentityFile"));
+      List<Identity> specific = new ArrayList<>();
+      List<Identity> trailing = new ArrayList<>();
+      for (String valuePath : values) {
+        if ("none".equalsIgnoreCase(valuePath)) {
+          continue;
         }
-      } else {
-        global = new String[0];
+        Identity identity = IdentityFile.newInstance(expandConfigPath(hostConfig, valuePath), null,
+            jsch.instLogger);
+        (global.contains(valuePath) ? trailing : specific).add(identity);
       }
-      if (values.length - global.length > 0) {
-        IdentityRepositoryWrapper ir =
-            new IdentityRepositoryWrapper(jsch.getIdentityRepository(), true);
-        for (int i = 0; i < values.length; i++) {
-          String ifile = values[i];
-          for (int j = 0; j < global.length; j++) {
-            if (!ifile.equals(global[j]))
-              continue;
-            ifile = null;
-            break;
-          }
-          if (ifile == null)
-            continue;
-          Identity identity = IdentityFile.newInstance(ifile, null, jsch.instLogger);
-          ir.add(identity);
-        }
-        this.setIdentityRepository(ir);
+      if (!specific.isEmpty() || !trailing.isEmpty()) {
+        configIdentities = specific;
+        trailingConfigIdentities = trailing;
       }
     }
 
-    value = config.getValue("ServerAliveInterval");
+    value = hostConfig.getValue("ServerAliveInterval");
     if (value != null) {
       try {
         this.setServerAliveInterval(Integer.parseInt(value));
@@ -3742,7 +3755,7 @@ public class Session {
       }
     }
 
-    value = config.getValue("ConnectTimeout");
+    value = hostConfig.getValue("ConnectTimeout");
     if (value != null) {
       try {
         setTimeout(Integer.parseInt(value));
@@ -3750,33 +3763,114 @@ public class Session {
       }
     }
 
-    value = config.getValue("MaxAuthTries");
+    value = hostConfig.getValue("MaxAuthTries");
     if (value != null) {
       setConfig("MaxAuthTries", value);
     }
 
-    value = config.getValue("ClearAllForwardings");
+    value = hostConfig.getValue("ClearAllForwardings");
     if (value != null) {
       setConfig("ClearAllForwardings", value);
     }
   }
 
-  private void applyConfigChannel(ChannelSession channel) throws JSchException {
-    ConfigRepository configRepository = jsch.getConfigRepository();
-    if (configRepository == null) {
+  /** Tokens and ${ENV} are OpenSSH syntax, so values of other ConfigRepositories stay literal. */
+  private static boolean expandsTokens(ConfigRepository.Config config) {
+    return config instanceof OpenSSHConfig.MyConfig;
+  }
+
+  private String expandConfigPath(ConfigRepository.Config config, String value)
+      throws JSchException {
+    return expandsTokens(config) ? ConfigTokenExpander.expandPath(value, this::resolveConfigToken)
+        : value;
+  }
+
+  String resolveConfigToken(char token) {
+    switch (token) {
+      case 'C':
+        return connectionHash();
+      case 'd':
+        return Util.getSystemProperty("user.home");
+      case 'h':
+        return host;
+      case 'i':
+        return LocalIdentity.uid();
+      case 'j':
+        String jump = resolvedConfig == null ? null : resolvedConfig.getValue("ProxyJump");
+        return jump == null ? "" : jump;
+      case 'k':
+        return hostKeyAlias != null ? hostKeyAlias : org_host;
+      case 'L':
+        String local = LocalIdentity.hostname();
+        return local == null ? null : local.split("\\.", 2)[0];
+      case 'l':
+        return LocalIdentity.hostname();
+      case 'n':
+        return org_host;
+      case 'p':
+        return Integer.toString(port);
+      case 'r':
+        return username != null ? username : Util.getSystemProperty("user.name");
+      case 'u':
+        return Util.getSystemProperty("user.name");
+      default:
+        return null;
+    }
+  }
+
+  /** OpenSSH's %C: SHA-1 of %l%h%p%r%j in lowercase hex. */
+  private String connectionHash() {
+    String local = LocalIdentity.hostname();
+    if (local == null) {
+      return null;
+    }
+    StringBuilder input = new StringBuilder(local).append(host).append(port)
+        .append(resolveConfigToken('r')).append(resolveConfigToken('j'));
+    try {
+      // OpenSSH defines %C as the SHA-1 of this string; it only names files, it protects nothing.
+      String hashClass = getConfig("sha-1");
+      if (hashClass == null) {
+        throw new JSchException("no sha-1 hash class is configured");
+      }
+      HASH sha1 =
+          Class.forName(hashClass).asSubclass(HASH.class).getDeclaredConstructor().newInstance();
+      sha1.init();
+      byte[] bytes = Util.str2byte(input.toString());
+      sha1.update(bytes, 0, bytes.length);
+      StringBuilder hex = new StringBuilder();
+      byte[] digest = sha1.digest();
+      if (digest.length != 20) {
+        throw new JSchException("the configured sha-1 class is not SHA-1");
+      }
+      for (byte b : digest) {
+        hex.append(String.format(Locale.ROOT, "%02x", b & 0xff));
+      }
+      return hex.toString();
+    } catch (Exception | LinkageError e) {
+      // The token then fails closed; say why, since the generic "unsupported token" would mislead.
+      if (getLogger().isEnabled(Logger.ERROR)) {
+        getLogger().log(Logger.ERROR,
+            "Cannot compute config token %C with the configured sha-1 class: " + e);
+      }
+      return null;
+    }
+  }
+
+  void applyConfigChannel(ChannelSession channel) {
+    if (resolvedConfig == null) {
       return;
     }
 
-    ConfigRepository.Config config = configRepository.getConfig(org_host);
+    ConfigRepository.Config hostConfig = resolvedConfig;
 
     String value = null;
 
-    value = config.getValue("ForwardAgent");
+    value = hostConfig.getValue("ForwardAgent");
     if (value != null) {
       channel.setAgentForwarding(value.equals("yes"));
     }
 
-    value = config.getValue("RequestTTY");
+    value = hostConfig.getValue("RequestTTY");
     if (value != null) {
       channel.setPty(value.equals("yes"));
     }
@@ -3787,21 +3881,20 @@ public class Session {
     if (getConfig("ClearAllForwardings").equals("yes"))
       return;
 
-    ConfigRepository configRepository = jsch.getConfigRepository();
-    if (configRepository == null) {
+    if (resolvedConfig == null) {
       return;
     }
 
-    ConfigRepository.Config config = configRepository.getConfig(org_host);
+    ConfigRepository.Config hostConfig = resolvedConfig;
 
-    String[] values = config.getValues("LocalForward");
+    String[] values = hostConfig.getValues("LocalForward");
     if (values != null) {
       for (int i = 0; i < values.length; i++) {
         setPortForwardingL(values[i]);
       }
     }
 
-    values = config.getValues("RemoteForward");
+    values = hostConfig.getValues("RemoteForward");
     if (values != null) {
       for (int i = 0; i < values.length; i++) {
         setPortForwardingR(values[i]);

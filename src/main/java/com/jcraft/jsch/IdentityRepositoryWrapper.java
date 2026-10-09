@@ -36,6 +36,8 @@ import java.util.Vector;
 class IdentityRepositoryWrapper implements IdentityRepository {
   private IdentityRepository ir;
   private Vector<Identity> cache = new Vector<>();
+  // Offered after the wrapped repository's identities.
+  private Vector<Identity> trailing = new Vector<>();
   private boolean keep_in_cache = false;
 
   IdentityRepositoryWrapper(IdentityRepository ir) {
@@ -70,6 +72,7 @@ class IdentityRepositoryWrapper implements IdentityRepository {
   @Override
   public void removeAll() {
     cache.removeAllElements();
+    trailing.removeAllElements();
     ir.removeAll();
   }
 
@@ -84,6 +87,7 @@ class IdentityRepositoryWrapper implements IdentityRepository {
     for (int i = 0; i < tmp.size(); i++) {
       result.add(tmp.elementAt(i));
     }
+    result.addAll(trailing);
     return result;
   }
 
@@ -96,6 +100,10 @@ class IdentityRepositoryWrapper implements IdentityRepository {
       }
     } else
       cache.addElement(identity);
+  }
+
+  void addTrailing(Identity identity) {
+    trailing.addElement(identity);
   }
 
   void check() {
