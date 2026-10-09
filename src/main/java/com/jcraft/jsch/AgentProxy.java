@@ -179,7 +179,7 @@ class AgentProxy {
     return rcode == SSH_AGENT_SUCCESS;
   }
 
-  synchronized void removeAllIdentities() {
+  synchronized boolean removeAllIdentities() {
     int required_size = 1 + 4;
     buffer.reset();
     buffer.checkFreeSize(required_size);
@@ -193,9 +193,8 @@ class AgentProxy {
       buffer.putByte(SSH_AGENT_FAILURE);
     }
 
-    // int rcode = buffer.getByte();
-
-    // System.out.println(rcode == SSH_AGENT_SUCCESS);
+    int rcode = buffer.getByte();
+    return rcode == SSH_AGENT_SUCCESS;
   }
 
   synchronized boolean addIdentity(byte[] identity) {

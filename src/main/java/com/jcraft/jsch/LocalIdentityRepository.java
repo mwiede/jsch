@@ -124,6 +124,12 @@ class LocalIdentityRepository implements IdentityRepository {
     identities.removeAllElements();
   }
 
+  @Override
+  public synchronized boolean removeAllIdentities() {
+    removeAll();
+    return true;
+  }
+
   private void removeDupulicates() {
     Vector<byte[]> v = new Vector<>();
     int len = identities.size();
