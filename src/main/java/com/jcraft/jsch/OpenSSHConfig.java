@@ -51,6 +51,7 @@ import java.util.stream.Stream;
  * <li>User</li>
  * <li>Hostname</li>
  * <li>Port</li>
+ * <li>ProxyJump</li>
  * <li>PreferredAuthentications</li>
  * <li>PubkeyAcceptedAlgorithms</li>
  * <li>FingerprintHash</li>
