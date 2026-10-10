@@ -69,7 +69,10 @@ public abstract class KeyPair {
   private static final String OPENSSH_V1_DEFAULT_CIPHERNAME = "aes256-ctr";
   private static final String OPENSSH_V1_KDFNAME = "bcrypt";
   private static final int OPENSSH_V1_SALT_LEN = 16;
-  private static final int OPENSSH_V1_DEFAULT_ROUNDS = 16;
+  // Match OpenSSH behavior:
+  // https://github.com/openssh/openssh-portable/commit/f938c78d490cb7556aa8ca1625e9b9bd1f963ed3
+  private static final int OPENSSH_V1_DEFAULT_ROUNDS = 32;
+  private static final int OPENSSH_V1_MAX_ROUNDS = 1 << 20;
 
   public static KeyPair genKeyPair(JSch jsch, int type) throws JSchException {
     return genKeyPair(jsch, type, 1024);
@@ -250,6 +253,14 @@ public abstract class KeyPair {
     }
     if (cipher == null) {
       cipher = OPENSSH_V1_DEFAULT_CIPHERNAME;
+    }
+    if (rounds <= 0) {
+      rounds = OPENSSH_V1_DEFAULT_ROUNDS;
+    }
+    // Match OpenSSH behavior:
+    // https://github.com/openssh/openssh-portable/commit/f938c78d490cb7556aa8ca1625e9b9bd1f963ed3
+    if (rounds > OPENSSH_V1_MAX_ROUNDS) {
+      throw new JSchException("invalid number of rounds specified: " + rounds);
     }
 
     byte[] cipherName = OPENSSH_V1_NONE;

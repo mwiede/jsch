@@ -3,6 +3,7 @@ package com.jcraft.jsch;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertIterableEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -134,6 +135,49 @@ public class OpenSshCertificateHostKeyVerifierTest {
     assertTrue(cert.getPrincipals().contains("host1.example.com"), "Should contain host1");
     assertTrue(cert.getPrincipals().contains("host2.example.com"), "Should contain host2");
     assertTrue(cert.getPrincipals().contains("10.0.0.1"), "Should contain IP");
+  }
+
+  @Test
+  public void testCheckHostCertificate_withWildcardPrincipal() throws Exception {
+    OpenSshCertificate certificate = parseCertificate(
+        "src/test/resources/certificates/host/ssh_host_ed25519_wildcard_key-cert.pub");
+    String caPublicKey =
+        new String(Util.fromFile("src/test/resources/certificates/ca/ca_jsch_key.pub"),
+            StandardCharsets.UTF_8).trim();
+    String knownHosts = "@cert-authority *.EXAMPLE.COM,*.EXAMPLE.ORG " + caPublicKey;
+
+    JSch jsch = new JSch();
+    jsch.setKnownHosts(new ByteArrayInputStream(knownHosts.getBytes(StandardCharsets.UTF_8)));
+
+    Session matchingSession = jsch.getSession("user", "HOST.EXAMPLE.COM");
+    assertDoesNotThrow(
+        () -> OpenSshCertificateHostKeyVerifier.checkHostCertificate(matchingSession, certificate));
+
+    Session nonMatchingSession = jsch.getSession("user", "HOST.EXAMPLE.ORG");
+    JSchException exception =
+        assertThrows(JSchException.class, () -> OpenSshCertificateHostKeyVerifier
+            .checkHostCertificate(nonMatchingSession, certificate));
+    assertTrue(exception.getMessage().contains("invalid principal"));
+  }
+
+  @Test
+  public void testCheckHostCertificate_withMatchingSubsequentWildcardPrincipal() throws Exception {
+    OpenSshCertificate certificate = parseCertificate(
+        "src/test/resources/certificates/host/ssh_host_ed25519_multiple_wildcard_key-cert.pub");
+    assertIterableEquals(Arrays.asList("unrelated.example.net", "*.example.com", "*.EXAMPLE.ORG"),
+        certificate.getPrincipals());
+
+    String caPublicKey =
+        new String(Util.fromFile("src/test/resources/certificates/ca/ca_jsch_key.pub"),
+            StandardCharsets.UTF_8).trim();
+    String knownHosts = "@cert-authority *.EXAMPLE.COM " + caPublicKey;
+
+    JSch jsch = new JSch();
+    jsch.setKnownHosts(new ByteArrayInputStream(knownHosts.getBytes(StandardCharsets.UTF_8)));
+
+    Session session = jsch.getSession("user", "HOST.EXAMPLE.COM");
+    assertDoesNotThrow(
+        () -> OpenSshCertificateHostKeyVerifier.checkHostCertificate(session, certificate));
   }
 
   // ==================== Tests for RSA CA signature algorithm (issue #1085) ====================

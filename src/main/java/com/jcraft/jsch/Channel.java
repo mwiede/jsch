@@ -46,6 +46,14 @@ public abstract class Channel {
 
   private static final AtomicInteger index = new AtomicInteger();
 
+  // sanity cap for setLocalPacketSize: lmpsize is both used to allocate a Buffer of that size
+  // (e.g. ChannelSftp.start()) and advertised to the server as the max size of a single
+  // CHANNEL_DATA payload it may send us. That payload is wrapped in an SSH packet together with
+  // ~9 bytes of channel-data framing plus padding, so it must stay comfortably under
+  // Session.PACKET_MAX_SIZE (RFC 4253 6.1 Maximum Packet Length) or the resulting packet gets
+  // discarded by the transport layer, killing the connection.
+  private static final int MAX_LOCAL_PACKET_SIZE = Session.PACKET_MAX_SIZE - 4096;
+
   int id;
   volatile int recipient = -1;
   protected byte[] type = Util.str2byte("foo");
@@ -406,16 +414,66 @@ public abstract class Channel {
     }
   }
 
-  void setLocalWindowSizeMax(int foo) {
-    this.lwsize_max = foo;
+  /**
+   * Sets the maximum local window size.
+   *
+   * <p>
+   * Both the maximum local window size and the initial local window size are set to the specified
+   * {@code size}.
+   * </p>
+   *
+   * @param size the maximum local window size in bytes
+   * @throws JSchException if the channel is already connected or if {@code size} is not positive
+   */
+  public void setLocalWindowSizeMax(int size) throws JSchException {
+    if (isConnected()) {
+      throw new JSchException("local window size max cannot be changed after channel is connected");
+    }
+    if (size <= 0) {
+      throw new JSchException("local window size max must be positive: " + size);
+    }
+    this.lwsize_max = size;
+    this.lwsize = size;
+  }
+
+  /**
+   * Gets the maximum local window size.
+   *
+   * @return the maximum local window size in bytes
+   */
+  public int getLocalWindowSizeMax() {
+    return this.lwsize_max;
   }
 
   void setLocalWindowSize(int foo) {
     this.lwsize = foo;
   }
 
-  void setLocalPacketSize(int foo) {
-    this.lmpsize = foo;
+  /**
+   * Sets the maximum local packet size.
+   *
+   * @param size the maximum local packet size in bytes
+   * @throws JSchException if the channel is already connected, if {@code size} is not positive, or
+   *         if {@code size} exceeds the maximum allowed packet size
+   */
+  public void setLocalPacketSize(int size) throws JSchException {
+    if (isConnected()) {
+      throw new JSchException("local packet size cannot be changed after channel is connected");
+    }
+    if (size <= 0 || size > MAX_LOCAL_PACKET_SIZE) {
+      throw new JSchException("local packet size must be positive and not exceed "
+          + MAX_LOCAL_PACKET_SIZE + ": " + size);
+    }
+    this.lmpsize = size;
+  }
+
+  /**
+   * Gets the maximum local packet size.
+   *
+   * @return the maximum local packet size in bytes
+   */
+  public int getLocalPacketSize() {
+    return this.lmpsize;
   }
 
   synchronized void setRemoteWindowSize(long foo) {

@@ -273,4 +273,77 @@ public class HostKeyTest {
     assertFalse(hostKey.isWildcardMatched("[host.example.com]:22"),
         "Should not match different port");
   }
+
+  @Test
+  public void testMatchesWildcardPattern_openSshVectors() {
+    assertTrue(HostKey.matchesWildcardPattern("*", ""));
+    assertTrue(HostKey.matchesWildcardPattern("**", ""));
+    assertTrue(HostKey.matchesWildcardPattern("***", ""));
+    assertFalse(HostKey.matchesWildcardPattern("?", ""));
+    assertFalse(HostKey.matchesWildcardPattern("*?", ""));
+    assertFalse(HostKey.matchesWildcardPattern("?*", ""));
+    assertFalse(HostKey.matchesWildcardPattern("**a*", ""));
+    assertTrue(HostKey.matchesWildcardPattern("?", "a"));
+    assertTrue(HostKey.matchesWildcardPattern("a?", "aa"));
+    assertTrue(HostKey.matchesWildcardPattern("*", "a"));
+    assertTrue(HostKey.matchesWildcardPattern("a*", "aa"));
+    assertTrue(HostKey.matchesWildcardPattern("?*", "aa"));
+    assertTrue(HostKey.matchesWildcardPattern("?a", "aa"));
+    assertTrue(HostKey.matchesWildcardPattern("*a", "aa"));
+    assertFalse(HostKey.matchesWildcardPattern("a?", "ba"));
+    assertFalse(HostKey.matchesWildcardPattern("a*", "ba"));
+    assertFalse(HostKey.matchesWildcardPattern("?a", "ab"));
+    assertFalse(HostKey.matchesWildcardPattern("*a", "ab"));
+    assertTrue(HostKey.matchesWildcardPattern("**", "aa"));
+    assertTrue(HostKey.matchesWildcardPattern("a***b", "ab"));
+    assertTrue(HostKey.matchesWildcardPattern("a***b", "axb"));
+    assertTrue(HostKey.matchesWildcardPattern("a***b", "axxb"));
+    assertFalse(HostKey.matchesWildcardPattern("a***b", "ax"));
+    assertTrue(HostKey.matchesWildcardPattern("a*b*b", "abbb"));
+    assertFalse(HostKey.matchesWildcardPattern("a*b*c", "abbb"));
+    assertFalse(HostKey.matchesWildcardPattern("a*a*a*a*b", "aaaaaaaaac"));
+    assertTrue(HostKey.matchesWildcardPattern("a*a*a*a*b", "aaaaaaaaab"));
+    assertTrue(HostKey.matchesWildcardPattern("*b", "ab"));
+    assertTrue(HostKey.matchesWildcardPattern("*a*", "ab"));
+    assertTrue(HostKey.matchesWildcardPattern("*a*b", "ab"));
+    assertFalse(HostKey.matchesWildcardPattern("*a*c", "ab"));
+    assertTrue(HostKey.matchesWildcardPattern("a?c", "abc"));
+    assertTrue(HostKey.matchesWildcardPattern("??c", "abc"));
+    assertTrue(HostKey.matchesWildcardPattern("???", "abc"));
+    assertFalse(HostKey.matchesWildcardPattern("a?d", "abc"));
+    assertFalse(HostKey.matchesWildcardPattern("???", "ab"));
+    assertTrue(HostKey.matchesWildcardPattern("ab*", "abc"));
+    assertTrue(HostKey.matchesWildcardPattern("ab*", "ab"));
+    assertFalse(HostKey.matchesWildcardPattern("ab*", "a"));
+    assertTrue(HostKey.matchesWildcardPattern("ab?", "abc"));
+    assertFalse(HostKey.matchesWildcardPattern("ab?", "ab"));
+    assertFalse(HostKey.matchesWildcardPattern("ab?", "abcd"));
+    assertTrue(HostKey.matchesWildcardPattern("?bc", "abc"));
+    assertTrue(HostKey.matchesWildcardPattern("?b*", "abc"));
+    assertFalse(HostKey.matchesWildcardPattern("?c", "abc"));
+    assertTrue(HostKey.matchesWildcardPattern("a*?c", "abc"));
+    assertFalse(HostKey.matchesWildcardPattern("a*?c", "ac"));
+    assertTrue(HostKey.matchesWildcardPattern("a*?c", "abbc"));
+    assertTrue(HostKey.matchesWildcardPattern("a?*c", "abc"));
+    assertFalse(HostKey.matchesWildcardPattern("a?*c", "ac"));
+    assertTrue(HostKey.matchesWildcardPattern("a?*c", "abbc"));
+    assertTrue(HostKey.matchesWildcardPattern("a*?*c", "abc"));
+    assertFalse(HostKey.matchesWildcardPattern("a*?*c", "ac"));
+    assertTrue(HostKey.matchesWildcardPattern("?*c", "abc"));
+    assertTrue(HostKey.matchesWildcardPattern("?*c", "ac"));
+    assertFalse(HostKey.matchesWildcardPattern("?*c", "c"));
+    assertTrue(HostKey.matchesWildcardPattern("*?c", "abc"));
+    assertTrue(HostKey.matchesWildcardPattern("*?c", "ac"));
+    assertFalse(HostKey.matchesWildcardPattern("*?c", "c"));
+    assertTrue(HostKey.matchesWildcardPattern("a?*", "abc"));
+    assertTrue(HostKey.matchesWildcardPattern("a?*", "ab"));
+    assertFalse(HostKey.matchesWildcardPattern("a?*", "a"));
+    assertTrue(HostKey.matchesWildcardPattern("a*?", "abc"));
+    assertTrue(HostKey.matchesWildcardPattern("a*?", "ab"));
+    assertFalse(HostKey.matchesWildcardPattern("a*?", "a"));
+    assertTrue(HostKey.matchesWildcardPattern("a*b", "abb"));
+    assertFalse(HostKey.matchesWildcardPattern("a*b", "abbc"));
+    assertTrue(HostKey.matchesWildcardPattern("*.example.com", "host.example.com"));
+    assertFalse(HostKey.matchesWildcardPattern("*.example.com", "example.com"));
+  }
 }

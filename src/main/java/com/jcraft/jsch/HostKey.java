@@ -223,7 +223,7 @@ public class HostKey {
    * @param hostname the hostname to test (e.g., {@code host.example.com})
    * @return {@code true} if the hostname matches the pattern; {@code false} otherwise
    */
-  private boolean matchesWildcardPattern(String pattern, String hostname) {
+  static boolean matchesWildcardPattern(String pattern, String hostname) {
     if (pattern == null || hostname == null) {
       return false;
     }
