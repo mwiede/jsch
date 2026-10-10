@@ -65,7 +65,7 @@
         </license>
     </licenses>
     <properties>
-        <project.build.outputTimestamp>2026-08-20T18:19:04Z</project.build.outputTimestamp>
+        <project.build.outputTimestamp>2026-10-09T17:47:14Z</project.build.outputTimestamp>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <skipITs>true</skipITs>
@@ -260,7 +260,7 @@
                                     <version>25</version>
                                 </requireJavaVersion>
                                 <requireMavenVersion>
-                                    <version>3.10.0</version>
+                                    <version>3.9.16</version>
                                 </requireMavenVersion>
                                 <dependencyConvergence />
                                 <banDuplicatePomDependencyVersions />
