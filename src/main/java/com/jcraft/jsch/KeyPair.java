@@ -1044,11 +1044,8 @@ public abstract class KeyPair {
     boolean encrypted = true;
     byte[] data = null;
 
-    byte[] publickeyblob = null;
-
     int type = ERROR;
     int vendor = VENDOR_OPENSSH;
-    String publicKeyComment = "";
     Cipher cipher = null;
 
     // prvkey from "ssh-add" command on the remote.
@@ -1085,8 +1082,9 @@ public abstract class KeyPair {
 
       if (buf != null) {
         KeyPair ppk = loadPPK(instLogger, buf);
-        if (ppk != null)
-          return ppk;
+        if (ppk != null) {
+          return ppk.withPublicKey(pubkey, prvkey, UNKNOWN);
+        }
       }
 
       int len = (buf != null ? buf.length : 0);
@@ -1275,7 +1273,7 @@ public abstract class KeyPair {
       }
 
       if (vendor == VENDOR_OPENSSH_V1) {
-        return loadOpenSSHKeyv1(instLogger, data);
+        return loadOpenSSHKeyv1(instLogger, data).withPublicKey(pubkey, prvkey, type);
       } else if (data != null && data.length > 4 && // FSecure
           data[0] == (byte) 0x3f && data[1] == (byte) 0x6f && data[2] == (byte) 0xf9
           && data[3] == (byte) 0xeb) {
@@ -1308,149 +1306,8 @@ public abstract class KeyPair {
         }
       }
 
-      if (pubkey != null) {
-        try {
-          buf = pubkey;
-          len = buf.length;
-          if (buf.length > 4 && // FSecure's public key
-              buf[0] == '-' && buf[1] == '-' && buf[2] == '-' && buf[3] == '-') {
-
-            boolean valid = true;
-            i = 0;
-            do {
-              i++;
-            } while (buf.length > i && buf[i] != '\n');
-            if (buf.length <= i) {
-              valid = false;
-            }
-
-            while (valid) {
-              if (buf[i] == '\n') {
-                boolean inheader = false;
-                for (int j = i + 1; j < buf.length; j++) {
-                  if (buf[j] == '\n')
-                    break;
-                  if (buf[j] == ':') {
-                    inheader = true;
-                    break;
-                  }
-                }
-                if (!inheader) {
-                  i++;
-                  break;
-                }
-              }
-              i++;
-            }
-            if (buf.length <= i) {
-              valid = false;
-            }
-
-            int start = i;
-            while (valid && i < len) {
-              if (buf[i] == '\n') {
-                System.arraycopy(buf, i + 1, buf, i, len - i - 1);
-                len--;
-                continue;
-              }
-              if (buf[i] == '-') {
-                break;
-              }
-              i++;
-            }
-            if (valid) {
-              publickeyblob = Util.fromBase64(buf, start, i - start);
-              if (prvkey == null || type == UNKNOWN) {
-                if (publickeyblob[8] == 'd') {
-                  type = DSA;
-                } else if (publickeyblob[8] == 'r') {
-                  type = RSA;
-                }
-              }
-            }
-          } else {
-            if (buf[0] == 's' && buf[1] == 's' && buf[2] == 'h' && buf[3] == '-') {
-              if (prvkey == null && buf.length > 7) {
-                if (buf[4] == 'd') {
-                  type = DSA;
-                } else if (buf[4] == 'r') {
-                  type = RSA;
-                } else if (buf[4] == 'e' && buf[6] == '2') {
-                  type = ED25519;
-                } else if (buf[4] == 'e' && buf[6] == '4') {
-                  type = ED448;
-                }
-              }
-              i = 0;
-              while (i < len) {
-                if (buf[i] == ' ')
-                  break;
-                i++;
-              }
-              i++;
-              if (i < len) {
-                int start = i;
-                while (i < len) {
-                  if (buf[i] == ' ')
-                    break;
-                  i++;
-                }
-                publickeyblob = Util.fromBase64(buf, start, i - start);
-              }
-              if (i++ < len) {
-                int start = i;
-                while (i < len) {
-                  if (buf[i] == '\n')
-                    break;
-                  i++;
-                }
-                if (i > 0 && buf[i - 1] == '\r')
-                  i--;
-                if (start < i) {
-                  publicKeyComment = Util.byte2str(buf, start, i - start);
-                }
-              }
-            } else if (buf[0] == 'e' && buf[1] == 'c' && buf[2] == 'd' && buf[3] == 's') {
-              if (prvkey == null && buf.length > 7) {
-                type = ECDSA;
-              }
-              i = 0;
-              while (i < len) {
-                if (buf[i] == ' ')
-                  break;
-                i++;
-              }
-              i++;
-              if (i < len) {
-                int start = i;
-                while (i < len) {
-                  if (buf[i] == ' ')
-                    break;
-                  i++;
-                }
-                publickeyblob = Util.fromBase64(buf, start, i - start);
-              }
-              if (i++ < len) {
-                int start = i;
-                while (i < len) {
-                  if (buf[i] == '\n')
-                    break;
-                  i++;
-                }
-                if (i > 0 && buf[i - 1] == '\r')
-                  i--;
-                if (start < i) {
-                  publicKeyComment = Util.byte2str(buf, start, i - start);
-                }
-              }
-            }
-          }
-        } catch (Exception ee) {
-          if (instLogger.getLogger().isEnabled(Logger.WARN)) {
-            instLogger.getLogger().log(Logger.WARN, "failed to parse public key", ee);
-          }
-        }
-      }
+      LoadPublicKeyReturn lpkRet = loadPublicKey(pubkey, prvkey, type);
+      type = lpkRet.type;
 
       KeyPair kpair = null;
       if (type == DSA) {
@@ -1469,9 +1326,9 @@ public abstract class KeyPair {
 
       if (kpair != null) {
         kpair.encrypted = encrypted;
-        kpair.publickeyblob = publickeyblob;
+        kpair.publickeyblob = lpkRet.publickeyblob;
         kpair.vendor = vendor;
-        kpair.publicKeyComment = publicKeyComment;
+        kpair.publicKeyComment = lpkRet.publicKeyComment;
         kpair.cipher = cipher;
 
         if (encrypted) {
@@ -1494,6 +1351,183 @@ public abstract class KeyPair {
         throw (JSchException) e;
       throw new JSchException(e.toString(), e);
     }
+  }
+
+  /**
+   * Load pubkey and comment into this key pair, if not null
+   */
+  private KeyPair withPublicKey(byte[] pubkey, byte[] prvkey, int type) throws JSchException {
+    if (pubkey != null) {
+      LoadPublicKeyReturn lpkRet = loadPublicKey(pubkey, prvkey, type);
+      if (lpkRet.publickeyblob != null)
+        publickeyblob = lpkRet.publickeyblob;
+      if (lpkRet.publicKeyComment != null)
+        publicKeyComment = lpkRet.publicKeyComment;
+    }
+    return this;
+  }
+
+  /**
+   * Class allown loadPublicKey to return multiple values
+   */
+  private static class LoadPublicKeyReturn {
+    int type;
+    byte[] publickeyblob = null;
+    String publicKeyComment = "";
+
+    LoadPublicKeyReturn(int type, byte[] publickeyblob, String publicKeyComment) {
+      this.type = type;
+      this.publickeyblob = publickeyblob;
+      this.publicKeyComment = publicKeyComment;
+    }
+  };
+
+  static LoadPublicKeyReturn loadPublicKey(byte[] buf, byte[] prvkey, int type)
+      throws JSchException {
+    byte[] publickeyblob = null;
+    String publicKeyComment = "";
+    if (buf != null) {
+      int len = buf.length;
+      if (buf.length > 4 && // FSecure's public key
+          buf[0] == '-' && buf[1] == '-' && buf[2] == '-' && buf[3] == '-') {
+
+        boolean valid = true;
+        int i = 0;
+        do {
+          i++;
+        } while (buf.length > i && buf[i] != '\n');
+        if (buf.length <= i) {
+          valid = false;
+        }
+
+        while (valid) {
+          if (buf[i] == '\n') {
+            boolean inheader = false;
+            for (int j = i + 1; j < buf.length; j++) {
+              if (buf[j] == '\n')
+                break;
+              if (buf[j] == ':') {
+                inheader = true;
+                break;
+              }
+            }
+            if (!inheader) {
+              i++;
+              break;
+            }
+          }
+          i++;
+        }
+        if (buf.length <= i) {
+          valid = false;
+        }
+
+        int start = i;
+        while (valid && i < len) {
+          if (buf[i] == '\n') {
+            System.arraycopy(buf, i + 1, buf, i, len - i - 1);
+            len--;
+            continue;
+          }
+          if (buf[i] == '-') {
+            break;
+          }
+          i++;
+        }
+        if (valid) {
+          publickeyblob = Util.fromBase64(buf, start, i - start);
+          if (prvkey == null || type == UNKNOWN) {
+            if (publickeyblob[8] == 'd') {
+              type = DSA;
+            } else if (publickeyblob[8] == 'r') {
+              type = RSA;
+            }
+          }
+        }
+      } else {
+        if (buf[0] == 's' && buf[1] == 's' && buf[2] == 'h' && buf[3] == '-') {
+          if (prvkey == null && buf.length > 7) {
+            if (buf[4] == 'd') {
+              type = DSA;
+            } else if (buf[4] == 'r') {
+              type = RSA;
+            } else if (buf[4] == 'e' && buf[6] == '2') {
+              type = ED25519;
+            } else if (buf[4] == 'e' && buf[6] == '4') {
+              type = ED448;
+            }
+          }
+          int i = 0;
+          while (i < len) {
+            if (buf[i] == ' ')
+              break;
+            i++;
+          }
+          i++;
+          if (i < len) {
+            int start = i;
+            while (i < len) {
+              if (buf[i] == ' ')
+                break;
+              i++;
+            }
+            publickeyblob = Util.fromBase64(buf, start, i - start);
+          }
+          if (i++ < len) {
+            int start = i;
+            while (i < len) {
+              if (buf[i] == '\n')
+                break;
+              i++;
+            }
+            if (i > 0 && buf[i - 1] == '\r')
+              i--;
+            if (start < i) {
+              publicKeyComment = Util.byte2str(buf, start, i - start);
+            }
+          }
+        } else if (buf[0] == 'e' && buf[1] == 'c' && buf[2] == 'd' && buf[3] == 's') {
+          if (prvkey == null && buf.length > 7) {
+            type = ECDSA;
+          }
+          int i = 0;
+          while (i < len) {
+            if (buf[i] == ' ')
+              break;
+            i++;
+          }
+          i++;
+          if (i < len) {
+            int start = i;
+            while (i < len) {
+              if (buf[i] == ' ')
+                break;
+              i++;
+            }
+            publickeyblob = Util.fromBase64(buf, start, i - start);
+          }
+          if (i++ < len) {
+            int start = i;
+            while (i < len) {
+              if (buf[i] == '\n')
+                break;
+              i++;
+            }
+            if (i > 0 && buf[i - 1] == '\r')
+              i--;
+            if (start < i) {
+              publicKeyComment = Util.byte2str(buf, start, i - start);
+            }
+          }
+        } else {
+          throw new JSchException("invalid publickey");
+        }
+      }
+      if (publickeyblob == null)
+        throw new JSchException("invalid publickey");
+    }
+
+    return new LoadPublicKeyReturn(type, publickeyblob, publicKeyComment);
   }
 
   static KeyPair loadOpenSSHKeyv1(JSch.InstanceLogger instLogger, byte[] data)

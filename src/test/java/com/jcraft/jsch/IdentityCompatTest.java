@@ -27,6 +27,20 @@ public class IdentityCompatTest {
         Arguments.of("pkcs8_rsa_encrypted_hmacsha256", "pkcs8_rsa_encrypted_hmacsha256-cert.pub",
             "secret123".getBytes(UTF_8)),
 
+        // PPK
+        Arguments.of("ppkv2_rsa_windows.ppk", "ppkv2_rsa_windows.pub", null),
+        Arguments.of("ppkv2_rsa_windows.ppk", "ppkv2_rsa_windows-cert.pub", null),
+        Arguments.of("ppkv2_rsa_windows_encrypted.ppk", "ppkv2_rsa_windows_encrypted.pub",
+            "secret123".getBytes(UTF_8)),
+        Arguments.of("ppkv2_rsa_windows_encrypted.ppk", "ppkv2_rsa_windows_encrypted-cert.pub",
+            "secret123".getBytes(UTF_8)),
+        Arguments.of("ppkv3_rsa_windows.ppk", "ppkv3_rsa_windows.pub", null),
+        Arguments.of("ppkv3_rsa_windows.ppk", "ppkv3_rsa_windows-cert.pub", null),
+        Arguments.of("ppkv3_rsa_windows_encrypted.ppk", "ppkv3_rsa_windows_encrypted.pub",
+            "secret123".getBytes(UTF_8)),
+        Arguments.of("ppkv3_rsa_windows_encrypted.ppk", "ppkv3_rsa_windows_encrypted-cert.pub",
+            "secret123".getBytes(UTF_8)),
+
         // full coverage...
         Arguments.of("certificates/asyncssh_host/id_ecdsa_nistp521",
             "certificates/asyncssh_host/id_ecdsa_nistp521.pub", null),
@@ -164,7 +178,8 @@ public class IdentityCompatTest {
   void testCheckPrivKeyWithMatchingPublicPart(String privateK, String publicK, byte[] secret) {
     JSch jsch = new JSch();
     assertDoesNotThrow(
-        () -> jsch.addIdentity(getResourceFile(privateK), getResourceFile(publicK), secret));
+        () -> jsch.addIdentity(getResourceFile(privateK), getResourceFile(publicK), secret),
+        privateK + " vs " + publicK);
   }
 
   /**
@@ -177,7 +192,7 @@ public class IdentityCompatTest {
   void testCheckPrivKeyWithMatchingPublicPartB(String privateK, String publicK, byte[] secret) {
     JSch jsch = new JSch();
     assertDoesNotThrow(() -> jsch.addIdentity("test", getResourceBytes(privateK),
-        getResourceBytes(publicK), secret));
+        getResourceBytes(publicK), secret), privateK + " vs " + publicK);
   }
 
   static Stream<Arguments> keyArgsNonMatching() {
@@ -194,12 +209,33 @@ public class IdentityCompatTest {
                                                                                   // certificate
 
 
+        // Encrypted PKCS8
         Arguments.of("pkcs8_rsa_encrypted_hmacsha256",
             "certificates/ed25519/root_ed25519_key-cert.pub", "secret123".getBytes(UTF_8)),
         Arguments.of("pkcs8_rsa_encrypted_hmacsha256", "certificates/ed25519/root_ed25519_key.pub",
             "secret123".getBytes(UTF_8)),
         Arguments.of("pkcs8_rsa_encrypted_hmacsha256", "certificates/host/sshd_config",
+            "secret123".getBytes(UTF_8)),
+
+        // Unencrypted PKCS8
+        Arguments.of("pkcs8_rsa", "pkcs8_rsa_encrypted_hmacsha256-cert.pub", null),
+        Arguments.of("pkcs8_rsa", "pkcs8_rsa_encrypted_hmacsha256.pub", null),
+        Arguments.of("pkcs8_rsa", "certificates/host/sshd_config", null),
+
+        // PPK
+        Arguments.of("ppkv2_rsa_windows.ppk", "pkcs8_rsa.pub", null),
+        Arguments.of("ppkv2_rsa_windows.ppk", "ppkv3_rsa_windows-cert.pub", null),
+        Arguments.of("ppkv2_rsa_windows_encrypted.ppk", "pkcs8_rsa.pub",
+            "secret123".getBytes(UTF_8)),
+        Arguments.of("ppkv2_rsa_windows_encrypted.ppk", "ppkv3_rsa_windows-cert.pub",
+            "secret123".getBytes(UTF_8)),
+        Arguments.of("ppkv3_rsa_windows.ppk", "pkcs8_rsa.pub", null),
+        Arguments.of("ppkv3_rsa_windows.ppk", "ppkv2_rsa_windows-cert.pub", null),
+        Arguments.of("ppkv3_rsa_windows_encrypted.ppk", "pkcs8_rsa.pub",
+            "secret123".getBytes(UTF_8)),
+        Arguments.of("ppkv3_rsa_windows_encrypted.ppk", "ppkv2_rsa_windows-cert.pub",
             "secret123".getBytes(UTF_8)));
+
   }
 
   /**
@@ -213,7 +249,8 @@ public class IdentityCompatTest {
     JSch jsch = new JSch();
     assertThrows(JSchException.class,
 
-        () -> jsch.addIdentity(getResourceFile(privateK), getResourceFile(publicK), secret));
+        () -> jsch.addIdentity(getResourceFile(privateK), getResourceFile(publicK), secret),
+        privateK + " vs " + publicK);
   }
 
   /**
@@ -226,7 +263,7 @@ public class IdentityCompatTest {
   void testCheckPrivKeyWithNonMatchingUserCertB(String privateK, String publicK, byte[] secret) {
     JSch jsch = new JSch();
     assertThrows(JSchException.class, () -> jsch.addIdentity("test", getResourceBytes(privateK),
-        getResourceBytes(publicK), secret));
+        getResourceBytes(publicK), secret), privateK + " vs " + publicK);
   }
 
   private String getResourceFile(String fileName) {
