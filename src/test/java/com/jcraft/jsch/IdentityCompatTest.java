@@ -26,6 +26,8 @@ public class IdentityCompatTest {
             "secret123".getBytes(UTF_8)),
         Arguments.of("pkcs8_rsa_encrypted_hmacsha256", "pkcs8_rsa_encrypted_hmacsha256-cert.pub",
             "secret123".getBytes(UTF_8)),
+        Arguments.of("pkcs8_rsa", "pkcs8_rsa.pub", "secret123".getBytes(UTF_8)),
+        Arguments.of("pkcs8_rsa", "pkcs8_rsa-cert.pub", "secret123".getBytes(UTF_8)),
 
         // PPK
         Arguments.of("ppkv2_rsa_windows.ppk", "ppkv2_rsa_windows.pub", null),
@@ -216,6 +218,11 @@ public class IdentityCompatTest {
             "secret123".getBytes(UTF_8)),
         Arguments.of("pkcs8_rsa_encrypted_hmacsha256", "certificates/host/sshd_config",
             "secret123".getBytes(UTF_8)),
+        Arguments.of("pkcs8_rsa", "certificates/ed25519/root_ed25519_key-cert.pub",
+            "secret123".getBytes(UTF_8)),
+        Arguments.of("pkcs8_rsa", "certificates/ed25519/root_ed25519_key.pub",
+            "secret123".getBytes(UTF_8)),
+        Arguments.of("pkcs8_rsa", "certificates/host/sshd_config", "secret123".getBytes(UTF_8)),
 
         // Unencrypted PKCS8
         Arguments.of("pkcs8_rsa", "pkcs8_rsa_encrypted_hmacsha256-cert.pub", null),
