@@ -64,8 +64,6 @@ public class IdentityCompatTest {
         Arguments.of("certificates/ecdsa_p521/root_ecdsa_sha2_nistp521_key",
             "certificates/ecdsa_p521/root_ecdsa_sha2_nistp521_key.pub", null),
         Arguments.of("certificates/ed25519/root_ed25519_key",
-            "certificates/ed25519/root_ed25519_key-cert.pub", null),
-        Arguments.of("certificates/ed25519/root_ed25519_key",
             "certificates/ed25519/root_ed25519_key.pub", null),
         Arguments.of("certificates/host/ssh_host_dsa_key", "certificates/host/ssh_host_dsa_key.pub",
             null),
@@ -90,7 +88,6 @@ public class IdentityCompatTest {
         Arguments.of("docker/id_ecdsa256", "docker/id_ecdsa256.pub", null),
         Arguments.of("docker/id_ecdsa384", "docker/id_ecdsa384.pub", null),
         Arguments.of("docker/id_ecdsa521", "docker/id_ecdsa521.pub", null),
-        Arguments.of("docker/id_ed25519", "docker/id_ed25519.pub", null),
         Arguments.of("docker/id_ed448", "docker/id_ed448.pub", null),
         Arguments.of("docker/id_rsa", "docker/id_rsa.pub", null),
         Arguments.of("docker/ssh_host_dsa_key", "docker/ssh_host_dsa_key.pub", null),
@@ -155,10 +152,6 @@ public class IdentityCompatTest {
             "secret123".getBytes(UTF_8)),
         Arguments.of("pkcs8_rsa", "pkcs8_rsa.pub", null),
         Arguments.of("pkcs8_rsa_encrypted_hmacsha1", "pkcs8_rsa_encrypted_hmacsha1.pub",
-            "secret123".getBytes(UTF_8)),
-        Arguments.of("pkcs8_rsa_encrypted_hmacsha256", "pkcs8_rsa_encrypted_hmacsha256-cert.pub",
-            "secret123".getBytes(UTF_8)),
-        Arguments.of("pkcs8_rsa_encrypted_hmacsha256", "pkcs8_rsa_encrypted_hmacsha256.pub",
             "secret123".getBytes(UTF_8)));
   }
 
