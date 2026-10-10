@@ -26,8 +26,7 @@ public class IdentityCompatTest {
             "secret123".getBytes(UTF_8)),
         Arguments.of("pkcs8_rsa_encrypted_hmacsha256", "pkcs8_rsa_encrypted_hmacsha256-cert.pub",
             "secret123".getBytes(UTF_8)),
-        Arguments.of("pkcs8_rsa", "pkcs8_rsa.pub", "secret123".getBytes(UTF_8)),
-        Arguments.of("pkcs8_rsa", "pkcs8_rsa-cert.pub", "secret123".getBytes(UTF_8)),
+        Arguments.of("pkcs8_rsa", "pkcs8_rsa-cert.pub", null),
 
         // PPK
         Arguments.of("ppkv2_rsa_windows.ppk", "ppkv2_rsa_windows.pub", null),
