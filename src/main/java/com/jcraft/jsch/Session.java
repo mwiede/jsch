@@ -1004,7 +1004,7 @@ public class Session {
               "Invalid certificate '" + certificate.getId() + "': missing public key");
         }
         String key_type = kex.getKeyType();
-        String key_footprint = kex.getFingerPrint();
+        String key_footprint = kex.getFingerPrint(K_S);
         String keyAlgorithmName = kex.getKeyAlgorithName();
         doCheckHostKey(chost, key_type, key_footprint, keyAlgorithmName, K_S);
         return;
