@@ -184,7 +184,15 @@ public class IdentityCompatTest {
     return Stream.of(
         Arguments.of("docker/id_ed25519", "certificates/ed25519/root_ed25519_key-cert.pub", null),
         Arguments.of("docker/id_ed25519", "certificates/ed25519/root_ed25519_key.pub", null),
-        Arguments.of("docker/id_ed25519", "certificates/host/sshd_config", null),
+
+        Arguments.of("docker/id_ed25519", "certificates/host/sshd_config", null), // deliberately
+                                                                                  // test with a
+                                                                                  // public key file
+                                                                                  // that is neither
+                                                                                  // a public key
+                                                                                  // nor a
+                                                                                  // certificate
+
 
         Arguments.of("pkcs8_rsa_encrypted_hmacsha256",
             "certificates/ed25519/root_ed25519_key-cert.pub", "secret123".getBytes(UTF_8)),
