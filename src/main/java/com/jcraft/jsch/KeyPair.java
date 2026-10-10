@@ -1380,7 +1380,7 @@ public abstract class KeyPair {
       this.publickeyblob = publickeyblob;
       this.publicKeyComment = publicKeyComment;
     }
-  };
+  }
 
   static LoadPublicKeyReturn loadPublicKey(byte[] buf, byte[] prvkey, int type)
       throws JSchException {
