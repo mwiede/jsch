@@ -1968,7 +1968,7 @@ public class Session {
             }
 
             try {
-              channel.write(foo, start[0], length[0]);
+              channel.receiveData(foo, start[0], length[0], false);
             } catch (Exception e) {
               // System.err.println(e);
               try {
@@ -1976,19 +1976,6 @@ public class Session {
               } catch (Exception ee) {
               }
               break;
-            }
-            int len = length[0];
-            channel.setLocalWindowSize(channel.lwsize - len);
-            if (channel.lwsize < channel.lwsize_max / 2) {
-              packet.reset();
-              buf.putByte((byte) SSH_MSG_CHANNEL_WINDOW_ADJUST);
-              buf.putInt(channel.getRecipient());
-              buf.putInt(channel.lwsize_max - channel.lwsize);
-              synchronized (channel) {
-                if (!channel.close)
-                  write(packet);
-              }
-              channel.setLocalWindowSize(channel.lwsize_max);
             }
             break;
 
@@ -2008,21 +1995,8 @@ public class Session {
               break;
             }
 
-            channel.write_ext(foo, start[0], length[0]);
+            channel.receiveData(foo, start[0], length[0], true);
 
-            len = length[0];
-            channel.setLocalWindowSize(channel.lwsize - len);
-            if (channel.lwsize < channel.lwsize_max / 2) {
-              packet.reset();
-              buf.putByte((byte) SSH_MSG_CHANNEL_WINDOW_ADJUST);
-              buf.putInt(channel.getRecipient());
-              buf.putInt(channel.lwsize_max - channel.lwsize);
-              synchronized (channel) {
-                if (!channel.close)
-                  write(packet);
-              }
-              channel.setLocalWindowSize(channel.lwsize_max);
-            }
             break;
 
           case SSH_MSG_CHANNEL_WINDOW_ADJUST:
@@ -2058,7 +2032,7 @@ public class Session {
             channel = getChannelById(i);
             if (channel != null) {
               // channel.close();
-              channel.disconnect();
+              channel.disconnect(true);
             }
             /*
              * if(Channel.pool.size()==0){ thread=null; }

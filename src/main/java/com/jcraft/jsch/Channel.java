@@ -65,6 +65,10 @@ public abstract class Channel {
   volatile int rmpsize = 0; // remote maximum packet size
 
   IO io = null;
+  private final Object receiveWindowLock = new Object();
+  private int consumedReceiveBytes;
+  private ChannelInputStream stdoutReceiver;
+  private ChannelInputStream stderrReceiver;
   Thread thread = null;
 
   volatile boolean eof_local = false;
@@ -167,35 +171,19 @@ public abstract class Channel {
       _session.getLogger().log(Logger.WARN, "getInputStream() should be called before connect()");
     }
 
-    int max_input_buffer_size = 32 * 1024;
-    try {
-      max_input_buffer_size = Integer.parseInt(getSession().getConfig("max_input_buffer_size"));
-    } catch (Exception e) {
+    if (stdoutReceiver == null) {
+      stdoutReceiver = new ChannelInputStream(this);
+      io.setOutputStream(stdoutReceiver.sink(), false);
     }
-    PipedInputStream in = new MyPipedInputStream(32 * 1024, // this value should be customizable.
-        max_input_buffer_size);
-    boolean resizable = 32 * 1024 < max_input_buffer_size;
-    io.setOutputStream(new PassiveOutputStream(in, resizable), false);
-    return in;
+    return stdoutReceiver;
   }
 
   public InputStream getExtInputStream() throws IOException {
-    Session _session = this.session;
-    if (_session != null && isConnected() && _session.getLogger().isEnabled(Logger.WARN)) {
-      _session.getLogger().log(Logger.WARN,
-          "getExtInputStream() should be called before connect()");
+    if (stderrReceiver == null) {
+      stderrReceiver = new ChannelInputStream(this);
+      io.setExtOutputStream(stderrReceiver.sink(), false);
     }
-
-    int max_input_buffer_size = 32 * 1024;
-    try {
-      max_input_buffer_size = Integer.parseInt(getSession().getConfig("max_input_buffer_size"));
-    } catch (Exception e) {
-    }
-    PipedInputStream in = new MyPipedInputStream(32 * 1024, // this value should be customizable.
-        max_input_buffer_size);
-    boolean resizable = 32 * 1024 < max_input_buffer_size;
-    io.setExtOutputStream(new PassiveOutputStream(in, resizable), false);
-    return in;
+    return stderrReceiver;
   }
 
   public OutputStream getOutputStream() throws IOException {
@@ -510,6 +498,48 @@ public abstract class Channel {
     }
   }
 
+  final void receiveData(byte[] bytes, int offset, int length, boolean extended)
+      throws IOException {
+    synchronized (receiveWindowLock) {
+      if (length > lwsize)
+        throw new IOException("SSH channel DATA exceeds remaining receive credit: incoming="
+            + length + ", remaining=" + lwsize);
+      lwsize -= length;
+    }
+    OutputStream sink = io == null ? null : extended ? io.out_ext : io.out;
+    if (extended) write_ext(bytes, offset, length);
+    else write(bytes, offset, length);
+    // InputStream sinks return credit when read. Ordinary output sinks and channel
+    // implementations consume synchronously, preserving their existing contract.
+    if (!(sink instanceof ChannelInputStream.Sink)) returnReceiveCredit(length);
+  }
+
+  void returnReceiveCredit(int length) throws IOException {
+    int credit;
+    synchronized (receiveWindowLock) {
+      if (close || !connected) return;
+      consumedReceiveBytes += length;
+      if (consumedReceiveBytes < Math.max(1, lwsize_max / 2)) return;
+      credit = consumedReceiveBytes;
+      consumedReceiveBytes = 0;
+      lwsize += credit;
+    }
+    Buffer buffer = new Buffer(100);
+    Packet packet = new Packet(buffer);
+    packet.reset();
+    buffer.putByte((byte) Session.SSH_MSG_CHANNEL_WINDOW_ADJUST);
+    buffer.putInt(getRecipient());
+    buffer.putInt(credit);
+    try {
+      synchronized (this) {
+        if (!close) getSession().write(packet);
+      }
+    } catch (Exception e) {
+      if (e instanceof IOException) throw (IOException) e;
+      throw new IOException("Cannot return receive credit for SSH channel " + id, e);
+    }
+  }
+
   void eof_remote() {
     eof_remote = true;
     try {
@@ -603,6 +633,16 @@ public abstract class Channel {
   }
 
   public void disconnect() {
+    disconnect(false);
+  }
+
+  // A remote close preserves DATA already received for the application's final reads.
+  // A local cancellation releases it immediately, including before channel admission.
+  void disconnect(boolean preserveReceivedData) {
+    if (!preserveReceivedData) {
+      if (stdoutReceiver != null) stdoutReceiver.abort();
+      if (stderrReceiver != null) stderrReceiver.abort();
+    }
     // System.err.println(this+":disconnect "+io+" "+connected);
     // Thread.dumpStack();
 
