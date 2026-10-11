@@ -271,6 +271,87 @@ class ChannelInputStreamFlowControlTest {
     }
   }
 
+  @Test
+  @Timeout(30)
+  void stdoutAndStderrShareCreditAndDrainAcrossBufferWraps() throws Exception {
+    int window = 64 * 1024;
+    byte[] first = new byte[window / 2];
+    byte[] next = new byte[window / 4];
+    Arrays.fill(first, (byte) 17);
+    Arrays.fill(next, (byte) 29);
+    CountDownLatch full = new CountDownLatch(1);
+    CountDownLatch resume = new CountDownLatch(1);
+    AtomicReference<Throwable> failure = new AtomicReference<>();
+    AtomicReference<ChannelSession> remote = new AtomicReference<>();
+    List<String> commands = new CopyOnWriteArrayList<>();
+    SshServer server = server();
+    server.setCommandFactory((channel, name) -> {
+      if (name.equals("stream")) remote.set(channel);
+      return command(name, commands, (output, error) -> {
+        output.write(first); output.flush();
+        error.write(first); error.flush();
+        full.countDown();
+        assertTrue(resume.await(10, TimeUnit.SECONDS));
+        for (int i = 0; i < 5; i++) {
+          output.write(next); output.flush();
+          error.write(next); error.flush();
+        }
+      }, failure);
+    });
+    Session session = null;
+    Thread errorReader = null;
+    ByteArrayOutputStream stdout = new ByteArrayOutputStream();
+    ByteArrayOutputStream stderr = new ByteArrayOutputStream();
+    try {
+      server.start();
+      session = connect(server);
+      session.setConfig("max_input_buffer_size", Integer.toString(window));
+      ChannelExec stream = (ChannelExec) session.openChannel("exec");
+      stream.setLocalWindowSizeMax(window);
+      stream.setCommand("stream");
+      InputStream input = stream.getInputStream();
+      InputStream error = stream.getExtInputStream();
+      stream.connect(1000);
+      assertTrue(full.await(10, TimeUnit.SECONDS));
+      ChannelExec fence = (ChannelExec) session.openChannel("exec");
+      fence.setCommand("sibling");
+      InputStream fenceInput = fence.getInputStream();
+      fence.connect(1000);
+      while (fenceInput.read() >= 0) {}
+      fenceInput.close();
+      assertEquals(window, input.available() + error.available());
+      assertEquals(0, remote.get().getRemoteWindow().getSize(),
+          "Stdout and stderr must share one consumption-based receive window");
+      errorReader = new Thread(() -> {
+        try { drain(error, stderr); } catch (Throwable e) { failure.compareAndSet(null, e); }
+      }, "extended-stream-consumer");
+      errorReader.setDaemon(true);
+      errorReader.start();
+      resume.countDown();
+      drain(input, stdout);
+      errorReader.join(10000);
+      assertFalse(errorReader.isAlive());
+      ByteArrayOutputStream expected = new ByteArrayOutputStream();
+      expected.write(first);
+      for (int i = 0; i < 5; i++) expected.write(next);
+      assertArrayEquals(expected.toByteArray(), stdout.toByteArray());
+      assertArrayEquals(expected.toByteArray(), stderr.toByteArray());
+      assertNull(failure.get(), () -> String.valueOf(failure.get()));
+      input.close(); error.close();
+    } finally {
+      resume.countDown();
+      if (session != null) session.disconnect();
+      if (errorReader != null) { errorReader.interrupt(); errorReader.join(10000); }
+      server.stop(true);
+    }
+  }
+
+  private static void drain(InputStream input, ByteArrayOutputStream received) throws Exception {
+    byte[] bytes = new byte[8192];
+    int count;
+    while ((count = input.read(bytes)) >= 0) received.write(bytes, 0, count);
+  }
+
   private static SshServer server() throws Exception {
     SshServer server = SshServer.setUpDefaultServer();
     server.setPort(0);
