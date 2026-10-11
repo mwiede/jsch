@@ -427,6 +427,74 @@ class ChannelInputStreamFlowControlTest {
     }
   }
 
+  @Test
+  @Timeout(30)
+  void stderrConsumerCloseDoesNotEndTheSessionReader() throws Exception {
+    AtomicReference<Throwable> failure = new AtomicReference<>();
+    java.util.concurrent.atomic.AtomicBoolean readerEnded =
+        new java.util.concurrent.atomic.AtomicBoolean();
+    List<String> commands = new CopyOnWriteArrayList<>();
+    SshServer server = server();
+    server.setCommandFactory((channel, name) -> command(name, commands, (output, error) -> {
+      output.write(1);
+      output.flush();
+      error.write(2);
+      error.flush();
+    }, failure));
+    Session session = null;
+    try {
+      server.start();
+      session = connect(server);
+      session.setLogger(new Logger() {
+        public boolean isEnabled(int level) {
+          return true;
+        }
+
+        public void log(int level, String message) {
+          if (message.startsWith("Caught an exception, leaving main loop"))
+            readerEnded.set(true);
+        }
+      });
+      ChannelExec stream = (ChannelExec) session.openChannel("exec");
+      stream.setCommand("stream");
+      InputStream input = stream.getInputStream();
+      stream.setExtOutputStream(new OutputStream() {
+        public void write(int value) throws java.io.IOException {
+          throw new java.io.IOException("Requested stderr consumer close");
+        }
+
+        public void write(byte[] bytes, int offset, int length) throws java.io.IOException {
+          throw new java.io.IOException("Requested stderr consumer close");
+        }
+      });
+      stream.connect(1000);
+      try {
+        while (input.read() >= 0) {
+        }
+      } catch (java.io.IOException closedChannel) {
+        assertEquals("SSH channel input stream is closed", closedChannel.getMessage());
+      }
+      // In the old path the reader logs its failure before closing stdout. The
+      // terminal stdout read is therefore an ordering fence, not a timed probe.
+      assertFalse(readerEnded.get(), "A stopped stderr consumer must close only its channel");
+      assertTrue(session.isConnected());
+      for (int i = 0; i < 2; i++) {
+        ChannelExec sibling = (ChannelExec) session.openChannel("exec");
+        sibling.setCommand("sibling-" + i);
+        InputStream siblingInput = sibling.getInputStream();
+        sibling.connect(1000);
+        while (siblingInput.read() >= 0) {
+        }
+        siblingInput.close();
+      }
+      input.close();
+    } finally {
+      if (session != null)
+        session.disconnect();
+      server.stop(true);
+    }
+  }
+
   private static void drain(InputStream input, ByteArrayOutputStream received) throws Exception {
     byte[] bytes = new byte[8192];
     int count;
