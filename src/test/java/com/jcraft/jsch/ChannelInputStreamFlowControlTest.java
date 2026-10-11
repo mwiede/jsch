@@ -495,6 +495,179 @@ class ChannelInputStreamFlowControlTest {
     }
   }
 
+  @Test
+  @Timeout(30)
+  void heldCreditWriteDoesNotHoldTheChannelReaderMonitor() throws Exception {
+    int window = 64 * 1024;
+    CountDownLatch full = new CountDownLatch(1);
+    CountDownLatch finish = new CountDownLatch(1);
+    CountDownLatch creditWriteEntered = new CountDownLatch(1);
+    CountDownLatch releaseCreditWrite = new CountDownLatch(1);
+    CountDownLatch sendSiblingData = new CountDownLatch(1);
+    CountDownLatch siblingDataRead = new CountDownLatch(1);
+    AtomicReference<Throwable> failure = new AtomicReference<>();
+    AtomicReference<ChannelSession> remote = new AtomicReference<>();
+    List<String> commands = new CopyOnWriteArrayList<>();
+    SshServer server = server();
+    server.setCommandFactory((channel, name) -> {
+      if (name.equals("stream"))
+        remote.set(channel);
+      return command(name, commands, (output, error) -> {
+        output.write(new byte[window]);
+        output.flush();
+        full.countDown();
+        finish.await();
+      }, failure);
+    });
+    server.setCommandFactory((channel, name) -> {
+      if (name.equals("stream")) {
+        remote.set(channel);
+        return command(name, commands, (output, error) -> {
+          output.write(new byte[window]);
+          output.flush();
+          full.countDown();
+          finish.await();
+        }, failure);
+      }
+      return new Command() {
+        OutputStream output;
+        org.apache.sshd.server.ExitCallback exit;
+        Thread worker;
+
+        public void setInputStream(InputStream input) {}
+
+        public void setOutputStream(OutputStream output) {
+          this.output = output;
+        }
+
+        public void setErrorStream(OutputStream error) {}
+
+        public void setExitCallback(org.apache.sshd.server.ExitCallback exit) {
+          this.exit = exit;
+        }
+
+        public void start(ChannelSession channel, org.apache.sshd.server.Environment environment) {
+          worker = new Thread(() -> {
+            try {
+              assertTrue(sendSiblingData.await(10, TimeUnit.SECONDS));
+              output.write(7);
+              output.flush();
+              exit.onExit(0);
+            } catch (Throwable e) {
+              failure.compareAndSet(null, e);
+            }
+          }, "flow-control-server-command");
+          worker.setDaemon(true);
+          worker.start();
+        }
+
+        public void destroy(ChannelSession channel) throws Exception {
+          sendSiblingData.countDown();
+          if (worker != null && worker != Thread.currentThread()) {
+            worker.interrupt();
+            worker.join(10000);
+          }
+        }
+      };
+    });
+    SocketFactory sockets = new SocketFactory() {
+      public java.net.Socket createSocket(String host, int port) throws java.io.IOException {
+        return new java.net.Socket(host, port);
+      }
+
+      public InputStream getInputStream(java.net.Socket socket) throws java.io.IOException {
+        return socket.getInputStream();
+      }
+
+      public OutputStream getOutputStream(java.net.Socket socket) throws java.io.IOException {
+        return new java.io.FilterOutputStream(socket.getOutputStream()) {
+          public void write(byte[] bytes, int offset, int length) throws java.io.IOException {
+            if (Thread.currentThread().getName().equals("held-credit-writer")) {
+              creditWriteEntered.countDown();
+              try {
+                if (!releaseCreditWrite.await(10, TimeUnit.SECONDS))
+                  throw new java.io.IOException("Credit writer release was not supplied");
+              } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                throw new java.io.InterruptedIOException("Credit writer was interrupted");
+              }
+            }
+            out.write(bytes, offset, length);
+          }
+        };
+      }
+    };
+    Session session = null;
+    Thread consumer = null;
+    Thread siblingReader = null;
+    try {
+      server.start();
+      session = connect(server, sockets);
+      ChannelExec stream = (ChannelExec) session.openChannel("exec");
+      stream.setLocalWindowSizeMax(window);
+      stream.setCommand("stream");
+      InputStream input = stream.getInputStream();
+      stream.connect(1000);
+      assertTrue(full.await(10, TimeUnit.SECONDS));
+      ChannelExec sibling = (ChannelExec) session.openChannel("exec");
+      sibling.setCommand("waiting-sibling");
+      InputStream siblingInput = sibling.getInputStream();
+      sibling.connect(1000);
+      consumer = new Thread(() -> {
+        try {
+          assertEquals(window / 2, input.read(new byte[window / 2]));
+        } catch (Throwable e) {
+          failure.compareAndSet(null, e);
+        }
+      }, "held-credit-writer");
+      consumer.setDaemon(true);
+      consumer.start();
+      assertTrue(creditWriteEntered.await(10, TimeUnit.SECONDS));
+      org.apache.sshd.common.util.buffer.Buffer adjustment = remote.get().getSession()
+          .createBuffer(org.apache.sshd.common.SshConstants.SSH_MSG_CHANNEL_WINDOW_ADJUST, 16);
+      adjustment.putInt(remote.get().getRecipient());
+      adjustment.putUInt(1);
+      assertTrue(remote.get().getSession().writePacket(adjustment).await(10000));
+      sendSiblingData.countDown();
+      siblingReader = new Thread(() -> {
+        try {
+          assertEquals(7, siblingInput.read());
+          siblingDataRead.countDown();
+        } catch (Throwable e) {
+          failure.compareAndSet(null, e);
+        }
+      }, "sibling-data-consumer");
+      siblingReader.setDaemon(true);
+      siblingReader.start();
+      assertTrue(siblingDataRead.await(10, TimeUnit.SECONDS),
+          "The reader must process sibling DATA while consumption credit is waiting on its socket");
+      releaseCreditWrite.countDown();
+      consumer.join(10000);
+      siblingReader.join(10000);
+      assertFalse(consumer.isAlive());
+      assertFalse(siblingReader.isAlive());
+      assertNull(failure.get(), () -> String.valueOf(failure.get()));
+      finish.countDown();
+      input.close();
+      siblingInput.close();
+    } finally {
+      releaseCreditWrite.countDown();
+      sendSiblingData.countDown();
+      finish.countDown();
+      if (session != null)
+        session.disconnect();
+      if (consumer != null) {
+        consumer.interrupt();
+        consumer.join(10000);
+      }
+      if (siblingReader != null) {
+        siblingReader.interrupt();
+        siblingReader.join(10000);
+      }
+      server.stop(true);
+    }
+  }
+
   private static void drain(InputStream input, ByteArrayOutputStream received) throws Exception {
     byte[] bytes = new byte[8192];
     int count;
@@ -514,7 +687,13 @@ class ChannelInputStreamFlowControlTest {
   }
 
   private static Session connect(SshServer server) throws Exception {
+    return connect(server, null);
+  }
+
+  private static Session connect(SshServer server, SocketFactory sockets) throws Exception {
     Session session = new JSch().getSession("test", "127.0.0.1", server.getPort());
+    if (sockets != null)
+      session.setSocketFactory(sockets);
     session.setPassword("test");
     session.setConfig("StrictHostKeyChecking", "no");
     session.setConfig("kex", "ecdh-sha2-nistp256");
