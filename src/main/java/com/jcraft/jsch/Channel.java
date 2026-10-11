@@ -536,10 +536,7 @@ public abstract class Channel {
     buffer.putInt(getRecipient());
     buffer.putInt(credit);
     try {
-      synchronized (this) {
-        if (!close)
-          getSession().write(packet);
-      }
+      getSession().write(packet, this);
     } catch (Exception e) {
       if (e instanceof IOException)
         throw (IOException) e;

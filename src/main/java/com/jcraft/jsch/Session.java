@@ -1848,6 +1848,12 @@ public class Session {
   }
 
   void write(Packet packet) throws Exception {
+    write(packet, null);
+  }
+
+  // Receive credit may wait for rekeying or socket I/O without holding a Channel
+  // monitor. The outgoing packet lock orders the final closed-state check with CLOSE.
+  void write(Packet packet, Channel receiveCreditOwner) throws Exception {
     // System.err.println("in_kex="+in_kex+" "+(packet.buffer.getCommand()));
     long t = getTimeout();
     while (in_kex) {
@@ -1867,10 +1873,14 @@ public class Session {
       } catch (InterruptedException e) {
       } ;
     }
-    _write(packet);
+    _write(packet, receiveCreditOwner);
   }
 
   private void _write(Packet packet) throws Exception {
+    _write(packet, null);
+  }
+
+  private void _write(Packet packet, Channel receiveCreditOwner) throws Exception {
     boolean initialKex = this.initialKex;
     boolean doStrictKex = this.doStrictKex;
     boolean enable_strict_kex = this.enable_strict_kex;
@@ -1878,6 +1888,8 @@ public class Session {
     boolean resetSeqo = packet.buffer.getCommand() == SSH_MSG_NEWKEYS && doStrictKex;
 
     synchronized (lock) {
+      if (receiveCreditOwner != null && (receiveCreditOwner.close || !receiveCreditOwner.connected))
+        return;
       encode(packet);
       if (io != null) {
         io.put(packet);
@@ -1995,7 +2007,14 @@ public class Session {
               break;
             }
 
-            channel.receiveData(foo, start[0], length[0], true);
+            try {
+              channel.receiveData(foo, start[0], length[0], true);
+            } catch (Exception e) {
+              if (getLogger().isEnabled(Logger.WARN))
+                getLogger().log(Logger.WARN, "Closing SSH channel " + channel.getId()
+                    + " after stderr consumer failure: " + e.getMessage(), e);
+              channel.disconnect();
+            }
 
             break;
 
