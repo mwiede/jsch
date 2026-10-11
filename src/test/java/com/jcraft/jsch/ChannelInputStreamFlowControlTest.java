@@ -510,16 +510,6 @@ class ChannelInputStreamFlowControlTest {
     List<String> commands = new CopyOnWriteArrayList<>();
     SshServer server = server();
     server.setCommandFactory((channel, name) -> {
-      if (name.equals("stream"))
-        remote.set(channel);
-      return command(name, commands, (output, error) -> {
-        output.write(new byte[window]);
-        output.flush();
-        full.countDown();
-        finish.await();
-      }, failure);
-    });
-    server.setCommandFactory((channel, name) -> {
       if (name.equals("stream")) {
         remote.set(channel);
         return command(name, commands, (output, error) -> {
@@ -585,8 +575,7 @@ class ChannelInputStreamFlowControlTest {
             if (Thread.currentThread().getName().equals("held-credit-writer")) {
               creditWriteEntered.countDown();
               try {
-                if (!releaseCreditWrite.await(10, TimeUnit.SECONDS))
-                  throw new java.io.IOException("Credit writer release was not supplied");
+                releaseCreditWrite.await();
               } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
                 throw new java.io.InterruptedIOException("Credit writer was interrupted");
@@ -613,6 +602,7 @@ class ChannelInputStreamFlowControlTest {
       sibling.setCommand("waiting-sibling");
       InputStream siblingInput = sibling.getInputStream();
       sibling.connect(1000);
+      assertEquals(window, input.available());
       consumer = new Thread(() -> {
         try {
           assertEquals(window / 2, input.read(new byte[window / 2]));
