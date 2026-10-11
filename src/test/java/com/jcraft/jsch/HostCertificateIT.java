@@ -268,17 +268,17 @@ public class HostCertificateIT {
 
       @Override
       public String getPassphrase() {
-        throw new RuntimeException("should not be needed");
+        throw new UnsupportedOperationException("should not be needed");
       }
 
       @Override
       public boolean promptPassword(String message) {
-        throw new RuntimeException("should not be needed");
+        throw new UnsupportedOperationException("should not be needed");
       }
 
       @Override
       public String getPassword() {
-        throw new RuntimeException("should not be needed");
+        throw new UnsupportedOperationException("should not be needed");
       }
 
       @Override
@@ -289,7 +289,10 @@ public class HostCertificateIT {
       }
 
       @Override
-      public void showMessage(String message) {}
+      public void showMessage(String message) {
+        // Might be invoked to display additional messages which don't
+        // require an answer. So better not throw an exception here
+      }
     });
 
     assertDoesNotThrow(() -> {
