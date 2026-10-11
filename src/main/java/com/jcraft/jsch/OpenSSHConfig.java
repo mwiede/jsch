@@ -31,12 +31,22 @@ import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
+import java.nio.file.InvalidPathException;
+import java.nio.file.Path;
+import java.nio.file.PathMatcher;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashSet;
 import java.util.Hashtable;
+import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Set;
 import java.util.Vector;
 import java.util.stream.Collectors;
@@ -48,9 +58,11 @@ import java.util.stream.Stream;
  *
  * <ul>
  * <li>Host</li>
+ * <li>Match (all, host, originalhost, user, localuser)</li>
  * <li>User</li>
  * <li>Hostname</li>
  * <li>Port</li>
+ * <li>Include</li>
  * <li>PreferredAuthentications</li>
  * <li>PubkeyAcceptedAlgorithms</li>
  * <li>FingerprintHash</li>
@@ -86,70 +98,485 @@ public class OpenSSHConfig implements ConfigRepository {
   /**
    * Parses the given string, and returns an instance of ConfigRepository.
    *
+   * Include directives in {@code conf} may read additional files. Only parse trusted config text.
+   * JSch does not impose OpenSSH's file owner/mode checks because embedded applications may use
+   * application-managed files or filesystems without POSIX permissions; callers must enforce their
+   * own trust policy.
+   *
    * @param conf string, which includes OpenSSH's config
    * @return an instanceof OpenSSHConfig
    */
   public static OpenSSHConfig parse(String conf) throws IOException {
     try (Reader r = new StringReader(conf)) {
       try (BufferedReader br = new BufferedReader(r)) {
-        return new OpenSSHConfig(br);
+        return new OpenSSHConfig(br, userSshDirectory());
       }
     }
   }
 
   /**
-   * Parses the given file, and returns an instance of ConfigRepository.
+   * Parses the given file, and returns an instance of ConfigRepository. Included files are read
+   * without owner/mode checks; callers choose which config files are trusted, including on
+   * platforms without POSIX ownership metadata.
    *
    * @param file OpenSSH's config file
    * @return an instanceof OpenSSHConfig
    */
   public static OpenSSHConfig parseFile(String file) throws IOException {
-    try (BufferedReader br =
-        Files.newBufferedReader(Paths.get(Util.checkTilde(file)), StandardCharsets.UTF_8)) {
-      return new OpenSSHConfig(br);
+    return parseFile(file, userSshDirectory());
+  }
+
+  static OpenSSHConfig parseFile(String file, Path includeBase) throws IOException {
+    Path path = Paths.get(Util.checkTilde(file));
+    try (BufferedReader br = Files.newBufferedReader(path, StandardCharsets.UTF_8)) {
+      Set<Path> activeFiles = new HashSet<>();
+      activeFiles.add(path.toRealPath());
+      return new OpenSSHConfig(br, includeBase, activeFiles);
     }
   }
 
-  OpenSSHConfig(BufferedReader br) throws IOException {
-    _parse(br);
+  private static Path userSshDirectory() {
+    return Paths.get(System.getProperty("user.home"), ".ssh");
   }
 
-  private final Hashtable<String, Vector<String[]>> config = new Hashtable<>();
-  private final Vector<String> hosts = new Vector<>();
+  OpenSSHConfig(BufferedReader br, Path includeBase) throws IOException {
+    this(br, includeBase, new HashSet<>());
+  }
 
-  private void _parse(BufferedReader br) throws IOException {
-    String host = "";
-    Vector<String[]> kv = new Vector<>();
-    String l = null;
+  private OpenSSHConfig(BufferedReader br, Path includeBase, Set<Path> activeFiles)
+      throws IOException {
+    Section global = new Section("", null, Collections.emptyList(), Collections.emptyList());
+    sections.add(global);
+    parse(br, includeBase, activeFiles, 0, global, Collections.emptyList(),
+        Collections.emptyList());
+  }
 
-    while ((l = br.readLine()) != null) {
-      l = l.trim();
-      if (l.length() == 0 || l.startsWith("#"))
-        continue;
+  private static final class Section {
+    final String host;
+    final MatchExpression match;
+    final List<String> enclosingHosts;
+    final List<MatchExpression> enclosingMatches;
+    final Vector<String[]> options = new Vector<>();
 
-      String[] key_value = l.split("[= \t]", 2);
-      for (int i = 0; i < key_value.length; i++)
-        key_value[i] = key_value[i].trim();
+    Section(String host, MatchExpression match, List<String> enclosingHosts,
+        List<MatchExpression> enclosingMatches) {
+      this.host = host;
+      this.match = match;
+      this.enclosingHosts = enclosingHosts;
+      this.enclosingMatches = enclosingMatches;
+    }
+  }
 
-      if (key_value.length <= 1)
-        continue;
+  private final Vector<Section> sections = new Vector<>();
 
-      if (key_value[0].equalsIgnoreCase("Host")) {
-        config.put(host, kv);
-        hosts.addElement(host);
-        host = key_value[1];
-        kv = new Vector<>();
-      } else {
-        kv.addElement(key_value);
+  private void parse(BufferedReader br, Path includeBase, Set<Path> activeFiles, int depth,
+      Section current, List<String> enclosingHosts, List<MatchExpression> enclosingMatches)
+      throws IOException {
+    String line;
+    while ((line = br.readLine()) != null) {
+      current = parseLine(line, includeBase, activeFiles, depth, current, enclosingHosts,
+          enclosingMatches);
+    }
+  }
+
+  private Section parseLine(String line, Path includeBase, Set<Path> activeFiles, int depth,
+      Section current, List<String> enclosingHosts, List<MatchExpression> enclosingMatches)
+      throws IOException {
+    line = line.trim();
+    if (line.isEmpty() || line.startsWith("#")) {
+      return current;
+    }
+    String[] keyValue = line.split("[= \t]", 2);
+    if (keyValue.length < 2) {
+      if (line.equalsIgnoreCase("Host") || line.equalsIgnoreCase("Match")
+          || line.equalsIgnoreCase("Include")) {
+        throw new IOException(line + " requires an argument");
+      }
+      return current;
+    }
+    String key = keyValue[0].trim();
+    String value = stripComment(keyValue[1].trim());
+    if (value.startsWith("=")) {
+      value = stripComment(value.substring(1).trim());
+    }
+    if (key.equalsIgnoreCase("Host")) {
+      if (value.isEmpty()) {
+        throw new IOException("Host requires at least one pattern");
+      }
+      Section next = new Section(value, null, enclosingHosts, enclosingMatches);
+      sections.add(next);
+      return next;
+    }
+    if (key.equalsIgnoreCase("Match")) {
+      Section next = new Section("", parseMatch(value), enclosingHosts, enclosingMatches);
+      sections.add(next);
+      return next;
+    }
+    if (key.equalsIgnoreCase("Include")) {
+      includeFiles(value, includeBase, activeFiles, depth, current);
+      Section next = new Section(current.host, current.match, enclosingHosts, enclosingMatches);
+      sections.add(next);
+      return next;
+    }
+    current.options.addElement(new String[] {key, value});
+    return current;
+  }
+
+  /**
+   * Drops a trailing comment like OpenSSH: an unquoted, unescaped {@code #} that starts a word ends
+   * the value, while one inside a word ({@code h#1}) or inside quotes is kept.
+   */
+  private static String stripComment(String value) {
+    char quote = 0;
+    for (int i = 0; i < value.length(); i++) {
+      char ch = value.charAt(i);
+      if (ch == '\\' && i + 1 < value.length() && isEscapable(value.charAt(i + 1), quote)) {
+        i++;
+      } else if (quote != 0) {
+        if (ch == quote) {
+          quote = 0;
+        }
+      } else if (ch == '"' || ch == '\'') {
+        quote = ch;
+      } else if (ch == '#' && (i == 0 || Character.isWhitespace(value.charAt(i - 1)))) {
+        return value.substring(0, i).trim();
       }
     }
-    config.put(host, kv);
-    hosts.addElement(host);
+    return value;
+  }
+
+  private static boolean isEscapable(char next, char quote) {
+    return next == '\\' || next == '"' || next == '\'' || (quote == 0 && next == ' ');
+  }
+
+  private void includeFiles(String value, Path includeBase, Set<Path> activeFiles, int depth,
+      Section current) throws IOException {
+    List<String> enclosingHosts = new ArrayList<>(current.enclosingHosts);
+    List<MatchExpression> enclosingMatches = new ArrayList<>(current.enclosingMatches);
+    if (!current.host.isEmpty()) {
+      enclosingHosts.add(current.host);
+    }
+    if (current.match != null) {
+      enclosingMatches.add(current.match);
+    }
+    for (String pattern : includeArguments(value)) {
+      for (Path path : expandInclude(pattern, includeBase)) {
+        includeFile(path, includeBase, activeFiles, depth, enclosingHosts, enclosingMatches);
+      }
+    }
+  }
+
+  private void includeFile(Path path, Path includeBase, Set<Path> activeFiles, int depth,
+      List<String> enclosingHosts, List<MatchExpression> enclosingMatches) throws IOException {
+    if (depth >= 16) {
+      throw new IOException("Too many recursive configuration includes: " + path);
+    }
+    Path realPath = path.toRealPath();
+    if (!activeFiles.add(realPath)) {
+      throw new IOException("Recursive configuration include: " + path);
+    }
+    try (BufferedReader included = Files.newBufferedReader(path, StandardCharsets.UTF_8)) {
+      Section includedContext = new Section("", null, enclosingHosts, enclosingMatches);
+      sections.add(includedContext);
+      parse(included, includeBase, activeFiles, depth + 1, includedContext, enclosingHosts,
+          enclosingMatches);
+    } finally {
+      activeFiles.remove(realPath);
+    }
+  }
+
+  private static List<String> includeArguments(String value) throws IOException {
+    IncludeArgumentParser parser = new IncludeArgumentParser();
+    for (int i = 0; i < value.length(); i++) {
+      if (!parser.accept(value.charAt(i), i + 1 < value.length() ? value.charAt(i + 1) : 0)) {
+        break;
+      }
+    }
+    return parser.finish(value);
+  }
+
+  private static MatchExpression parseMatch(String value) throws IOException {
+    if (value.isEmpty()) {
+      throw new IOException("Match requires at least one criterion");
+    }
+    List<String> arguments = includeArguments(value);
+    List<MatchCriterion> criteria = new ArrayList<>();
+    for (int i = 0; i < arguments.size(); i++) {
+      String attribute = arguments.get(i);
+      boolean negated = attribute.startsWith("!");
+      if (negated) {
+        attribute = attribute.substring(1);
+      }
+      int equals = attribute.indexOf('=');
+      String pattern = equals < 0 ? null : attribute.substring(equals + 1);
+      String type =
+          (equals < 0 ? attribute : attribute.substring(0, equals)).toLowerCase(Locale.ROOT);
+      if (type.equals("all")) {
+        if (arguments.size() != 1) {
+          throw new IOException("Match all cannot be combined with other criteria");
+        }
+        criteria.add(new MatchCriterion(type, null, negated));
+        continue;
+      }
+      if (!type.equals("host") && !type.equals("originalhost") && !type.equals("user")
+          && !type.equals("localuser")) {
+        throw new IOException("Unsupported Match criterion: " + type);
+      }
+      if (pattern == null && ++i < arguments.size()) {
+        pattern = arguments.get(i);
+      }
+      if (pattern == null || pattern.isEmpty()) {
+        throw new IOException("Missing Match pattern for " + type);
+      }
+      criteria.add(new MatchCriterion(type, pattern, negated));
+    }
+    return new MatchExpression(criteria);
+  }
+
+  private static final class MatchCriterion {
+    final String type;
+    final String pattern;
+    final boolean negated;
+
+    MatchCriterion(String type, String pattern, boolean negated) {
+      this.type = type;
+      this.pattern = pattern;
+      this.negated = negated;
+    }
+
+    boolean matches(String originalHost, String effectiveHost, String remoteUser) {
+      String candidate;
+      switch (type) {
+        case "all":
+          return !negated;
+        case "host":
+          candidate = effectiveHost;
+          break;
+        case "originalhost":
+          candidate = originalHost;
+          break;
+        case "user":
+          candidate = remoteUser;
+          break;
+        case "localuser":
+          candidate = System.getProperty("user.name");
+          break;
+        default:
+          return false;
+      }
+      boolean matched =
+          candidate != null && matchesPatternList(pattern, Util.str2byte(candidate), ",");
+      return negated ? !matched : matched;
+    }
+  }
+
+  private static final class MatchExpression {
+    final List<MatchCriterion> criteria;
+
+    MatchExpression(List<MatchCriterion> criteria) {
+      this.criteria = criteria;
+    }
+
+    boolean matches(String originalHost, String effectiveHost, String remoteUser) {
+      for (MatchCriterion criterion : criteria) {
+        if (!criterion.matches(originalHost, effectiveHost, remoteUser)) {
+          return false;
+        }
+      }
+      return true;
+    }
+  }
+
+  private static final class IncludeArgumentParser {
+    private final List<String> paths = new ArrayList<>();
+    private final StringBuilder path = new StringBuilder();
+    private char quote;
+    private boolean escaped;
+
+    boolean accept(char ch, char next) {
+      if (escaped) {
+        path.append(ch);
+        escaped = false;
+      } else if (ch == '\\') {
+        if (next == '\\' || next == '"' || next == '\'' || (quote == 0 && next == ' ')) {
+          escaped = true;
+        } else {
+          path.append(ch);
+        }
+      } else if (quote != 0) {
+        if (ch == quote) {
+          quote = 0;
+        } else {
+          path.append(ch);
+        }
+      } else if (ch == '"' || ch == '\'') {
+        quote = ch;
+      } else if (Character.isWhitespace(ch)) {
+        flush();
+      } else if (ch == '#' && path.length() == 0) {
+        return false;
+      } else {
+        path.append(ch);
+      }
+      return true;
+    }
+
+    List<String> finish(String value) throws IOException {
+      if (quote != 0) {
+        throw new IOException("Unterminated Include path: " + value);
+      }
+      flush();
+      if (paths.isEmpty()) {
+        throw new IOException("Include requires at least one path");
+      }
+      return paths;
+    }
+
+    private void flush() {
+      if (path.length() > 0) {
+        paths.add(path.toString());
+        path.setLength(0);
+      }
+    }
+  }
+
+  private static List<Path> expandInclude(String pattern, Path includeBase) throws IOException {
+    String name = pattern;
+    if (name.startsWith("~") && !name.equals("~") && !name.startsWith("~/")) {
+      throw new IOException("Unsupported Include home path: " + pattern);
+    }
+    if (name.equals("~") || name.startsWith("~/")) {
+      name = System.getProperty("user.home") + name.substring(1);
+    }
+    try {
+      return matchIncludeFiles(name, includeBase);
+    } catch (InvalidPathException e) {
+      throw new IOException("Invalid Include path: " + pattern, e);
+    }
+  }
+
+  private static List<Path> matchIncludeFiles(String pattern, Path includeBase) throws IOException {
+    int wildcard = firstWildcard(pattern);
+    if (wildcard < 0) {
+      Path path = Paths.get(pattern);
+      if (!path.isAbsolute()) {
+        path = includeBase.resolve(path);
+      }
+      return Files.isRegularFile(path) ? Collections.singletonList(path) : Collections.emptyList();
+    }
+
+    int separator = lastSeparatorBefore(pattern, wildcard);
+    Path prefix = separator < 0 ? includeBase : Paths.get(pattern.substring(0, separator + 1));
+    if (!prefix.isAbsolute()) {
+      prefix = includeBase.resolve(prefix);
+    }
+    List<Path> candidates = new ArrayList<>();
+    candidates.add(prefix);
+    for (String segment : splitSegments(pattern.substring(separator + 1))) {
+      List<Path> next = new ArrayList<>();
+      if (firstWildcard(segment) < 0) {
+        for (Path directory : candidates) {
+          Path path = directory.resolve(segment);
+          if (Files.exists(path)) {
+            next.add(path);
+          }
+        }
+      } else {
+        PathMatcher matcher;
+        try {
+          matcher = prefix.getFileSystem()
+              .getPathMatcher("glob:" + segment.replace("{", "\\{").replace("}", "\\}"));
+        } catch (IllegalArgumentException e) {
+          throw new IOException("Invalid Include pattern: " + pattern, e);
+        }
+        for (Path directory : candidates) {
+          if (!Files.isDirectory(directory)) {
+            continue;
+          }
+          try (DirectoryStream<Path> entries = Files.newDirectoryStream(directory)) {
+            for (Path entry : entries) {
+              String filename = entry.getFileName().toString();
+              if ((segment.startsWith(".") || !filename.startsWith("."))
+                  && matcher.matches(entry.getFileName())) {
+                next.add(entry);
+              }
+            }
+          } catch (IOException e) {
+            // An unreadable branch does not prevent other glob matches.
+          }
+        }
+      }
+      candidates = next;
+      if (candidates.isEmpty()) {
+        break;
+      }
+    }
+    return candidates.stream().filter(Files::isRegularFile)
+        .sorted(Comparator.comparing(Path::toString)).collect(Collectors.toList());
+  }
+
+  private static int firstWildcard(String value) {
+    for (int i = 0; i < value.length(); i++) {
+      char ch = value.charAt(i);
+      if (ch == '*' || ch == '?' || ch == '[') {
+        return i;
+      }
+    }
+    return -1;
+  }
+
+  private static int lastSeparatorBefore(String value, int limit) {
+    for (int i = limit - 1; i >= 0; i--) {
+      char ch = value.charAt(i);
+      if (ch == '/' || (java.io.File.separatorChar == '\\' && ch == '\\')) {
+        return i;
+      }
+    }
+    return -1;
+  }
+
+  private static List<String> splitSegments(String pattern) {
+    List<String> segments = new ArrayList<>();
+    int start = 0;
+    for (int i = 0; i <= pattern.length(); i++) {
+      if (i == pattern.length() || pattern.charAt(i) == '/'
+          || (java.io.File.separatorChar == '\\' && pattern.charAt(i) == '\\')) {
+        if (i > start) {
+          segments.add(pattern.substring(start, i));
+        }
+        start = i + 1;
+      }
+    }
+    return segments;
+  }
+
+  private static boolean matchesHostPatterns(String patternList, byte[] host) {
+    return matchesPatternList(patternList, host, "[ \\t]");
+  }
+
+  private static boolean matchesPatternList(String patternList, byte[] host, String separator) {
+    boolean positive = false;
+    for (String pattern : patternList.split(separator)) {
+      boolean negate = pattern.startsWith("!");
+      String candidate = negate ? pattern.substring(1) : pattern;
+      if (Util.glob(Util.str2byte(candidate.trim()), host)) {
+        if (negate) {
+          return false;
+        }
+        positive = true;
+      }
+    }
+    return positive;
   }
 
   @Override
   public Config getConfig(String host) {
-    return new MyConfig(host);
+    return new MyConfig(host, null);
+  }
+
+  @Override
+  public Config getConfig(String host, String user) {
+    return new MyConfig(host, user);
   }
 
   /**
@@ -182,38 +609,49 @@ public class OpenSSHConfig implements ConfigRepository {
     private String host;
     private Vector<Vector<String[]>> _configs = new Vector<>();
 
-    MyConfig(String host) {
+    MyConfig(String host, String user) {
       this.host = host;
 
-      _configs.addElement(config.get(""));
-
       byte[] _host = Util.str2byte(host);
-      if (hosts.size() > 1) {
-        for (int i = 1; i < hosts.size(); i++) {
-          boolean anyPositivePatternMatches = false;
-          boolean anyNegativePatternMatches = false;
-          String patterns[] = hosts.elementAt(i).split("[ \t]");
-          for (int j = 0; j < patterns.length; j++) {
-            boolean negate = false;
-            String foo = patterns[j].trim();
-            if (foo.startsWith("!")) {
-              negate = true;
-              foo = foo.substring(1).trim();
+      String effectiveHost = host;
+      String remoteUser = user != null ? user : System.getProperty("user.name");
+      boolean hostnameSet = false;
+      boolean userSet = user != null;
+      Map<MatchExpression, Boolean> matchResults = new IdentityHashMap<>();
+      for (Section section : sections) {
+        boolean matches = section.host.isEmpty() || matchesHostPatterns(section.host, _host);
+        for (String enclosingHost : section.enclosingHosts) {
+          matches &= matchesHostPatterns(enclosingHost, _host);
+        }
+        if (section.match != null) {
+          matches &= matchOnce(section.match, host, effectiveHost, remoteUser, matchResults);
+        }
+        for (MatchExpression enclosingMatch : section.enclosingMatches) {
+          matches &= matchOnce(enclosingMatch, host, effectiveHost, remoteUser, matchResults);
+        }
+        if (matches) {
+          _configs.addElement(section.options);
+          for (String[] option : section.options) {
+            if (!hostnameSet && option[0].equalsIgnoreCase("HostName")) {
+              effectiveHost = option[1].replace("%h", host);
+              hostnameSet = true;
+            } else if (!userSet && option[0].equalsIgnoreCase("User")) {
+              remoteUser = option[1];
+              userSet = true;
             }
-            if (Util.glob(Util.str2byte(foo), _host)) {
-              if (negate) {
-                anyNegativePatternMatches = true;
-              } else {
-                anyPositivePatternMatches = true;
-              }
-            }
-          }
-
-          if (anyPositivePatternMatches && !anyNegativePatternMatches) {
-            _configs.addElement(config.get(hosts.elementAt(i)));
           }
         }
       }
+    }
+
+    private boolean matchOnce(MatchExpression expression, String originalHost, String effectiveHost,
+        String remoteUser, Map<MatchExpression, Boolean> results) {
+      Boolean result = results.get(expression);
+      if (result == null) {
+        result = expression.matches(originalHost, effectiveHost, remoteUser);
+        results.put(expression, result);
+      }
+      return result;
     }
 
     private String find(String key) {
