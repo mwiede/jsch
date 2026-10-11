@@ -14,11 +14,11 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.Arrays;
-import java.util.List;
+import java.util.stream.Stream;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledForJreRange;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.GenericContainer;
@@ -85,10 +85,13 @@ public class HostCertificateIT {
    *
    * @return An iterable of host key algorithm strings for test parameterization.
    */
-  public static List<String> privateKeyParams() {
-    return Arrays.asList(
+  public static Stream<Arguments> privateKeyParams() {
+    return Stream.of(Arguments.of(
         "ecdsa-sha2-nistp256-cert-v01@openssh.com,ecdsa-sha2-nistp384-cert-v01@openssh.com,ecdsa-sha2-nistp521-cert-v01@openssh.com",
-        "ssh-rsa-cert-v01@openssh.com,rsa-sha2-512-cert-v01@openssh.com,rsa-sha2-256-cert-v01@openssh.com");
+        "SHA256:anZtW4mgUT85dJzx8y1o98h2NtKPEqmH7ZtRPjuXfXc"),
+        Arguments.of(
+            "ssh-rsa-cert-v01@openssh.com,rsa-sha2-512-cert-v01@openssh.com,rsa-sha2-256-cert-v01@openssh.com",
+            "SHA256:NOVYfZ1yIBCQpkPfCkJLvQr65ClVMXmhRa7KcgaQlag"));
   }
 
   /**
@@ -230,6 +233,71 @@ public class HostCertificateIT {
     session.setConfig("ssh-ed25519", "com.jcraft.jsch.jce.SignatureEd25519");
     assertThrows(JSchHostKeyException.class, () -> connectSftp(session));
   }
+
+  /**
+   * Tests whether the user is prompted with the correct fingerprint if the host is neither known,
+   * nor trusted by certificate. The fingerprint should cover just the public key part, as shown by
+   * ssh-keygen -l -f &lt;certificate&gt; and not the entire certificte
+   *
+   * @param algorithm The server host key algorithm to test, provided by
+   *        {@link #privateKeyParams()}.
+   * @param fingerprint The expected fingerprint, provided by {@link #privateKeyParams()}.
+   * @throws Exception if any error occurs during the test.
+   */
+  @MethodSource("privateKeyParams")
+  @ParameterizedTest(name = "hostkey algorithm: {0}")
+  public void hostKeyFingerprint(String algorithm, String fingerprint) throws Exception {
+    JSch ssh = new JSch();
+    ssh.addIdentity(
+        getResourceFile(this.getClass(), CERTIFICATES_BASE_FOLDER + "/user_keys/id_ecdsa_nistp521"),
+        getResourceFile(this.getClass(),
+            CERTIFICATES_BASE_FOLDER + "/user_keys/id_ecdsa_nistp521.pub"),
+        null);
+
+    Session session =
+        ssh.getSession("root", sshdContainer.getHost(), sshdContainer.getFirstMappedPort());
+    session.setConfig("enable_auth_none", "no");
+    session.setConfig("StrictHostKeyChecking", "ask");
+    session.setConfig("PreferredAuthentications", "publickey");
+    session.setConfig("server_host_key", algorithm);
+    session.setUserInfo(new UserInfo() {
+      @Override
+      public boolean promptPassphrase(String message) {
+        return true; // obtain the passphrase here
+      }
+
+      @Override
+      public String getPassphrase() {
+        throw new RuntimeException("should not be needed");
+      }
+
+      @Override
+      public boolean promptPassword(String message) {
+        throw new RuntimeException("should not be needed");
+      }
+
+      @Override
+      public String getPassword() {
+        throw new RuntimeException("should not be needed");
+      }
+
+      @Override
+      public boolean promptYesNo(String message) {
+        if (!message.contains(fingerprint))
+          throw new RuntimeException("\"" + message + "\" does not contain " + fingerprint);
+        return true;
+      }
+
+      @Override
+      public void showMessage(String message) {}
+    });
+
+    assertDoesNotThrow(() -> {
+      connectSftp(session);
+    });
+  }
+
+
 
   /**
    * Creates a session configured for {@code ssh-ed25519-cert-v01@openssh.com} host certificate
