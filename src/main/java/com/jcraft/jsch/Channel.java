@@ -507,19 +507,24 @@ public abstract class Channel {
       lwsize -= length;
     }
     OutputStream sink = io == null ? null : extended ? io.out_ext : io.out;
-    if (extended) write_ext(bytes, offset, length);
-    else write(bytes, offset, length);
+    if (extended)
+      write_ext(bytes, offset, length);
+    else
+      write(bytes, offset, length);
     // InputStream sinks return credit when read. Ordinary output sinks and channel
     // implementations consume synchronously, preserving their existing contract.
-    if (!(sink instanceof ChannelInputStream.Sink)) returnReceiveCredit(length);
+    if (!(sink instanceof ChannelInputStream.Sink))
+      returnReceiveCredit(length);
   }
 
   void returnReceiveCredit(int length) throws IOException {
     int credit;
     synchronized (receiveWindowLock) {
-      if (close || !connected) return;
+      if (close || !connected)
+        return;
       consumedReceiveBytes += length;
-      if (consumedReceiveBytes < Math.max(1, lwsize_max / 2)) return;
+      if (consumedReceiveBytes < Math.max(1, lwsize_max / 2))
+        return;
       credit = consumedReceiveBytes;
       consumedReceiveBytes = 0;
       lwsize += credit;
@@ -532,10 +537,12 @@ public abstract class Channel {
     buffer.putInt(credit);
     try {
       synchronized (this) {
-        if (!close) getSession().write(packet);
+        if (!close)
+          getSession().write(packet);
       }
     } catch (Exception e) {
-      if (e instanceof IOException) throw (IOException) e;
+      if (e instanceof IOException)
+        throw (IOException) e;
       throw new IOException("Cannot return receive credit for SSH channel " + id, e);
     }
   }
@@ -640,8 +647,10 @@ public abstract class Channel {
   // A local cancellation releases it immediately, including before channel admission.
   void disconnect(boolean preserveReceivedData) {
     if (!preserveReceivedData) {
-      if (stdoutReceiver != null) stdoutReceiver.abort();
-      if (stderrReceiver != null) stderrReceiver.abort();
+      if (stdoutReceiver != null)
+        stdoutReceiver.abort();
+      if (stderrReceiver != null)
+        stderrReceiver.abort();
     }
     // System.err.println(this+":disconnect "+io+" "+connected);
     // Thread.dumpStack();

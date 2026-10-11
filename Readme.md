@@ -131,6 +131,23 @@ When you have an artifact `foo:bar`, which contains `com.jcraft:jsch` as a trans
     * `jsch.max_auth_tries`
       * analogous to `JSch.setConfig("MaxAuthTries", "...")`
 
+## Channel input streams
+
+Call `Channel.getInputStream()` and, when needed, `getExtInputStream()` before connecting
+the channel. The connection reader places data in a bounded buffer and keeps processing
+other channels while an application reader is busy. Stdout and stderr share the channel's
+receive credit. Credit is returned only as the application reads bytes; a full receive
+window makes the remote writer wait without blocking the local connection reader or
+discarding bytes.
+
+The receive window configured with `Channel.setLocalWindowSizeMax(int)` bounds pending
+data across both streams. Each stream allocates at most that window size, lazily; the old
+`max_input_buffer_size` pipe setting does not control these buffers. Drain stdout and
+stderr concurrently when both may contain a large output. Remote EOF and close preserve
+already received bytes for final reads. Closing an active input stream cancels its channel
+and releases both buffers; closing a completed stream releases only its remaining bytes.
+Disconnecting a channel or session locally releases pending data and wakes waiting readers.
+
 ## Other Projects Using JSch
 
 * Jsync https://github.com/fizzed/jsync - Provides a simple, efficient, reliable, and pure Java rsync-like file and

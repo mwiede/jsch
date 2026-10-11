@@ -56,10 +56,12 @@ final class ChannelInputStream extends InputStream {
 
   @Override
   public int read(byte[] bytes, int offset, int length) throws IOException {
-    if (bytes == null) throw new NullPointerException("bytes");
+    if (bytes == null)
+      throw new NullPointerException("bytes");
     if (offset < 0 || length < 0 || length > bytes.length - offset)
       throw new IndexOutOfBoundsException();
-    if (length == 0) return 0;
+    if (length == 0)
+      return 0;
     int count;
     synchronized (this) {
       while (size == 0 && !finished && !closed) {
@@ -67,21 +69,24 @@ final class ChannelInputStream extends InputStream {
           wait();
         } catch (InterruptedException e) {
           Thread.currentThread().interrupt();
-          InterruptedIOException interrupted =
-              new InterruptedIOException("Interrupted while reading SSH channel " + channel.getId());
+          InterruptedIOException interrupted = new InterruptedIOException(
+              "Interrupted while reading SSH channel " + channel.getId());
           interrupted.initCause(e);
           throw interrupted;
         }
       }
-      if (closed) throw new IOException("SSH channel input stream is closed");
-      if (size == 0) return -1;
+      if (closed)
+        throw new IOException("SSH channel input stream is closed");
+      if (size == 0)
+        return -1;
       count = Math.min(length, size);
       int first = Math.min(count, buffer.length - head);
       System.arraycopy(buffer, head, bytes, offset, first);
       System.arraycopy(buffer, 0, bytes, offset + first, count - first);
       head = (head + count) % buffer.length;
       size -= count;
-      if (size == 0 && finished) buffer = null;
+      if (size == 0 && finished)
+        buffer = null;
     }
     // Never hold the buffer monitor across protocol I/O. Incoming DATA only copies
     // into this buffer; it never waits for a read or runs application code.
@@ -91,14 +96,22 @@ final class ChannelInputStream extends InputStream {
 
   @Override
   public synchronized int available() throws IOException {
-    if (closed) throw new IOException("SSH channel input stream is closed");
+    if (closed)
+      throw new IOException("SSH channel input stream is closed");
     return size;
   }
 
   @Override
   public void close() {
-    abort();
-    channel.disconnect();
+    boolean cancelChannel;
+    synchronized (this) {
+      cancelChannel = !finished && !closed;
+      abort();
+    }
+    // Closing a stream whose EOF was received must leave the other stream's
+    // final bytes available. Closing an active stream cancels its channel.
+    if (cancelChannel)
+      channel.disconnect();
   }
 
   synchronized void abort() {
@@ -119,8 +132,10 @@ final class ChannelInputStream extends InputStream {
     @Override
     public void write(byte[] bytes, int offset, int length) throws IOException {
       synchronized (ChannelInputStream.this) {
-        if (closed || finished) throw new IOException("SSH channel input stream is closed");
-        if (buffer == null) buffer = new byte[channel.getLocalWindowSizeMax()];
+        if (closed || finished)
+          throw new IOException("SSH channel input stream is closed");
+        if (buffer == null)
+          buffer = new byte[channel.getLocalWindowSizeMax()];
         if (length > buffer.length - size)
           throw new IOException("SSH channel DATA exceeds its receive window: pending=" + size
               + ", incoming=" + length + ", capacity=" + buffer.length);
@@ -137,7 +152,8 @@ final class ChannelInputStream extends InputStream {
     public void close() {
       synchronized (ChannelInputStream.this) {
         finished = true;
-        if (size == 0) buffer = null;
+        if (size == 0)
+          buffer = null;
         ChannelInputStream.this.notifyAll();
       }
     }

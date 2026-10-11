@@ -38,18 +38,21 @@ class ChannelInputStreamFlowControlTest {
     CountDownLatch payloadWritten = new CountDownLatch(1);
     CountDownLatch finish = new CountDownLatch(1);
     CountDownLatch remoteClosed = new CountDownLatch(1);
-    java.util.concurrent.atomic.AtomicInteger closes = new java.util.concurrent.atomic.AtomicInteger();
+    java.util.concurrent.atomic.AtomicInteger closes =
+        new java.util.concurrent.atomic.AtomicInteger();
     AtomicReference<Throwable> failure = new AtomicReference<>();
     List<String> commands = new CopyOnWriteArrayList<>();
     java.util.Set<Thread> before = Thread.getAllStackTraces().keySet();
     SshServer server = server();
     server.setCommandFactory((channel, name) -> {
-      if (name.equals("stream")) channel.addChannelListener(new org.apache.sshd.common.channel.ChannelListener() {
-        public void channelClosed(org.apache.sshd.common.channel.Channel closed, Throwable reason) {
-          closes.incrementAndGet();
-          remoteClosed.countDown();
-        }
-      });
+      if (name.equals("stream"))
+        channel.addChannelListener(new org.apache.sshd.common.channel.ChannelListener() {
+          public void channelClosed(org.apache.sshd.common.channel.Channel closed,
+              Throwable reason) {
+            closes.incrementAndGet();
+            remoteClosed.countDown();
+          }
+        });
       return command(name, commands, (output, error) -> {
         output.write(new byte[window]);
         output.flush();
@@ -74,7 +77,8 @@ class ChannelInputStreamFlowControlTest {
       sibling.setCommand("sibling-before-close");
       InputStream siblingInput = sibling.getInputStream();
       sibling.connect(1000);
-      while (siblingInput.read() >= 0) {}
+      while (siblingInput.read() >= 0) {
+      }
       siblingInput.close();
       assertEquals(window, input.available());
       if (interruptConsumer) {
@@ -89,7 +93,11 @@ class ChannelInputStreamFlowControlTest {
             // ordinary resource cleanup below still closes its owned stream.
             Thread.currentThread().interrupt();
           } finally {
-            try { input.close(); } catch (Exception e) { failure.set(e); }
+            try {
+              input.close();
+            } catch (Exception e) {
+              failure.set(e);
+            }
           }
         }, "cancelled-stream-consumer");
         consumer.setDaemon(true);
@@ -106,19 +114,24 @@ class ChannelInputStreamFlowControlTest {
       input.close();
       stream.disconnect();
       assertEquals(1, closes.get());
-      assertEquals("SSH channel input stream is closed", assertThrows(java.io.IOException.class,
-          () -> input.read()).getMessage());
+      assertEquals("SSH channel input stream is closed",
+          assertThrows(java.io.IOException.class, () -> input.read()).getMessage());
       ChannelExec after = (ChannelExec) session.openChannel("exec");
       after.setCommand("sibling-after-close");
       InputStream afterInput = after.getInputStream();
       after.connect(1000);
-      while (afterInput.read() >= 0) {}
+      while (afterInput.read() >= 0) {
+      }
       afterInput.close();
       assertTrue(session.isConnected());
     } finally {
       finish.countDown();
-      if (session != null) session.disconnect();
-      if (consumer != null) { consumer.interrupt(); consumer.join(10000); }
+      if (session != null)
+        session.disconnect();
+      if (consumer != null) {
+        consumer.interrupt();
+        consumer.join(10000);
+      }
       server.stop(true);
       for (Thread thread : Thread.getAllStackTraces().keySet()) {
         if (!before.contains(thread) && (thread.getName().startsWith("Connect thread ")
@@ -134,7 +147,8 @@ class ChannelInputStreamFlowControlTest {
   @Timeout(30)
   void heldConsumerDoesNotBlockTwoSiblingExecs() throws Exception {
     byte[] payload = new byte[128 * 1024];
-    for (int i = 0; i < payload.length; i++) payload[i] = (byte) (i % 251);
+    for (int i = 0; i < payload.length; i++)
+      payload[i] = (byte) (i % 251);
     CountDownLatch consumerEntered = new CountDownLatch(1);
     CountDownLatch releaseConsumer = new CountDownLatch(1);
     CountDownLatch payloadWritten = new CountDownLatch(1);
@@ -168,7 +182,8 @@ class ChannelInputStreamFlowControlTest {
           assertTrue(releaseConsumer.await(10, TimeUnit.SECONDS));
           byte[] buffer = new byte[8192];
           int n;
-          while ((n = input.read(buffer)) >= 0) received.write(buffer, 0, n);
+          while ((n = input.read(buffer)) >= 0)
+            received.write(buffer, 0, n);
         } catch (Throwable e) {
           failure.compareAndSet(null, e);
         }
@@ -183,7 +198,8 @@ class ChannelInputStreamFlowControlTest {
           sibling.setCommand("sibling-" + i);
           InputStream siblingInput = sibling.getInputStream();
           sibling.connect(1000);
-          while (siblingInput.read() >= 0) {}
+          while (siblingInput.read() >= 0) {
+          }
           siblingInput.close();
         } catch (Throwable e) {
           openFailure.compareAndSet(null, e);
@@ -203,8 +219,12 @@ class ChannelInputStreamFlowControlTest {
     } finally {
       releaseConsumer.countDown();
       finish.countDown();
-      if (session != null) session.disconnect();
-      if (consumer != null) { consumer.interrupt(); consumer.join(10000); }
+      if (session != null)
+        session.disconnect();
+      if (consumer != null) {
+        consumer.interrupt();
+        consumer.join(10000);
+      }
       server.stop(true);
     }
   }
@@ -214,7 +234,8 @@ class ChannelInputStreamFlowControlTest {
   void receiveCreditIsReturnedOnlyForConsumedBytes() throws Exception {
     int window = 64 * 1024;
     byte[] payload = new byte[window];
-    for (int i = 0; i < payload.length; i++) payload[i] = (byte) (i % 251);
+    for (int i = 0; i < payload.length; i++)
+      payload[i] = (byte) (i % 251);
     CountDownLatch payloadWritten = new CountDownLatch(1);
     CountDownLatch finish = new CountDownLatch(1);
     AtomicReference<Throwable> failure = new AtomicReference<>();
@@ -222,7 +243,8 @@ class ChannelInputStreamFlowControlTest {
     List<String> commands = new CopyOnWriteArrayList<>();
     SshServer server = server();
     server.setCommandFactory((channel, command) -> {
-      if (command.equals("stream")) remote.set(channel);
+      if (command.equals("stream"))
+        remote.set(channel);
       return command(command, commands, (output, error) -> {
         output.write(payload);
         output.flush();
@@ -248,7 +270,8 @@ class ChannelInputStreamFlowControlTest {
         sibling.setCommand("sibling");
         InputStream siblingInput = sibling.getInputStream();
         sibling.connect(1000);
-        while (siblingInput.read() >= 0) {}
+        while (siblingInput.read() >= 0) {
+        }
         siblingInput.close();
         assertEquals(window, input.available());
         assertEquals(0, remote.get().getRemoteWindow().getSize(),
@@ -260,13 +283,15 @@ class ChannelInputStreamFlowControlTest {
       ByteArrayOutputStream received = new ByteArrayOutputStream();
       byte[] buffer = new byte[8192];
       int n;
-      while ((n = input.read(buffer)) >= 0) received.write(buffer, 0, n);
+      while ((n = input.read(buffer)) >= 0)
+        received.write(buffer, 0, n);
       assertArrayEquals(payload, received.toByteArray());
       input.close();
       assertNull(failure.get(), () -> String.valueOf(failure.get()));
     } finally {
       finish.countDown();
-      if (session != null) session.disconnect();
+      if (session != null)
+        session.disconnect();
       server.stop(true);
     }
   }
@@ -286,15 +311,20 @@ class ChannelInputStreamFlowControlTest {
     List<String> commands = new CopyOnWriteArrayList<>();
     SshServer server = server();
     server.setCommandFactory((channel, name) -> {
-      if (name.equals("stream")) remote.set(channel);
+      if (name.equals("stream"))
+        remote.set(channel);
       return command(name, commands, (output, error) -> {
-        output.write(first); output.flush();
-        error.write(first); error.flush();
+        output.write(first);
+        output.flush();
+        error.write(first);
+        error.flush();
         full.countDown();
         assertTrue(resume.await(10, TimeUnit.SECONDS));
         for (int i = 0; i < 5; i++) {
-          output.write(next); output.flush();
-          error.write(next); error.flush();
+          output.write(next);
+          output.flush();
+          error.write(next);
+          error.flush();
         }
       }, failure);
     });
@@ -317,13 +347,18 @@ class ChannelInputStreamFlowControlTest {
       fence.setCommand("sibling");
       InputStream fenceInput = fence.getInputStream();
       fence.connect(1000);
-      while (fenceInput.read() >= 0) {}
+      while (fenceInput.read() >= 0) {
+      }
       fenceInput.close();
       assertEquals(window, input.available() + error.available());
       assertEquals(0, remote.get().getRemoteWindow().getSize(),
           "Stdout and stderr must share one consumption-based receive window");
       errorReader = new Thread(() -> {
-        try { drain(error, stderr); } catch (Throwable e) { failure.compareAndSet(null, e); }
+        try {
+          drain(error, stderr);
+        } catch (Throwable e) {
+          failure.compareAndSet(null, e);
+        }
       }, "extended-stream-consumer");
       errorReader.setDaemon(true);
       errorReader.start();
@@ -333,15 +368,61 @@ class ChannelInputStreamFlowControlTest {
       assertFalse(errorReader.isAlive());
       ByteArrayOutputStream expected = new ByteArrayOutputStream();
       expected.write(first);
-      for (int i = 0; i < 5; i++) expected.write(next);
+      for (int i = 0; i < 5; i++)
+        expected.write(next);
       assertArrayEquals(expected.toByteArray(), stdout.toByteArray());
       assertArrayEquals(expected.toByteArray(), stderr.toByteArray());
       assertNull(failure.get(), () -> String.valueOf(failure.get()));
-      input.close(); error.close();
+      input.close();
+      error.close();
     } finally {
       resume.countDown();
-      if (session != null) session.disconnect();
-      if (errorReader != null) { errorReader.interrupt(); errorReader.join(10000); }
+      if (session != null)
+        session.disconnect();
+      if (errorReader != null) {
+        errorReader.interrupt();
+        errorReader.join(10000);
+      }
+      server.stop(true);
+    }
+  }
+
+  @Test
+  @Timeout(30)
+  void closingCompletedStdoutPreservesUnreadStderr() throws Exception {
+    byte[] payload = new byte[128 * 1024];
+    Arrays.fill(payload, (byte) 37);
+    AtomicReference<Throwable> failure = new AtomicReference<>();
+    List<String> commands = new CopyOnWriteArrayList<>();
+    SshServer server = server();
+    server.setCommandFactory((channel, name) -> command(name, commands, (output, error) -> {
+      output.write(1);
+      output.flush();
+      error.write(payload);
+      error.flush();
+    }, failure));
+    Session session = null;
+    try {
+      server.start();
+      session = connect(server);
+      // The baseline must also hold this complete final stream without blocking.
+      session.setConfig("max_input_buffer_size", Integer.toString(256 * 1024));
+      ChannelExec stream = (ChannelExec) session.openChannel("exec");
+      stream.setCommand("stream");
+      InputStream input = stream.getInputStream();
+      InputStream error = stream.getExtInputStream();
+      stream.connect(1000);
+      assertEquals(1, input.read());
+      assertEquals(-1, input.read());
+      input.close();
+      ByteArrayOutputStream received = new ByteArrayOutputStream();
+      drain(error, received);
+      assertArrayEquals(payload, received.toByteArray());
+      assertNull(failure.get(), () -> String.valueOf(failure.get()));
+      error.close();
+    } finally {
+      if (session != null)
+        session.disconnect();
       server.stop(true);
     }
   }
@@ -349,7 +430,8 @@ class ChannelInputStreamFlowControlTest {
   private static void drain(InputStream input, ByteArrayOutputStream received) throws Exception {
     byte[] bytes = new byte[8192];
     int count;
-    while ((count = input.read(bytes)) >= 0) received.write(bytes, 0, count);
+    while ((count = input.read(bytes)) >= 0)
+      received.write(bytes, 0, count);
   }
 
   private static SshServer server() throws Exception {
@@ -373,7 +455,9 @@ class ChannelInputStreamFlowControlTest {
     return session;
   }
 
-  private interface Writer { void write(OutputStream output, OutputStream error) throws Exception; }
+  private interface Writer {
+    void write(OutputStream output, OutputStream error) throws Exception;
+  }
 
   private static Command command(String name, List<String> commands, Writer writer,
       AtomicReference<Throwable> failure) {
@@ -382,22 +466,40 @@ class ChannelInputStreamFlowControlTest {
       OutputStream error;
       org.apache.sshd.server.ExitCallback exit;
       Thread worker;
+
       public void setInputStream(InputStream input) {}
-      public void setOutputStream(OutputStream output) { this.output = output; }
-      public void setErrorStream(OutputStream error) { this.error = error; }
-      public void setExitCallback(org.apache.sshd.server.ExitCallback exit) { this.exit = exit; }
+
+      public void setOutputStream(OutputStream output) {
+        this.output = output;
+      }
+
+      public void setErrorStream(OutputStream error) {
+        this.error = error;
+      }
+
+      public void setExitCallback(org.apache.sshd.server.ExitCallback exit) {
+        this.exit = exit;
+      }
+
       public void start(ChannelSession channel, org.apache.sshd.server.Environment environment) {
         commands.add(name);
         worker = new Thread(() -> {
           try {
-            if (name.equals("stream")) writer.write(output, error);
-            else { output.write(name.getBytes(StandardCharsets.UTF_8)); output.flush(); }
+            if (name.equals("stream"))
+              writer.write(output, error);
+            else {
+              output.write(name.getBytes(StandardCharsets.UTF_8));
+              output.flush();
+            }
             exit.onExit(0);
-          } catch (Throwable e) { failure.compareAndSet(null, e); }
+          } catch (Throwable e) {
+            failure.compareAndSet(null, e);
+          }
         }, "flow-control-server-command");
         worker.setDaemon(true);
         worker.start();
       }
+
       public void destroy(ChannelSession channel) throws Exception {
         if (worker != null && worker != Thread.currentThread()) {
           worker.interrupt();
