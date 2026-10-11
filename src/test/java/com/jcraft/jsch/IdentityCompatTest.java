@@ -223,9 +223,37 @@ public class IdentityCompatTest {
             "secret123".getBytes(UTF_8)),
         Arguments.of("pkcs8_rsa", "certificates/host/sshd_config", "secret123".getBytes(UTF_8)),
 
-        // Unencrypted PKCS8
+        // More PKCS8, also unencrypted, preferably paired with matching algorithm
+        Arguments.of("pkcs8_dsa", "pkcs8_dsa_encrypted_hmacsha1.pub", null),
+        Arguments.of("pkcs8_dsa_encrypted_hmacsha1", "pkcs8_dsa_encrypted_hmacsha256.pub",
+            "secret123".getBytes(UTF_8)),
+        Arguments.of("pkcs8_dsa_encrypted_hmacsha256", "pkcs8_dsa_encrypted_hmacsha1.pub",
+            "secret123".getBytes(UTF_8)),
+        Arguments.of("pkcs8_ecdsa256", "pkcs8_ecdsa256_encrypted_scrypt.pub", null),
+        Arguments.of("pkcs8_ecdsa256_encrypted_scrypt", "pkcs8_ecdsa256.pub",
+            "secret123".getBytes(UTF_8)),
+        Arguments.of("pkcs8_ecdsa384", "pkcs8_ecdsa384_encrypted_scrypt.pub", null),
+        Arguments.of("pkcs8_ecdsa384_encrypted_scrypt", "pkcs8_ecdsa384.pub",
+            "secret123".getBytes(UTF_8)),
+        Arguments.of("pkcs8_ecdsa521", "pkcs8_ecdsa521_encrypted_scrypt.pub", null),
+        Arguments.of("pkcs8_ecdsa521_encrypted_scrypt", "pkcs8_ecdsa521.pub",
+            "secret123".getBytes(UTF_8)),
+        Arguments.of("pkcs8_ed25519", "pkcs8_ed25519_encrypted_scrypt.pub", null),
+        Arguments.of("pkcs8_ed25519_encrypted_scrypt", "pkcs8_ed25519.pub",
+            "secret123".getBytes(UTF_8)),
+        Arguments.of("pkcs8_ed448", "pkcs8_ed448_encrypted_scrypt.pub", null),
+        Arguments.of("pkcs8_ed448_encrypted_scrypt", "pkcs8_ed448.pub",
+            "secret123".getBytes(UTF_8)),
         Arguments.of("pkcs8_rsa", "pkcs8_rsa_encrypted_hmacsha256-cert.pub", null),
         Arguments.of("pkcs8_rsa", "pkcs8_rsa_encrypted_hmacsha256.pub", null),
+        Arguments.of("pkcs8_rsa_encrypted_hmacsha1", "pkcs8_rsa_encrypted_hmacsha256.pub",
+            "secret123".getBytes(UTF_8)),
+        Arguments.of("pkcs8_rsa_encrypted_hmacsha256", "pkcs8_rsa-cert.pub",
+            "secret123".getBytes(UTF_8)),
+        Arguments.of("pkcs8_rsa_encrypted_hmacsha256", "pkcs8_rsa_encrypted_hmacsha1.pub",
+            "secret123".getBytes(UTF_8)),
+
+        // Unencrypted PKCS8 with non-key
         Arguments.of("pkcs8_rsa", "certificates/host/sshd_config", null),
 
         // PPK
