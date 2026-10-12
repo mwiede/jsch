@@ -1,0 +1,68 @@
+name: Android CI
+
+on:
+  workflow_dispatch:
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+    - name: Set up JDK
+      uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961 # v5.7.0
+      with:
+        distribution: 'temurin'
+        java-version: '25'
+        check-latest: true
+        cache: 'maven'
+    - name: Set up Gradle
+      uses: gradle/actions/setup-gradle@0723195856401067f7a2779048b490ace7a47d7c # v5.0.0
+      with:
+        gradle-version: '9.5.0'
+    - name: Build JSch and Android support
+      run: |
+        ./mvnw -B -V -DskipTests install
+        ./mvnw -B -V -f jsch-android/pom.xml package
+        cp target/jsch-2.28.8-SNAPSHOT.jar android-test/jsch.jar
+        cp jsch-android/target/jsch-android-2.28.8-SNAPSHOT.jar android-test/jsch-android.jar
+    - name: Build Android tests
+      run: gradle -p android-test assembleDebug assembleDebugAndroidTest --no-daemon
+    - name: Upload Android tests
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+      with:
+        name: android-apks
+        path: android-test/build/outputs/apk/
+
+  test:
+    needs: build
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        api-level: [26, 33, 35, 36]
+    steps:
+    - name: Download Android tests
+      uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+      with:
+        name: android-apks
+        path: apks
+    - name: Enable KVM
+      run: |
+        echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS="static_node=kvm"' \
+          | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+        sudo udevadm control --reload-rules
+        sudo udevadm trigger --name-match=kvm
+    - name: Run Android tests
+      uses: reactivecircus/android-emulator-runner@a421e43855164a8197daf9d8d40fe71c6996bb0d # v2
+      with:
+        api-level: ${{ matrix.api-level }}
+        arch: x86_64
+        target: google_apis
+        script: |
+          adb install apks/debug/jsch-android-test-debug.apk
+          adb install apks/androidTest/debug/jsch-android-test-debug-androidTest.apk
+          adb shell am instrument -w com.jcraft.jsch.androidtest.test/androidx.test.runner.AndroidJUnitRunner | tee android-test-results.txt
+          grep -q '^OK (' android-test-results.txt
