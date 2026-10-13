@@ -1,0 +1,7 @@
+FROM jsch-openeuler-sshd-base:latest
+COPY ssh_host_sm2_key /etc/ssh/
+COPY ssh_host_sm2_key.pub /etc/ssh/
+COPY sshd_config.shangmi /etc/ssh/sshd_config
+COPY authorized_keys /root/.ssh/
+RUN chmod 600 /etc/ssh/ssh_host_sm2_key /root/.ssh/authorized_keys
+ENTRYPOINT ["/usr/sbin/sshd", "-D", "-e"]
