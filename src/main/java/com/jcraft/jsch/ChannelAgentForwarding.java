@@ -223,13 +223,13 @@ class ChannelAgentForwarding extends Channel {
       }
     } else if (typ == SSH2_AGENTC_REMOVE_IDENTITY) {
       byte[] blob = rbuf.getString();
-      irepo.remove(blob);
-      mbuf.putByte(SSH_AGENT_SUCCESS);
+      boolean result = irepo.remove(blob);
+      mbuf.putByte(result ? SSH_AGENT_SUCCESS : SSH_AGENT_FAILURE);
     } else if (typ == SSH_AGENTC_REMOVE_ALL_RSA_IDENTITIES) {
       mbuf.putByte(SSH_AGENT_SUCCESS);
     } else if (typ == SSH2_AGENTC_REMOVE_ALL_IDENTITIES) {
-      irepo.removeAll();
-      mbuf.putByte(SSH_AGENT_SUCCESS);
+      boolean result = irepo.removeAllIdentities();
+      mbuf.putByte(result ? SSH_AGENT_SUCCESS : SSH_AGENT_FAILURE);
     } else if (typ == SSH2_AGENTC_ADD_IDENTITY) {
       int fooo = rbuf.getLength();
       byte[] tmp = new byte[fooo];

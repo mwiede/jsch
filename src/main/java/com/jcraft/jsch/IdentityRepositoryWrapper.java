@@ -64,13 +64,37 @@ class IdentityRepositoryWrapper implements IdentityRepository {
 
   @Override
   public boolean remove(byte[] blob) {
-    return ir.remove(blob);
+    // getIdentities() hands out the cached identities as well, so they have to be removable too.
+    boolean removed = removeFromCache(blob);
+    return ir.remove(blob) || removed;
+  }
+
+  private synchronized boolean removeFromCache(byte[] blob) {
+    if (blob == null)
+      return false;
+    boolean removed = false;
+    for (int i = cache.size() - 1; i >= 0; i--) {
+      Identity identity = cache.elementAt(i);
+      byte[] _blob = identity.getPublicKeyBlob();
+      if (_blob == null || !Util.array_equals(blob, _blob))
+        continue;
+      cache.removeElementAt(i);
+      identity.clear();
+      removed = true;
+    }
+    return removed;
   }
 
   @Override
   public void removeAll() {
     cache.removeAllElements();
     ir.removeAll();
+  }
+
+  @Override
+  public boolean removeAllIdentities() {
+    cache.removeAllElements();
+    return ir.removeAllIdentities();
   }
 
   @Override

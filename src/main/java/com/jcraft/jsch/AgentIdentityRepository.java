@@ -31,6 +31,7 @@ import java.util.Vector;
 public class AgentIdentityRepository implements IdentityRepository {
 
   private AgentProxy agent;
+  private boolean removeAllResult;
 
   public AgentIdentityRepository(AgentConnector connector) {
     this.agent = new AgentProxy(connector);
@@ -52,8 +53,16 @@ public class AgentIdentityRepository implements IdentityRepository {
   }
 
   @Override
-  public void removeAll() {
-    agent.removeAllIdentities();
+  public synchronized void removeAll() {
+    removeAllResult = agent.removeAllIdentities();
+  }
+
+  @Override
+  public synchronized boolean removeAllIdentities() {
+    removeAllResult = true;
+    // Preserve dispatch to removeAll() for subclasses compiled before this method was added.
+    removeAll();
+    return removeAllResult;
   }
 
   @Override
