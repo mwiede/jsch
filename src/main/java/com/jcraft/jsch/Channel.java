@@ -391,7 +391,7 @@ public abstract class Channel {
         byte[] tmp = new byte[foo];
         if (out < in) {
           System.arraycopy(buffer, 0, tmp, 0, buffer.length);
-        } else if (in < out) {
+        } else if (in <= out) {
           if (in == -1) {
           } else {
             System.arraycopy(buffer, 0, tmp, 0, in);
@@ -399,9 +399,6 @@ public abstract class Channel {
                 (buffer.length - out));
             out = tmp.length - (buffer.length - out);
           }
-        } else if (in == out) {
-          System.arraycopy(buffer, 0, tmp, 0, buffer.length);
-          in = buffer.length;
         }
         buffer = tmp;
       } else if (buffer.length == size && size > BUFFER_SIZE) {
