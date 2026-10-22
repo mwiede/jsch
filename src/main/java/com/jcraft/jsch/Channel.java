@@ -54,6 +54,9 @@ public abstract class Channel {
   // discarded by the transport layer, killing the connection.
   private static final int MAX_LOCAL_PACKET_SIZE = Session.PACKET_MAX_SIZE - 4096;
 
+  // cap for the remote maximum packet size announced by the server, see setRemotePacketSize
+  private static final int MAX_REMOTE_PACKET_SIZE = Session.PACKET_MAX_SIZE - 4096;
+
   int id;
   volatile int recipient = -1;
   protected byte[] type = Util.str2byte("foo");
@@ -487,7 +490,10 @@ public abstract class Channel {
   }
 
   void setRemotePacketSize(int foo) {
-    this.rmpsize = foo;
+    // The remote maximum packet size is attacker-controlled and is used to allocate Buffers.
+    // It is only an upper bound for what we may send, so capping it is always protocol-compliant.
+    // Negative values are unsigned values above Integer.MAX_VALUE.
+    this.rmpsize = (foo < 0 || foo > MAX_REMOTE_PACKET_SIZE) ? MAX_REMOTE_PACKET_SIZE : foo;
   }
 
   abstract void run();
