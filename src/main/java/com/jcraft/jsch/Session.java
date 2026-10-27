@@ -3113,8 +3113,8 @@ public class Session {
    * Returns the thread that runs this session's read loop.
    *
    * <p>
-   * {@link #disconnect()} clears this reference, so a caller that wants to join the thread must
-   * get it first.
+   * {@link #disconnect()} clears this reference, so a caller that wants to join the thread must get
+   * it first.
    *
    * @return the connect thread, or {@code null} if the session is not connected
    */
