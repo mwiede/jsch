@@ -3123,8 +3123,8 @@ public class Session {
    *
    * <p>
    * {@link #disconnect()} does not throw this error, to keep its signature. It may also run on the
-   * connect thread when the read loop ends, so a caller that needs this value after the session
-   * has ended should get the thread with {@link #getConnectThread()} before calling
+   * connect thread when the read loop ends, so a caller that needs this value after the session has
+   * ended should get the thread with {@link #getConnectThread()} before calling
    * {@link #disconnect()}, join it, and then call this method.
    *
    * @return the error, with the first {@link java.io.IOException} as its cause and any later ones
@@ -3139,8 +3139,8 @@ public class Session {
    * Returns the thread that runs this session's read loop.
    *
    * <p>
-   * {@link #disconnect()} clears this reference, so a caller that wants to join the thread must
-   * get it first.
+   * {@link #disconnect()} clears this reference, so a caller that wants to join the thread must get
+   * it first.
    *
    * @return the connect thread, or {@code null} if the session is not connected
    */
