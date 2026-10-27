@@ -221,8 +221,6 @@ public class Session {
     if (isConnected) {
       throw new JSchException("session is already connected");
     }
-    readLoopFuture = new CompletableFuture<>();
-    disconnectFuture = new CompletableFuture<>();
     initialKex = true;
 
     io = new IO();
@@ -240,6 +238,8 @@ public class Session {
       getLogger().log(Logger.INFO, "Connecting to " + host + " port " + port);
     }
 
+    readLoopFuture = new CompletableFuture<>();
+    disconnectFuture = new CompletableFuture<>();
     try {
       int i, j;
 
