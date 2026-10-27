@@ -40,7 +40,6 @@ import org.ietf.jgss.Oid;
 public class GSSContextKrb5 implements com.jcraft.jsch.GSSContext {
 
   private static final String pUseSubjectCredsOnly = "javax.security.auth.useSubjectCredsOnly";
-  private static String useSubjectCredsOnly = getSystemProperty(pUseSubjectCredsOnly);
 
   private GSSContext context = null;
 
@@ -103,15 +102,14 @@ public class GSSContextKrb5 implements com.jcraft.jsch.GSSContext {
 
   @Override
   public byte[] init(byte[] token, int s, int l) throws JSchException {
+    boolean useSubjectCredsOnlySet = false;
     try {
-      // Without setting "javax.security.auth.useSubjectCredsOnly" to "false",
-      // Sun's JVM for Un*x will show messages to stderr in
-      // processing context.initSecContext().
       // This hack is not thread safe ;-<.
       // If that property is explicitly given as "true" or "false",
       // this hack must not be invoked.
-      if (useSubjectCredsOnly == null) {
+      if (getSystemProperty(pUseSubjectCredsOnly) == null) {
         setSystemProperty(pUseSubjectCredsOnly, "false");
+        useSubjectCredsOnlySet = "false".equals(getSystemProperty(pUseSubjectCredsOnly));
       }
       return context.initSecContext(token, 0, l);
     } catch (GSSException ex) {
@@ -119,9 +117,8 @@ public class GSSContextKrb5 implements com.jcraft.jsch.GSSContext {
     } catch (SecurityException ex) {
       throw new JSchException(ex.toString(), ex);
     } finally {
-      if (useSubjectCredsOnly == null) {
-        // By the default, it must be "true".
-        setSystemProperty(pUseSubjectCredsOnly, "true");
+      if (useSubjectCredsOnlySet && "false".equals(getSystemProperty(pUseSubjectCredsOnly))) {
+        clearSystemProperty(pUseSubjectCredsOnly);
       }
     }
   }
@@ -158,6 +155,14 @@ public class GSSContextKrb5 implements com.jcraft.jsch.GSSContext {
       System.setProperty(key, value);
     } catch (Exception e) {
       // We are not allowed to set the System properties.
+    }
+  }
+
+  private static void clearSystemProperty(String key) {
+    try {
+      System.clearProperty(key);
+    } catch (Exception e) {
+      // We are not allowed to clear the System properties.
     }
   }
 }
