@@ -26,6 +26,7 @@
 
 package com.jcraft.jsch;
 
+import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InterruptedIOException;
@@ -136,6 +137,7 @@ public class Session {
   private volatile boolean isAuthed = false;
 
   private Thread connectThread = null;
+  private volatile JSchException disconnectException = null;
   private Object lock = new Object();
 
   boolean x11_forwarding = false;
@@ -216,6 +218,7 @@ public class Session {
     if (isConnected) {
       throw new JSchException("session is already connected");
     }
+    disconnectException = null;
     initialKex = true;
 
     io = new IO();
@@ -2293,26 +2296,29 @@ public class Session {
       }
     }
     thread = null;
-    try {
-      if (io != null) {
-        if (io.in != null)
-          io.in.close();
-        if (io.out != null)
-          io.out.close();
-        if (io.out_ext != null)
-          io.out_ext.close();
-      }
-      if (proxy == null) {
-        if (socket != null)
-          socket.close();
-      } else {
+    IOException closeFailure = null;
+    if (io != null) {
+      if (io.in != null)
+        closeFailure = closeResource(io.in, closeFailure);
+      if (io.out != null)
+        closeFailure = closeResource(io.out, closeFailure);
+      if (io.out_ext != null)
+        closeFailure = closeResource(io.out_ext, closeFailure);
+    }
+    if (proxy == null) {
+      if (socket != null)
+        closeFailure = closeResource(socket, closeFailure);
+    } else {
+      try {
         synchronized (proxy) {
           proxy.close();
         }
-        proxy = null;
+      } catch (Exception e) {
+        if (getLogger().isEnabled(Logger.DEBUG)) {
+          getLogger().log(Logger.DEBUG, "Exception closing proxy: " + e.getMessage(), e);
+        }
       }
-    } catch (Exception e) {
-      // e.printStackTrace();
+      proxy = null;
     }
     io = null;
     socket = null;
@@ -2340,7 +2346,38 @@ public class Session {
 
     jsch.removeSession(this);
 
+    if (closeFailure != null) {
+      disconnectException = new JSchException("Session.disconnect: " + closeFailure, closeFailure);
+    }
+
     // System.gc();
+  }
+
+  /**
+   * Closes {@code closeable}. An {@link IOException} is returned as the new failure if there was
+   * none, or added to the existing failure as suppressed. Other exceptions are logged at
+   * {@link Logger#DEBUG} and otherwise ignored.
+   *
+   * @param closeable the resource to close
+   * @param failure the first failure so far, or {@code null}
+   * @return the first failure, or {@code null} if there was none
+   */
+  private IOException closeResource(Closeable closeable, IOException failure) {
+    IOException result = failure;
+    try {
+      closeable.close();
+    } catch (IOException e) {
+      if (result == null) {
+        result = e;
+      } else {
+        result.addSuppressed(e);
+      }
+    } catch (Exception e) {
+      if (getLogger().isEnabled(Logger.DEBUG)) {
+        getLogger().log(Logger.DEBUG, "Exception closing resource: " + e.getMessage(), e);
+      }
+    }
+    return result;
   }
 
   /**
@@ -3079,6 +3116,38 @@ public class Session {
 
   public boolean isConnected() {
     return isConnected;
+  }
+
+  /**
+   * Returns the error from closing the socket or its streams during the last {@link #disconnect()}.
+   *
+   * <p>
+   * {@link #disconnect()} does not throw this error, to keep its signature. It may also run on the
+   * connect thread when the read loop ends, so a caller that needs this value after the session
+   * has ended should get the thread with {@link #getConnectThread()} before calling
+   * {@link #disconnect()}, join it, and then call this method.
+   *
+   * @return the error, with the first {@link java.io.IOException} as its cause and any later ones
+   *         as suppressed exceptions, or {@code null} if all closes succeeded or the session has
+   *         not disconnected since the last {@link #connect()}
+   */
+  public JSchException getDisconnectException() {
+    return disconnectException;
+  }
+
+  /**
+   * Returns the thread that runs this session's read loop.
+   *
+   * <p>
+   * {@link #disconnect()} clears this reference, so a caller that wants to join the thread must
+   * get it first.
+   *
+   * @return the connect thread, or {@code null} if the session is not connected
+   */
+  public Thread getConnectThread() {
+    synchronized (lock) {
+      return connectThread;
+    }
   }
 
   public int getTimeout() {
