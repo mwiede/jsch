@@ -26,6 +26,7 @@
 
 package com.jcraft.jsch;
 
+import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InterruptedIOException;
@@ -40,6 +41,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 import java.util.Properties;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
@@ -136,6 +138,9 @@ public class Session {
   private volatile boolean isAuthed = false;
 
   private Thread connectThread = null;
+  private volatile CompletableFuture<Void> readLoopFuture = CompletableFuture.completedFuture(null);
+  private volatile CompletableFuture<Void> disconnectFuture =
+      CompletableFuture.completedFuture(null);
   private Object lock = new Object();
 
   boolean x11_forwarding = false;
@@ -216,6 +221,8 @@ public class Session {
     if (isConnected) {
       throw new JSchException("session is already connected");
     }
+    readLoopFuture = new CompletableFuture<>();
+    disconnectFuture = new CompletableFuture<>();
     initialKex = true;
 
     io = new IO();
@@ -553,10 +560,12 @@ public class Session {
         } else {
           // The session has been already down and
           // we don't have to start new thread.
+          readLoopFuture.complete(null);
         }
       }
     } catch (Exception e) {
       in_kex = false;
+      completeFuture(readLoopFuture, e, "read loop");
       try {
         if (isConnected) {
           String message = e.toString();
@@ -575,6 +584,7 @@ public class Session {
       } catch (Exception ee) {
       }
       isConnected = false;
+      disconnectFuture.complete(null);
       // e.printStackTrace();
       if (e instanceof RuntimeException)
         throw (RuntimeException) e;
@@ -1900,6 +1910,8 @@ public class Session {
 
   void run() {
     thread = this::run;
+    CompletableFuture<Void> readLoop = readLoopFuture;
+    Exception readLoopException = null;
 
     byte[] foo;
     Buffer buf = new Buffer();
@@ -2215,9 +2227,18 @@ public class Session {
       }
     } catch (Exception e) {
       in_kex = false;
-      if (getLogger().isEnabled(Logger.INFO)) {
-        getLogger().log(Logger.INFO,
-            "Caught an exception, leaving main loop due to " + e.getMessage(), e);
+      if (isConnected) {
+        readLoopException = e;
+        if (getLogger().isEnabled(Logger.INFO)) {
+          getLogger().log(Logger.INFO,
+              "Caught an exception, leaving main loop due to " + e.getMessage(), e);
+        }
+      } else {
+        if (getLogger().isEnabled(Logger.DEBUG)) {
+          getLogger().log(Logger.DEBUG,
+              "Caught an exception, leaving main loop after disconnect due to " + e.getMessage(),
+              e);
+        }
       }
       // System.err.println("# Session.run");
       // e.printStackTrace();
@@ -2232,6 +2253,7 @@ public class Session {
       // e.printStackTrace();
     }
     isConnected = false;
+    completeFuture(readLoop, readLoopException, "read loop");
   }
 
   void delChannel(Channel c) {
@@ -2247,6 +2269,7 @@ public class Session {
   public void disconnect() {
     if (!isConnected)
       return;
+    CompletableFuture<Void> disconnected = disconnectFuture;
     // System.err.println(this+": disconnect");
     // Thread.dumpStack();
     if (getLogger().isEnabled(Logger.INFO)) {
@@ -2293,26 +2316,29 @@ public class Session {
       }
     }
     thread = null;
-    try {
-      if (io != null) {
-        if (io.in != null)
-          io.in.close();
-        if (io.out != null)
-          io.out.close();
-        if (io.out_ext != null)
-          io.out_ext.close();
-      }
-      if (proxy == null) {
-        if (socket != null)
-          socket.close();
-      } else {
+    IOException closeFailure = null;
+    if (io != null) {
+      if (io.in != null)
+        closeFailure = closeResource(io.in, closeFailure);
+      if (io.out != null)
+        closeFailure = closeResource(io.out, closeFailure);
+      if (io.out_ext != null)
+        closeFailure = closeResource(io.out_ext, closeFailure);
+    }
+    if (proxy == null) {
+      if (socket != null)
+        closeFailure = closeResource(socket, closeFailure);
+    } else {
+      try {
         synchronized (proxy) {
           proxy.close();
         }
-        proxy = null;
+      } catch (Exception e) {
+        if (getLogger().isEnabled(Logger.DEBUG)) {
+          getLogger().log(Logger.DEBUG, "Exception closing proxy: " + e.getMessage(), e);
+        }
       }
-    } catch (Exception e) {
-      // e.printStackTrace();
+      proxy = null;
     }
     io = null;
     socket = null;
@@ -2340,7 +2366,60 @@ public class Session {
 
     jsch.removeSession(this);
 
+    completeFuture(disconnected, closeFailure, "disconnect");
+
     // System.gc();
+  }
+
+  /**
+   * Closes {@code closeable}. The first {@link IOException} is kept and returned. A later
+   * {@link IOException} is logged at {@link Logger#INFO}, because once one close has failed the
+   * rest usually fail as a result of it. Other exceptions are logged at {@link Logger#DEBUG} and
+   * otherwise ignored.
+   *
+   * @param closeable the resource to close
+   * @param failure the first failure so far, or {@code null}
+   * @return the first failure, or {@code null} if there was none
+   */
+  private IOException closeResource(Closeable closeable, IOException failure) {
+    IOException result = failure;
+    try {
+      closeable.close();
+    } catch (IOException e) {
+      if (result == null) {
+        result = e;
+      } else {
+        if (getLogger().isEnabled(Logger.INFO)) {
+          getLogger().log(Logger.INFO,
+              "Exception closing resource after an earlier failure: " + e.getMessage(), e);
+        }
+      }
+    } catch (Exception e) {
+      if (getLogger().isEnabled(Logger.DEBUG)) {
+        getLogger().log(Logger.DEBUG, "Exception closing resource: " + e.getMessage(), e);
+      }
+    }
+    return result;
+  }
+
+  /**
+   * Completes {@code future} normally if {@code failure} is {@code null}, or exceptionally
+   * otherwise. Only the first completion counts. A failure that arrives after the future is already
+   * complete is logged at {@link Logger#INFO}, because it is usually a result of the first one.
+   *
+   * @param future the future to complete
+   * @param failure the failure, or {@code null}
+   * @param name what the future represents, for the log message
+   */
+  private void completeFuture(CompletableFuture<Void> future, Throwable failure, String name) {
+    if (failure == null) {
+      future.complete(null);
+    } else if (!future.completeExceptionally(failure)) {
+      if (getLogger().isEnabled(Logger.INFO)) {
+        getLogger().log(Logger.INFO,
+            "Exception after " + name + " already completed: " + failure.getMessage(), failure);
+      }
+    }
   }
 
   /**
@@ -3079,6 +3158,47 @@ public class Session {
 
   public boolean isConnected() {
     return isConnected;
+  }
+
+  /**
+   * Returns a future that completes when this session's read loop ends.
+   *
+   * <p>
+   * The read loop runs on the connect thread. Exceptions thrown there do not reach the caller of
+   * {@link Channel} methods, so a transfer can appear to complete even though the connection
+   * failed. The future completes exceptionally with that exception if the loop ended while the
+   * session was still connected, for example because of a socket error during a transfer. It
+   * completes normally if the loop ended because of {@link #disconnect()}.
+   *
+   * <p>
+   * Each {@link #connect()} creates a new future, so get it after connecting. A caller that wants
+   * to check the outcome after disconnecting should get the future first, call
+   * {@link #disconnect()}, and then wait on it, preferably with a timeout.
+   *
+   * @return a future for the current read loop; it cannot be completed by the caller
+   */
+  public CompletableFuture<Void> getReadLoopFuture() {
+    return readLoopFuture.thenApply(v -> v);
+  }
+
+  /**
+   * Returns a future that completes when {@link #disconnect()} has released this session's
+   * resources.
+   *
+   * <p>
+   * The future completes exceptionally with the first {@link IOException} thrown while closing the
+   * socket or its streams. Later close failures are logged, not attached, because they usually
+   * follow from the first one. It completes normally if every close succeeded.
+   * {@link #disconnect()} can also run on the connect thread when the read loop ends, so this
+   * future is not always complete when a caller's own {@link #disconnect()} call returns early.
+   *
+   * <p>
+   * Each {@link #connect()} creates a new future, so get it after connecting.
+   *
+   * @return a future for the current disconnect; it cannot be completed by the caller
+   */
+  public CompletableFuture<Void> getDisconnectFuture() {
+    return disconnectFuture.thenApply(v -> v);
   }
 
   public int getTimeout() {
