@@ -136,6 +136,7 @@ public class Session {
   private volatile boolean isAuthed = false;
 
   private Thread connectThread = null;
+  private volatile Exception runThreadException = null;
   private Object lock = new Object();
 
   boolean x11_forwarding = false;
@@ -216,6 +217,7 @@ public class Session {
     if (isConnected) {
       throw new JSchException("session is already connected");
     }
+    runThreadException = null;
     initialKex = true;
 
     io = new IO();
@@ -2215,9 +2217,18 @@ public class Session {
       }
     } catch (Exception e) {
       in_kex = false;
-      if (getLogger().isEnabled(Logger.INFO)) {
-        getLogger().log(Logger.INFO,
-            "Caught an exception, leaving main loop due to " + e.getMessage(), e);
+      if (isConnected) {
+        runThreadException = e;
+        if (getLogger().isEnabled(Logger.INFO)) {
+          getLogger().log(Logger.INFO,
+              "Caught an exception, leaving main loop due to " + e.getMessage(), e);
+        }
+      } else {
+        if (getLogger().isEnabled(Logger.DEBUG)) {
+          getLogger().log(Logger.DEBUG,
+              "Caught an exception, leaving main loop after disconnect due to " + e.getMessage(),
+              e);
+        }
       }
       // System.err.println("# Session.run");
       // e.printStackTrace();
@@ -3079,6 +3090,38 @@ public class Session {
 
   public boolean isConnected() {
     return isConnected;
+  }
+
+  /**
+   * Returns the exception that ended this session's read loop while the session was still
+   * connected, for example a socket error during a transfer.
+   *
+   * <p>
+   * The read loop runs on the connect thread. Exceptions thrown there do not reach the caller of
+   * {@link Channel} methods, so a transfer can appear to complete even though the connection
+   * failed. To check reliably, get the thread with {@link #getConnectThread()} before calling
+   * {@link #disconnect()}, join it, and then call this method.
+   *
+   * @return the exception, or {@code null} if the read loop has not ended, ended because of
+   *         {@link #disconnect()}, or the session was never connected
+   */
+  public Exception getRunThreadException() {
+    return runThreadException;
+  }
+
+  /**
+   * Returns the thread that runs this session's read loop.
+   *
+   * <p>
+   * {@link #disconnect()} clears this reference, so a caller that wants to join the thread must
+   * get it first.
+   *
+   * @return the connect thread, or {@code null} if the session is not connected
+   */
+  public Thread getConnectThread() {
+    synchronized (lock) {
+      return connectThread;
+    }
   }
 
   public int getTimeout() {
