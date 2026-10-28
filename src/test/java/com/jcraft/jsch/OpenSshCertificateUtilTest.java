@@ -7,6 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;
 import java.time.ZoneOffset;
 import java.util.TimeZone;
@@ -284,6 +285,28 @@ public class OpenSshCertificateUtilTest {
     assertThrows(JSchRevokedHostKeyException.class,
         () -> OpenSshCertificateUtil.isCertificateSignedByTrustedCA(knownHosts, host, keyBytes),
         "Should throw JSchRevokedHostKeyException when CA is revoked");
+  }
+
+  /**
+   * Test that isCertificateSignedByTrustedCA honours negated host patterns on a @cert-authority
+   * line read from known_hosts.
+   */
+  @Test
+  public void testIsCertificateSignedByTrustedCA_negatedHostPattern() throws Exception {
+    JSch jsch = new JSch();
+    KnownHosts knownHosts = new KnownHosts(jsch);
+    String base64CaPublicKey = "AAAAB3NzaC1yc2EAAAADAQABAAABAQ==";
+    String line =
+        "@cert-authority *.example.com,!evil.example.com ssh-rsa " + base64CaPublicKey + "\n";
+    knownHosts.setKnownHosts(new ByteArrayInputStream(Util.str2byte(line)));
+
+    byte[] keyBytes =
+        Util.fromBase64(Util.str2byte(base64CaPublicKey), 0, base64CaPublicKey.length());
+
+    assertTrue(OpenSshCertificateUtil.isCertificateSignedByTrustedCA(knownHosts, "good.example.com",
+        keyBytes), "CA should be trusted for a host it is not negated for");
+    assertFalse(OpenSshCertificateUtil.isCertificateSignedByTrustedCA(knownHosts,
+        "evil.example.com", keyBytes), "CA must not be trusted for an explicitly negated host");
   }
 
   /**
