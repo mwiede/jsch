@@ -1,6 +1,8 @@
 package com.jcraft.jsch;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.Arrays;
 import java.util.Random;
@@ -163,6 +165,47 @@ public class KeyExchangeTest {
       random.nextBytes(secret);
       doEncodeAsString(secret);
     }
+  }
+
+  @Test
+  public void testVerifyNegotiatedRsaSignatureAlgorithm() throws Exception {
+    JSch jsch = new JSch();
+    KeyPair kpair = KeyPair.genKeyPair(jsch, KeyPair.RSA, 1024);
+    KeyExchange kex = newVerifyKex(jsch, "rsa-sha2-512", kpair.getPublicKeyBlob());
+    byte[] sig_of_H = kpair.getSignature(kex.H, "rsa-sha2-512");
+    assertTrue(kex.verify("ssh-rsa", kex.K_S, 4 + 7, sig_of_H));
+  }
+
+  @Test
+  public void testVerifyRejectsUnnegotiatedRsaSignatureAlgorithm() throws Exception {
+    JSch jsch = new JSch();
+    KeyPair kpair = KeyPair.genKeyPair(jsch, KeyPair.RSA, 1024);
+    KeyExchange kex = newVerifyKex(jsch, "rsa-sha2-512", kpair.getPublicKeyBlob());
+    byte[] sig_of_H = kpair.getSignature(kex.H, "ssh-rsa");
+    assertThrows(JSchException.class, () -> kex.verify("ssh-rsa", kex.K_S, 4 + 7, sig_of_H));
+  }
+
+  @Test
+  public void testVerifyRejectsUnnegotiatedHostKeyType() throws Exception {
+    JSch jsch = new JSch();
+    KeyPair kpair = KeyPair.genKeyPair(jsch, KeyPair.ECDSA, 256);
+    KeyExchange kex = newVerifyKex(jsch, "ssh-ed25519", kpair.getPublicKeyBlob());
+    byte[] sig_of_H = kpair.getSignature(kex.H);
+    assertThrows(JSchException.class,
+        () -> kex.verify("ecdsa-sha2-nistp256", kex.K_S, 4 + 19, sig_of_H));
+  }
+
+  private KeyExchange newVerifyKex(JSch jsch, String serverHostKeyAlgorithm, byte[] K_S)
+      throws Exception {
+    Session session = jsch.getSession("user", "host");
+    session.guess = new String[KeyExchange.PROPOSAL_MAX];
+    session.guess[KeyExchange.PROPOSAL_SERVER_HOST_KEY_ALGS] = serverHostKeyAlgorithm;
+    KeyExchange kex = new TestKex();
+    kex.session = session;
+    kex.K_S = K_S;
+    kex.H = new byte[32];
+    random.nextBytes(kex.H);
+    return kex;
   }
 
   private void doNormalize(byte[] secret) {
