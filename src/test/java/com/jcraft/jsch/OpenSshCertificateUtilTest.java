@@ -310,6 +310,93 @@ public class OpenSshCertificateUtilTest {
   }
 
   /**
+   * Test that a revoked CA is still a terminal failure for a host that a negated pattern excludes
+   * from the CA's @cert-authority line, so verification can't fall back to a pinned host key.
+   */
+  @Test
+  public void testIsCertificateSignedByTrustedCA_caRevokedForNegatedHost() throws Exception {
+    JSch jsch = new JSch();
+    KnownHosts knownHosts = new KnownHosts(jsch);
+    String base64CaPublicKey = "AAAAB3NzaC1yc2EAAAADAQABAAABAQ==";
+    String lines = "@cert-authority *.example.com,!evil.example.com ssh-rsa " + base64CaPublicKey
+        + "\n@revoked * ssh-rsa " + base64CaPublicKey + "\n";
+    knownHosts.setKnownHosts(new ByteArrayInputStream(Util.str2byte(lines)));
+
+    byte[] keyBytes =
+        Util.fromBase64(Util.str2byte(base64CaPublicKey), 0, base64CaPublicKey.length());
+
+    assertThrows(JSchRevokedHostKeyException.class,
+        () -> OpenSshCertificateUtil.isCertificateSignedByTrustedCA(knownHosts, "evil.example.com",
+            keyBytes),
+        "Should throw JSchRevokedHostKeyException even if the @cert-authority line excludes the host");
+  }
+
+  /**
+   * Test that a hashed @revoked line is honoured for a host a negated pattern excludes from the
+   * CA's @cert-authority line.
+   */
+  @Test
+  public void testIsCertificateSignedByTrustedCA_caRevokedByHashedEntryForNegatedHost()
+      throws Exception {
+    JSch jsch = new JSch();
+    KnownHosts knownHosts = new KnownHosts(jsch);
+    String host = "evil.example.com";
+    String hashedHost = "|1|AQIDBAUGBwgJCgsMDQ4PEBESExQ=|850WRxaptwB5PHAGya0iTJo/1F4=";
+    String base64CaPublicKey = "AAAAB3NzaC1yc2EAAAADAQABAAABAQ==";
+    String lines = "@cert-authority *.example.com,!evil.example.com ssh-rsa " + base64CaPublicKey
+        + "\n@revoked " + hashedHost + " ssh-rsa " + base64CaPublicKey + "\n";
+    knownHosts.setKnownHosts(new ByteArrayInputStream(Util.str2byte(lines)));
+
+    byte[] keyBytes =
+        Util.fromBase64(Util.str2byte(base64CaPublicKey), 0, base64CaPublicKey.length());
+
+    assertThrows(JSchRevokedHostKeyException.class,
+        () -> OpenSshCertificateUtil.isCertificateSignedByTrustedCA(knownHosts, host, keyBytes),
+        "Should honour a hashed @revoked entry for the host");
+  }
+
+  /**
+   * Test that a matching @revoked entry for the presented CA key is a terminal failure even if no
+   *
+   * @cert-authority line lists the key.
+   */
+  @Test
+  public void testIsCertificateSignedByTrustedCA_caRevokedWithoutCaEntry() throws Exception {
+    JSch jsch = new JSch();
+    KnownHosts knownHosts = new KnownHosts(jsch);
+    String host = "example.com";
+    String base64CaPublicKey = "AAAAB3NzaC1yc2EAAAADAQABAAABAQ==";
+
+    byte[] keyBytes =
+        Util.fromBase64(Util.str2byte(base64CaPublicKey), 0, base64CaPublicKey.length());
+
+    knownHosts.add(new HostKey("@revoked", "*.com", HostKey.SSHRSA, keyBytes, null), null);
+
+    assertThrows(JSchRevokedHostKeyException.class,
+        () -> OpenSshCertificateUtil.isCertificateSignedByTrustedCA(knownHosts, host, keyBytes),
+        "Should throw JSchRevokedHostKeyException when a matching @revoked entry lists the CA");
+  }
+
+  /**
+   * Test that a @revoked entry for another host doesn't apply when no @cert-authority line matches.
+   */
+  @Test
+  public void testIsCertificateSignedByTrustedCA_caRevokedForOtherHost() throws Exception {
+    JSch jsch = new JSch();
+    KnownHosts knownHosts = new KnownHosts(jsch);
+    String host = "example.com";
+    String base64CaPublicKey = "AAAAB3NzaC1yc2EAAAADAQABAAABAQ==";
+
+    byte[] keyBytes =
+        Util.fromBase64(Util.str2byte(base64CaPublicKey), 0, base64CaPublicKey.length());
+
+    knownHosts.add(new HostKey("@revoked", "other.org", HostKey.SSHRSA, keyBytes, null), null);
+
+    assertFalse(OpenSshCertificateUtil.isCertificateSignedByTrustedCA(knownHosts, host, keyBytes),
+        "Should ignore a @revoked entry that doesn't match the host");
+  }
+
+  /**
    * Test that isCertificateSignedByTrustedCA returns false when host pattern doesn't match.
    */
   @Test
@@ -408,11 +495,7 @@ public class OpenSshCertificateUtilTest {
     // Create regular host key (no @cert-authority marker)
     HostKey regularHostKey = new HostKey("", "example.com", HostKey.SSHRSA, keyBytes, null);
 
-    // Create @revoked entry
-    HostKey revokedHostKey = new HostKey("@revoked", "example.com", HostKey.SSHRSA, keyBytes, null);
-
     knownHosts.add(regularHostKey, null);
-    knownHosts.add(revokedHostKey, null);
 
     // Execute
     boolean result =

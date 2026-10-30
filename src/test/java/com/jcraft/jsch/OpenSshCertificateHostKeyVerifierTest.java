@@ -259,6 +259,36 @@ public class OpenSshCertificateHostKeyVerifierTest {
         () -> OpenSshCertificateHostKeyVerifier.checkHostCertificate(session, certificate));
   }
 
+  /**
+   * A negated {@code @cert-authority} pattern must not hide a revoked CA from the revocation check.
+   * Anything but {@link JSchRevokedHostKeyException} here lets {@code Session.checkHost()} fall
+   * back to the pinned host key.
+   */
+  @Test
+  public void testCheckHostCertificate_withRevokedCaNegatedTrustEntryAndPinnedKey_shouldReject()
+      throws Exception {
+    String caPublicKey =
+        new String(Util.fromFile("src/test/resources/certificates/ca/ca_jsch_key.pub"),
+            StandardCharsets.UTF_8).trim();
+    String hostPublicKey =
+        new String(Util.fromFile("src/test/resources/certificates/host/ssh_host_ed25519_key.pub"),
+            StandardCharsets.UTF_8).trim();
+    String knownHosts = "@cert-authority *,!localhost " + caPublicKey + "\n@revoked * "
+        + caPublicKey + "\nlocalhost " + hostPublicKey + "\n";
+
+    JSch jsch = new JSch();
+    jsch.setKnownHosts(new ByteArrayInputStream(knownHosts.getBytes(StandardCharsets.UTF_8)));
+
+    OpenSshCertificate certificate =
+        parseCertificate("src/test/resources/certificates/host/ssh_host_ed25519_key-cert.pub");
+    assertEquals(HostKeyRepository.OK,
+        jsch.getHostKeyRepository().check("localhost", certificate.getCertificatePublicKey()));
+
+    Session session = jsch.getSession("user", "localhost");
+    assertThrows(JSchRevokedHostKeyException.class,
+        () -> OpenSshCertificateHostKeyVerifier.checkHostCertificate(session, certificate));
+  }
+
   // ==================== Helper methods ====================
 
   /**
