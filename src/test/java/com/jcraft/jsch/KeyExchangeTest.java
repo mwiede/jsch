@@ -1,6 +1,7 @@
 package com.jcraft.jsch;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -8,9 +9,13 @@ import java.util.Arrays;
 import java.util.Random;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.ValueSource;
 
 public class KeyExchangeTest {
+
+  private static final String RSA_HOST_KEY =
+      "src/test/resources/certificates/host/ssh_host_rsa_key";
 
   private final Random random = new Random();
   private final KeyExchange kex = new TestKex();
@@ -202,13 +207,72 @@ public class KeyExchangeTest {
   public void testVerifyRsaCertificateAllowsSha2Signature(String signatureAlgorithm)
       throws Exception {
     JSch jsch = new JSch();
-    String hostKey = "src/test/resources/certificates/host/ssh_host_rsa_key";
-    KeyPair kpair = KeyPair.load(jsch, hostKey);
-    byte[] base64 = OpenSshCertificateUtil.extractKeyData(Util.fromFile(hostKey + "-cert.pub"));
-    KeyExchange kex = newVerifyKex(jsch, OpenSshCertificateKeyTypes.SSH_RSA_CERT_V01,
-        Util.fromBase64(base64, 0, base64.length));
+    KeyPair kpair = KeyPair.load(jsch, RSA_HOST_KEY);
+    KeyExchange kex =
+        newVerifyKex(jsch, OpenSshCertificateKeyTypes.SSH_RSA_CERT_V01, rsaHostCertificate());
     byte[] sig_of_H = kpair.getSignature(kex.H, signatureAlgorithm);
     assertTrue(kex.verify(OpenSshCertificateKeyTypes.SSH_RSA_CERT_V01, kex.K_S, 0, sig_of_H));
+  }
+
+  @Test
+  public void testVerifyRejectsPlainKeyWhenCertificateNegotiated() throws Exception {
+    JSch jsch = new JSch();
+    KeyPair kpair = KeyPair.load(jsch, RSA_HOST_KEY);
+    KeyExchange kex = newVerifyKex(jsch, OpenSshCertificateKeyTypes.RSA_SHA2_512_CERT_V01,
+        kpair.getPublicKeyBlob());
+    byte[] sig_of_H = kpair.getSignature(kex.H, "rsa-sha2-512");
+    JSchException e =
+        assertThrows(JSchException.class, () -> kex.verify("ssh-rsa", kex.K_S, 4 + 7, sig_of_H));
+    assertEquals(
+        "server host key type ssh-rsa does not match negotiated rsa-sha2-512-cert-v01@openssh.com",
+        e.getMessage());
+  }
+
+  @Test
+  public void testVerifyRejectsCertificateWhenPlainKeyNegotiated() throws Exception {
+    JSch jsch = new JSch();
+    KeyPair kpair = KeyPair.load(jsch, RSA_HOST_KEY);
+    KeyExchange kex = newVerifyKex(jsch, "rsa-sha2-512", rsaHostCertificate());
+    byte[] sig_of_H = kpair.getSignature(kex.H, "rsa-sha2-512");
+    JSchException e = assertThrows(JSchException.class,
+        () -> kex.verify(OpenSshCertificateKeyTypes.SSH_RSA_CERT_V01, kex.K_S, 0, sig_of_H));
+    assertEquals(
+        "server host key type ssh-rsa-cert-v01@openssh.com does not match negotiated rsa-sha2-512",
+        e.getMessage());
+  }
+
+  @ParameterizedTest
+  @CsvSource({"rsa-sha2-256-cert-v01@openssh.com,rsa-sha2-256",
+      "rsa-sha2-512-cert-v01@openssh.com,rsa-sha2-512"})
+  public void testVerifyRsaSha2CertificateMatchingSignature(String negotiated,
+      String signatureAlgorithm) throws Exception {
+    JSch jsch = new JSch();
+    KeyPair kpair = KeyPair.load(jsch, RSA_HOST_KEY);
+    KeyExchange kex = newVerifyKex(jsch, negotiated, rsaHostCertificate());
+    byte[] sig_of_H = kpair.getSignature(kex.H, signatureAlgorithm);
+    assertTrue(kex.verify(OpenSshCertificateKeyTypes.SSH_RSA_CERT_V01, kex.K_S, 0, sig_of_H));
+  }
+
+  @ParameterizedTest
+  @CsvSource({"rsa-sha2-256-cert-v01@openssh.com,ssh-rsa",
+      "rsa-sha2-256-cert-v01@openssh.com,rsa-sha2-512", "rsa-sha2-512-cert-v01@openssh.com,ssh-rsa",
+      "rsa-sha2-512-cert-v01@openssh.com,rsa-sha2-256"})
+  public void testVerifyRsaSha2CertificateRejectsOtherSignature(String negotiated,
+      String signatureAlgorithm) throws Exception {
+    JSch jsch = new JSch();
+    KeyPair kpair = KeyPair.load(jsch, RSA_HOST_KEY);
+    KeyExchange kex = newVerifyKex(jsch, negotiated, rsaHostCertificate());
+    byte[] sig_of_H = kpair.getSignature(kex.H, signatureAlgorithm);
+    JSchException e = assertThrows(JSchException.class,
+        () -> kex.verify(OpenSshCertificateKeyTypes.SSH_RSA_CERT_V01, kex.K_S, 0, sig_of_H));
+    assertEquals("server signature algorithm " + signatureAlgorithm + " does not match negotiated "
+        + negotiated, e.getMessage());
+  }
+
+  private static byte[] rsaHostCertificate() throws Exception {
+    byte[] base64 =
+        OpenSshCertificateUtil.extractKeyData(Util.fromFile(RSA_HOST_KEY + "-cert.pub"));
+    return Util.fromBase64(base64, 0, base64.length);
   }
 
   private KeyExchange newVerifyKex(JSch jsch, String serverHostKeyAlgorithm, byte[] K_S)
