@@ -152,10 +152,11 @@ public class HostKey {
    * <ul>
    * <li>{@code *} - Matches zero or more characters</li>
    * <li>{@code ?} - Matches exactly one character</li>
+   * <li>{@code !} - Negates the pattern that follows it</li>
    * </ul>
    * <p>
    * The host field can contain multiple comma-separated patterns. The method returns {@code true}
-   * if the hostname matches ANY of the patterns.
+   * if the hostname matches ANY of the patterns and does not match any negated pattern.
    * </p>
    * <p>
    * Examples:
@@ -166,6 +167,8 @@ public class HostKey {
    * <li>{@code 192.168.1.*} matches {@code 192.168.1.1}, {@code 192.168.1.100}</li>
    * <li>{@code host1.com,*.host2.com} matches {@code host1.com} or any subdomain of
    * {@code host2.com}</li>
+   * <li>{@code *.example.com,!evil.example.com} matches any subdomain of {@code example.com} except
+   * {@code evil.example.com}</li>
    * </ul>
    *
    * @param _host the hostname to test against the patterns, must not be {@code null}
@@ -183,27 +186,30 @@ public class HostKey {
       return false;
     }
 
-    // Split by comma and check each pattern
+    // Split by comma and check each pattern. As in OpenSSH's match_hostname(), a matching
+    // negated pattern ("!pattern") rejects the host even if another pattern matches.
+    boolean matched = false;
     int i = 0;
     int hostslen = hosts.length();
     while (i < hostslen) {
       int j = hosts.indexOf(',', i);
-      String pattern;
       if (j == -1) {
-        pattern = hosts.substring(i).trim();
-        if (matchesWildcardPattern(pattern, _host)) {
-          return true;
-        }
-        break;
-      } else {
-        pattern = hosts.substring(i, j).trim();
-        if (matchesWildcardPattern(pattern, _host)) {
-          return true;
-        }
-        i = j + 1;
+        j = hostslen;
       }
+      String pattern = hosts.substring(i, j).trim();
+      boolean negated = pattern.startsWith("!");
+      if (negated) {
+        pattern = pattern.substring(1);
+      }
+      if (matchesWildcardPattern(pattern, _host)) {
+        if (negated) {
+          return false;
+        }
+        matched = true;
+      }
+      i = j + 1;
     }
-    return false;
+    return matched;
   }
 
   /**

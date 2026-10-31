@@ -275,6 +275,32 @@ public class HostKeyTest {
   }
 
   @Test
+  public void testIsWildcardMatched_negatedPattern() throws Exception {
+    HostKey hostKey = createHostKey("*.example.com,!evil.example.com");
+    assertTrue(hostKey.isWildcardMatched("host.example.com"),
+        "Should match host not covered by negated pattern");
+    assertFalse(hostKey.isWildcardMatched("evil.example.com"),
+        "Negated pattern should exclude host even if a positive pattern matches");
+  }
+
+  @Test
+  public void testIsWildcardMatched_negatedPatternBeforePositive() throws Exception {
+    HostKey hostKey = createHostKey("!*.internal.example.com,*.example.com");
+    assertTrue(hostKey.isWildcardMatched("www.example.com"), "Should match positive pattern");
+    assertFalse(hostKey.isWildcardMatched("db.internal.example.com"),
+        "Negated wildcard pattern should exclude host regardless of order");
+  }
+
+  @Test
+  public void testIsWildcardMatched_onlyNegatedPattern() throws Exception {
+    HostKey hostKey = createHostKey("!evil.example.com");
+    assertFalse(hostKey.isWildcardMatched("host.example.com"),
+        "Negated pattern alone should not match anything");
+    assertFalse(hostKey.isWildcardMatched("evil.example.com"),
+        "Negated pattern alone should not match the negated host");
+  }
+
+  @Test
   public void testMatchesWildcardPattern_openSshVectors() {
     assertTrue(HostKey.matchesWildcardPattern("*", ""));
     assertTrue(HostKey.matchesWildcardPattern("**", ""));

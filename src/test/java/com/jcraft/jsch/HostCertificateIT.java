@@ -20,6 +20,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledForJreRange;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.wait.strategy.Wait;
@@ -232,6 +233,64 @@ public class HostCertificateIT {
   }
 
   /**
+   * Tests that a revoked CA stays a terminal failure when a negated pattern excludes the host from
+   * the CA's {@code @cert-authority} entry and the raw host key is pinned. With the default
+   * {@code host_certificate_to_key_fallback=yes}, the connection must not fall back to that key.
+   *
+   * @throws Exception if any error occurs during the test setup.
+   */
+  @Test
+  public void hostKeyTestRevokedCANegatedTrustEntryPinnedHostKey() throws Exception {
+    JSch ssh = new JSch();
+    ssh.addIdentity(
+        getResourceFile(this.getClass(), CERTIFICATES_BASE_FOLDER + "/user_keys/id_ecdsa_nistp521"),
+        getResourceFile(this.getClass(),
+            CERTIFICATES_BASE_FOLDER + "/user_keys/id_ecdsa_nistp521.pub"),
+        null);
+
+    String caPublicKey = readResource("certificates/ca/ca_jsch_key.pub");
+    String hostPublicKey = readResource(CERTIFICATES_BASE_FOLDER + "/ssh_host_ed25519_key.pub");
+    String portHost = "[" + sshdContainer.getHost() + "]:" + sshdContainer.getFirstMappedPort();
+    String knownHosts = "@cert-authority *,!" + portHost + " " + caPublicKey + "\n@revoked * "
+        + caPublicKey + "\n" + portHost + " " + hostPublicKey + "\n";
+    ssh.setKnownHosts(new ByteArrayInputStream(knownHosts.getBytes(StandardCharsets.UTF_8)));
+
+    Session session = setup(ssh, "ssh-ed25519-cert-v01@openssh.com");
+    assertThrows(JSchRevokedHostKeyException.class, () -> connectSftp(session));
+  }
+
+  /**
+   * Tests that a {@code @revoked} entry listing the host literally doesn't apply when a negated
+   * pattern on the same entry excludes it, so the connection falls back to the pinned host key.
+   *
+   * @param hostPatterns The host field of the {@code @revoked} entry, with {@code localhost}
+   *        standing in for the mapped host.
+   * @throws Exception if any error occurs during the test.
+   */
+  @ParameterizedTest(name = "revoked hosts: {0}")
+  @ValueSource(strings = {"localhost,other.example.com,!localhost",
+      "!localhost,localhost,other.example.com"})
+  public void hostKeyTestRevokedEntryExcludesHostPinnedHostKey(String hostPatterns)
+      throws Exception {
+    JSch ssh = new JSch();
+    ssh.addIdentity(
+        getResourceFile(this.getClass(), CERTIFICATES_BASE_FOLDER + "/user_keys/id_ecdsa_nistp521"),
+        getResourceFile(this.getClass(),
+            CERTIFICATES_BASE_FOLDER + "/user_keys/id_ecdsa_nistp521.pub"),
+        null);
+
+    String caPublicKey = readResource("certificates/ca/ca_jsch_key.pub");
+    String hostPublicKey = readResource(CERTIFICATES_BASE_FOLDER + "/ssh_host_ed25519_key.pub");
+    String portHost = "[" + sshdContainer.getHost() + "]:" + sshdContainer.getFirstMappedPort();
+    String knownHosts = "@revoked " + hostPatterns.replace("localhost", portHost) + " "
+        + caPublicKey + "\n" + portHost + " " + hostPublicKey + "\n";
+    ssh.setKnownHosts(new ByteArrayInputStream(knownHosts.getBytes(StandardCharsets.UTF_8)));
+
+    Session session = setup(ssh, "ssh-ed25519-cert-v01@openssh.com");
+    assertDoesNotThrow(() -> connectSftp(session));
+  }
+
+  /**
    * Creates a session configured for {@code ssh-ed25519-cert-v01@openssh.com} host certificate
    * validation, optionally with the trusted CA in the client's {@code known_hosts} file.
    *
@@ -305,6 +364,11 @@ public class HostCertificateIT {
         .forEach(System.out::println);
     sshdLogger.getAllLoggingEvents().stream().map(LoggingEvent::getFormattedMessage)
         .forEach(System.out::println);
+  }
+
+  private String readResource(String resource) throws IOException {
+    byte[] bytes = Files.readAllBytes(Paths.get(getResourceFile(this.getClass(), resource)));
+    return new String(bytes, StandardCharsets.UTF_8).trim();
   }
 
   private void setKnownHostsWithPort(JSch ssh, String knownHostsResource, String host, int port)

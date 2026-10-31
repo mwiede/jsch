@@ -436,6 +436,12 @@ class OpenSshCertificateUtil {
    * that must not be caught for fallback purposes, matching OpenSSH behavior where {@code @revoked}
    * is a terminal rejection.
    * </p>
+   * <p>
+   * The presented CA key is also checked against the {@code @revoked} entries matching the host on
+   * its own, see {@link #isCaKeyRevokedForHost(HostKeyRepository, String, byte[])}. The exception
+   * is therefore thrown even if no {@code @cert-authority} entry selects the host, for example
+   * because a negated pattern excludes it.
+   * </p>
    *
    *
    * @param repository the {@link HostKeyRepository} containing known_hosts entries, must not be
@@ -450,17 +456,18 @@ class OpenSshCertificateUtil {
    */
   static boolean isCertificateSignedByTrustedCA(HostKeyRepository repository, String host,
       byte[] caPublicKey) throws JSchException {
-    // First, check if any matching CA has been revoked — revocation is a hard failure
-    // that must not fall back to plain key checking (matches OpenSSH behavior)
-    boolean matchingCARevoked = getTrustedCAs(repository).stream().filter(Objects::nonNull)
-        .filter(hostkey -> hasBeenRevoked(repository, hostkey)).anyMatch(revokedCA -> {
-          byte[] revokedCAKeyBytes = revokedCA.key;
-          if (revokedCAKeyBytes == null) {
-            return false;
-          }
-          return revokedCA.isWildcardMatched(host)
-              && Util.arraysequals(revokedCAKeyBytes, caPublicKey);
-        });
+    // First, check if the presented CA or any matching CA has been revoked — revocation is a hard
+    // failure that must not fall back to plain key checking (matches OpenSSH behavior)
+    boolean matchingCARevoked = isCaKeyRevokedForHost(repository, host, caPublicKey)
+        || getTrustedCAs(repository).stream().filter(Objects::nonNull)
+            .filter(hostkey -> hasBeenRevoked(repository, hostkey)).anyMatch(revokedCA -> {
+              byte[] revokedCAKeyBytes = revokedCA.key;
+              if (revokedCAKeyBytes == null) {
+                return false;
+              }
+              return revokedCA.isWildcardMatched(host)
+                  && Util.arraysequals(revokedCAKeyBytes, caPublicKey);
+            });
     if (matchingCARevoked) {
       throw new JSchRevokedHostKeyException(
           "Rejected certificate: signing CA key has been revoked for " + host);
@@ -555,6 +562,54 @@ class OpenSshCertificateUtil {
     return getRevokedKeys(knownHosts).stream().filter(Objects::nonNull)
         .map(revokedKey -> revokedKey.key).filter(Objects::nonNull)
         .anyMatch(revokedKeyBytes -> Util.arraysequals(revokedKeyBytes, certPublicKey));
+  }
+
+  /**
+   * Checks if a certificate's signing CA key has been revoked for the given host.
+   * <p>
+   * This method compares the CA key against the {@code @revoked} entries whose host field matches
+   * {@code host}, without looking at {@code @cert-authority} entries. A revoked CA thus stays a
+   * terminal failure even if no {@code @cert-authority} entry selects the host. Hashed entries are
+   * matched as well, and a negated pattern keeps a host out of an unhashed entry.
+   * </p>
+   * <p>
+   * This matches OpenSSH behavior in {@code check_key_not_revoked()} (hostfile.c), which checks the
+   * CA signing key against the {@code @revoked} entries loaded for the host.
+   * </p>
+   *
+   * @param knownHosts the {@link HostKeyRepository} to query for revoked entries, must not be
+   *        {@code null}
+   * @param host the hostname being connected to, must not be {@code null}
+   * @param caPublicKey the raw CA public key bytes from the certificate, must not be {@code null}
+   * @return {@code true} if the CA key matches a {@code @revoked} entry for {@code host};
+   *         {@code false} otherwise
+   */
+  static boolean isCaKeyRevokedForHost(HostKeyRepository knownHosts, String host,
+      byte[] caPublicKey) {
+    return getRevokedKeys(knownHosts).stream().filter(Objects::nonNull)
+        .filter(revokedKey -> isRevokedEntryForHost(revokedKey, host))
+        .map(revokedKey -> revokedKey.key).filter(Objects::nonNull)
+        .anyMatch(revokedKeyBytes -> Util.arraysequals(revokedKeyBytes, caPublicKey));
+  }
+
+  /**
+   * Checks if a {@code @revoked} entry applies to the given host.
+   * <p>
+   * A hashed entry can only be compared through {@link HostKey#isMatched(String)}. Unhashed entries
+   * must use {@link HostKey#isWildcardMatched(String)} alone, since {@code isMatched} ignores
+   * negated patterns and a literal entry would override an explicit exclusion of the host.
+   * </p>
+   *
+   * @param revokedKey the {@code @revoked} entry, must not be {@code null}
+   * @param host the hostname being connected to, must not be {@code null}
+   * @return {@code true} if the entry applies to {@code host}; {@code false} otherwise
+   */
+  private static boolean isRevokedEntryForHost(HostKey revokedKey, String host) {
+    if (revokedKey instanceof KnownHosts.HashedHostKey
+        && ((KnownHosts.HashedHostKey) revokedKey).isHashed()) {
+      return revokedKey.isMatched(host);
+    }
+    return revokedKey.isWildcardMatched(host);
   }
 
   /**
