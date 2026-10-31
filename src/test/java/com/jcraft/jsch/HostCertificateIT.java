@@ -20,6 +20,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledForJreRange;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.wait.strategy.Wait;
@@ -256,6 +257,37 @@ public class HostCertificateIT {
 
     Session session = setup(ssh, "ssh-ed25519-cert-v01@openssh.com");
     assertThrows(JSchRevokedHostKeyException.class, () -> connectSftp(session));
+  }
+
+  /**
+   * Tests that a {@code @revoked} entry listing the host literally doesn't apply when a negated
+   * pattern on the same entry excludes it, so the connection falls back to the pinned host key.
+   *
+   * @param hostPatterns The host field of the {@code @revoked} entry, with {@code localhost}
+   *        standing in for the mapped host.
+   * @throws Exception if any error occurs during the test.
+   */
+  @ParameterizedTest(name = "revoked hosts: {0}")
+  @ValueSource(strings = {"localhost,other.example.com,!localhost",
+      "!localhost,localhost,other.example.com"})
+  public void hostKeyTestRevokedEntryExcludesHostPinnedHostKey(String hostPatterns)
+      throws Exception {
+    JSch ssh = new JSch();
+    ssh.addIdentity(
+        getResourceFile(this.getClass(), CERTIFICATES_BASE_FOLDER + "/user_keys/id_ecdsa_nistp521"),
+        getResourceFile(this.getClass(),
+            CERTIFICATES_BASE_FOLDER + "/user_keys/id_ecdsa_nistp521.pub"),
+        null);
+
+    String caPublicKey = readResource("certificates/ca/ca_jsch_key.pub");
+    String hostPublicKey = readResource(CERTIFICATES_BASE_FOLDER + "/ssh_host_ed25519_key.pub");
+    String portHost = "[" + sshdContainer.getHost() + "]:" + sshdContainer.getFirstMappedPort();
+    String knownHosts = "@revoked " + hostPatterns.replace("localhost", portHost) + " "
+        + caPublicKey + "\n" + portHost + " " + hostPublicKey + "\n";
+    ssh.setKnownHosts(new ByteArrayInputStream(knownHosts.getBytes(StandardCharsets.UTF_8)));
+
+    Session session = setup(ssh, "ssh-ed25519-cert-v01@openssh.com");
+    assertDoesNotThrow(() -> connectSftp(session));
   }
 
   /**

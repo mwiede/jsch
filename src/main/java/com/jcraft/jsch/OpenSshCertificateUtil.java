@@ -570,7 +570,7 @@ class OpenSshCertificateUtil {
    * This method compares the CA key against the {@code @revoked} entries whose host field matches
    * {@code host}, without looking at {@code @cert-authority} entries. A revoked CA thus stays a
    * terminal failure even if no {@code @cert-authority} entry selects the host. Hashed entries are
-   * matched as well.
+   * matched as well, and a negated pattern keeps a host out of an unhashed entry.
    * </p>
    * <p>
    * This matches OpenSSH behavior in {@code check_key_not_revoked()} (hostfile.c), which checks the
@@ -587,9 +587,29 @@ class OpenSshCertificateUtil {
   static boolean isCaKeyRevokedForHost(HostKeyRepository knownHosts, String host,
       byte[] caPublicKey) {
     return getRevokedKeys(knownHosts).stream().filter(Objects::nonNull)
-        .filter(revokedKey -> revokedKey.isWildcardMatched(host) || revokedKey.isMatched(host))
+        .filter(revokedKey -> isRevokedEntryForHost(revokedKey, host))
         .map(revokedKey -> revokedKey.key).filter(Objects::nonNull)
         .anyMatch(revokedKeyBytes -> Util.arraysequals(revokedKeyBytes, caPublicKey));
+  }
+
+  /**
+   * Checks if a {@code @revoked} entry applies to the given host.
+   * <p>
+   * A hashed entry can only be compared through {@link HostKey#isMatched(String)}. Unhashed entries
+   * must use {@link HostKey#isWildcardMatched(String)} alone, since {@code isMatched} ignores
+   * negated patterns and a literal entry would override an explicit exclusion of the host.
+   * </p>
+   *
+   * @param revokedKey the {@code @revoked} entry, must not be {@code null}
+   * @param host the hostname being connected to, must not be {@code null}
+   * @return {@code true} if the entry applies to {@code host}; {@code false} otherwise
+   */
+  private static boolean isRevokedEntryForHost(HostKey revokedKey, String host) {
+    if (revokedKey instanceof KnownHosts.HashedHostKey
+        && ((KnownHosts.HashedHostKey) revokedKey).isHashed()) {
+      return revokedKey.isMatched(host);
+    }
+    return revokedKey.isWildcardMatched(host);
   }
 
   /**

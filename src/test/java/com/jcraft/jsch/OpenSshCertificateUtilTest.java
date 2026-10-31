@@ -14,6 +14,8 @@ import java.util.TimeZone;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 public class OpenSshCertificateUtilTest {
 
@@ -394,6 +396,34 @@ public class OpenSshCertificateUtilTest {
 
     assertFalse(OpenSshCertificateUtil.isCertificateSignedByTrustedCA(knownHosts, host, keyBytes),
         "Should ignore a @revoked entry that doesn't match the host");
+  }
+
+  /**
+   * Test that a negated pattern on a @revoked line excludes a host even if the line also lists it
+   * literally, while the other hosts on the line stay revoked.
+   */
+  @ParameterizedTest
+  @ValueSource(strings = {"evil.example.com,good.example.com,!evil.example.com",
+      "!evil.example.com,evil.example.com,good.example.com",
+      "evil.example.com,good.example.com,!evil*.example.com",
+      "!evil*.example.com,evil.example.com,good.example.com"})
+  public void testIsCertificateSignedByTrustedCA_revokedEntryExcludesHost(String hostPatterns)
+      throws Exception {
+    JSch jsch = new JSch();
+    KnownHosts knownHosts = new KnownHosts(jsch);
+    String base64CaPublicKey = "AAAAB3NzaC1yc2EAAAADAQABAAABAQ==";
+    String line = "@revoked " + hostPatterns + " ssh-rsa " + base64CaPublicKey + "\n";
+    knownHosts.setKnownHosts(new ByteArrayInputStream(Util.str2byte(line)));
+
+    byte[] keyBytes =
+        Util.fromBase64(Util.str2byte(base64CaPublicKey), 0, base64CaPublicKey.length());
+
+    assertFalse(OpenSshCertificateUtil.isCertificateSignedByTrustedCA(knownHosts,
+        "evil.example.com", keyBytes), "Should ignore a @revoked entry that excludes the host");
+    assertThrows(
+        JSchRevokedHostKeyException.class, () -> OpenSshCertificateUtil
+            .isCertificateSignedByTrustedCA(knownHosts, "good.example.com", keyBytes),
+        "Should still reject a host the @revoked entry doesn't exclude");
   }
 
   /**
