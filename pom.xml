@@ -789,7 +789,7 @@
             <plugin>
                 <groupId>org.jacoco</groupId>
                 <artifactId>jacoco-maven-plugin</artifactId>
-                <version>0.8.15</version>
+                <version>0.8.16</version>
                 <configuration>
                     <excludes>
                         <exclude>com/jcraft/jsch/JavaThreadId.class</exclude>
