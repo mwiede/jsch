@@ -26,6 +26,7 @@
 
 package com.jcraft.jsch;
 
+import com.jcraft.jsch.android.AndroidJSch;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -278,6 +279,10 @@ public class JSch {
      */
     config.put("host_certificate_to_key_fallback",
         Util.getSystemProperty("jsch.host_certificate_to_key_fallback", "yes"));
+
+    if (AndroidJSch.isAndroid()) {
+      AndroidJSch.configure();
+    }
   }
 
   final InstanceLogger instLogger = new InstanceLogger();
