@@ -376,9 +376,11 @@ public abstract class KeyExchange {
    *        signature data in SSH wire format.
    * @return {@code true} if the signature is cryptographically valid and proves the server
    *         possesses the private key; {@code false} otherwise.
-   * @throws JSchException if the algorithm is unsupported, if a certificate is detected but is not
-   *         a host certificate (e.g., it's a user certificate), if the signature verification class
-   *         cannot be instantiated, or if any other error occurs during verification.
+   * @throws JSchException if the algorithm is unsupported, if the host key type or signature
+   *         algorithm does not match the negotiated host key algorithm, if a certificate is
+   *         detected but is not a host certificate (e.g., it's a user certificate), if the
+   *         signature verification class cannot be instantiated, or if any other error occurs
+   *         during verification.
    * @throws Exception if an unexpected error occurs during parsing or cryptographic operations.
    */
   protected boolean verify(String alg, byte[] K_S, int index, byte[] sig_of_H) throws Exception {
@@ -386,6 +388,14 @@ public abstract class KeyExchange {
 
     i = index;
     boolean result = false;
+
+    // The host key must be of the type negotiated in SSH_MSG_KEXINIT, otherwise a server could use
+    // a key type that was removed from server_host_key (RFC 4253 7.1).
+    String hostKeyAlg = session.guess[PROPOSAL_SERVER_HOST_KEY_ALGS];
+    if (!getHostKeyType(alg).equals(getHostKeyType(hostKeyAlg))) {
+      throw new JSchException(
+          "server host key type " + alg + " does not match negotiated " + hostKeyAlg);
+    }
 
     if (OpenSshCertificateKeyTypes.isCertificateKeyType(alg)) {
       OpenSshCertificate certificate = OpenSshCertificateParser.parse(session.jsch.instLogger, K_S);
@@ -441,6 +451,14 @@ public abstract class KeyExchange {
       SignatureRSA sig = null;
       Buffer buf = new Buffer(sig_of_H);
       String foo = Util.byte2str(buf.getString());
+      // RFC 8332 3.1: the server signs with the negotiated algorithm. Like OpenSSH, allow
+      // ssh-rsa-cert-v01@openssh.com to be signed with rsa-sha2-256/512 for legacy reasons.
+      if (!foo.equals(OpenSshCertificateKeyTypes.getBaseKeyType(hostKeyAlg))
+          && !(hostKeyAlg.equals(OpenSshCertificateKeyTypes.SSH_RSA_CERT_V01)
+              && (foo.equals("rsa-sha2-256") || foo.equals("rsa-sha2-512")))) {
+        throw new JSchException(
+            "server signature algorithm " + foo + " does not match negotiated " + hostKeyAlg);
+      }
       try {
         Class<? extends SignatureRSA> c =
             Class.forName(session.getConfig(foo)).asSubclass(SignatureRSA.class);
@@ -599,6 +617,24 @@ public abstract class KeyExchange {
     }
 
     return result;
+  }
+
+  // Maps a host key algorithm to the key type carried in K_S, e.g. rsa-sha2-512 to ssh-rsa.
+  private static String getHostKeyType(String alg) {
+    switch (alg) {
+      case "rsa-sha2-256":
+      case "rsa-sha2-512":
+      case "ssh-rsa-sha224@ssh.com":
+      case "ssh-rsa-sha256@ssh.com":
+      case "ssh-rsa-sha384@ssh.com":
+      case "ssh-rsa-sha512@ssh.com":
+        return "ssh-rsa";
+      case OpenSshCertificateKeyTypes.RSA_SHA2_256_CERT_V01:
+      case OpenSshCertificateKeyTypes.RSA_SHA2_512_CERT_V01:
+        return OpenSshCertificateKeyTypes.SSH_RSA_CERT_V01;
+      default:
+        return alg;
+    }
   }
 
   protected byte[] encodeInt(int raw) {
