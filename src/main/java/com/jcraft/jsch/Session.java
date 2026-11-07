@@ -152,6 +152,7 @@ public class Session {
   SocketFactory socket_factory = null;
 
   private Hashtable<String, String> config = null;
+  private ConfigRepository.Config resolvedConfig;
 
   private Proxy proxy = null;
   private UserInfo userinfo;
@@ -3650,7 +3651,8 @@ public class Session {
       return;
     }
 
-    ConfigRepository.Config config = configRepository.getConfig(org_host);
+    ConfigRepository.Config config = configRepository.getConfig(org_host, username);
+    resolvedConfig = config;
 
     String value = null;
 
@@ -3764,13 +3766,12 @@ public class Session {
     }
   }
 
-  private void applyConfigChannel(ChannelSession channel) throws JSchException {
-    ConfigRepository configRepository = jsch.getConfigRepository();
-    if (configRepository == null) {
+  void applyConfigChannel(ChannelSession channel) throws JSchException {
+    if (resolvedConfig == null) {
       return;
     }
 
-    ConfigRepository.Config config = configRepository.getConfig(org_host);
+    ConfigRepository.Config config = resolvedConfig;
 
     String value = null;
 
@@ -3790,12 +3791,11 @@ public class Session {
     if (getConfig("ClearAllForwardings").equals("yes"))
       return;
 
-    ConfigRepository configRepository = jsch.getConfigRepository();
-    if (configRepository == null) {
+    if (resolvedConfig == null) {
       return;
     }
 
-    ConfigRepository.Config config = configRepository.getConfig(org_host);
+    ConfigRepository.Config config = resolvedConfig;
 
     String[] values = config.getValues("LocalForward");
     if (values != null) {

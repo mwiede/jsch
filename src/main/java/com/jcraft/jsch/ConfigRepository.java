@@ -30,6 +30,10 @@ public interface ConfigRepository {
 
   public Config getConfig(String host);
 
+  default Config getConfig(String host, String user) {
+    return getConfig(host);
+  }
+
   public interface Config {
     public String getHostname();
 
