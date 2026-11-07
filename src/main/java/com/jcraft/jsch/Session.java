@@ -537,6 +537,10 @@ public class Session {
       if (socket != null && (connectTimeout > 0 || timeout > 0)) {
         socket.setSoTimeout(timeout);
       }
+      // A ProxyJump tunnel bounds the handshake reads itself; hand over to the session timeout.
+      if (proxy instanceof ProxyJump) {
+        ((ProxyJump) proxy).setReadTimeout(timeout);
+      }
 
       isAuthed = true;
 
@@ -3090,6 +3094,9 @@ public class Session {
       if (timeout < 0) {
         throw new JSchException("invalid timeout value");
       }
+      if (proxy instanceof ProxyJump) {
+        ((ProxyJump) proxy).setReadTimeout(timeout);
+      }
       this.timeout = timeout;
       return;
     }
@@ -3667,6 +3674,10 @@ public class Session {
     int port = config.getPort();
     if (port != -1)
       this.port = port;
+
+    value = config.getValue("ProxyJump");
+    if (value != null && !value.equalsIgnoreCase("none"))
+      this.proxy = new ProxyJump(this, value);
 
     checkConfig(config, "kex");
     checkConfig(config, "server_host_key");
