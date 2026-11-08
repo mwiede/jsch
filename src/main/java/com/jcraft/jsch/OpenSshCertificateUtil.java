@@ -7,6 +7,7 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -599,6 +600,10 @@ class OpenSshCertificateUtil {
    * must use {@link HostKey#isWildcardMatched(String)} alone, since {@code isMatched} ignores
    * negated patterns and a literal entry would override an explicit exclusion of the host.
    * </p>
+   * <p>
+   * The hash covers the exact spelling of the hostname, so a hashed entry is checked against both
+   * {@code host} as given and its lower case form, which is how unhashed host lists are compared.
+   * </p>
    *
    * @param revokedKey the {@code @revoked} entry, must not be {@code null}
    * @param host the hostname being connected to, must not be {@code null}
@@ -607,7 +612,11 @@ class OpenSshCertificateUtil {
   private static boolean isRevokedEntryForHost(HostKey revokedKey, String host) {
     if (revokedKey instanceof KnownHosts.HashedHostKey
         && ((KnownHosts.HashedHostKey) revokedKey).isHashed()) {
-      return revokedKey.isMatched(host);
+      if (revokedKey.isMatched(host)) {
+        return true;
+      }
+      String lowerHost = host.toLowerCase(Locale.ROOT);
+      return !lowerHost.equals(host) && revokedKey.isMatched(lowerHost);
     }
     return revokedKey.isWildcardMatched(host);
   }

@@ -15,6 +15,7 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.ValueSource;
 
 public class OpenSshCertificateUtilTest {
@@ -379,15 +380,20 @@ public class OpenSshCertificateUtilTest {
 
   /**
    * Test that a hashed @revoked line is honoured for a host a negated pattern excludes from the
-   * CA's @cert-authority line.
+   * CA's @cert-authority line, whether the line was hashed for the lower case hostname or for the
+   * exact spelling being looked up.
    */
-  @Test
-  public void testIsCertificateSignedByTrustedCA_caRevokedByHashedEntryForNegatedHost()
-      throws Exception {
+  @ParameterizedTest
+  @CsvSource({
+      // hashed for evil.example.com
+      "evil.example.com, |1|AQIDBAUGBwgJCgsMDQ4PEBESExQ=|850WRxaptwB5PHAGya0iTJo/1F4=",
+      "Evil.example.com, |1|AQIDBAUGBwgJCgsMDQ4PEBESExQ=|850WRxaptwB5PHAGya0iTJo/1F4=",
+      // hashed for Evil.example.com
+      "Evil.example.com, |1|AQIDBAUGBwgJCgsMDQ4PEBESExQ=|lYosx2SpSfy7uN3S/x1/XC3rods="})
+  public void testIsCertificateSignedByTrustedCA_caRevokedByHashedEntryForNegatedHost(String host,
+      String hashedHost) throws Exception {
     JSch jsch = new JSch();
     KnownHosts knownHosts = new KnownHosts(jsch);
-    String host = "evil.example.com";
-    String hashedHost = "|1|AQIDBAUGBwgJCgsMDQ4PEBESExQ=|850WRxaptwB5PHAGya0iTJo/1F4=";
     String base64CaPublicKey = "AAAAB3NzaC1yc2EAAAADAQABAAABAQ==";
     String lines = "@cert-authority *.example.com,!evil.example.com ssh-rsa " + base64CaPublicKey
         + "\n@revoked " + hashedHost + " ssh-rsa " + base64CaPublicKey + "\n";

@@ -292,6 +292,38 @@ public class HostCertificateIT {
   }
 
   /**
+   * Tests that a revoked CA stays a terminal failure when the {@code @revoked} entry is hashed for
+   * the lower case hostname, the {@code HostKeyAlias} is spelt in mixed case, a negated pattern
+   * excludes the host from the CA's {@code @cert-authority} entry and the raw host key is pinned.
+   * With the default {@code host_certificate_to_key_fallback=yes}, the connection must not fall
+   * back to that key.
+   *
+   * @throws Exception if any error occurs during the test setup.
+   */
+  @Test
+  public void hostKeyTestHashedRevokedCAMixedCaseAliasNegatedTrustEntryPinnedHostKey()
+      throws Exception {
+    JSch ssh = new JSch();
+    ssh.addIdentity(
+        getResourceFile(this.getClass(), CERTIFICATES_BASE_FOLDER + "/user_keys/id_ecdsa_nistp521"),
+        getResourceFile(this.getClass(),
+            CERTIFICATES_BASE_FOLDER + "/user_keys/id_ecdsa_nistp521.pub"),
+        null);
+
+    String caPublicKey = readResource("certificates/ca/ca_jsch_key.pub");
+    String hostPublicKey = readResource(CERTIFICATES_BASE_FOLDER + "/ssh_host_ed25519_key.pub");
+    // hashed for evil.example.com
+    String hashedHost = "|1|AQIDBAUGBwgJCgsMDQ4PEBESExQ=|850WRxaptwB5PHAGya0iTJo/1F4=";
+    String knownHosts = "@cert-authority *,!evil.example.com " + caPublicKey + "\n@revoked "
+        + hashedHost + " " + caPublicKey + "\nevil.example.com " + hostPublicKey + "\n";
+    ssh.setKnownHosts(new ByteArrayInputStream(knownHosts.getBytes(StandardCharsets.UTF_8)));
+
+    Session session = setup(ssh, "ssh-ed25519-cert-v01@openssh.com");
+    session.setHostKeyAlias("Evil.Example.com");
+    assertThrows(JSchRevokedHostKeyException.class, () -> connectSftp(session));
+  }
+
+  /**
    * Tests that a {@code @revoked} entry listing the host literally doesn't apply when a negated
    * pattern on the same entry excludes it, so the connection falls back to the pinned host key.
    *

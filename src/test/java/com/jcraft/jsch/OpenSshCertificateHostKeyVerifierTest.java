@@ -322,6 +322,41 @@ public class OpenSshCertificateHostKeyVerifierTest {
   }
 
   /**
+   * A {@code @revoked} entry hashed for the lower case hostname must still apply when the host or
+   * its {@code HostKeyAlias} is spelt in mixed case and a negated {@code @cert-authority} pattern
+   * excludes the host. Anything but {@link JSchRevokedHostKeyException} here lets
+   * {@code Session.checkHost()} fall back to the pinned host key.
+   */
+  @ParameterizedTest
+  @CsvSource({"LocalHost,", "localhost,LocalHost"})
+  public void testCheckHostCertificate_withMixedCaseHostHashedRevokedCaNegatedTrustEntryAndPinnedKey_shouldReject(
+      String host, String hostKeyAlias) throws Exception {
+    String caPublicKey =
+        new String(Util.fromFile("src/test/resources/certificates/ca/ca_jsch_key.pub"),
+            StandardCharsets.UTF_8).trim();
+    String hostPublicKey =
+        new String(Util.fromFile("src/test/resources/certificates/host/ssh_host_ed25519_key.pub"),
+            StandardCharsets.UTF_8).trim();
+    // hashed for localhost
+    String hashedHost = "|1|AQIDBAUGBwgJCgsMDQ4PEBESExQ=|SgXNlPc+iYz6BnJtMWhNl5oOVq0=";
+    String knownHosts = "@cert-authority *,!localhost " + caPublicKey + "\n@revoked " + hashedHost
+        + " " + caPublicKey + "\nlocalhost " + hostPublicKey + "\n";
+
+    JSch jsch = new JSch();
+    jsch.setKnownHosts(new ByteArrayInputStream(knownHosts.getBytes(StandardCharsets.UTF_8)));
+
+    OpenSshCertificate certificate =
+        parseCertificate("src/test/resources/certificates/host/ssh_host_ed25519_key-cert.pub");
+    assertEquals(HostKeyRepository.OK,
+        jsch.getHostKeyRepository().check("LocalHost", certificate.getCertificatePublicKey()));
+
+    Session session = jsch.getSession("user", host);
+    session.setHostKeyAlias(hostKeyAlias);
+    assertThrows(JSchRevokedHostKeyException.class,
+        () -> OpenSshCertificateHostKeyVerifier.checkHostCertificate(session, certificate));
+  }
+
+  /**
    * A negated pattern on a {@code @revoked} entry must keep the host out of that entry even if the
    * entry also lists it literally. Anything but {@link JSchUnknownCAKeyException} here stops
    * {@code Session.checkHost()} from falling back to the pinned host key.
