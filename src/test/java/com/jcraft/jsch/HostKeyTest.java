@@ -229,12 +229,34 @@ public class HostKeyTest {
   }
 
   @Test
-  public void testIsWildcardMatched_caseSensitive() throws Exception {
-    HostKey hostKey = createHostKey("Host.Example.COM");
-    // OpenSSH wildcard matching is case-sensitive
-    assertFalse(hostKey.isWildcardMatched("host.example.com"),
-        "Wildcard matching should be case-sensitive");
+  public void testIsWildcardMatched_caseInsensitive() throws Exception {
+    HostKey hostKey = createHostKey("Host.Example.COM,*.Wild.Example.COM");
+    // OpenSSH's match_hostname() lower-cases the host and the patterns
+    assertTrue(hostKey.isWildcardMatched("host.example.com"),
+        "Host list matching should be case-insensitive");
+    assertTrue(hostKey.isWildcardMatched("HOST.EXAMPLE.COM"), "Should match upper case");
     assertTrue(hostKey.isWildcardMatched("Host.Example.COM"), "Should match exact case");
+    assertTrue(hostKey.isWildcardMatched("a.wild.example.com"),
+        "Wildcard patterns should be case-insensitive");
+  }
+
+  @Test
+  public void testIsWildcardMatched_negatedPatternCaseInsensitive() throws Exception {
+    HostKey hostKey = createHostKey("*.example.com,!evil.example.com");
+    assertFalse(hostKey.isWildcardMatched("Evil.example.com"),
+        "Negated pattern should exclude host regardless of host case");
+    hostKey = createHostKey("*.example.com,!Evil.Example.COM");
+    assertFalse(hostKey.isWildcardMatched("evil.example.com"),
+        "Negated pattern should exclude host regardless of pattern case");
+    assertTrue(hostKey.isWildcardMatched("Good.example.com"), "Should match other hosts");
+  }
+
+  @Test
+  public void testMatchesWildcardPattern_caseSensitive() {
+    // Used on its own for certificate principals, so it must stay case-sensitive
+    assertFalse(HostKey.matchesWildcardPattern("Host.Example.COM", "host.example.com"));
+    assertFalse(HostKey.matchesWildcardPattern("*.EXAMPLE.COM", "host.example.com"));
+    assertTrue(HostKey.matchesWildcardPattern("Host.Example.COM", "Host.Example.COM"));
   }
 
   @Test
@@ -272,6 +294,32 @@ public class HostKeyTest {
         "Should match hostname with port and wildcard");
     assertFalse(hostKey.isWildcardMatched("[host.example.com]:22"),
         "Should not match different port");
+  }
+
+  @Test
+  public void testIsWildcardMatched_negatedPattern() throws Exception {
+    HostKey hostKey = createHostKey("*.example.com,!evil.example.com");
+    assertTrue(hostKey.isWildcardMatched("host.example.com"),
+        "Should match host not covered by negated pattern");
+    assertFalse(hostKey.isWildcardMatched("evil.example.com"),
+        "Negated pattern should exclude host even if a positive pattern matches");
+  }
+
+  @Test
+  public void testIsWildcardMatched_negatedPatternBeforePositive() throws Exception {
+    HostKey hostKey = createHostKey("!*.internal.example.com,*.example.com");
+    assertTrue(hostKey.isWildcardMatched("www.example.com"), "Should match positive pattern");
+    assertFalse(hostKey.isWildcardMatched("db.internal.example.com"),
+        "Negated wildcard pattern should exclude host regardless of order");
+  }
+
+  @Test
+  public void testIsWildcardMatched_onlyNegatedPattern() throws Exception {
+    HostKey hostKey = createHostKey("!evil.example.com");
+    assertFalse(hostKey.isWildcardMatched("host.example.com"),
+        "Negated pattern alone should not match anything");
+    assertFalse(hostKey.isWildcardMatched("evil.example.com"),
+        "Negated pattern alone should not match the negated host");
   }
 
   @Test
