@@ -357,12 +357,7 @@ class KeyPairECDSA extends KeyPair {
   }
 
   @Override
-  public byte[] getPublicKeyBlob() {
-    byte[] foo = super.getPublicKeyBlob();
-
-    if (foo != null)
-      return foo;
-
+  protected byte[] getPublicKeyBlobFromPriv() {
     if (r_array == null)
       return null;
 

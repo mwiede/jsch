@@ -33,6 +33,10 @@ class IdentityFile implements Identity {
   static IdentityFile newInstance(String prvfile, String pubfile, JSch.InstanceLogger instLogger)
       throws JSchException {
     KeyPair kpair = KeyPair.load(instLogger, prvfile, pubfile);
+    // if both keys are provided, make sure they match
+    if (prvfile != null && pubfile != null) {
+      kpair.validateKeyCompat();
+    }
     return new IdentityFile(prvfile, kpair);
   }
 
@@ -40,6 +44,10 @@ class IdentityFile implements Identity {
       JSch.InstanceLogger instLogger) throws JSchException {
 
     KeyPair kpair = KeyPair.load(instLogger, prvkey, pubkey);
+    // if both keys are provided, make sure they match
+    if (prvkey != null && pubkey != null) {
+      kpair.validateKeyCompat();
+    }
     return new IdentityFile(name, kpair);
   }
 
@@ -56,7 +64,10 @@ class IdentityFile implements Identity {
    */
   @Override
   public boolean setPassphrase(byte[] passphrase) throws JSchException {
-    return kpair.decrypt(passphrase);
+    boolean ret = kpair.decrypt(passphrase);
+    if (ret)
+      kpair.validateKeyCompat();
+    return ret;
   }
 
   /**
