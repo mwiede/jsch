@@ -1848,6 +1848,12 @@ public class Session {
   }
 
   void write(Packet packet) throws Exception {
+    write(packet, null);
+  }
+
+  // Receive credit may wait for rekeying or socket I/O without holding a Channel
+  // monitor. The outgoing packet lock orders the final closed-state check with CLOSE.
+  void write(Packet packet, Channel receiveCreditOwner) throws Exception {
     // System.err.println("in_kex="+in_kex+" "+(packet.buffer.getCommand()));
     long t = getTimeout();
     while (in_kex) {
@@ -1867,10 +1873,14 @@ public class Session {
       } catch (InterruptedException e) {
       } ;
     }
-    _write(packet);
+    _write(packet, receiveCreditOwner);
   }
 
   private void _write(Packet packet) throws Exception {
+    _write(packet, null);
+  }
+
+  private void _write(Packet packet, Channel receiveCreditOwner) throws Exception {
     boolean initialKex = this.initialKex;
     boolean doStrictKex = this.doStrictKex;
     boolean enable_strict_kex = this.enable_strict_kex;
@@ -1878,6 +1888,8 @@ public class Session {
     boolean resetSeqo = packet.buffer.getCommand() == SSH_MSG_NEWKEYS && doStrictKex;
 
     synchronized (lock) {
+      if (receiveCreditOwner != null && (receiveCreditOwner.close || !receiveCreditOwner.connected))
+        return;
       encode(packet);
       if (io != null) {
         io.put(packet);
@@ -1968,7 +1980,7 @@ public class Session {
             }
 
             try {
-              channel.write(foo, start[0], length[0]);
+              channel.receiveData(foo, start[0], length[0], false);
             } catch (Exception e) {
               // System.err.println(e);
               try {
@@ -1976,19 +1988,6 @@ public class Session {
               } catch (Exception ee) {
               }
               break;
-            }
-            int len = length[0];
-            channel.setLocalWindowSize(channel.lwsize - len);
-            if (channel.lwsize < channel.lwsize_max / 2) {
-              packet.reset();
-              buf.putByte((byte) SSH_MSG_CHANNEL_WINDOW_ADJUST);
-              buf.putInt(channel.getRecipient());
-              buf.putInt(channel.lwsize_max - channel.lwsize);
-              synchronized (channel) {
-                if (!channel.close)
-                  write(packet);
-              }
-              channel.setLocalWindowSize(channel.lwsize_max);
             }
             break;
 
@@ -2008,21 +2007,15 @@ public class Session {
               break;
             }
 
-            channel.write_ext(foo, start[0], length[0]);
-
-            len = length[0];
-            channel.setLocalWindowSize(channel.lwsize - len);
-            if (channel.lwsize < channel.lwsize_max / 2) {
-              packet.reset();
-              buf.putByte((byte) SSH_MSG_CHANNEL_WINDOW_ADJUST);
-              buf.putInt(channel.getRecipient());
-              buf.putInt(channel.lwsize_max - channel.lwsize);
-              synchronized (channel) {
-                if (!channel.close)
-                  write(packet);
-              }
-              channel.setLocalWindowSize(channel.lwsize_max);
+            try {
+              channel.receiveData(foo, start[0], length[0], true);
+            } catch (Exception e) {
+              if (getLogger().isEnabled(Logger.WARN))
+                getLogger().log(Logger.WARN, "Closing SSH channel " + channel.getId()
+                    + " after stderr consumer failure: " + e.getMessage(), e);
+              channel.disconnect();
             }
+
             break;
 
           case SSH_MSG_CHANNEL_WINDOW_ADJUST:
@@ -2058,7 +2051,7 @@ public class Session {
             channel = getChannelById(i);
             if (channel != null) {
               // channel.close();
-              channel.disconnect();
+              channel.disconnect(true);
             }
             /*
              * if(Channel.pool.size()==0){ thread=null; }
