@@ -457,13 +457,13 @@ class KeyPairPKCS8 extends KeyPair {
     }
   }
 
+  @SuppressWarnings("java:S1168")
   @Override
-  public byte[] getPublicKeyBlob() {
-    if (kpair != null) {
-      return kpair.getPublicKeyBlob();
-    } else {
-      return super.getPublicKeyBlob();
-    }
+  protected byte[] getPublicKeyBlobFromPriv() {
+    if (kpair != null)
+      return kpair.getPublicKeyBlobFromPriv();
+    else
+      return null; // intentionally return null to say public key not ready yet in private key
   }
 
   @Override

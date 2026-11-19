@@ -175,11 +175,7 @@ abstract class KeyPairEdDSA extends KeyPair {
   }
 
   @Override
-  public byte[] getPublicKeyBlob() {
-    byte[] foo = super.getPublicKeyBlob();
-    if (foo != null)
-      return foo;
-
+  protected byte[] getPublicKeyBlobFromPriv() {
     if (pub_array == null)
       return null;
     byte[][] tmp = new byte[2][];
