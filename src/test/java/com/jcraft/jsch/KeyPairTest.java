@@ -6,11 +6,15 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 import java.io.File;
 import java.net.URISyntaxException;
+import java.nio.file.FileSystems;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.attribute.PosixFilePermissions;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -194,6 +198,18 @@ class KeyPairTest {
       kpair.writePrivateKey(tmpDir.resolve("my-private-key-encrypted").toString(),
           "my-password".getBytes(UTF_8));
     });
+  }
+
+  @Test
+  void writePrivateKeyOwnerOnly() throws Exception {
+    assumeTrue(FileSystems.getDefault().supportedFileAttributeViews().contains("posix"));
+    KeyPair kpair = KeyPair.genKeyPair(new JSch(), KeyPair.ECDSA, 256);
+    Path pem = tmpDir.resolve("id_pem");
+    Path v1 = tmpDir.resolve("id_v1");
+    kpair.writePrivateKey(pem.toString());
+    kpair.writeOpenSSHv1PrivateKey(v1.toString());
+    assertEquals(PosixFilePermissions.fromString("rw-------"), Files.getPosixFilePermissions(pem));
+    assertEquals(PosixFilePermissions.fromString("rw-------"), Files.getPosixFilePermissions(v1));
   }
 
   @ParameterizedTest
