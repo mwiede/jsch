@@ -458,6 +458,7 @@ class KeyPairPKCS8 extends KeyPair {
   }
 
   @SuppressWarnings("java:S1168")
+  @Override
   protected byte[] getPublicKeyBlobFromPriv() {
     if (kpair != null)
       return kpair.getPublicKeyBlobFromPriv();
