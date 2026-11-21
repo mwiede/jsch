@@ -162,4 +162,52 @@ class SessionTest {
     assertTrue(exception.getMessage().contains("not in the allowed ca_signature_algorithms"),
         "Exception message should indicate algorithm not allowed");
   }
+
+  private static final byte[] rsaHostKey = Util.str2byte("    ssh-rsa host key");
+
+  private static Session sessionWithKnownHosts(String strictHostKeyChecking, HostKey... entries)
+      throws JSchException {
+    JSch jsch = new JSch();
+    KnownHosts kh = new KnownHosts(jsch);
+    for (HostKey entry : entries) {
+      kh.add(entry, null);
+    }
+    Session session = new Session(jsch, null, "host.example.com", 22);
+    session.setHostKeyRepository(kh);
+    session.setConfig("StrictHostKeyChecking", strictHostKeyChecking);
+    return session;
+  }
+
+  @Test
+  void testRevokedHostKeyWithWildcardPatternIsRejected() throws JSchException {
+    Session session = sessionWithKnownHosts("yes",
+        new HostKey("@revoked", "*.example.com", HostKey.SSHRSA, rsaHostKey, null),
+        new HostKey("", "host.example.com", HostKey.SSHRSA, rsaHostKey, null));
+
+    assertThrows(JSchRevokedHostKeyException.class,
+        () -> session.doCheckHostKey("host.example.com", "RSA", "fp", "ssh-rsa", rsaHostKey));
+    assertThrows(JSchRevokedHostKeyException.class, () -> session
+        .doCheckHostKey("[host.example.com]:2222", "RSA", "fp", "ssh-rsa", rsaHostKey));
+  }
+
+  @Test
+  void testRevokedUnknownHostKeyIsRejectedWithoutStrictChecking() throws JSchException {
+    Session session =
+        sessionWithKnownHosts("no", new HostKey("@revoked", "*", HostKey.SSHRSA, rsaHostKey, null));
+
+    assertThrows(JSchRevokedHostKeyException.class,
+        () -> session.doCheckHostKey("host.example.com", "RSA", "fp", "ssh-rsa", rsaHostKey));
+    assertEquals(1, session.getHostKeyRepository().getHostKey().length,
+        "revoked key must not be added to known hosts");
+  }
+
+  @Test
+  void testRevokedHostKeyForOtherHostIsIgnored() throws JSchException {
+    Session session = sessionWithKnownHosts("yes",
+        new HostKey("@revoked", "other.example.com", HostKey.SSHRSA, rsaHostKey, null),
+        new HostKey("", "host.example.com", HostKey.SSHRSA, rsaHostKey, null));
+
+    assertDoesNotThrow(
+        () -> session.doCheckHostKey("host.example.com", "RSA", "fp", "ssh-rsa", rsaHostKey));
+  }
 }
