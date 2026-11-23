@@ -38,6 +38,7 @@ import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
+import java.nio.file.attribute.PosixFilePermission;
 import java.nio.file.attribute.PosixFilePermissions;
 import java.util.Arrays;
 import java.util.EnumSet;
@@ -657,7 +658,8 @@ public abstract class KeyPair {
     return Channels.newOutputStream(Files.newByteChannel(Paths.get(name),
         EnumSet.of(StandardOpenOption.CREATE, StandardOpenOption.WRITE,
             StandardOpenOption.TRUNCATE_EXISTING),
-        PosixFilePermissions.asFileAttribute(PosixFilePermissions.fromString("rw-------"))));
+        PosixFilePermissions.asFileAttribute(
+            EnumSet.of(PosixFilePermission.OWNER_READ, PosixFilePermission.OWNER_WRITE))));
   }
 
   /**
