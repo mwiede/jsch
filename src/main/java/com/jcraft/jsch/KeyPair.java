@@ -33,7 +33,15 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.nio.channels.Channels;
+import java.nio.file.FileSystems;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
+import java.nio.file.attribute.PosixFilePermission;
+import java.nio.file.attribute.PosixFilePermissions;
 import java.util.Arrays;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
@@ -563,7 +571,7 @@ public abstract class KeyPair {
    */
   public void writePrivateKey(String name, byte[] passphrase)
       throws FileNotFoundException, IOException {
-    try (OutputStream fos = new FileOutputStream(name)) {
+    try (OutputStream fos = newPrivateKeyOutputStream(name)) {
       writePrivateKey(fos, passphrase);
     }
   }
@@ -588,7 +596,7 @@ public abstract class KeyPair {
    */
   public void writeOpenSSHv1PrivateKey(String name, byte[] passphrase)
       throws FileNotFoundException, IOException, JSchException {
-    try (OutputStream fos = new FileOutputStream(name)) {
+    try (OutputStream fos = newPrivateKeyOutputStream(name)) {
       writeOpenSSHv1PrivateKey(fos, passphrase);
     }
   }
@@ -603,7 +611,7 @@ public abstract class KeyPair {
    */
   public void writeOpenSSHv1PrivateKey(String name, byte[] passphrase, int rounds)
       throws FileNotFoundException, IOException, JSchException {
-    try (OutputStream fos = new FileOutputStream(name)) {
+    try (OutputStream fos = newPrivateKeyOutputStream(name)) {
       writeOpenSSHv1PrivateKey(fos, passphrase, rounds);
     }
   }
@@ -618,7 +626,7 @@ public abstract class KeyPair {
    */
   public void writeOpenSSHv1PrivateKey(String name, byte[] passphrase, String cipher)
       throws FileNotFoundException, IOException, JSchException {
-    try (OutputStream fos = new FileOutputStream(name)) {
+    try (OutputStream fos = newPrivateKeyOutputStream(name)) {
       writeOpenSSHv1PrivateKey(fos, passphrase, cipher);
     }
   }
@@ -634,9 +642,24 @@ public abstract class KeyPair {
    */
   public void writeOpenSSHv1PrivateKey(String name, byte[] passphrase, String cipher, int rounds)
       throws FileNotFoundException, IOException, JSchException {
-    try (OutputStream fos = new FileOutputStream(name)) {
+    try (OutputStream fos = newPrivateKeyOutputStream(name)) {
       writeOpenSSHv1PrivateKey(fos, passphrase, cipher, rounds);
     }
+  }
+
+  /**
+   * Opens a file for writing a private key. On file systems that support POSIX permissions, a newly
+   * created file is only readable and writable by its owner (mode 0600), like ssh-keygen does.
+   */
+  private static OutputStream newPrivateKeyOutputStream(String name) throws IOException {
+    if (!FileSystems.getDefault().supportedFileAttributeViews().contains("posix")) {
+      return new FileOutputStream(name);
+    }
+    return Channels.newOutputStream(Files.newByteChannel(Paths.get(name),
+        EnumSet.of(StandardOpenOption.CREATE, StandardOpenOption.WRITE,
+            StandardOpenOption.TRUNCATE_EXISTING),
+        PosixFilePermissions.asFileAttribute(
+            EnumSet.of(PosixFilePermission.OWNER_READ, PosixFilePermission.OWNER_WRITE))));
   }
 
   /**
