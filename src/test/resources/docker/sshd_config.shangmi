@@ -1,0 +1,13 @@
+PasswordAuthentication no
+PubkeyAuthentication yes
+AuthenticationMethods publickey
+PermitRootLogin yes
+Subsystem sftp internal-sftp
+HostKey /etc/ssh/ssh_host_sm2_key
+KexAlgorithms sm2-sm3,ecdh-sha2-nistp256,curve25519-sha256,diffie-hellman-group14-sha256
+HostKeyAlgorithms sm2
+PubkeyAcceptedAlgorithms sm2
+Ciphers sm4-ctr,aes128-ctr
+MACs hmac-sm3,hmac-sha2-256
+LogLevel DEBUG3
+FingerprintHash sm3
