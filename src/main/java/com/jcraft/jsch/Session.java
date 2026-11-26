@@ -1022,13 +1022,27 @@ public class Session {
     doCheckHostKey(chost, key_type, key_fprint, keyAlgorithmName, K_S);
   }
 
-  private void doCheckHostKey(String chost, String key_type, String key_fprint,
-      String keyAlgorithmName, byte[] K_S) throws JSchException {
+  void doCheckHostKey(String chost, String key_type, String key_fprint, String keyAlgorithmName,
+      byte[] K_S) throws JSchException {
 
     String shkc = getConfig("StrictHostKeyChecking");
     // System.err.println("shkc: "+shkc);
 
     HostKeyRepository hkr = getHostKeyRepository();
+
+    // Like OpenSSH check_key_not_revoked(), a matching @revoked entry is a terminal failure
+    // whether or not the key is otherwise known, and its host field is a pattern list.
+    if (isRevokedHostKey(hkr, chost, K_S)) {
+      if (userinfo != null) {
+        userinfo
+            .showMessage("The " + key_type + " host key for " + chost + " is marked as revoked.\n"
+                + "This could mean that a stolen key is being used to impersonate this host.");
+      }
+      if (getLogger().isEnabled(Logger.INFO)) {
+        getLogger().log(Logger.INFO, "Host '" + chost + "' has provided revoked key.");
+      }
+      throw new JSchRevokedHostKeyException("revoked HostKey: " + chost);
+    }
 
     String hkh = getConfig("HashKnownHosts");
     if (hkh.equals("yes") && (hkr instanceof KnownHosts)) {
@@ -1107,24 +1121,6 @@ public class Session {
       insert = true;
     }
 
-    if (i == HostKeyRepository.OK) {
-      HostKey[] keys = hkr.getHostKey(chost, keyAlgorithmName);
-      String _key = Util.byte2str(Util.toBase64(K_S, 0, K_S.length, true));
-      for (int j = 0; j < keys.length; j++) {
-        if (keys[j].getKey().equals(_key) && keys[j].getMarker().equals("@revoked")) {
-          if (userinfo != null) {
-            userinfo.showMessage("The " + key_type + " host key for " + chost
-                + " is marked as revoked.\n" + "This could mean that a stolen key is being used to "
-                + "impersonate this host.");
-          }
-          if (getLogger().isEnabled(Logger.INFO)) {
-            getLogger().log(Logger.INFO, "Host '" + chost + "' has provided revoked key.");
-          }
-          throw new JSchRevokedHostKeyException("revoked HostKey: " + chost);
-        }
-      }
-    }
-
     if (i == HostKeyRepository.OK && getLogger().isEnabled(Logger.INFO)) {
       getLogger().log(Logger.INFO,
           "Host '" + chost + "' is known and matches the " + key_type + " host key");
@@ -1140,6 +1136,31 @@ public class Session {
         hkr.add(hostkey, userinfo);
       }
     }
+  }
+
+  private static boolean isRevokedHostKey(HostKeyRepository hkr, String chost, byte[] K_S) {
+    HostKey[] keys;
+    synchronized (hkr) {
+      keys = hkr.getHostKey();
+    }
+    if (keys == null) {
+      return false;
+    }
+    String host = null;
+    if (chost.startsWith("[") && chost.indexOf("]:") > 1) {
+      host = chost.substring(1, chost.indexOf("]:"));
+    }
+    for (HostKey hk : keys) {
+      if (hk == null || hk.key == null || !"@revoked".equals(hk.getMarker())
+          || !Util.arraysequals(hk.key, K_S)) {
+        continue;
+      }
+      if (hk.isMatched(chost) || hk.isWildcardMatched(chost)
+          || (host != null && (hk.isMatched(host) || hk.isWildcardMatched(host)))) {
+        return true;
+      }
+    }
+    return false;
   }
 
   // public void start(){ (new Thread(this)).start(); }
