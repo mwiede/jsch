@@ -203,6 +203,10 @@ public abstract class KeyExchange {
   }
 
   public String getFingerPrint() {
+    return getFingerPrint(getHostKey());
+  }
+
+  String getFingerPrint(byte[] hostKey) {
     HASH hash = null;
     try {
       String _c = session.getConfig("FingerprintHash").toLowerCase(Locale.ROOT);
@@ -213,7 +217,7 @@ public abstract class KeyExchange {
         session.getLogger().log(Logger.ERROR, "getFingerPrint: " + e.getMessage(), e);
       }
     }
-    return Util.getFingerPrint(hash, getHostKey(), true, false);
+    return Util.getFingerPrint(hash, hostKey, true, false);
   }
 
   byte[] getK() {
